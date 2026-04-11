@@ -1,0 +1,15 @@
+{
+  "name": "vibenu",
+  "private": true,
+  "packageManager": "pnpm@10.28.1",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp"]
+  },
+  "scripts": {
+    "dev:backend": "pnpm --filter bienvu-backend dev",
+    "dev:frontend": "pnpm --filter bienvu-frontend dev",
+    "dev": "pnpm --filter '*' dev",
+    "build": "pnpm --filter '*' build",
+    "typecheck": "pnpm --filter '*' typecheck"
+  }
+}

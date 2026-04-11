@@ -1,0 +1,1 @@
+{"version":3,"file":"mock-real-estate.provider.js","sourceRoot":"","sources":["../../../../src/modules/real-estate/infrastructure/mock-real-estate.provider.ts"],"names":[],"mappings":"AAEA,MAAM,OAAO,sBAAsB;IACjC,KAAK,CAAC,qBAAqB;QAMzB,OAAO;YACL,uBAAuB,EAAE,EAAE;YAC3B,UAAU,EAAE,OAAO;YACnB,UAAU,EAAE,SAAS;YACrB,yBAAyB,EAAE,IAAI;SAChC,CAAC;IACJ,CAAC;CACF"}
