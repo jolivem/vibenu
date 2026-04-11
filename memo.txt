@@ -1,0 +1,3 @@
+Start Services (in separate terminals)
+Terminal 1: cd backend && npm run dev → runs on http://localhost:4000
+Terminal 2: cd frontend && npm run dev → runs on http://localhost:3010
