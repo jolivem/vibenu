@@ -22,7 +22,18 @@ export function Map({ lat, lon, label, transports = [], risks = [] }: MapProps) 
     // Initialize map
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: "https://demotiles.maplibre.org/style.json", // Free OSM style
+      style: {
+        version: 8,
+        sources: {
+          osm: {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          },
+        },
+        layers: [{ id: "osm", type: "raster", source: "osm" }],
+      },
       center: [lon, lat],
       zoom: 14,
     });

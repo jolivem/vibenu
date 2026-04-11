@@ -13,9 +13,20 @@ export interface Station {
   distanceMeters: number;
 }
 
+export interface MobilityScoreBreakdown {
+  base: number;
+  nearestStop: string;
+  nearestStopPoints: number;
+  station: string;
+  stationPoints: number;
+  density: string;
+  densityPoints: number;
+}
+
 export interface MobilityAnalysis {
   nearestStops: TransportStop[];
   nearestStation?: Station;
   score: number;
   label: MobilityLabel;
+  scoreBreakdown: MobilityScoreBreakdown;
 }

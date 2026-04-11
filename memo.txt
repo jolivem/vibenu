@@ -1,2 +1,5 @@
 Start Services (in separate terminals)
 pnpm dev
+
+tests unitaires backend
+pnpm --filter bienvu-backend test

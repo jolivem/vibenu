@@ -55,33 +55,34 @@ export class TransportDataGouvProvider implements TransportProvider {
   }
 
   private parseStops(features: GtfsStopFeature[], centerLat: number, centerLon: number) {
-    // Deduplicate by stop_name (different datasets may have same stop)
-    const seen = new Map<string, { feature: GtfsStopFeature; distance: number }>();
+    // Filter out entrances (location_type=2), keep stops (0) and stations (1)
+    const filtered = features.filter((f) => f.properties.location_type !== 2);
 
-    for (const feature of features) {
+    // Classify each feature first, then deduplicate per mode category
+    const allStops = filtered.map((feature) => {
       const [lon, lat] = feature.geometry.coordinates;
       const distance = this.calculateDistance(centerLat, centerLon, lat, lon);
-      const key = feature.properties.stop_name.toLowerCase().trim();
+      const mode = this.inferMode(feature);
+      return {
+        id: feature.properties.stop_id,
+        name: feature.properties.stop_name,
+        distanceMeters: Math.round(distance),
+        mode,
+      };
+    });
 
+    // Deduplicate by name+mode (same name can be both a train station and a bus stop)
+    const seen = new Map<string, (typeof allStops)[number]>();
+    for (const stop of allStops) {
+      const key = `${stop.name.toLowerCase().trim()}|${stop.mode}`;
       const existing = seen.get(key);
-      if (!existing || distance < existing.distance) {
-        seen.set(key, { feature, distance });
+      if (!existing || stop.distanceMeters < existing.distanceMeters) {
+        seen.set(key, stop);
       }
     }
 
-    const stops = Array.from(seen.values())
-      .map(({ feature, distance }) => {
-        const mode = this.inferMode(feature);
-        return {
-          id: feature.properties.stop_id,
-          name: feature.properties.stop_name,
-          distanceMeters: Math.round(distance),
-          mode,
-        };
-      })
-      .sort((a, b) => a.distanceMeters - b.distanceMeters);
+    const stops = Array.from(seen.values()).sort((a, b) => a.distanceMeters - b.distanceMeters);
 
-    // Separate stations (location_type=1 or train mode) from regular stops
     const stations = stops.filter(
       (s) => s.mode === "train" || s.mode === "rer" || s.mode === "metro",
     );
@@ -99,20 +100,25 @@ export class TransportDataGouvProvider implements TransportProvider {
     const title = feature.properties.dataset_title.toLowerCase();
     const name = feature.properties.stop_name.toLowerCase();
 
-    // Infer from dataset title
-    if (title.includes("sncf") || title.includes("transilien") || title.includes("ter")) {
-      return "train";
+    const isRailDataset =
+      title.includes("sncf") || title.includes("transilien") || /\bter\b/.test(title);
+
+    if (isRailDataset) {
+      // SNCF datasets include bus feeder stops and multimodal hubs.
+      // Real train stations have location_type=1 and simple names (no "/").
+      // Names with "/" like "République - La Poste / Ecole Militaire" are bus hubs.
+      if (feature.properties.location_type === 1 && !name.includes("/")) return "train";
+      return "bus";
     }
-    if (title.includes("idfm") || title.includes("île-de-france mobilités")) {
-      // IDFM covers metro, RER, bus, tram — try to narrow from stop name
+
+    if (title.includes("idfm") || title.includes("île-de-france")) {
       if (name.includes("rer ") || name.match(/\brer\b/)) return "rer";
       if (name.includes("métro") || name.includes("metro")) return "metro";
       if (name.includes("tram")) return "tram";
+      return "bus";
     }
-    if (title.includes("tram")) return "tram";
 
-    // location_type 1 = station (likely rail)
-    if (feature.properties.location_type === 1) return "train";
+    if (title.includes("tram")) return "tram";
 
     return "bus";
   }

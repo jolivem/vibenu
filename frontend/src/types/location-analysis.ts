@@ -29,11 +29,22 @@ export interface StationDto {
   distanceMeters: number;
 }
 
+export interface MobilityScoreBreakdownDto {
+  base: number;
+  nearestStop: string;
+  nearestStopPoints: number;
+  station: string;
+  stationPoints: number;
+  density: string;
+  densityPoints: number;
+}
+
 export interface MobilityAnalysisDto {
   nearestStops: TransportStopDto[];
   nearestStation?: StationDto;
   score: number;
-  label: "faible" | "correct" | "bon";
+  label: "faible" | "correct" | "bon" | "très bon";
+  scoreBreakdown: MobilityScoreBreakdownDto;
 }
 
 export interface RiskCategoryDto {
