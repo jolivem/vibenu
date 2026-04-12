@@ -1,9 +1,8 @@
-import { env } from "@/lib/config/env";
 import type { AddressSuggestionDto, LocationAnalysisDto } from "@/types/location-analysis";
 
 export const backendApi = {
   async searchAddress(query: string): Promise<AddressSuggestionDto[]> {
-    const response = await fetch(`${env.apiBaseUrl}/api/address/search?q=${encodeURIComponent(query)}`, {
+    const response = await fetch(`/api/address/search?q=${encodeURIComponent(query)}`, {
       cache: "no-store",
     });
 
@@ -30,7 +29,7 @@ export const backendApi = {
     if (input.city) params.set("city", input.city);
     if (input.postcode) params.set("postcode", input.postcode);
 
-    const response = await fetch(`${env.apiBaseUrl}/api/location/analyze?${params.toString()}`, {
+    const response = await fetch(`/api/location/analyze?${params.toString()}`, {
       cache: "no-store",
     });
 

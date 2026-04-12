@@ -5,6 +5,8 @@
   --text: #111827;
   --muted: #6b7280;
   --border: #e5e7eb;
+  --accent: #78be20;
+  --accent-light: #edf7e1;
 }
 
 * {
@@ -17,21 +19,197 @@ body {
   padding: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
   min-height: 100vh;
 }
 
-.page-shell,
-.analysis-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 32px 20px;
+/* Landing page */
+.landing {
+  min-height: 100vh;
 }
 
-.hero-card,
+.landing-hero {
+  background: linear-gradient(135deg, #4a8c2a 0%, #78be20 100%);
+  color: white;
+  padding: 80px 20px 60px;
+}
+
+.landing-hero-content {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.landing-brand {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.landing-title {
+  font-size: 2.5rem;
+  line-height: 1.15;
+  margin: 12px 0 0;
+  font-weight: 800;
+}
+
+.landing-title-accent {
+  color: #c6f06e;
+}
+
+.landing-subtitle {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  opacity: 0.85;
+  margin: 16px 0 28px;
+}
+
+.landing-hero .search-panel {
+  margin-top: 0;
+}
+
+.landing-hero .input {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--text);
+  border: none;
+  font-size: 17px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.landing-hero .input::placeholder {
+  color: var(--muted);
+}
+
+.landing-hero .search-results {
+  background: white;
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  margin-top: 8px;
+}
+
+.landing-hero .search-result-item {
+  color: var(--text);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.landing-hero .search-result-item:hover {
+  background: var(--accent-light);
+}
+
+.landing-hero p {
+  color: white;
+}
+
+/* Features grid */
+.landing-features {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 56px 20px 40px;
+}
+
+.landing-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.feature-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.feature-icon {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.feature-card h3 {
+  font-size: 1rem;
+  margin: 0 0 6px;
+}
+
+.feature-card p {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* How it works */
+.landing-how {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+  text-align: center;
+}
+
+.landing-how h2 {
+  font-size: 1.4rem;
+  margin-bottom: 24px;
+}
+
+.how-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.how-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.how-step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.how-step p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.how-step-arrow {
+  color: var(--border);
+  font-size: 1.5rem;
+  margin-top: -20px;
+}
+
+/* Footer */
+.landing-footer {
+  text-align: center;
+  padding: 24px 20px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Shared */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -39,21 +217,22 @@ body {
   padding: 20px;
 }
 
-.hero-card {
-  max-width: 760px;
-  margin: 64px auto;
+.card h2 {
+  font-size: 1rem;
+  margin: 0 0 12px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.eyebrow {
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 12px;
-}
-
-.hero-text {
-  color: var(--muted);
-  line-height: 1.5;
+.card h2::before {
+  content: "";
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--accent);
+  display: inline-block;
 }
 
 .search-panel {
@@ -86,8 +265,79 @@ body {
   cursor: pointer;
 }
 
-.analysis-header {
-  margin-bottom: 20px;
+/* Analysis layout */
+.analysis-layout {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.analysis-topbar {
+  background: linear-gradient(135deg, #4a8c2a 0%, #78be20 100%);
+  padding: 12px 20px;
+}
+
+.analysis-topbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.analysis-back {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.analysis-back:hover {
+  opacity: 1;
+}
+
+.analysis-brand {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.analysis-hero-strip {
+  background: linear-gradient(135deg, #4a8c2a 0%, #78be20 100%);
+  padding: 24px 20px 28px;
+}
+
+.analysis-hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.analysis-hero-eyebrow {
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.analysis-hero-title {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.analysis-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.analysis-loading,
+.analysis-error {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--muted);
 }
 
 .analysis-grid {
@@ -106,18 +356,6 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-}
-
-.map-box {
-  margin-top: 12px;
-  min-height: 260px;
-  border-radius: 12px;
-  border: 1px dashed var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  background: #fafafa;
 }
 
 .layer-toggle-panel {
@@ -333,6 +571,37 @@ body {
 @media (max-width: 900px) {
   .analysis-grid,
   .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-title {
+    font-size: 1.8rem;
+  }
+
+  .landing-features-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .how-steps {
+    flex-direction: column;
+  }
+
+  .how-step-arrow {
+    transform: rotate(90deg);
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .landing-hero {
+    padding: 48px 16px 40px;
+  }
+
+  .landing-title {
+    font-size: 1.5rem;
+  }
+
+  .landing-features-grid {
     grid-template-columns: 1fr;
   }
 }

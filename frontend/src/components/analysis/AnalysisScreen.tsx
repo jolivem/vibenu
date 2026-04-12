@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
 import { Map } from "@/components/map/Map";
@@ -26,42 +27,54 @@ export function AnalysisScreen() {
   });
 
   return (
-    <main className="analysis-page">
-      <div className="analysis-header">
-        <p className="eyebrow">Analyse BienVu</p>
-        <h1>{label ?? "Adresse à analyser"}</h1>
+    <main className="analysis-layout">
+      <header className="analysis-topbar">
+        <div className="analysis-topbar-inner">
+          <Link href="/" className="analysis-back">
+            &larr; <span className="analysis-brand">BienVu</span>
+          </Link>
+        </div>
+      </header>
+
+      <div className="analysis-hero-strip">
+        <div className="analysis-hero-inner">
+          <p className="analysis-hero-eyebrow">Analyse</p>
+          <h1 className="analysis-hero-title">{label ?? "Adresse \u00e0 analyser"}</h1>
+        </div>
       </div>
 
-      {isLoading && <p>Analyse en cours...</p>}
-      {error && <p>{error}</p>}
+      <div className="analysis-page">
+        {isLoading && <p className="analysis-loading">Analyse en cours...</p>}
+        {error && <p className="analysis-error">{error}</p>}
 
-      {data && (
-        <div className="analysis-grid">
-          <div className="analysis-main">
-            <Map
-              lat={data.map.center.lat}
-              lon={data.map.center.lon}
-              label={data.address.label}
-              transports={data.mobility.nearestStops.map((stop) => ({
-                lat: data.map.center.lat,
-                lon: data.map.center.lon,
-                type: stop.mode,
-                name: stop.name,
-              }))}
-              cadastreParcel={data.cadastre?.parcel}
-              dvfTransactions={data.realEstate.transactionFeatures}
-            />
-            <SummaryCard summary={data.summary} />
+        {data && (
+          <div className="analysis-grid">
+            <div className="analysis-main">
+              <Map
+                lat={data.map.center.lat}
+                lon={data.map.center.lon}
+                label={data.address.label}
+                transports={data.mobility.nearestStops.map((stop) => ({
+                  lat: data.map.center.lat,
+                  lon: data.map.center.lon,
+                  type: stop.mode,
+                  name: stop.name,
+                }))}
+                cadastreParcel={data.cadastre?.parcel}
+                dvfTransactions={data.realEstate.transactionFeatures}
+              />
+              <SummaryCard summary={data.summary} />
+            </div>
+
+            <aside className="analysis-side">
+              <MobilityCard mobility={data.mobility} />
+              <RisksCard risks={data.risks} />
+              <RealEstateCard realEstate={data.realEstate} />
+              {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
+            </aside>
           </div>
-
-          <aside className="analysis-side">
-            <MobilityCard mobility={data.mobility} />
-            <RisksCard risks={data.risks} />
-            <RealEstateCard realEstate={data.realEstate} />
-            {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
-          </aside>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }
