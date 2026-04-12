@@ -83,12 +83,9 @@ export class TransportDataGouvProvider implements TransportProvider {
 
     const stops = Array.from(seen.values()).sort((a, b) => a.distanceMeters - b.distanceMeters);
 
-    const stations = stops.filter(
-      (s) => s.mode === "train" || s.mode === "rer" || s.mode === "metro",
-    );
-    const regularStops = stops.filter(
-      (s) => s.mode !== "train" && s.mode !== "rer" && s.mode !== "metro",
-    );
+    const stationModes = new Set(["train", "rer", "metro", "métro/RER"]);
+    const stations = stops.filter((s) => stationModes.has(s.mode));
+    const regularStops = stops.filter((s) => !stationModes.has(s.mode));
 
     return {
       nearestStops: regularStops.slice(0, 5),
@@ -99,19 +96,24 @@ export class TransportDataGouvProvider implements TransportProvider {
   private inferMode(feature: GtfsStopFeature): string {
     const title = feature.properties.dataset_title.toLowerCase();
     const name = feature.properties.stop_name.toLowerCase();
+    const isIdf =
+      title.includes("idfm") || title.includes("île-de-france") || title.includes("transilien");
 
     const isRailDataset =
       title.includes("sncf") || title.includes("transilien") || /\bter\b/.test(title);
 
     if (isRailDataset) {
-      // SNCF datasets include bus feeder stops and multimodal hubs.
-      // Real train stations have location_type=1 and simple names (no "/").
+      // SNCF Transilien includes all IDFM stations (metro, RER, train) without distinction.
+      // Only location_type=1 with simple names (no "/") are real stations.
       // Names with "/" like "République - La Poste / Ecole Militaire" are bus hubs.
-      if (feature.properties.location_type === 1 && !name.includes("/")) return "train";
+      if (feature.properties.location_type === 1 && !name.includes("/")) {
+        // In Île-de-France, we can't distinguish metro from RER from train
+        return isIdf ? "métro/RER" : "train";
+      }
       return "bus";
     }
 
-    if (title.includes("idfm") || title.includes("île-de-france")) {
+    if (isIdf) {
       if (name.includes("rer ") || name.match(/\brer\b/)) return "rer";
       if (name.includes("métro") || name.includes("metro")) return "metro";
       if (name.includes("tram")) return "tram";

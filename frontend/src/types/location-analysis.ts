@@ -27,6 +27,7 @@ export interface StationDto {
   id: string;
   name: string;
   distanceMeters: number;
+  mode: string;
 }
 
 export interface MobilityScoreBreakdownDto {

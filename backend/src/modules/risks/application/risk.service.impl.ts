@@ -9,11 +9,14 @@ export class RiskServiceImpl implements RiskService {
     const categories = await this.riskProvider.getLocationRisks(lat, lon);
 
     const severityWeights = {
-      absent: 0,
-      faible: 10,
-      modéré: 25,
       élevé: 45,
+      modéré: 25,
+      faible: 10,
+      absent: 0,
     } as const;
+
+    // Sort categories from highest to lowest risk
+    categories.sort((a, b) => severityWeights[b.level] - severityWeights[a.level]);
 
     const penalty = categories.reduce((sum, category) => sum + severityWeights[category.level], 0);
     const score = Math.max(20, 100 - penalty);

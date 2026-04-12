@@ -1,6 +1,16 @@
 import { env } from "@/lib/config/env";
 import type { MobilityAnalysisDto } from "@/types/location-analysis";
 
+function stationLabel(mode: string): string {
+  switch (mode) {
+    case "métro/RER": return "Métro / RER";
+    case "metro": return "Métro";
+    case "rer": return "RER";
+    case "train": return "Gare";
+    default: return "Station";
+  }
+}
+
 export function MobilityCard({ mobility }: { mobility: MobilityAnalysisDto }) {
   const bd = mobility.scoreBreakdown;
 
@@ -12,7 +22,7 @@ export function MobilityCard({ mobility }: { mobility: MobilityAnalysisDto }) {
 
       {mobility.nearestStation && (
         <>
-          <h3>Gare</h3>
+          <h3>{stationLabel(mobility.nearestStation.mode)}</h3>
           <ul>
             <li>
               {mobility.nearestStation.name} - {mobility.nearestStation.distanceMeters} m
