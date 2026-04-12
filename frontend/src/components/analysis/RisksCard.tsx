@@ -4,7 +4,6 @@ export function RisksCard({ risks }: { risks: RiskAnalysisDto }) {
   return (
     <section className="card">
       <h2>Risques</h2>
-      <p>Score : {risks.score}/100</p>
       <p>Niveau global : {risks.level}</p>
       <ul>
         {risks.categories.map((risk) => (

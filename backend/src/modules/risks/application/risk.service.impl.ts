@@ -18,12 +18,18 @@ export class RiskServiceImpl implements RiskService {
     // Sort categories from highest to lowest risk
     categories.sort((a, b) => severityWeights[b.level] - severityWeights[a.level]);
 
-    const penalty = categories.reduce((sum, category) => sum + severityWeights[category.level], 0);
+    const penalty = categories.reduce((sum, c) => sum + severityWeights[c.level], 0);
     const score = Math.max(20, 100 - penalty);
 
-    let level: RiskAnalysis["level"] = "faible";
-    if (score < 45) level = "élevé";
-    else if (score < 70) level = "modéré";
+    // Global level = highest individual category level
+    const highestLevel = categories[0]?.level ?? "absent";
+    const levelMap: Record<string, RiskAnalysis["level"]> = {
+      élevé: "élevé",
+      modéré: "modéré",
+      faible: "faible",
+      absent: "faible",
+    };
+    const level = levelMap[highestLevel];
 
     return {
       categories,
