@@ -61,12 +61,25 @@ export interface RiskAnalysisDto {
   score: number;
 }
 
+export interface DvfTransactionFeatureDto {
+  type: "Feature";
+  geometry: GeoJsonGeometryDto;
+  properties: {
+    pricePerSqm: number;
+    price: number;
+    surface: number;
+    date: string;
+    propertyType: string;
+  };
+}
+
 export interface RealEstateAnalysisDto {
   nearbyTransactionsCount?: number;
   priceLevel?: "faible" | "moyen" | "élevé";
   confidence?: "faible" | "moyenne" | "élevée";
   score: number;
   medianPricePerSquareMeter?: number;
+  transactionFeatures?: DvfTransactionFeatureDto[];
 }
 
 export interface ScoreBreakdownDto {

@@ -1,5 +1,5 @@
-import type { OmitNever } from "../../../shared/application/type-utils.js";
 import type { ConfidenceLevel, PriceLevel } from "../../../shared/domain/common.types.js";
+import type { DvfTransactionFeature } from "../domain/real-estate.types.js";
 
 export interface RealEstateProvider {
   getNearbyTransactions(
@@ -7,12 +7,11 @@ export interface RealEstateProvider {
     lon: number,
     radiusMeters: number,
     codeInsee?: string,
-  ): Promise<
-    OmitNever<{
-      nearbyTransactionsCount?: number;
-      priceLevel?: PriceLevel;
-      confidence?: ConfidenceLevel;
-      medianPricePerSquareMeter?: number;
-    }>
-  >;
+  ): Promise<{
+    nearbyTransactionsCount?: number;
+    priceLevel?: PriceLevel;
+    confidence?: ConfidenceLevel;
+    medianPricePerSquareMeter?: number;
+    transactionFeatures?: DvfTransactionFeature[];
+  }>;
 }

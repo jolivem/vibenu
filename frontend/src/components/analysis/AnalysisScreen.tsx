@@ -50,6 +50,7 @@ export function AnalysisScreen() {
                 name: stop.name,
               }))}
               cadastreParcel={data.cadastre?.parcel}
+              dvfTransactions={data.realEstate.transactionFeatures}
             />
             <SummaryCard summary={data.summary} />
           </div>

@@ -1,4 +1,10 @@
 import type { RealEstateProvider } from "./real-estate.provider.js";
+import type { DvfTransactionFeature } from "../domain/real-estate.types.js";
+
+interface DvfGeometry {
+  type: "Polygon" | "MultiPolygon";
+  coordinates: number[][][] | number[][][][];
+}
 
 interface DvfMutationProperties {
   idmutinvar: string;
@@ -16,7 +22,7 @@ interface DvfMutationProperties {
 interface DvfFeature {
   id: number;
   type: "Feature";
-  geometry: unknown;
+  geometry: DvfGeometry | null;
   properties: DvfMutationProperties;
 }
 
@@ -37,14 +43,15 @@ export class DvfRealEstateProvider implements RealEstateProvider {
 
   async getNearbyTransactions(lat: number, lon: number, _radiusMeters: number, codeInsee?: string) {
     try {
+      const threeYearsAgo = new Date().getFullYear() - 3;
       let url: string;
       if (codeInsee) {
-        // Query by INSEE code — most reliable
-        url = `${this.dvfApiUrl}/?code_insee=${codeInsee}&page_size=100`;
+        // Query by INSEE code with recent year filter
+        url = `${this.dvfApiUrl}/?code_insee=${codeInsee}&anneemut_min=${threeYearsAgo}&page_size=100`;
       } else {
         // Fallback: query by lat/lon bounding box
         const delta = 0.005; // ~500m
-        url = `${this.dvfApiUrl}/?in_bbox=${lon - delta},${lat - delta},${lon + delta},${lat + delta}&page_size=100`;
+        url = `${this.dvfApiUrl}/?in_bbox=${lon - delta},${lat - delta},${lon + delta},${lat + delta}&anneemut_min=${threeYearsAgo}&page_size=100`;
       }
 
       const response = await fetch(url, {
@@ -57,14 +64,14 @@ export class DvfRealEstateProvider implements RealEstateProvider {
       }
 
       const data = (await response.json()) as DvfResponse;
-      return this.analyzeTransactions(data.features);
+      return this.analyzeTransactions(data.features, lat, lon);
     } catch (error) {
       console.error("DVF provider error:", error);
       return this.getFallbackData();
     }
   }
 
-  private analyzeTransactions(features: DvfFeature[]) {
+  private analyzeTransactions(features: DvfFeature[], centerLat: number, centerLon: number) {
     if (features.length === 0) {
       return this.getFallbackData();
     }
@@ -115,12 +122,71 @@ export class DvfRealEstateProvider implements RealEstateProvider {
     if (pool.length >= 10) confidence = "moyenne";
     if (pool.length >= 50) confidence = "élevée";
 
+    // Build map features: filter to valid geometry + price, sort by distance, take 50
+    const transactionFeatures = this.buildTransactionFeatures(pool, centerLat, centerLon);
+
     return {
       nearbyTransactionsCount: pool.length,
       priceLevel,
       confidence,
       medianPricePerSquareMeter: Math.round(median),
+      transactionFeatures,
     };
+  }
+
+  private buildTransactionFeatures(
+    pool: DvfFeature[],
+    centerLat: number,
+    centerLon: number,
+  ): DvfTransactionFeature[] {
+    const features: Array<DvfTransactionFeature & { _distance: number }> = [];
+
+    for (const f of pool) {
+      if (!f.geometry) continue;
+
+      const price = parseFloat(f.properties.valeurfonc);
+      const surface = parseFloat(f.properties.sbati);
+      if (!price || !surface || surface <= 0) continue;
+
+      const pricePerSqm = price / surface;
+      if (pricePerSqm <= 0 || pricePerSqm >= 50_000) continue;
+
+      const centroid = this.computeCentroid(f.geometry);
+      const distance = Math.hypot(centroid[0] - centerLon, centroid[1] - centerLat);
+
+      features.push({
+        type: "Feature",
+        geometry: f.geometry,
+        properties: {
+          pricePerSqm: Math.round(pricePerSqm),
+          price: Math.round(price),
+          surface: Math.round(surface),
+          date: f.properties.datemut,
+          propertyType: f.properties.libtypbien,
+        },
+        _distance: distance,
+      });
+    }
+
+    features.sort((a, b) => a._distance - b._distance);
+
+    return features.slice(0, 50).map(({ _distance, ...feature }) => feature);
+  }
+
+  private computeCentroid(geometry: DvfGeometry): [number, number] {
+    // Get the first ring of the first polygon
+    const coords =
+      geometry.type === "MultiPolygon"
+        ? (geometry.coordinates as number[][][][])[0][0]
+        : (geometry.coordinates as number[][][])[0];
+
+    let sumLon = 0;
+    let sumLat = 0;
+    for (const [lon, lat] of coords) {
+      sumLon += lon;
+      sumLat += lat;
+    }
+    return [sumLon / coords.length, sumLat / coords.length];
   }
 
   private getFallbackData() {
@@ -129,6 +195,7 @@ export class DvfRealEstateProvider implements RealEstateProvider {
       priceLevel: "moyen" as const,
       confidence: "faible" as const,
       medianPricePerSquareMeter: 0,
+      transactionFeatures: [],
     };
   }
 }

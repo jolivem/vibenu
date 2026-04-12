@@ -1,11 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import maplibregl, { Map as MapLibreMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { RISK_LAYERS, buildWmsTileUrl } from "./riskLayers";
 import { RiskLayerToggle } from "./RiskLayerToggle";
-import type { CadastreParcelDto } from "@/types/location-analysis";
+import type { OverlayLayerConfig } from "./RiskLayerToggle";
+import type { CadastreParcelDto, DvfTransactionFeatureDto } from "@/types/location-analysis";
+
+const DVF_LAYER_ID = "dvf-transactions";
 
 interface MapProps {
   lat: number;
@@ -13,9 +16,10 @@ interface MapProps {
   label: string;
   transports?: Array<{ lat: number; lon: number; type: string; name: string }>;
   cadastreParcel?: CadastreParcelDto | null;
+  dvfTransactions?: DvfTransactionFeatureDto[];
 }
 
-export function Map({ lat, lon, label, transports = [], cadastreParcel }: MapProps) {
+export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<Set<string>>(new Set());
@@ -31,6 +35,11 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel }: MapPro
       return next;
     });
   }, []);
+
+  const overlayLayers = useMemo<OverlayLayerConfig[]>(() => {
+    if (!dvfTransactions?.length) return [];
+    return [{ id: DVF_LAYER_ID, label: "Prix immobiliers (DVF)", color: "#eab308" }];
+  }, [dvfTransactions]);
 
   // Initialize map
   useEffect(() => {
@@ -53,6 +62,49 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel }: MapPro
         paint: { "raster-opacity": 0.5 },
         layout: { visibility: "none" },
       });
+    }
+
+    // Build DVF transaction sources and layers
+    const dvfSources: Record<string, maplibregl.SourceSpecification> = {};
+    const dvfLayers: maplibregl.LayerSpecification[] = [];
+
+    if (dvfTransactions?.length) {
+      dvfSources[DVF_LAYER_ID] = {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: dvfTransactions as unknown as GeoJSON.Feature[],
+        },
+      };
+      dvfLayers.push(
+        {
+          id: `${DVF_LAYER_ID}-fill`,
+          type: "fill",
+          source: DVF_LAYER_ID,
+          paint: {
+            "fill-color": [
+              "interpolate",
+              ["linear"],
+              ["get", "pricePerSqm"],
+              2000, "#22c55e",
+              5000, "#eab308",
+              10000, "#ef4444",
+            ],
+            "fill-opacity": 0.5,
+          },
+          layout: { visibility: "none" },
+        },
+        {
+          id: `${DVF_LAYER_ID}-outline`,
+          type: "line",
+          source: DVF_LAYER_ID,
+          paint: {
+            "line-color": "#374151",
+            "line-width": 1,
+          },
+          layout: { visibility: "none" },
+        },
+      );
     }
 
     // Build cadastre source if available
@@ -106,12 +158,14 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel }: MapPro
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           },
           ...wmsSources,
+          ...dvfSources,
           ...cadastreSources,
         },
         layers: [
           { id: "osm", type: "raster", source: "osm" },
           ...wmsLayers,
-          ...cadastreLayers,
+          ...dvfLayers,
+          ...cadastreLayers, // cadastre on top of DVF
         ],
       },
       center: [lon, lat],
@@ -136,12 +190,38 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel }: MapPro
       marker.addTo(map.current!);
     });
 
+    // DVF popup on click
+    if (dvfTransactions?.length) {
+      const m = map.current;
+      m.on("click", `${DVF_LAYER_ID}-fill`, (e) => {
+        if (!e.features?.length) return;
+        const props = e.features[0].properties;
+        const html = `
+          <strong>${Number(props.pricePerSqm).toLocaleString("fr-FR")} €/m²</strong><br/>
+          Prix : ${Number(props.price).toLocaleString("fr-FR")} €<br/>
+          Surface : ${props.surface} m²<br/>
+          Date : ${props.date}<br/>
+          ${props.propertyType}
+        `;
+        new maplibregl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(html)
+          .addTo(m);
+      });
+      m.on("mouseenter", `${DVF_LAYER_ID}-fill`, () => {
+        m.getCanvas().style.cursor = "pointer";
+      });
+      m.on("mouseleave", `${DVF_LAYER_ID}-fill`, () => {
+        m.getCanvas().style.cursor = "";
+      });
+    }
+
     return () => {
       if (map.current) {
         map.current.remove();
       }
     };
-  }, [lat, lon, label, transports, cadastreParcel]);
+  }, [lat, lon, label, transports, cadastreParcel, dvfTransactions]);
 
   // Sync layer visibility
   useEffect(() => {
@@ -152,6 +232,12 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel }: MapPro
       for (const layer of RISK_LAYERS) {
         const visibility = visibleLayers.has(layer.id) ? "visible" : "none";
         m.setLayoutProperty(layer.id, "visibility", visibility);
+      }
+      // DVF layers
+      if (m.getLayer(`${DVF_LAYER_ID}-fill`)) {
+        const dvfVisibility = visibleLayers.has(DVF_LAYER_ID) ? "visible" : "none";
+        m.setLayoutProperty(`${DVF_LAYER_ID}-fill`, "visibility", dvfVisibility);
+        m.setLayoutProperty(`${DVF_LAYER_ID}-outline`, "visibility", dvfVisibility);
       }
     };
 
@@ -179,6 +265,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel }: MapPro
       >
         <RiskLayerToggle
           layers={RISK_LAYERS}
+          overlayLayers={overlayLayers}
           visibleLayers={visibleLayers}
           onToggle={handleToggle}
         />
