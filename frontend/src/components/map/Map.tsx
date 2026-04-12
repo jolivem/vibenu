@@ -5,15 +5,17 @@ import maplibregl, { Map as MapLibreMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { RISK_LAYERS, buildWmsTileUrl } from "./riskLayers";
 import { RiskLayerToggle } from "./RiskLayerToggle";
+import type { CadastreParcelDto } from "@/types/location-analysis";
 
 interface MapProps {
   lat: number;
   lon: number;
   label: string;
   transports?: Array<{ lat: number; lon: number; type: string; name: string }>;
+  cadastreParcel?: CadastreParcelDto | null;
 }
 
-export function Map({ lat, lon, label, transports = [] }: MapProps) {
+export function Map({ lat, lon, label, transports = [], cadastreParcel }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<Set<string>>(new Set());
@@ -53,6 +55,45 @@ export function Map({ lat, lon, label, transports = [] }: MapProps) {
       });
     }
 
+    // Build cadastre source if available
+    const cadastreSources: Record<string, maplibregl.SourceSpecification> = {};
+    const cadastreLayers: maplibregl.LayerSpecification[] = [];
+
+    if (cadastreParcel?.geometry) {
+      cadastreSources["cadastre-parcel"] = {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: cadastreParcel.geometry as GeoJSON.Geometry,
+          properties: {
+            section: cadastreParcel.section,
+            numero: cadastreParcel.numero,
+            contenance: cadastreParcel.contenance,
+          },
+        },
+      };
+      cadastreLayers.push(
+        {
+          id: "cadastre-parcel-fill",
+          type: "fill",
+          source: "cadastre-parcel",
+          paint: {
+            "fill-color": "#0066cc",
+            "fill-opacity": 0.12,
+          },
+        },
+        {
+          id: "cadastre-parcel-outline",
+          type: "line",
+          source: "cadastre-parcel",
+          paint: {
+            "line-color": "#0066cc",
+            "line-width": 2.5,
+          },
+        },
+      );
+    }
+
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: {
@@ -65,10 +106,12 @@ export function Map({ lat, lon, label, transports = [] }: MapProps) {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           },
           ...wmsSources,
+          ...cadastreSources,
         },
         layers: [
           { id: "osm", type: "raster", source: "osm" },
           ...wmsLayers,
+          ...cadastreLayers,
         ],
       },
       center: [lon, lat],
@@ -98,7 +141,7 @@ export function Map({ lat, lon, label, transports = [] }: MapProps) {
         map.current.remove();
       }
     };
-  }, [lat, lon, label, transports]);
+  }, [lat, lon, label, transports, cadastreParcel]);
 
   // Sync layer visibility
   useEffect(() => {

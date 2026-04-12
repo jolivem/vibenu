@@ -13,6 +13,8 @@ import { AtmoAirQualityProvider } from "../../modules/air-quality/infrastructure
 import { AirQualityServiceImpl } from "../../modules/air-quality/application/air-quality.service.js";
 import { OverpassNeighborhoodProvider } from "../../modules/neighborhood/infrastructure/overpass-neighborhood.provider.js";
 import { NeighborhoodServiceImpl } from "../../modules/neighborhood/application/neighborhood.service.impl.js";
+import { ApiCartoCadastreProvider } from "../../modules/cadastre/infrastructure/apicarto-cadastre.provider.js";
+import { CadastreServiceImpl } from "../../modules/cadastre/application/cadastre.service.impl.js";
 
 export const makeLocationAnalysisController = () => {
   const mobilityService = new MobilityServiceImpl(new TransportDataGouvProvider());
@@ -23,6 +25,7 @@ export const makeLocationAnalysisController = () => {
   const scoreService = new ScoreCalculatorService();
   const summaryService = new SummaryBuilderService();
   const addressProvider = new GeoApiAddressProvider();
+  const cadastreService = new CadastreServiceImpl(new ApiCartoCadastreProvider());
 
   const useCase = new LocationAnalysisUseCase({
     addressProvider,
@@ -33,6 +36,7 @@ export const makeLocationAnalysisController = () => {
     neighborhoodService,
     scoreService,
     summaryService,
+    cadastreService,
   });
 
   return {

@@ -8,6 +8,7 @@ import { SummaryCard } from "@/components/analysis/SummaryCard";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
 import { RisksCard } from "@/components/analysis/RisksCard";
 import { RealEstateCard } from "@/components/analysis/RealEstateCard";
+import { CadastreCard } from "@/components/analysis/CadastreCard";
 
 export function AnalysisScreen() {
   const searchParams = useSearchParams();
@@ -48,6 +49,7 @@ export function AnalysisScreen() {
                 type: stop.mode,
                 name: stop.name,
               }))}
+              cadastreParcel={data.cadastre?.parcel}
             />
             <SummaryCard summary={data.summary} />
           </div>
@@ -57,6 +59,7 @@ export function AnalysisScreen() {
             <MobilityCard mobility={data.mobility} />
             <RisksCard risks={data.risks} />
             <RealEstateCard realEstate={data.realEstate} />
+            {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
           </aside>
         </div>
       )}

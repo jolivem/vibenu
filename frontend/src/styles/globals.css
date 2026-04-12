@@ -158,6 +158,104 @@ body {
   display: inline-block;
 }
 
+/* Cadastre card */
+.cadastre-section {
+  margin-top: 12px;
+}
+
+.cadastre-section h3 {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 6px;
+}
+
+.cadastre-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.cadastre-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.cadastre-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.cadastre-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.cadastre-zone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cadastre-zone-code {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.cadastre-zone-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.zone-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  line-height: 1.4;
+  background: #f3f4f6;
+  color: var(--muted);
+}
+
+.zone-badge--u {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.zone-badge--au {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.zone-badge--a {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.zone-badge--n {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.cadastre-prescriptions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.cadastre-prescriptions li {
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border-left: 3px solid var(--border);
+}
+
 /* Risk badges */
 .risk-badge {
   display: inline-block;

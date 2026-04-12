@@ -103,6 +103,36 @@ export interface SummaryDto {
   shortText: string;
 }
 
+export interface GeoJsonGeometryDto {
+  type: "Polygon" | "MultiPolygon";
+  coordinates: number[][][] | number[][][][];
+}
+
+export interface CadastreParcelDto {
+  section: string;
+  numero: string;
+  contenance: number;
+  commune: string;
+  geometry: GeoJsonGeometryDto;
+}
+
+export interface UrbanZoneDto {
+  code: string;
+  label: string;
+  type: string;
+}
+
+export interface UrbanPrescriptionDto {
+  label: string;
+  type: string;
+}
+
+export interface CadastreAnalysisDto {
+  parcel: CadastreParcelDto | null;
+  urbanZone: UrbanZoneDto | null;
+  prescriptions: UrbanPrescriptionDto[];
+}
+
 export interface MapContextDto {
   center: {
     lat: number;
@@ -120,5 +150,6 @@ export interface LocationAnalysisDto {
   realEstate: RealEstateAnalysisDto;
   airQuality: AirQualityAnalysisDto;
   neighborhood: NeighborhoodAnalysisDto;
+  cadastre: CadastreAnalysisDto;
   summary: SummaryDto;
 }

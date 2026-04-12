@@ -6,6 +6,7 @@ import type { AirQualityService } from "../../air-quality/application/air-qualit
 import type { NeighborhoodService } from "../../neighborhood/application/neighborhood.service.js";
 import type { ScoreService } from "../../score/application/score.service.js";
 import type { SummaryService } from "../../summary/application/summary.service.js";
+import type { CadastreService } from "../../cadastre/application/cadastre.service.js";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service.js";
 import type { LocationAnalysisDto } from "../../../shared/types/location-analysis.dto.js";
 
@@ -18,6 +19,7 @@ interface Dependencies {
   neighborhoodService: NeighborhoodService;
   scoreService: ScoreService;
   summaryService: SummaryService;
+  cadastreService: CadastreService;
 }
 
 export class LocationAnalysisUseCase implements LocationAnalysisService {
@@ -32,12 +34,13 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
     const addressDetails = await this.dependencies.addressProvider.reverseGeocode(input.lat, input.lon);
     const codeInsee = addressDetails?.citycode;
 
-    const [mobility, risks, realEstate, airQuality, neighborhood] = await Promise.all([
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre] = await Promise.all([
       this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
       this.dependencies.riskService.getRiskData(input.lat, input.lon),
       this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee),
       this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon, codeInsee),
       this.dependencies.neighborhoodService.getNeighborhoodData(input.lat, input.lon),
+      this.dependencies.cadastreService.getCadastreData(input.lat, input.lon),
     ]);
 
     const address = {
@@ -75,6 +78,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       realEstate,
       airQuality,
       neighborhood,
+      cadastre,
       summary,
     };
   }
