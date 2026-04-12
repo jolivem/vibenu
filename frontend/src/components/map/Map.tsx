@@ -1,25 +1,58 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MapLibreMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { RISK_LAYERS, buildWmsTileUrl } from "./riskLayers";
+import { RiskLayerToggle } from "./RiskLayerToggle";
 
 interface MapProps {
   lat: number;
   lon: number;
   label: string;
   transports?: Array<{ lat: number; lon: number; type: string; name: string }>;
-  risks?: Array<{ lat: number; lon: number; type: string }>;
 }
 
-export function Map({ lat, lon, label, transports = [], risks = [] }: MapProps) {
+export function Map({ lat, lon, label, transports = [] }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
+  const [visibleLayers, setVisibleLayers] = useState<Set<string>>(new Set());
 
+  const handleToggle = useCallback((layerId: string) => {
+    setVisibleLayers((prev) => {
+      const next = new Set(prev);
+      if (next.has(layerId)) {
+        next.delete(layerId);
+      } else {
+        next.add(layerId);
+      }
+      return next;
+    });
+  }, []);
+
+  // Initialize map
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // Initialize map
+    // Build WMS sources and layers
+    const wmsSources: Record<string, maplibregl.SourceSpecification> = {};
+    const wmsLayers: maplibregl.LayerSpecification[] = [];
+
+    for (const layer of RISK_LAYERS) {
+      wmsSources[layer.id] = {
+        type: "raster",
+        tiles: [buildWmsTileUrl(layer)],
+        tileSize: 256,
+      };
+      wmsLayers.push({
+        id: layer.id,
+        type: "raster",
+        source: layer.id,
+        paint: { "raster-opacity": 0.5 },
+        layout: { visibility: "none" },
+      });
+    }
+
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: {
@@ -31,8 +64,12 @@ export function Map({ lat, lon, label, transports = [], risks = [] }: MapProps) 
             tileSize: 256,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           },
+          ...wmsSources,
         },
-        layers: [{ id: "osm", type: "raster", source: "osm" }],
+        layers: [
+          { id: "osm", type: "raster", source: "osm" },
+          ...wmsLayers,
+        ],
       },
       center: [lon, lat],
       zoom: 14,
@@ -56,21 +93,31 @@ export function Map({ lat, lon, label, transports = [], risks = [] }: MapProps) 
       marker.addTo(map.current!);
     });
 
-    // Add risk markers
-    risks.forEach((risk) => {
-      const marker = new maplibregl.Marker({ color: "#e74c3c" });
-      marker.setLngLat([risk.lon, risk.lat]);
-      marker.setPopup(new maplibregl.Popup().setText(`Risque: ${risk.type}`));
-      marker.addTo(map.current!);
-    });
-
     return () => {
-      // Cleanup
       if (map.current) {
         map.current.remove();
       }
     };
-  }, [lat, lon, label, transports, risks]);
+  }, [lat, lon, label, transports]);
+
+  // Sync layer visibility
+  useEffect(() => {
+    if (!map.current) return;
+
+    const m = map.current;
+    const applyVisibility = () => {
+      for (const layer of RISK_LAYERS) {
+        const visibility = visibleLayers.has(layer.id) ? "visible" : "none";
+        m.setLayoutProperty(layer.id, "visibility", visibility);
+      }
+    };
+
+    if (m.isStyleLoaded()) {
+      applyVisibility();
+    } else {
+      m.once("style.load", applyVisibility);
+    }
+  }, [visibleLayers]);
 
   return (
     <section className="map-section card">
@@ -84,8 +131,15 @@ export function Map({ lat, lon, label, transports = [], risks = [] }: MapProps) 
           height: "400px",
           borderRadius: "8px",
           overflow: "hidden",
+          position: "relative",
         }}
-      />
+      >
+        <RiskLayerToggle
+          layers={RISK_LAYERS}
+          visibleLayers={visibleLayers}
+          onToggle={handleToggle}
+        />
+      </div>
     </section>
   );
 }

@@ -48,11 +48,6 @@ export function AnalysisScreen() {
                 type: stop.mode,
                 name: stop.name,
               }))}
-              risks={data.risks.categories.map((risk) => ({
-                lat: data.map.center.lat + Math.random() * 0.01,
-                lon: data.map.center.lon + Math.random() * 0.01,
-                type: risk.name,
-              }))}
             />
             <SummaryCard summary={data.summary} />
           </div>
