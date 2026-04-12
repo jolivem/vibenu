@@ -3,7 +3,6 @@
 import { useSearchParams } from "next/navigation";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
 import { Map } from "@/components/map/Map";
-import { ScoreCard } from "@/components/score/ScoreCard";
 import { SummaryCard } from "@/components/analysis/SummaryCard";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
 import { RisksCard } from "@/components/analysis/RisksCard";
@@ -56,7 +55,6 @@ export function AnalysisScreen() {
           </div>
 
           <aside className="analysis-side">
-            <ScoreCard scores={data.scores} />
             <MobilityCard mobility={data.mobility} />
             <RisksCard risks={data.risks} />
             <RealEstateCard realEstate={data.realEstate} />

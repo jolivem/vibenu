@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import maplibregl, { Map as MapLibreMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { RISK_LAYERS, buildWmsTileUrl } from "./riskLayers";
-import { RiskLayerToggle } from "./RiskLayerToggle";
+import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
 import type { CadastreParcelDto, DvfTransactionFeatureDto } from "@/types/location-analysis";
 
@@ -169,7 +169,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         ],
       },
       center: [lon, lat],
-      zoom: 14,
+      zoom: cadastreParcel ? 17 : 14,
     });
 
     // Add navigation controls
@@ -263,9 +263,9 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           position: "relative",
         }}
       >
-        <RiskLayerToggle
-          layers={RISK_LAYERS}
-          overlayLayers={overlayLayers}
+        <LayerTogglePanel
+          riskLayers={RISK_LAYERS}
+          priceLayers={overlayLayers}
           visibleLayers={visibleLayers}
           onToggle={handleToggle}
         />

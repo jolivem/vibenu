@@ -4,7 +4,6 @@ import { GeoApiAddressProvider } from "../../modules/address/infrastructure/geo-
 import { TransportDataGouvProvider } from "../../modules/mobility/infrastructure/transport-data-gouv.provider.js";
 import { GeorisquesRiskProvider } from "../../modules/risks/infrastructure/brgm-risk.provider.js";
 import { DvfRealEstateProvider } from "../../modules/real-estate/infrastructure/dvf-real-estate.provider.js";
-import { ScoreCalculatorService } from "../../modules/score/application/score-calculator.service.js";
 import { SummaryBuilderService } from "../../modules/summary/application/summary-builder.service.js";
 import { MobilityServiceImpl } from "../../modules/mobility/application/mobility.service.impl.js";
 import { RiskServiceImpl } from "../../modules/risks/application/risk.service.impl.js";
@@ -22,7 +21,6 @@ export const makeLocationAnalysisController = () => {
   const realEstateService = new RealEstateServiceImpl(new DvfRealEstateProvider());
   const airQualityService = new AirQualityServiceImpl(new AtmoAirQualityProvider());
   const neighborhoodService = new NeighborhoodServiceImpl(new OverpassNeighborhoodProvider());
-  const scoreService = new ScoreCalculatorService();
   const summaryService = new SummaryBuilderService();
   const addressProvider = new GeoApiAddressProvider();
   const cadastreService = new CadastreServiceImpl(new ApiCartoCadastreProvider());
@@ -34,7 +32,6 @@ export const makeLocationAnalysisController = () => {
     realEstateService,
     airQualityService,
     neighborhoodService,
-    scoreService,
     summaryService,
     cadastreService,
   });

@@ -82,14 +82,6 @@ export interface RealEstateAnalysisDto {
   transactionFeatures?: DvfTransactionFeatureDto[];
 }
 
-export interface ScoreBreakdownDto {
-  globalScore: number;
-  mobilityScore: number;
-  riskScore: number;
-  realEstateScore: number;
-  environmentScore: number;
-}
-
 export interface SummaryDto {
   strengths: string[];
   warnings: string[];
@@ -135,7 +127,6 @@ export interface LocationAnalysisDto {
     };
     zoom: number;
   };
-  scores: ScoreBreakdownDto;
   mobility: MobilityAnalysisDto;
   risks: RiskAnalysisDto;
   realEstate: RealEstateAnalysisDto;

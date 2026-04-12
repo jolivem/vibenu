@@ -4,7 +4,6 @@ import type { RiskService } from "../../risks/application/risk.service.js";
 import type { RealEstateService } from "../../real-estate/application/real-estate.service.js";
 import type { AirQualityService } from "../../air-quality/application/air-quality.service.js";
 import type { NeighborhoodService } from "../../neighborhood/application/neighborhood.service.js";
-import type { ScoreService } from "../../score/application/score.service.js";
 import type { SummaryService } from "../../summary/application/summary.service.js";
 import type { CadastreService } from "../../cadastre/application/cadastre.service.js";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service.js";
@@ -17,7 +16,6 @@ interface Dependencies {
   realEstateService: RealEstateService;
   airQualityService: AirQualityService;
   neighborhoodService: NeighborhoodService;
-  scoreService: ScoreService;
   summaryService: SummaryService;
   cadastreService: CadastreService;
 }
@@ -51,18 +49,10 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       longitude: input.lon,
     };
 
-    const scores = this.dependencies.scoreService.compute({
-      mobilityScore: mobility.score,
-      riskScore: risks.score,
-      realEstateScore: realEstate.score,
-      environmentScore: airQuality.score,
-      neighborhoodScore: neighborhood.score,
-    });
-
     const summary = this.dependencies.summaryService.build({
-      mobilityScore: mobility.score,
-      riskScore: risks.score,
-      realEstateScore: realEstate.score,
+      mobilityLabel: mobility.label,
+      riskLevel: risks.level,
+      realEstateConfidence: realEstate.confidence,
       addressLabel: address.label,
     });
 
@@ -72,7 +62,6 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         center: { lat: input.lat, lon: input.lon },
         zoom: 14,
       },
-      scores,
       mobility,
       risks,
       realEstate,

@@ -7,17 +7,32 @@ export class SummaryBuilderService implements SummaryService {
     const strengths: string[] = [];
     const warnings: string[] = [];
 
-    if (input.mobilityScore >= 70) strengths.push("Bonne desserte en transports");
-    else if (input.mobilityScore >= 45) strengths.push("Accès correct aux transports du quotidien");
-    else warnings.push("Desserte en transports limitée");
+    // Mobilité
+    if (input.mobilityLabel === "très bon" || input.mobilityLabel === "bon") {
+      strengths.push("Bonne desserte en transports");
+    } else if (input.mobilityLabel === "correct") {
+      strengths.push("Accès correct aux transports du quotidien");
+    } else {
+      warnings.push("Desserte en transports limitée");
+    }
 
-    if (input.riskScore >= 70) strengths.push("Profil de risque plutôt favorable");
-    else warnings.push("Quelques vérifications de risque sont recommandées avant engagement");
+    // Risques
+    if (input.riskLevel === "faible") {
+      strengths.push("Profil de risque plutôt favorable");
+    } else if (input.riskLevel === "modéré") {
+      warnings.push("Quelques risques modérés à vérifier avant engagement");
+    } else {
+      warnings.push("Risques élevés identifiés — étude spécialisée recommandée");
+    }
 
-    if (input.realEstateScore >= 65) strengths.push("Contexte immobilier local relativement lisible");
-    else warnings.push("Peu de repères immobiliers exploitables dans la zone proche");
+    // Immobilier
+    if (input.realEstateConfidence === "élevée" || input.realEstateConfidence === "moyenne") {
+      strengths.push("Contexte immobilier local relativement lisible");
+    } else {
+      warnings.push("Peu de repères immobiliers exploitables dans la zone proche");
+    }
 
-    const shortText = `${input.addressLabel} présente un niveau d'intérêt global utile pour une première analyse. Les indicateurs doivent être confirmés avant signature.`;
+    const shortText = `${input.addressLabel} présente un profil utile pour une première analyse. Les indicateurs doivent être confirmés avant signature.`;
 
     return {
       strengths,

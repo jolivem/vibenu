@@ -101,15 +101,6 @@ export interface NeighborhoodAnalysisDto {
   label: string;
 }
 
-export interface ScoreBreakdownDto {
-  globalScore: number;
-  mobilityScore: number;
-  riskScore: number;
-  realEstateScore: number;
-  environmentScore: number;
-  neighborhoodScore: number;
-}
-
 export interface SummaryDto {
   strengths: string[];
   warnings: string[];
@@ -157,7 +148,6 @@ export interface MapContextDto {
 export interface LocationAnalysisDto {
   address: SelectedAddressDto;
   map: MapContextDto;
-  scores: ScoreBreakdownDto;
   mobility: MobilityAnalysisDto;
   risks: RiskAnalysisDto;
   realEstate: RealEstateAnalysisDto;
