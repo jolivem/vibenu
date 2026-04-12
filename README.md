@@ -1,220 +1,146 @@
 # BienVu
 
-Monorepo de démarrage pour **BienVu**, une application web permettant à un citoyen de saisir une adresse en France et d'obtenir une lecture simple, cartographique et compréhensible de son environnement avant de louer ou acheter un bien.
+Monorepo pour **BienVu**, une application web permettant à un citoyen de saisir une adresse en France et d'obtenir une lecture simple, cartographique et compréhensible de son environnement avant de louer ou acheter un bien.
 
 ## Vision produit
 
 BienVu n'est pas un portail immobilier complet. Le produit est pensé comme un **assistant de décision avant location/achat**.
 
 L'utilisateur saisit une adresse en France et obtient :
-- la localisation sur une carte ;
-- les transports proches ;
-- les risques principaux ;
-- quelques données de contexte immobilier local ;
+- la localisation sur une carte interactive ;
+- les transports proches (bus, métro/RER, gare) ;
+- les risques naturels et technologiques ;
+- le cadastre et les règles d'urbanisme (zone PLU, prescriptions) ;
+- les prix immobiliers du secteur avec visualisation cartographique ;
+- la qualité de l'air ;
+- les commerces et services de proximité ;
 - un score synthétique ;
 - un résumé en langage simple.
 
-## Cible
-
-- particuliers qui veulent louer un logement ;
-- particuliers qui veulent acheter un logement ;
-- parents qui aident un enfant à se loger ;
-- personnes qui déménagent ;
-- à terme : chasseurs immobiliers, courtiers, investisseurs.
-
-## Problème utilisateur
-
-Aujourd'hui, pour analyser une adresse, il faut consulter plusieurs sites et savoir interpréter des données dispersées : annonces, risques, transports, marché immobilier, qualité de l'air, etc.
-
-## Proposition de valeur
-
-BienVu centralise plusieurs sources d'information autour d'une adresse et les transforme en :
-- carte lisible ;
-- indicateurs simples ;
-- score global ;
-- résumé compréhensible ;
-- points de vigilance.
-
-## Périmètre MVP
-
-### Fonction principale
-L'utilisateur saisit une adresse en France et obtient une analyse cartographique et synthétique de l'environnement du bien.
-
-### Fonctionnalités MVP obligatoires
-
-#### 1. Recherche d'adresse
-- champ de recherche d'adresse ;
-- autocomplétion ;
-- sélection d'une adresse ;
-- centrage automatique de la carte.
-
-#### 2. Carte interactive
-- affichage de l'adresse choisie ;
-- affichage des points d'intérêt liés aux transports ;
-- affichage éventuel de couches ou badges de risque ;
-- zoom / dézoom.
-
-#### 3. Bloc Transports
-- arrêts de transport proches ;
-- distance estimée ;
-- type d'arrêt si la donnée existe ;
-- score mobilité simple.
-
-#### 4. Bloc Risques
-- présence ou absence de certains risques majeurs ;
-- niveau simple : faible / modéré / élevé ;
-- détail minimal par catégorie.
-
-#### 5. Bloc Contexte immobilier
-- informations simples du secteur ;
-- prix ou ventes observées à proximité si disponible ;
-- comparaison basique : cohérent / à creuser.
-
-#### 6. Bloc Résumé
-Une synthèse textuelle courte avec :
-- points positifs ;
-- points d'attention.
-
-#### 7. Score global
-Score de 0 à 100 calculé à partir de plusieurs sous-scores :
-- mobilité ;
-- risques ;
-- contexte immobilier ;
-- environnement.
-
-## Hors périmètre MVP
-
-- création de compte obligatoire ;
-- système d'annonces immobilières ;
-- estimation détaillée de bien ;
-- comparateur de crédit ;
-- génération PDF complexe ;
-- simulation fiscale ;
-- assistant conversationnel complet.
-
-## Parcours utilisateur
-
-1. L'utilisateur arrive sur la page d'accueil.
-2. Il saisit une adresse.
-3. Il choisit une suggestion.
-4. La carte se centre sur cette adresse.
-5. L'application charge les données associées.
-6. L'utilisateur voit la carte, les indicateurs, le score et le résumé.
-7. Il peut explorer les détails de chaque bloc.
-
-## Règles métier
-
-### Score global
-Exemple de pondération MVP :
-- mobilité : 30 %
-- risques : 35 %
-- contexte immobilier : 25 %
-- environnement : 10 %
-
-### Niveau de risque
-Chaque catégorie de risque doit être transformée en une échelle simple :
-- 0 = absent / faible ;
-- 1 = modéré ;
-- 2 = significatif ;
-- 3 = élevé.
-
-### Résumé généré
-Le résumé doit être informatif, neutre et lisible pour un non-expert.
-
-### Gestion des données incomplètes
-Si une source ne répond pas, l'application ne doit pas échouer entièrement. Le bloc concerné affiche un état indisponible.
-
-## Exigences non fonctionnelles
-
-- affichage initial rapide ;
-- résultats principaux en quelques secondes ;
-- tolérance aux erreurs des API externes ;
-- interface simple pour non-experts ;
-- responsive ;
-- validation des entrées ;
-- rate limiting côté backend.
-
-## Architecture choisie
-
-Le projet démarre directement avec une **architecture frontend / backend séparés**.
+## Architecture
 
 ### Frontend
-Responsabilités :
-- recherche d'adresse ;
-- affichage de la carte ;
-- affichage des résultats ;
-- orchestration UI ;
-- appels au backend.
-
-Technos conseillées :
-- Next.js ;
-- TypeScript ;
-- React ;
-- Tailwind CSS ;
-- MapLibre ou Leaflet.
+- **Next.js** / React / TypeScript
+- **MapLibre GL** pour la carte interactive
+- Couches cartographiques WMS (risques) et GeoJSON (cadastre, prix DVF)
 
 ### Backend
-Responsabilités :
-- orchestration des cas d'usage ;
-- intégration avec les fournisseurs de données externes ;
-- agrégation des données ;
-- calcul des scores ;
-- génération des résumés ;
-- cache, logs, résilience.
-
-Technos conseillées :
-- Node.js ;
-- TypeScript ;
-- Fastify ;
-- PostgreSQL ;
-- Redis facultatif.
+- **Node.js** / TypeScript / **Fastify**
+- Architecture modulaire (DDD)
+- Cache en mémoire avec TTL par source de données
 
 ## Modules backend
 
-- `address` : recherche et normalisation d'adresse ;
-- `analysis` : orchestration de l'analyse complète ;
-- `mobility` : transports et mobilité ;
-- `risks` : risques naturels/technologiques ;
-- `real-estate` : contexte immobilier ;
-- `score` : calcul des sous-scores et du score global ;
-- `summary` : construction du résumé textuel.
+| Module | Description | Source de données |
+|--------|-------------|-------------------|
+| `address` | Recherche et géocodage inverse | Géoplateforme IGN (data.geopf.fr) |
+| `analysis` | Orchestration de l'analyse complète | - |
+| `mobility` | Transports et mobilité | transport.data.gouv.fr (GTFS) |
+| `risks` | Risques naturels/technologiques | Géorisques (georisques.gouv.fr) |
+| `real-estate` | Contexte immobilier et prix | DVF Cerema (apidf-preprod.cerema.fr) |
+| `cadastre` | Parcelle, zone PLU, prescriptions | API Carto IGN (apicarto.ign.fr) |
+| `air-quality` | Qualité de l'air | Atmo France (api.atmo-france.org) |
+| `neighborhood` | Commerces et services proches | Overpass / OpenStreetMap |
+| `score` | Calcul des sous-scores et du score global | - |
+| `summary` | Construction du résumé textuel | - |
 
-## Endpoints backend cibles
+## Carte interactive
+
+### Couches cartographiques
+
+| Couche | Type | Source | Toggle |
+|--------|------|--------|--------|
+| Parcelle cadastrale | GeoJSON (polygone) | API Carto IGN | toujours visible |
+| Prix immobiliers (DVF) | GeoJSON (polygones colorés par prix/m²) | DVF Cerema | oui |
+| Retrait-gonflement argiles | WMS raster | BRGM (geoservices.brgm.fr) | oui |
+| Zones inondables (PPR) | WMS raster | Géorisques (mapsref.brgm.fr) | oui |
+| Zonage sismique | WMS raster | BRGM | oui |
+| Potentiel radon | WMS raster | Géorisques | oui |
+
+## Cache
+
+Le backend utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés à la fréquence de mise à jour de chaque source :
+
+| Source | TTL cache | Fréquence de mise à jour |
+|--------|-----------|--------------------------|
+| Adresse (BAN) | 7 jours | quasi-statique |
+| DVF (prix immobiliers) | 7 jours | semestriel |
+| Cadastre / PLU | 7 jours | trimestriel |
+| Géorisques (risques) | 24 heures | mensuel à trimestriel |
+| Transport (GTFS) | 24 heures | hebdomadaire à mensuel |
+| Voisinage (Overpass) | 24 heures | hebdomadaire à mensuel |
+| Qualité de l'air (Atmo) | 6 heures | quotidien |
+
+La clé de cache est basée sur les coordonnées arrondies (~10m de précision). Le cache est limité à 500 entrées par source.
+
+## Score global
+
+Pondération des sous-scores :
+- mobilité : 25 %
+- risques : 25 %
+- contexte immobilier : 20 %
+- environnement : 10 %
+- voisinage : 20 %
+
+## Endpoints backend
 
 ### Recherche d'adresse
 `GET /api/address/search?q=...`
 
 ### Analyse d'adresse
-`GET /api/location/analyze?lat=...&lon=...&label=...`
+`GET /api/location/analyze?lat=...&lon=...&label=...&city=...&postcode=...`
+
+## Démarrage
+
+```bash
+# Installation
+pnpm install
+
+# Backend (port 4000)
+cd backend
+cp .env.example .env
+pnpm dev
+
+# Frontend (port 3000)
+cd frontend
+pnpm dev
+```
+
+## Variables d'environnement
+
+| Variable | Description | Défaut |
+|----------|-------------|--------|
+| `PORT` | Port du backend | `4000` |
+| `HOST` | Hôte du backend | `0.0.0.0` |
+| `FRONTEND_ORIGIN` | URL du frontend (CORS) | `http://localhost:3000` |
+| `ATMO_API_TOKEN` | Token API Atmo France (optionnel) | - |
 
 ## Structure du repository
 
 ```text
-bienvu/
+vibenu/
 ├── README.md
-├── frontend/
-└── backend/
+├── frontend/          # Next.js / React / MapLibre
+│   └── src/
+│       ├── components/
+│       │   ├── map/           # Carte, couches WMS, toggles
+│       │   ├── analysis/      # Cartes d'analyse (Mobilité, Risques, Cadastre, etc.)
+│       │   └── score/         # Score global
+│       ├── features/          # Hooks (useLocationAnalysis)
+│       └── types/             # DTOs frontend
+└── backend/           # Fastify / Node.js
+    └── src/
+        ├── app/               # Serveur, routes, controllers
+        ├── modules/           # Modules métier (DDD)
+        │   ├── address/
+        │   ├── analysis/
+        │   ├── mobility/
+        │   ├── risks/
+        │   ├── real-estate/
+        │   ├── cadastre/
+        │   ├── air-quality/
+        │   ├── neighborhood/
+        │   ├── score/
+        │   └── summary/
+        └── shared/            # Types, config, cache, utilitaires
 ```
-
-## Démarrage recommandé
-
-1. Implémenter le backend `address` et `analysis`.
-2. Exposer les premiers endpoints.
-3. Construire le frontend avec recherche d'adresse.
-4. Brancher l'écran d'analyse.
-5. Ajouter progressivement mobilité, risques, immobilier, score, résumé.
-
-## Priorités de développement
-
-### Sprint 1
-- recherche d'adresse ;
-- carte ;
-- affichage d'un résultat simple.
-
-### Sprint 2
-- module mobilité ;
-- module risques.
-
-### Sprint 3
-- score global ;
-- résumé textuel.

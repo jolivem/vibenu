@@ -1,5 +1,8 @@
 import type { RealEstateProvider } from "./real-estate.provider.js";
 import type { DvfTransactionFeature } from "../domain/real-estate.types.js";
+import { InMemoryCache, buildGeoKey } from "../../../shared/infrastructure/cache/in-memory-cache.js";
+
+const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
 interface DvfGeometry {
   type: "Polygon" | "MultiPolygon";
@@ -39,20 +42,25 @@ interface DvfResponse {
  * API: https://apidf-preprod.cerema.fr/dvf_opendata/geomutations/
  */
 export class DvfRealEstateProvider implements RealEstateProvider {
+  private static cache = new InMemoryCache<{
+    nearbyTransactionsCount: number;
+    priceLevel: "faible" | "moyen" | "élevé";
+    confidence: "faible" | "moyenne" | "élevée";
+    medianPricePerSquareMeter: number;
+    transactionFeatures: DvfTransactionFeature[];
+  }>(SEVEN_DAYS);
   private readonly dvfApiUrl = "https://apidf-preprod.cerema.fr/dvf_opendata/geomutations";
 
   async getNearbyTransactions(lat: number, lon: number, _radiusMeters: number, codeInsee?: string) {
+    const cacheKey = buildGeoKey(lat, lon);
+    const cached = DvfRealEstateProvider.cache.get(cacheKey);
+    if (cached) return cached;
+
     try {
+      // Always use bbox for geographic proximity — INSEE code returns random order across the whole commune
       const threeYearsAgo = new Date().getFullYear() - 3;
-      let url: string;
-      if (codeInsee) {
-        // Query by INSEE code with recent year filter
-        url = `${this.dvfApiUrl}/?code_insee=${codeInsee}&anneemut_min=${threeYearsAgo}&page_size=100`;
-      } else {
-        // Fallback: query by lat/lon bounding box
-        const delta = 0.005; // ~500m
-        url = `${this.dvfApiUrl}/?in_bbox=${lon - delta},${lat - delta},${lon + delta},${lat + delta}&anneemut_min=${threeYearsAgo}&page_size=100`;
-      }
+      const delta = 0.005; // ~500m
+      const url = `${this.dvfApiUrl}/?in_bbox=${lon - delta},${lat - delta},${lon + delta},${lat + delta}&anneemut_min=${threeYearsAgo}&page_size=100`;
 
       const response = await fetch(url, {
         headers: { Accept: "application/json" },
@@ -64,7 +72,9 @@ export class DvfRealEstateProvider implements RealEstateProvider {
       }
 
       const data = (await response.json()) as DvfResponse;
-      return this.analyzeTransactions(data.features, lat, lon);
+      const result = this.analyzeTransactions(data.features, lat, lon);
+      DvfRealEstateProvider.cache.set(cacheKey, result);
+      return result;
     } catch (error) {
       console.error("DVF provider error:", error);
       return this.getFallbackData();

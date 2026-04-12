@@ -1,5 +1,8 @@
 import type { AirQualityData } from "../domain/air-quality.types.js";
 import type { AirQualityProvider } from "../application/air-quality.service.js";
+import { InMemoryCache, buildGeoKey } from "../../../shared/infrastructure/cache/in-memory-cache.js";
+
+const SIX_HOURS = 6 * 60 * 60 * 1000;
 
 interface AtmoIndice {
   date: string;
@@ -27,10 +30,14 @@ interface AtmoResponse {
  * API endpoint pattern: /api/v1/communes/{code_insee}/indices/atmo
  */
 export class AtmoAirQualityProvider implements AirQualityProvider {
+  private static cache = new InMemoryCache<AirQualityData>(SIX_HOURS);
   private readonly apiToken = process.env.ATMO_API_TOKEN ?? "";
   private readonly baseUrl = "https://api.atmo-france.org/api/v1";
 
   async getAirQuality(lat: number, lon: number, codeInsee?: string): Promise<AirQualityData> {
+    const cacheKey = buildGeoKey(lat, lon);
+    const cached = AtmoAirQualityProvider.cache.get(cacheKey);
+    if (cached) return cached;
     // Without API token or code_insee, return neutral fallback
     if (!this.apiToken || !codeInsee) {
       return this.getFallbackData(
@@ -58,7 +65,9 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
         return this.getFallbackData("Aucun indice disponible");
       }
 
-      return this.mapAtmoData(data.data[0]);
+      const result = this.mapAtmoData(data.data[0]);
+      AtmoAirQualityProvider.cache.set(cacheKey, result);
+      return result;
     } catch (error) {
       console.warn("Atmo provider error:", error);
       return this.getFallbackData("Erreur API Atmo");

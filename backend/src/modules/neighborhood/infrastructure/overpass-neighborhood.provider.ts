@@ -1,5 +1,8 @@
 import type { NeighborhoodPoi, PoiCategory } from "../domain/neighborhood.types.js";
 import type { NeighborhoodProvider } from "./neighborhood.provider.js";
+import { InMemoryCache, buildGeoKey } from "../../../shared/infrastructure/cache/in-memory-cache.js";
+
+const ONE_DAY = 24 * 60 * 60 * 1000;
 
 interface OverpassElement {
   type: string;
@@ -19,9 +22,14 @@ interface OverpassResponse {
  * Fetches schools, shops, parks, pharmacies, etc. around a location
  */
 export class OverpassNeighborhoodProvider implements NeighborhoodProvider {
+  private static cache = new InMemoryCache<NeighborhoodPoi[]>(ONE_DAY);
   private readonly overpassUrl = "https://overpass-api.de/api/interpreter";
 
   async findNearbyPois(lat: number, lon: number, radiusMeters: number): Promise<NeighborhoodPoi[]> {
+    const cacheKey = `${buildGeoKey(lat, lon)}:${radiusMeters}`;
+    const cached = OverpassNeighborhoodProvider.cache.get(cacheKey);
+    if (cached) return cached;
+
     try {
       const query = this.buildQuery(lat, lon, radiusMeters);
 
@@ -37,7 +45,9 @@ export class OverpassNeighborhoodProvider implements NeighborhoodProvider {
       }
 
       const data = (await response.json()) as OverpassResponse;
-      return this.parseElements(data.elements, lat, lon);
+      const result = this.parseElements(data.elements, lat, lon);
+      OverpassNeighborhoodProvider.cache.set(cacheKey, result);
+      return result;
     } catch (error) {
       console.warn("Overpass neighborhood provider error:", error);
       return [];

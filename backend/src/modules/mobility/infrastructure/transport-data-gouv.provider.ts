@@ -1,4 +1,7 @@
 import type { TransportProvider } from "./transport.provider.js";
+import { InMemoryCache, buildGeoKey } from "../../../shared/infrastructure/cache/in-memory-cache.js";
+
+const ONE_DAY = 24 * 60 * 60 * 1000;
 
 interface GtfsStopFeature {
   type: "Feature";
@@ -29,9 +32,14 @@ interface GtfsStopsResponse {
  * https://transport.data.gouv.fr
  */
 export class TransportDataGouvProvider implements TransportProvider {
+  private static cache = new InMemoryCache<{ nearestStops: { id: string; name: string; distanceMeters: number; mode: string }[]; nearestStation?: { id: string; name: string; distanceMeters: number; mode: string } }>(ONE_DAY);
   private readonly apiUrl = "https://transport.data.gouv.fr/api";
 
   async findNearbyStops(lat: number, lon: number, radiusMeters: number) {
+    const cacheKey = `${buildGeoKey(lat, lon)}:${radiusMeters}`;
+    const cached = TransportDataGouvProvider.cache.get(cacheKey);
+    if (cached) return cached;
+
     try {
       // Convert radius to bounding box
       const bbox = this.radiusToBbox(lat, lon, radiusMeters);
@@ -47,7 +55,9 @@ export class TransportDataGouvProvider implements TransportProvider {
       }
 
       const data = (await response.json()) as GtfsStopsResponse;
-      return this.parseStops(data.features, lat, lon);
+      const result = this.parseStops(data.features, lat, lon);
+      TransportDataGouvProvider.cache.set(cacheKey, result);
+      return result;
     } catch (error) {
       console.error("transport.data.gouv.fr provider error:", error);
       return { nearestStops: [], nearestStation: undefined };

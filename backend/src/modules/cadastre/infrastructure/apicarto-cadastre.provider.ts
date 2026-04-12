@@ -1,3 +1,4 @@
+import { InMemoryCache, buildGeoKey } from "../../../shared/infrastructure/cache/in-memory-cache.js";
 import type {
   CadastreAnalysis,
   CadastreParcel,
@@ -26,17 +27,25 @@ interface ApiCartoResponse {
  * https://apicarto.ign.fr/api/doc/cadastre
  * https://apicarto.ign.fr/api/doc/gpu
  */
+const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+
 export class ApiCartoCadastreProvider implements CadastreProvider {
+  private static cache = new InMemoryCache<CadastreAnalysis>(SEVEN_DAYS);
   private readonly baseUrl = "https://apicarto.ign.fr/api";
 
   async getCadastreData(lat: number, lon: number): Promise<CadastreAnalysis> {
+    const cacheKey = buildGeoKey(lat, lon);
+    const cached = ApiCartoCadastreProvider.cache.get(cacheKey);
+    if (cached) return cached;
     const [parcel, urbanZone, prescriptions] = await Promise.all([
       this.fetchParcel(lat, lon),
       this.fetchUrbanZone(lat, lon),
       this.fetchPrescriptions(lat, lon),
     ]);
 
-    return { parcel, urbanZone, prescriptions };
+    const result = { parcel, urbanZone, prescriptions };
+    ApiCartoCadastreProvider.cache.set(cacheKey, result);
+    return result;
   }
 
   private async fetchParcel(lat: number, lon: number): Promise<CadastreParcel | null> {

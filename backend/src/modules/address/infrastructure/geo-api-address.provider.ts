@@ -1,6 +1,9 @@
 import type { AddressProvider } from "./address.provider.js";
 import type { AddressDetails, AddressSuggestion } from "../domain/address.types.js";
 import { HttpClient } from "../../../shared/infrastructure/http/http-client.js";
+import { InMemoryCache, buildGeoKey } from "../../../shared/infrastructure/cache/in-memory-cache.js";
+
+const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
 interface GeoPlateformeFeature {
   properties: {
@@ -32,6 +35,7 @@ interface GeoPlateformeResponse {
  * Replaces the old api-adresse.data.gouv.fr endpoint
  */
 export class GeoApiAddressProvider implements AddressProvider {
+  private static reverseCache = new InMemoryCache<AddressDetails | null>(SEVEN_DAYS);
   private readonly httpClient = new HttpClient();
   private readonly baseUrl = "https://data.geopf.fr/geocodage";
 
@@ -58,6 +62,10 @@ export class GeoApiAddressProvider implements AddressProvider {
   }
 
   async reverseGeocode(lat: number, lon: number): Promise<AddressDetails | null> {
+    const cacheKey = buildGeoKey(lat, lon);
+    const cached = GeoApiAddressProvider.reverseCache.get(cacheKey);
+    if (cached !== undefined) return cached;
+
     try {
       const response = await this.httpClient.getJson<GeoPlateformeResponse>(
         `${this.baseUrl}/reverse?lon=${lon}&lat=${lat}`,
@@ -66,7 +74,7 @@ export class GeoApiAddressProvider implements AddressProvider {
 
       if (!feature) return null;
 
-      return {
+      const result: AddressDetails = {
         label: feature.properties.label,
         city: feature.properties.city,
         postcode: feature.properties.postcode,
@@ -76,6 +84,8 @@ export class GeoApiAddressProvider implements AddressProvider {
           longitude: feature.geometry.coordinates[0],
         },
       };
+      GeoApiAddressProvider.reverseCache.set(cacheKey, result);
+      return result;
     } catch {
       return null;
     }

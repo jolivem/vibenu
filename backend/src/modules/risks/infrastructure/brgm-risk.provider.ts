@@ -1,5 +1,8 @@
 import type { RiskCategory } from "../domain/risk.types.js";
 import type { RiskProvider } from "./risk.provider.js";
+import { InMemoryCache, buildGeoKey } from "../../../shared/infrastructure/cache/in-memory-cache.js";
+
+const ONE_DAY = 24 * 60 * 60 * 1000;
 
 interface RisqueDto {
   present: boolean;
@@ -51,6 +54,7 @@ interface GeorisquesRapportResponse {
  * Rate limit: 1 call/s on resultats_rapport_risque
  */
 export class GeorisquesRiskProvider implements RiskProvider {
+  private static cache = new InMemoryCache<RiskCategory[]>(ONE_DAY);
   private readonly baseUrl = "https://www.georisques.gouv.fr/api/v1";
 
   private readonly riskLabels: Record<string, string> = {
@@ -75,6 +79,10 @@ export class GeorisquesRiskProvider implements RiskProvider {
   };
 
   async getLocationRisks(lat: number, lon: number): Promise<RiskCategory[]> {
+    const cacheKey = buildGeoKey(lat, lon);
+    const cached = GeorisquesRiskProvider.cache.get(cacheKey);
+    if (cached) return cached;
+
     try {
       const response = await fetch(
         `${this.baseUrl}/resultats_rapport_risque?latlon=${lon},${lat}`,
@@ -87,7 +95,9 @@ export class GeorisquesRiskProvider implements RiskProvider {
       }
 
       const data = (await response.json()) as GeorisquesRapportResponse;
-      return this.parseRapport(data);
+      const result = this.parseRapport(data);
+      GeorisquesRiskProvider.cache.set(cacheKey, result);
+      return result;
     } catch (error) {
       console.warn("Géorisques API error, using fallback:", error);
       return this.getDefaultRisks();
