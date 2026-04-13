@@ -92,6 +92,10 @@ body {
   padding: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   margin-top: 8px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
 
 .landing-hero .search-result-item {
@@ -237,6 +241,7 @@ body {
 
 .search-panel {
   margin-top: 20px;
+  position: relative;
 }
 
 .input {
@@ -331,6 +336,67 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 20px 40px;
+}
+
+.analysis-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 28px;
+}
+
+.analysis-loader h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.loader-items {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 260px;
+}
+
+.loader-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 16px;
+  color: var(--muted);
+  transition: color 0.3s;
+}
+
+.loader-item-done {
+  color: var(--text);
+}
+
+.loader-check {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.spinner-sm {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .analysis-loading,
