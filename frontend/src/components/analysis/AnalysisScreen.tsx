@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
+import { useDvfRealEstate } from "@/features/location-analysis/useDvfRealEstate";
 import { Map } from "@/components/map/Map";
 import { SummaryCard } from "@/components/analysis/SummaryCard";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
@@ -18,13 +19,20 @@ export function AnalysisScreen() {
   const city = searchParams.get("city") ?? undefined;
   const postcode = searchParams.get("postcode") ?? undefined;
 
+  const parsedLat = lat ? Number(lat) : undefined;
+  const parsedLon = lon ? Number(lon) : undefined;
+
   const { data, isLoading, error } = useLocationAnalysis({
-    lat: lat ? Number(lat) : undefined,
-    lon: lon ? Number(lon) : undefined,
+    lat: parsedLat,
+    lon: parsedLon,
     label,
     city,
     postcode,
   });
+
+  const { dvfData, dvfLoading } = useDvfRealEstate(parsedLat, parsedLon);
+
+  const realEstate = dvfData ?? data?.realEstate;
 
   return (
     <main className="analysis-layout">
@@ -61,7 +69,7 @@ export function AnalysisScreen() {
                   name: stop.name,
                 }))}
                 cadastreParcel={data.cadastre?.parcel}
-                dvfTransactions={data.realEstate.transactionFeatures}
+                dvfTransactions={realEstate?.transactionFeatures}
               />
               <SummaryCard summary={data.summary} />
             </div>
@@ -69,7 +77,10 @@ export function AnalysisScreen() {
             <aside className="analysis-side">
               <MobilityCard mobility={data.mobility} />
               <RisksCard risks={data.risks} />
-              <RealEstateCard realEstate={data.realEstate} />
+              {realEstate && !dvfLoading && (
+                <RealEstateCard realEstate={realEstate} />
+              )}
+              {dvfLoading && <p className="analysis-loading">Chargement des prix...</p>}
               {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
             </aside>
           </div>

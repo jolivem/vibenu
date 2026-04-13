@@ -4,7 +4,7 @@ import { LocationAnalysisUseCase } from "@/server-modules/analysis/application/l
 import { GeoApiAddressProvider } from "@/server-modules/address/infrastructure/geo-api-address.provider";
 import { TransportDataGouvProvider } from "@/server-modules/mobility/infrastructure/transport-data-gouv.provider";
 import { GeorisquesRiskProvider } from "@/server-modules/risks/infrastructure/brgm-risk.provider";
-import { DvfRealEstateProvider } from "@/server-modules/real-estate/infrastructure/dvf-real-estate.provider";
+import { NoOpRealEstateProvider } from "@/server-modules/real-estate/infrastructure/noop-real-estate.provider";
 import { SummaryBuilderService } from "@/server-modules/summary/application/summary-builder.service";
 import { MobilityServiceImpl } from "@/server-modules/mobility/application/mobility.service.impl";
 import { RiskServiceImpl } from "@/server-modules/risks/application/risk.service.impl";
@@ -28,7 +28,7 @@ const useCase = new LocationAnalysisUseCase({
   addressProvider: new GeoApiAddressProvider(),
   mobilityService: new MobilityServiceImpl(new TransportDataGouvProvider()),
   riskService: new RiskServiceImpl(new GeorisquesRiskProvider()),
-  realEstateService: new RealEstateServiceImpl(new DvfRealEstateProvider()),
+  realEstateService: new RealEstateServiceImpl(new NoOpRealEstateProvider()),
   airQualityService: new AirQualityServiceImpl(new AtmoAirQualityProvider()),
   neighborhoodService: new NeighborhoodServiceImpl(new OverpassNeighborhoodProvider()),
   summaryService: new SummaryBuilderService(),
