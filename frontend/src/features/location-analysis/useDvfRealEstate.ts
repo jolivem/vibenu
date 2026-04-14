@@ -182,6 +182,7 @@ function buildTransactionFeatures(
 export function useDvfRealEstate(lat?: number, lon?: number) {
   const [data, setData] = useState<RealEstateAnalysisDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (typeof lat !== "number" || typeof lon !== "number") return;
@@ -190,6 +191,7 @@ export function useDvfRealEstate(lat?: number, lon?: number) {
 
     const load = async () => {
       setIsLoading(true);
+      setError(false);
       try {
         const threeYearsAgo = new Date().getFullYear() - 3;
         const delta = 0.005;
@@ -202,14 +204,16 @@ export function useDvfRealEstate(lat?: number, lon?: number) {
 
         if (!response.ok) {
           console.warn(`DVF API error: ${response.status} ${response.statusText}`);
+          setError(true);
           return;
         }
 
         const json = (await response.json()) as DvfResponse;
         setData(analyzeTransactions(json.features, lat, lon));
-      } catch (error) {
-        if ((error as Error).name !== "AbortError") {
-          console.error("DVF client-side error:", error);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          console.error("DVF client-side error:", err);
+          setError(true);
         }
       } finally {
         setIsLoading(false);
@@ -221,5 +225,5 @@ export function useDvfRealEstate(lat?: number, lon?: number) {
     return () => controller.abort();
   }, [lat, lon]);
 
-  return { dvfData: data, dvfLoading: isLoading };
+  return { dvfData: data, dvfLoading: isLoading, dvfError: error };
 }

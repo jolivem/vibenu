@@ -56,7 +56,7 @@ export class OverpassNeighborhoodProvider implements NeighborhoodProvider {
 
   private buildQuery(lat: number, lon: number, radius: number): string {
     return `
-[out:json][timeout:10];
+[out:json][timeout:25];
 (
   node["amenity"~"school|pharmacy|doctors|bank|post_office|library|restaurant"](around:${radius},${lat},${lon});
   node["shop"~"supermarket|bakery"](around:${radius},${lat},${lon});

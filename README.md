@@ -115,6 +115,28 @@ pnpm dev
 | `FRONTEND_ORIGIN` | URL du frontend (CORS) | `http://localhost:3000` |
 | `ATMO_API_TOKEN` | Token API Atmo France (optionnel) | - |
 
+## Sources de données — notes et accès
+
+### DVF (prix immobiliers)
+- **API utilisée** : Cerema DVF+ open-data (`apidf-preprod.cerema.fr`)
+- C'est la seule instance disponible (pas de version "production" malgré le nom "preprod")
+- L'API peut être instable (503) depuis des IPs cloud (Vercel/AWS) — l'appel est donc fait **côté client** (navigateur)
+- **Données alternatives** : les fichiers DVF+ (GeoPackage, CSV) sont téléchargeables par département sur [Box Cerema](https://cerema.app.box.com/v/dvfplus-opendata). Ils sont déjà nettoyés, dédupliqués et géolocalisés (contrairement aux fichiers DVF bruts de la DGFiP qui nécessitent un retraitement important)
+- Licence : Licence Ouverte Etalab 2.0
+- Mise à jour : semestrielle (avril et octobre)
+
+### Atmo France (qualité de l'air)
+- **Inscription** : [admindata.atmo-france.org/inscription-api](https://admindata.atmo-france.org/inscription-api)
+- Remplir le formulaire → validation par un administrateur → email avec lien d'activation
+- **Authentification** : appeler `POST /api/login` avec email/mot de passe → token JWT valide 24h
+- **API v2** (actuelle) : authentification par Bearer token. Le code utilise encore l'API v1 avec `api_token` en query parameter — une migration pourra être nécessaire
+- Gratuit, licence ODbL (attribution obligatoire : "Source : Atmo France / AASQA")
+
+### Overpass / OpenStreetMap (voisinage, transports)
+- Serveur public `overpass-api.de` — peut être lent ou saturé (504)
+- Pas d'authentification requise
+- Timeout configuré à 25s pour laisser le temps au serveur de répondre
+
 ## Structure du repository
 
 ```text

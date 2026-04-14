@@ -46,7 +46,7 @@ export class OverpassTransportProvider implements TransportProvider {
   private buildQuery(lat: number, lon: number, radiusMeters: number): string {
     const radiusDegrees = radiusMeters / 111000; // Rough conversion
     const query = `
-      [bbox:${lat - radiusDegrees},${lon - radiusDegrees},${lat + radiusDegrees},${lon + radiusDegrees}];
+      [out:json][timeout:25][bbox:${lat - radiusDegrees},${lon - radiusDegrees},${lat + radiusDegrees},${lon + radiusDegrees}];
       (
         node["public_transport"="stop_position"]["bus"~"yes|true"];
         node["public_transport"="stop_position"]["tram"~"yes|true"];
@@ -67,8 +67,8 @@ export class OverpassTransportProvider implements TransportProvider {
 
       const response = await fetch(this.overpassUrl, {
         method: "POST",
-        body: query,
-        headers: { "Content-Type": "application/osm3s" },
+        body: `data=${encodeURIComponent(query)}`,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
 
       if (!response.ok) {

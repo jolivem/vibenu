@@ -30,7 +30,7 @@ export function AnalysisScreen() {
     postcode,
   });
 
-  const { dvfData, dvfLoading } = useDvfRealEstate(parsedLat, parsedLon);
+  const { dvfData, dvfLoading, dvfError } = useDvfRealEstate(parsedLat, parsedLon);
 
   const realEstate = dvfData ?? data?.realEstate;
 
@@ -52,10 +52,21 @@ export function AnalysisScreen() {
       </div>
 
       <div className="analysis-page">
-        {isLoading && <p className="analysis-loading">Analyse en cours...</p>}
+        {(isLoading || dvfLoading) && !data && (
+          <div className="analysis-loader">
+            <div className="spinner" />
+            <p>Analyse en cours...</p>
+          </div>
+        )}
+        {(isLoading || dvfLoading) && data && (
+          <div className="analysis-loader">
+            <div className="spinner" />
+            <p>Chargement des prix...</p>
+          </div>
+        )}
         {error && <p className="analysis-error">{error}</p>}
 
-        {data && (
+        {data && !dvfLoading && (
           <div className="analysis-grid">
             <div className="analysis-main">
               <Map
@@ -81,6 +92,12 @@ export function AnalysisScreen() {
                 <RealEstateCard realEstate={realEstate} />
               )}
               {dvfLoading && <p className="analysis-loading">Chargement des prix...</p>}
+              {dvfError && !dvfData && (
+                <section className="card">
+                  <h2>Immobilier</h2>
+                  <p className="analysis-error">Données de prix temporairement indisponibles.</p>
+                </section>
+              )}
               {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
             </aside>
           </div>
