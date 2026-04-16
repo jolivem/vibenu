@@ -416,6 +416,7 @@ body {
 .analysis-side {
   display: grid;
   gap: 20px;
+  align-content: start;
 }
 
 .summary-grid {
@@ -424,24 +425,27 @@ body {
   gap: 20px;
 }
 
+.map-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 16px;
+  padding-bottom: 0;
+}
+
 .layer-toggle-panel {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 0.8rem;
-  z-index: 1;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  padding: 10px 16px;
+  font-size: 0.85rem;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .layer-toggle-group + .layer-toggle-group {
-  border-top: 1px solid var(--border);
-  padding-top: 6px;
+  border-left: 1px solid var(--border);
+  padding-left: 12px;
 }
 
 .layer-toggle-title {
@@ -467,6 +471,61 @@ body {
   height: 12px;
   border-radius: 2px;
   display: inline-block;
+}
+
+/* Demographics card */
+.demographics-iris {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.demographics-age h3 {
+  font-size: 0.85rem;
+  margin: 12px 0 6px;
+  color: var(--muted);
+}
+
+.age-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.age-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.age-bar-label {
+  width: 36px;
+  text-align: right;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.age-bar-track {
+  flex: 1;
+  height: 10px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.age-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 5px;
+}
+
+.age-bar-value {
+  width: 30px;
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--muted);
+  flex-shrink: 0;
 }
 
 /* Cadastre card */

@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
-import { useDvfRealEstate } from "@/features/location-analysis/useDvfRealEstate";
 import { Map } from "@/components/map/Map";
 import { SummaryCard } from "@/components/analysis/SummaryCard";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
 import { RisksCard } from "@/components/analysis/RisksCard";
 import { RealEstateCard } from "@/components/analysis/RealEstateCard";
 import { CadastreCard } from "@/components/analysis/CadastreCard";
+import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
+import { DemographicsCard } from "@/components/analysis/DemographicsCard";
 
 export function AnalysisScreen() {
   const searchParams = useSearchParams();
@@ -19,20 +20,13 @@ export function AnalysisScreen() {
   const city = searchParams.get("city") ?? undefined;
   const postcode = searchParams.get("postcode") ?? undefined;
 
-  const parsedLat = lat ? Number(lat) : undefined;
-  const parsedLon = lon ? Number(lon) : undefined;
-
   const { data, isLoading, error } = useLocationAnalysis({
-    lat: parsedLat,
-    lon: parsedLon,
+    lat: lat ? Number(lat) : undefined,
+    lon: lon ? Number(lon) : undefined,
     label,
     city,
     postcode,
   });
-
-  const { dvfData, dvfLoading, dvfError } = useDvfRealEstate(parsedLat, parsedLon);
-
-  const realEstate = dvfData ?? data?.realEstate;
 
   return (
     <main className="analysis-layout">
@@ -47,26 +41,20 @@ export function AnalysisScreen() {
       <div className="analysis-hero-strip">
         <div className="analysis-hero-inner">
           <p className="analysis-hero-eyebrow">Analyse</p>
-          <h1 className="analysis-hero-title">{label ?? "Adresse \u00e0 analyser"}</h1>
+          <h1 className="analysis-hero-title">{label ?? "Adresse à analyser"}</h1>
         </div>
       </div>
 
       <div className="analysis-page">
-        {(isLoading || dvfLoading) && !data && (
+        {isLoading && (
           <div className="analysis-loader">
             <div className="spinner" />
             <p>Analyse en cours...</p>
           </div>
         )}
-        {(isLoading || dvfLoading) && data && (
-          <div className="analysis-loader">
-            <div className="spinner" />
-            <p>Chargement des prix...</p>
-          </div>
-        )}
         {error && <p className="analysis-error">{error}</p>}
 
-        {data && !dvfLoading && (
+        {data && (
           <div className="analysis-grid">
             <div className="analysis-main">
               <Map
@@ -80,7 +68,8 @@ export function AnalysisScreen() {
                   name: stop.name,
                 }))}
                 cadastreParcel={data.cadastre?.parcel}
-                dvfTransactions={realEstate?.transactionFeatures}
+                dvfTransactions={data.realEstate.transactionFeatures}
+                irisGeojson={data.demographics?.irisGeojson}
               />
               <SummaryCard summary={data.summary} />
             </div>
@@ -88,16 +77,9 @@ export function AnalysisScreen() {
             <aside className="analysis-side">
               <MobilityCard mobility={data.mobility} />
               <RisksCard risks={data.risks} />
-              {realEstate && !dvfLoading && (
-                <RealEstateCard realEstate={realEstate} />
-              )}
-              {dvfLoading && <p className="analysis-loading">Chargement des prix...</p>}
-              {dvfError && !dvfData && (
-                <section className="card">
-                  <h2>Immobilier</h2>
-                  <p className="analysis-error">Données de prix temporairement indisponibles.</p>
-                </section>
-              )}
+              <RealEstateCard realEstate={data.realEstate} />
+              <NeighborhoodCard neighborhood={data.neighborhood} />
+              {data.demographics && <DemographicsCard demographics={data.demographics} />}
               {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
             </aside>
           </div>

@@ -9,6 +9,7 @@ import type { OverlayLayerConfig } from "./RiskLayerToggle";
 import type { CadastreParcelDto, DvfTransactionFeatureDto } from "@/types/location-analysis";
 
 const DVF_LAYER_ID = "dvf-transactions";
+const IRIS_LAYER_ID = "iris-boundary";
 
 interface MapProps {
   lat: number;
@@ -17,9 +18,10 @@ interface MapProps {
   transports?: Array<{ lat: number; lon: number; type: string; name: string }>;
   cadastreParcel?: CadastreParcelDto | null;
   dvfTransactions?: DvfTransactionFeatureDto[];
+  irisGeojson?: string | null;
 }
 
-export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions }: MapProps) {
+export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<Set<string>>(new Set());
@@ -37,9 +39,15 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
   }, []);
 
   const overlayLayers = useMemo<OverlayLayerConfig[]>(() => {
-    if (!dvfTransactions?.length) return [];
-    return [{ id: DVF_LAYER_ID, label: "Prix immobiliers (DVF)", color: "#eab308" }];
-  }, [dvfTransactions]);
+    const layers: OverlayLayerConfig[] = [];
+    if (dvfTransactions?.length) {
+      layers.push({ id: DVF_LAYER_ID, label: "Prix immobiliers (DVF)", color: "#eab308" });
+    }
+    if (irisGeojson) {
+      layers.push({ id: IRIS_LAYER_ID, label: "Quartier IRIS", color: "#8b5cf6" });
+    }
+    return layers;
+  }, [dvfTransactions, irisGeojson]);
 
   // Initialize map
   useEffect(() => {
@@ -146,6 +154,49 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
       );
     }
 
+    // Build IRIS source if available
+    const irisSources: Record<string, maplibregl.SourceSpecification> = {};
+    const irisLayers: maplibregl.LayerSpecification[] = [];
+
+    if (irisGeojson) {
+      try {
+        const geom = JSON.parse(irisGeojson);
+        irisSources[IRIS_LAYER_ID] = {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            geometry: geom,
+            properties: {},
+          },
+        };
+        irisLayers.push(
+          {
+            id: `${IRIS_LAYER_ID}-fill`,
+            type: "fill",
+            source: IRIS_LAYER_ID,
+            paint: {
+              "fill-color": "#8b5cf6",
+              "fill-opacity": 0.1,
+            },
+            layout: { visibility: "none" },
+          },
+          {
+            id: `${IRIS_LAYER_ID}-outline`,
+            type: "line",
+            source: IRIS_LAYER_ID,
+            paint: {
+              "line-color": "#8b5cf6",
+              "line-width": 2,
+              "line-dasharray": [4, 2],
+            },
+            layout: { visibility: "none" },
+          },
+        );
+      } catch {
+        // Invalid GeoJSON, skip
+      }
+    }
+
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: {
@@ -159,12 +210,14 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           },
           ...wmsSources,
           ...dvfSources,
+          ...irisSources,
           ...cadastreSources,
         },
         layers: [
           { id: "osm", type: "raster", source: "osm" },
           ...wmsLayers,
           ...dvfLayers,
+          ...irisLayers,
           ...cadastreLayers, // cadastre on top of DVF
         ],
       },
@@ -221,7 +274,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         map.current.remove();
       }
     };
-  }, [lat, lon, label, transports, cadastreParcel, dvfTransactions]);
+  }, [lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson]);
 
   // Sync layer visibility
   useEffect(() => {
@@ -239,6 +292,12 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         m.setLayoutProperty(`${DVF_LAYER_ID}-fill`, "visibility", dvfVisibility);
         m.setLayoutProperty(`${DVF_LAYER_ID}-outline`, "visibility", dvfVisibility);
       }
+      // IRIS layers
+      if (m.getLayer(`${IRIS_LAYER_ID}-fill`)) {
+        const irisVisibility = visibleLayers.has(IRIS_LAYER_ID) ? "visible" : "none";
+        m.setLayoutProperty(`${IRIS_LAYER_ID}-fill`, "visibility", irisVisibility);
+        m.setLayoutProperty(`${IRIS_LAYER_ID}-outline`, "visibility", irisVisibility);
+      }
     };
 
     if (m.isStyleLoaded()) {
@@ -249,9 +308,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
   }, [visibleLayers]);
 
   return (
-    <section className="map-section card">
-      <h2>Localisation</h2>
-      <p className="text-sm text-gray-600 mb-4">{label}</p>
+    <div className="map-wrapper">
       <div
         ref={mapContainer}
         className="map-container"
@@ -260,16 +317,14 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           height: "400px",
           borderRadius: "8px",
           overflow: "hidden",
-          position: "relative",
         }}
-      >
-        <LayerTogglePanel
-          riskLayers={RISK_LAYERS}
-          priceLayers={overlayLayers}
-          visibleLayers={visibleLayers}
-          onToggle={handleToggle}
-        />
-      </div>
-    </section>
+      />
+      <LayerTogglePanel
+        riskLayers={RISK_LAYERS}
+        priceLayers={overlayLayers}
+        visibleLayers={visibleLayers}
+        onToggle={handleToggle}
+      />
+    </div>
   );
 }

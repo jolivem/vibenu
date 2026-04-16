@@ -118,6 +118,37 @@ export interface CadastreAnalysisDto {
   prescriptions: UrbanPrescriptionDto[];
 }
 
+export interface NeighborhoodPoiDto {
+  name: string;
+  category: string;
+  distanceMeters: number;
+}
+
+export interface NeighborhoodAnalysisDto {
+  pois: NeighborhoodPoiDto[];
+  score: number;
+  label: string;
+}
+
+export interface DemographicsAnalysisDto {
+  codeIris: string;
+  nomIris: string;
+  nomCommune: string;
+  population: number | null;
+  density: number | null;
+  ageDistribution: {
+    pct0_14: number;
+    pct15_29: number;
+    pct30_44: number;
+    pct45_59: number;
+    pct60_74: number;
+    pct75Plus: number;
+  } | null;
+  revenuMedian: number | null;
+  tauxPauvrete: number | null;
+  irisGeojson: string | null;
+}
+
 export interface LocationAnalysisDto {
   address: SelectedAddressDto;
   map: {
@@ -130,6 +161,8 @@ export interface LocationAnalysisDto {
   mobility: MobilityAnalysisDto;
   risks: RiskAnalysisDto;
   realEstate: RealEstateAnalysisDto;
+  neighborhood: NeighborhoodAnalysisDto;
+  demographics: DemographicsAnalysisDto | null;
   cadastre: CadastreAnalysisDto;
   summary: SummaryDto;
 }
