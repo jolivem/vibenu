@@ -1,4 +1,4 @@
-# Frontend BienVu
+# Frontend ClairImmo
 
 Frontend Next.js responsable de l'expérience utilisateur : recherche d'adresse, affichage cartographique, score et restitution de l'analyse.
 

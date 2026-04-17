@@ -1,4 +1,10 @@
+type DvfSource = "cerema" | "database";
+
+function parseDvfSource(raw: string | undefined): DvfSource {
+  return raw === "cerema" ? "cerema" : "database";
+}
+
 export const env = {
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000",
   debug: process.env.NEXT_PUBLIC_DEBUG === "true",
+  dvfSource: parseDvfSource(process.env.NEXT_PUBLIC_DVF_SOURCE),
 };

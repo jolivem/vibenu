@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-clairimmo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-clairimmo}
+      POSTGRES_DB: ${POSTGRES_DB:-claire_immo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-clairimmo} -d ${POSTGRES_DB:-claire_immo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Expose uniquement sur localhost (pour les scripts d'import depuis l'hôte).
+    # Retire ce bloc en production si les imports sont exécutés via `docker compose run`.
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    environment:
+      POSTGRES_URL: postgresql://${POSTGRES_USER:-clairimmo}:${POSTGRES_PASSWORD:-clairimmo}@postgres:5432/${POSTGRES_DB:-claire_immo}
+      NEXT_PUBLIC_DVF_SOURCE: ${NEXT_PUBLIC_DVF_SOURCE:-database}
+      NEXT_PUBLIC_DEBUG: ${NEXT_PUBLIC_DEBUG:-false}
+      ATMO_API_TOKEN: ${ATMO_API_TOKEN:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

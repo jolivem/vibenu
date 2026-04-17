@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
+import { useDvfRealEstate } from "@/features/location-analysis/useDvfRealEstate";
+import { env } from "@/lib/config/env";
 import { Map } from "@/components/map/Map";
 import { SummaryCard } from "@/components/analysis/SummaryCard";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
@@ -20,20 +22,32 @@ export function AnalysisScreen() {
   const city = searchParams.get("city") ?? undefined;
   const postcode = searchParams.get("postcode") ?? undefined;
 
+  const latNum = lat ? Number(lat) : undefined;
+  const lonNum = lon ? Number(lon) : undefined;
+
   const { data, isLoading, error } = useLocationAnalysis({
-    lat: lat ? Number(lat) : undefined,
-    lon: lon ? Number(lon) : undefined,
+    lat: latNum,
+    lon: lonNum,
     label,
     city,
     postcode,
   });
+
+  const useCerema = env.dvfSource === "cerema";
+  const { dvfData, dvfLoading, dvfError } = useDvfRealEstate(
+    useCerema ? latNum : undefined,
+    useCerema ? lonNum : undefined,
+  );
+
+  const realEstate =
+    useCerema && dvfData && data ? dvfData : data?.realEstate;
 
   return (
     <main className="analysis-layout">
       <header className="analysis-topbar">
         <div className="analysis-topbar-inner">
           <Link href="/" className="analysis-back">
-            &larr; <span className="analysis-brand">BienVu</span>
+            &larr; <span className="analysis-brand">ClairImmo</span>
           </Link>
         </div>
       </header>
@@ -68,7 +82,7 @@ export function AnalysisScreen() {
                   name: stop.name,
                 }))}
                 cadastreParcel={data.cadastre?.parcel}
-                dvfTransactions={data.realEstate.transactionFeatures}
+                dvfTransactions={realEstate?.transactionFeatures}
                 irisGeojson={data.demographics?.irisGeojson}
               />
               <SummaryCard summary={data.summary} />
@@ -77,7 +91,13 @@ export function AnalysisScreen() {
             <aside className="analysis-side">
               <MobilityCard mobility={data.mobility} />
               <RisksCard risks={data.risks} />
-              <RealEstateCard realEstate={data.realEstate} />
+              {realEstate && (
+                <RealEstateCard
+                  realEstate={realEstate}
+                  loading={useCerema && dvfLoading}
+                  error={useCerema && dvfError}
+                />
+              )}
               <NeighborhoodCard neighborhood={data.neighborhood} />
               {data.demographics && <DemographicsCard demographics={data.demographics} />}
               {data.cadastre && <CadastreCard cadastre={data.cadastre} />}

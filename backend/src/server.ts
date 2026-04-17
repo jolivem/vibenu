@@ -7,7 +7,7 @@ const start = async (): Promise<void> => {
 
   try {
     await server.listen({ port: appConfig.port, host: appConfig.host });
-    logger.info(`Backend BienVu lancé sur http://${appConfig.host}:${appConfig.port}`);
+    logger.info(`Backend ClairImmo lancé sur http://${appConfig.host}:${appConfig.port}`);
   } catch (error) {
     logger.error("Impossible de démarrer le backend", error);
     process.exit(1);

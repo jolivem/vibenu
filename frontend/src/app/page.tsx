@@ -5,7 +5,7 @@ export default function HomePage() {
     <main className="landing">
       <section className="landing-hero">
         <div className="landing-hero-content">
-          <span className="landing-brand">BienVu</span>
+          <span className="landing-brand">ClairImmo</span>
           <h1 className="landing-title">
             Analysez une adresse<br />
             <span className="landing-title-accent">avant de louer ou acheter</span>
@@ -74,7 +74,7 @@ export default function HomePage() {
       </section>
 
       <footer className="landing-footer">
-        <p>BienVu &mdash; Donn&eacute;es ouvertes fran&ccedil;aises. Gratuit, sans inscription.</p>
+        <p>ClairImmo &mdash; Donn&eacute;es ouvertes fran&ccedil;aises. Gratuit, sans inscription.</p>
       </footer>
     </main>
   );

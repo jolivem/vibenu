@@ -189,6 +189,21 @@ export function useDvfRealEstate(lat?: number, lon?: number) {
 
     const controller = new AbortController();
 
+    const fetchWithRetry = async (url: string, maxAttempts = 3): Promise<Response> => {
+      let lastStatus = 0;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const response = await fetch(url, {
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
+        });
+        if (response.ok) return response;
+        lastStatus = response.status;
+        if (response.status < 500 || attempt === maxAttempts) return response;
+        await new Promise((r) => setTimeout(r, 500 * 2 ** (attempt - 1)));
+      }
+      return new Response(null, { status: lastStatus });
+    };
+
     const load = async () => {
       setIsLoading(true);
       setError(false);
@@ -197,10 +212,7 @@ export function useDvfRealEstate(lat?: number, lon?: number) {
         const delta = 0.005;
         const url = `${DVF_API_URL}/?in_bbox=${lon - delta},${lat - delta},${lon + delta},${lat + delta}&anneemut_min=${threeYearsAgo}&page_size=100`;
 
-        const response = await fetch(url, {
-          headers: { Accept: "application/json" },
-          signal: controller.signal,
-        });
+        const response = await fetchWithRetry(url);
 
         if (!response.ok) {
           console.warn(`DVF API error: ${response.status} ${response.statusText}`);

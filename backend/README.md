@@ -1,6 +1,6 @@
-# Backend BienVu
+# Backend ClairImmo
 
-Backend Fastify + TypeScript responsable de l'orchestration métier, de l'intégration aux sources externes et du calcul des analyses BienVu.
+Backend Fastify + TypeScript responsable de l'orchestration métier, de l'intégration aux sources externes et du calcul des analyses ClairImmo.
 
 ## Scripts
 

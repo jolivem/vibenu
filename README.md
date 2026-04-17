@@ -1,10 +1,10 @@
-# BienVu
+# ClairImmo
 
-Monorepo pour **BienVu**, une application web permettant à un citoyen de saisir une adresse en France et d'obtenir une lecture simple, cartographique et compréhensible de son environnement avant de louer ou acheter un bien.
+Monorepo pour **ClairImmo**, une application web permettant à un citoyen de saisir une adresse en France et d'obtenir une lecture simple, cartographique et compréhensible de son environnement avant de louer ou acheter un bien.
 
 ## Vision produit
 
-BienVu n'est pas un portail immobilier complet. Le produit est pensé comme un **assistant de décision avant location/achat**.
+ClairImmo n'est pas un portail immobilier complet. Le produit est pensé comme un **assistant de décision avant location/achat**.
 
 L'utilisateur saisit une adresse en France et obtient :
 - la localisation sur une carte interactive ;
@@ -131,6 +131,12 @@ pnpm dev
 |----------|-------------|--------|
 | `POSTGRES_URL` | URL de connexion PostgreSQL/Neon (OSM + DVF) | - |
 | `ATMO_API_TOKEN` | Token API Atmo France (optionnel) | - |
+| `NEXT_PUBLIC_DVF_SOURCE` | Source des prix DVF : `database` (PostgreSQL / data.gouv, défaut) ou `cerema` (API Cerema appelée depuis le navigateur) | `database` |
+
+### Choix de la source DVF
+
+- `database` (par défaut) : lecture de la table `dvf_transactions` importée depuis data.gouv.fr. Nécessite l'import préalable via `scripts/import_dvf.py`.
+- `cerema` : la route serveur renvoie des prix vides et le navigateur interroge directement l'[API Cerema](https://apidf-preprod.cerema.fr/dvf_opendata/geomutations). Utile en déploiement (ex. Vercel) où l'IP serveur est bloquée par l'API Cerema, ou lorsque PostgreSQL n'est pas configuré.
 
 ## Sources de données — notes et accès
 
@@ -173,7 +179,7 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 ## Structure du repository
 
 ```text
-vibenu/
+clairimmo/
 ├── README.md
 ├── scripts/               # Scripts Python d'import de données
 │   ├── import_osm.py      # Import OpenStreetMap POIs → PostgreSQL
