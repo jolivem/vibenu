@@ -19,7 +19,7 @@ services:
       - "127.0.0.1:5432:5432"
 
   app:
-    image: ghcr.io/jolivem/claireadresse:${APP_IMAGE_TAG:-latest}
+    image: ghcr.io/jolivem/vibenu:${APP_IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       POSTGRES_URL: postgresql://${POSTGRES_USER:-claireadresse}:${POSTGRES_PASSWORD:-claireadresse}@postgres:5432/${POSTGRES_DB:-claire_adresse}

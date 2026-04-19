@@ -3,3 +3,10 @@ pnpm dev
 
 tests unitaires
 pnpm --filter claireadresse-backend test
+
+GHCR:
+docker login ghcr.io -u jolivem           # PAT avec write:packages
+
+
+docker build -f frontend/Dockerfile -t ghcr.io/jolivem/vibenu:latest .
+docker push ghcr.io/jolivem/vibenu:latest
