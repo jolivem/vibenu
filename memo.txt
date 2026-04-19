@@ -2,4 +2,4 @@ Start Services (in separate terminals)
 pnpm dev
 
 tests unitaires
-pnpm --filter clairimmo-backend test
+pnpm --filter claireadresse-backend test

@@ -47,7 +47,7 @@ export function AnalysisScreen() {
       <header className="analysis-topbar">
         <div className="analysis-topbar-inner">
           <Link href="/" className="analysis-back">
-            &larr; <span className="analysis-brand">ClairImmo</span>
+            &larr; <span className="analysis-brand">ClaireAdresse</span>
           </Link>
         </div>
       </header>

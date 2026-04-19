@@ -3,13 +3,13 @@ services:
     image: postgis/postgis:16-3.4
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-clairimmo}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-clairimmo}
-      POSTGRES_DB: ${POSTGRES_DB:-claire_immo}
+      POSTGRES_USER: ${POSTGRES_USER:-claireadresse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-claireadresse}
+      POSTGRES_DB: ${POSTGRES_DB:-claire_adresse}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-clairimmo} -d ${POSTGRES_DB:-claire_immo}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-claireadresse} -d ${POSTGRES_DB:-claire_adresse}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -19,12 +19,10 @@ services:
       - "127.0.0.1:5432:5432"
 
   app:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
+    image: ghcr.io/jolivem/claireadresse:${APP_IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      POSTGRES_URL: postgresql://${POSTGRES_USER:-clairimmo}:${POSTGRES_PASSWORD:-clairimmo}@postgres:5432/${POSTGRES_DB:-claire_immo}
+      POSTGRES_URL: postgresql://${POSTGRES_USER:-claireadresse}:${POSTGRES_PASSWORD:-claireadresse}@postgres:5432/${POSTGRES_DB:-claire_adresse}
       NEXT_PUBLIC_DVF_SOURCE: ${NEXT_PUBLIC_DVF_SOURCE:-database}
       NEXT_PUBLIC_DEBUG: ${NEXT_PUBLIC_DEBUG:-false}
       ATMO_API_TOKEN: ${ATMO_API_TOKEN:-}

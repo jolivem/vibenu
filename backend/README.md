@@ -1,6 +1,6 @@
-# Backend ClairImmo
+# Backend ClaireAdresse
 
-Backend Fastify + TypeScript responsable de l'orchestration métier, de l'intégration aux sources externes et du calcul des analyses ClairImmo.
+Backend Fastify + TypeScript responsable de l'orchestration métier, de l'intégration aux sources externes et du calcul des analyses ClaireAdresse.
 
 ## Scripts
 

@@ -1,13 +1,13 @@
 {
-  "name": "clairimmo",
+  "name": "claireadresse",
   "private": true,
   "packageManager": "pnpm@10.28.1",
   "pnpm": {
     "onlyBuiltDependencies": ["esbuild", "sharp"]
   },
   "scripts": {
-    "dev:backend": "pnpm --filter clairimmo-backend dev",
-    "dev:frontend": "pnpm --filter clairimmo-frontend dev",
+    "dev:backend": "pnpm --filter claireadresse-backend dev",
+    "dev:frontend": "pnpm --filter claireadresse-frontend dev",
     "dev": "pnpm --filter '*' dev",
     "build": "pnpm --filter '*' build",
     "typecheck": "pnpm --filter '*' typecheck"

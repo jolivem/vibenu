@@ -1,10 +1,10 @@
-# ClairImmo
+# ClaireAdresse
 
-Monorepo pour **ClairImmo**, une application web permettant à un citoyen de saisir une adresse en France et d'obtenir une lecture simple, cartographique et compréhensible de son environnement avant de louer ou acheter un bien.
+Monorepo pour **ClaireAdresse**, une application web permettant à un citoyen de saisir une adresse en France et d'obtenir une lecture simple, cartographique et compréhensible de son environnement avant de louer ou acheter un bien.
 
 ## Vision produit
 
-ClairImmo n'est pas un portail immobilier complet. Le produit est pensé comme un **assistant de décision avant location/achat**.
+ClaireAdresse n'est pas un portail immobilier complet. Le produit est pensé comme un **assistant de décision avant location/achat**.
 
 L'utilisateur saisit une adresse en France et obtient :
 - la localisation sur une carte interactive ;
@@ -179,7 +179,7 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 ## Structure du repository
 
 ```text
-clairimmo/
+claireadresse/
 ├── README.md
 ├── scripts/               # Scripts Python d'import de données
 │   ├── import_osm.py      # Import OpenStreetMap POIs → PostgreSQL

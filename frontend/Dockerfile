@@ -8,7 +8,7 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY frontend/package.json frontend/package.json
 COPY backend/package.json backend/package.json
-RUN pnpm install --frozen-lockfile --filter clairimmo-frontend...
+RUN pnpm install --frozen-lockfile --filter claireadresse-frontend...
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
@@ -16,7 +16,7 @@ COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY frontend ./frontend
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm --filter clairimmo-frontend build
+RUN pnpm --filter claireadresse-frontend build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
