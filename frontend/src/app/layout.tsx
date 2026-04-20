@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import "../styles/globals.css";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 const SITE_NAME = "ClaireAdresse";
 const SITE_TITLE = "ClaireAdresse — Analysez une adresse avant de louer ou acheter";
 const SITE_DESCRIPTION =
