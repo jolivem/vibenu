@@ -1,8 +1,39 @@
 import { SearchPanel } from "@/components/search/SearchPanel";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "ClaireAdresse",
+  url: SITE_URL,
+  applicationCategory: "RealEstateApplication",
+  operatingSystem: "Web",
+  description:
+    "Analyse d'une adresse en France : transports, risques naturels, cadastre, prix immobiliers DVF, urbanisme et démographie IRIS.",
+  inLanguage: "fr-FR",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "EUR",
+  },
+  featureList: [
+    "Analyse de mobilité et transports",
+    "Risques naturels et technologiques",
+    "Cadastre et zones d'urbanisme",
+    "Prix immobiliers DVF",
+    "Démographie INSEE IRIS",
+    "Qualité de l'air",
+  ],
+};
+
 export default function HomePage() {
   return (
     <main className="landing">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section className="landing-hero">
         <div className="landing-hero-content">
           <span className="landing-brand">ClaireAdresse</span>

@@ -25,6 +25,7 @@ services:
       POSTGRES_URL: postgresql://${POSTGRES_USER:-claireadresse}:${POSTGRES_PASSWORD:-claireadresse}@postgres:5432/${POSTGRES_DB:-claire_adresse}
       NEXT_PUBLIC_DVF_SOURCE: ${NEXT_PUBLIC_DVF_SOURCE:-database}
       NEXT_PUBLIC_DEBUG: ${NEXT_PUBLIC_DEBUG:-false}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
       ATMO_API_TOKEN: ${ATMO_API_TOKEN:-}
     depends_on:
       postgres:
