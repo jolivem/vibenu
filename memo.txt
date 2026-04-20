@@ -7,7 +7,7 @@ pnpm --filter claireadresse-backend test
 GHCR:
 docker login ghcr.io -u jolivem           # PAT avec write:packages
 
-
+BUILD IMAGE AND PUSH
 docker build -f frontend/Dockerfile -t ghcr.io/jolivem/vibenu:latest .
 docker push ghcr.io/jolivem/vibenu:latest
 
@@ -30,9 +30,19 @@ docker compose exec postgres pg_restore \
 
 
 
-CONTROLE
+CONTROL POSTGRES
 # Côté Hetzner
 docker compose exec postgres psql -U claireadresse -d cadb -c "
 SELECT schemaname, relname, n_live_tup
 FROM pg_stat_user_tables
 ORDER BY n_live_tup DESC;"
+
+
+CONTROLE SEO
+Après déploiement, tester :
+https://ton-domaine/robots.txt — doit montrer les règles.
+https://ton-domaine/sitemap.xml — doit montrer la home.
+https://ton-domaine/opengraph-image — doit renvoyer un PNG.
+Google Rich Results Test sur la home — vérifier le JSON-LD.
+Opengraph.xyz pour prévisualiser le partage social.
+Soumettre le sitemap dans Google Search Console (et Bing Webmaster Tools).

@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
 export const alt = "ClaireAdresse — Analysez une adresse avant de louer ou acheter";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -59,6 +58,9 @@ export default function OpenGraphImage() {
         </div>
         <div
           style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
             fontSize: "54px",
             fontWeight: 700,
             color: "#111827",
@@ -67,9 +69,8 @@ export default function OpenGraphImage() {
             maxWidth: "900px",
           }}
         >
-          Analysez une adresse
-          <br />
-          <span style={{ color: "#78be20" }}>avant de louer ou acheter</span>
+          <div>Analysez une adresse</div>
+          <div style={{ color: "#78be20" }}>avant de louer ou acheter</div>
         </div>
         <div
           style={{
