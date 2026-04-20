@@ -15,6 +15,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY frontend ./frontend
+ARG SITE_URL
+ENV SITE_URL=$SITE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN mkdir -p frontend/public
 RUN pnpm --filter claireadresse-frontend build
