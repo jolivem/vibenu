@@ -528,6 +528,56 @@ body {
   flex-shrink: 0;
 }
 
+.demographics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+.demographics-table th,
+.demographics-table td {
+  padding: 6px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.demographics-table thead th {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.demographics-table tbody th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.demographics-table .age-bar-row {
+  justify-content: flex-end;
+}
+
+.demographics-table .age-bar-track {
+  max-width: 80px;
+}
+
+.demographics-note {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+  margin: 4px 0 8px;
+}
+
+.demographics-footnote {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 10px;
+  font-style: italic;
+}
+
 /* Cadastre card */
 .cadastre-section {
   margin-top: 12px;

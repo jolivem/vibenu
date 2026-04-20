@@ -10,3 +10,29 @@ docker login ghcr.io -u jolivem           # PAT avec write:packages
 
 docker build -f frontend/Dockerfile -t ghcr.io/jolivem/vibenu:latest .
 docker push ghcr.io/jolivem/vibenu:latest
+
+BACKUP / RESTORE
+# Côté Local
+ cd github/claire_immo
+ pg_dump --host=localhost --port=5432 --username=bienvu --format=custom --no-owner --no-privileges --file=claire_adresse.dump claire_immo
+ cd ~
+ scp github/clairimmo/claire_adresse.dump michel@178.104.51.131:/tmp/
+
+# Côté Hetzner
+cd vibenu
+docker compose cp /tmp/claire_adresse.dump postgres:/tmp/
+docker compose exec postgres pg_restore \
+  -U claireadresse \
+  -d cadb \
+  --no-owner --no-privileges \
+  --clean --if-exists \
+  /tmp/claire_adresse.dump
+
+
+
+CONTROLE
+# Côté Hetzner
+docker compose exec postgres psql -U claireadresse -d cadb -c "
+SELECT schemaname, relname, n_live_tup
+FROM pg_stat_user_tables
+ORDER BY n_live_tup DESC;"

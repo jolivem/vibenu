@@ -130,23 +130,35 @@ export interface NeighborhoodAnalysisDto {
   label: string;
 }
 
+export interface AgeDistributionDto {
+  pct0_14: number;
+  pct15_29: number;
+  pct30_44: number;
+  pct45_59: number;
+  pct60_74: number;
+  pct75Plus: number;
+}
+
+export interface AggregateStatsDto {
+  population: number | null;
+  ageDistribution: AgeDistributionDto | null;
+  revenuMedian: number | null;
+  tauxPauvrete: number | null;
+}
+
 export interface DemographicsAnalysisDto {
   codeIris: string;
   nomIris: string;
   nomCommune: string;
   population: number | null;
   density: number | null;
-  ageDistribution: {
-    pct0_14: number;
-    pct15_29: number;
-    pct30_44: number;
-    pct45_59: number;
-    pct60_74: number;
-    pct75Plus: number;
-  } | null;
+  ageDistribution: AgeDistributionDto | null;
   revenuMedian: number | null;
   tauxPauvrete: number | null;
   irisGeojson: string | null;
+  communeStats: AggregateStatsDto | null;
+  nationalStats: AggregateStatsDto | null;
+  communeIrisCount: number;
 }
 
 export interface LocationAnalysisDto {
