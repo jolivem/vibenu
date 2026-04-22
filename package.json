@@ -6,10 +6,8 @@
     "onlyBuiltDependencies": ["esbuild", "sharp"]
   },
   "scripts": {
-    "dev:backend": "pnpm --filter claireadresse-backend dev",
-    "dev:frontend": "pnpm --filter claireadresse-frontend dev",
-    "dev": "pnpm --filter '*' dev",
-    "build": "pnpm --filter '*' build",
-    "typecheck": "pnpm --filter '*' typecheck"
+    "dev": "pnpm --filter claireadresse-frontend dev",
+    "build": "pnpm --filter claireadresse-frontend build",
+    "typecheck": "pnpm --filter claireadresse-frontend typecheck"
   }
 }

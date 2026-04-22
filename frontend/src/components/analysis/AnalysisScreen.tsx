@@ -9,6 +9,7 @@ import { Map } from "@/components/map/Map";
 import { SummaryCard } from "@/components/analysis/SummaryCard";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
 import { RisksCard } from "@/components/analysis/RisksCard";
+import { AirQualityCard } from "@/components/analysis/AirQualityCard";
 import { RealEstateCard } from "@/components/analysis/RealEstateCard";
 import { CadastreCard } from "@/components/analysis/CadastreCard";
 import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
@@ -91,6 +92,7 @@ export function AnalysisScreen() {
             <aside className="analysis-side">
               <MobilityCard mobility={data.mobility} />
               <RisksCard risks={data.risks} />
+              <AirQualityCard airQuality={data.airQuality} />
               {realEstate && (
                 <RealEstateCard
                   realEstate={realEstate}

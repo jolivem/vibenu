@@ -36,7 +36,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `risks` | Risques naturels/technologiques | Géorisques (georisques.gouv.fr) |
 | `real-estate` | Contexte immobilier et prix | DVF géolocalisé (PostgreSQL/PostGIS) |
 | `cadastre` | Parcelle, zone PLU, prescriptions | API Carto IGN (apicarto.ign.fr) |
-| `air-quality` | Qualité de l'air | Atmo France (api.atmo-france.org) |
+| `air-quality` | Qualité de l'air | Atmo France (admindata.atmo-france.org) |
 | `neighborhood` | Commerces et services proches | OSM + BPE INSEE (PostgreSQL/PostGIS) |
 | `demographics` | Données socio-démographiques (population, revenus, âge) | INSEE IRIS (PostgreSQL/PostGIS) |
 | `summary` | Construction du résumé textuel | - |
@@ -130,7 +130,8 @@ pnpm dev
 | Variable | Description | Défaut |
 |----------|-------------|--------|
 | `POSTGRES_URL` | URL de connexion PostgreSQL/Neon (OSM + DVF) | - |
-| `ATMO_API_TOKEN` | Token API Atmo France (optionnel) | - |
+| `ATMO_USERNAME` | Email du compte Atmo France (optionnel) | - |
+| `ATMO_PASSWORD` | Mot de passe du compte Atmo France (optionnel) | - |
 | `NEXT_PUBLIC_DVF_SOURCE` | Source des prix DVF : `database` (PostgreSQL / data.gouv, défaut) ou `cerema` (API Cerema appelée depuis le navigateur) | `database` |
 
 ### Choix de la source DVF
@@ -150,8 +151,8 @@ pnpm dev
 ### Atmo France (qualité de l'air)
 - **Inscription** : [admindata.atmo-france.org/inscription-api](https://admindata.atmo-france.org/inscription-api)
 - Remplir le formulaire → validation par un administrateur → email avec lien d'activation
-- **Authentification** : appeler `POST /api/login` avec email/mot de passe → token JWT valide 24h
-- **API v2** (actuelle) : authentification par Bearer token. Le code utilise encore l'API v1 avec `api_token` en query parameter — une migration pourra être nécessaire
+- **Configuration** : renseigner `ATMO_USERNAME` et `ATMO_PASSWORD` dans le `.env`. Le provider fait `POST https://admindata.atmo-france.org/api/login`, récupère un JWT et le met en cache ~55 min avant de le renouveler
+- **Endpoint data** : `GET https://admindata.atmo-france.org/api/data/112/<filter_json>?withGeom=false` avec `Authorization: Bearer <token>` (`112` = indices pollution)
 - Gratuit, licence ODbL (attribution obligatoire : "Source : Atmo France / AASQA")
 
 ### OpenStreetMap + BPE (voisinage)

@@ -82,6 +82,12 @@ export interface RealEstateAnalysisDto {
   transactionFeatures?: DvfTransactionFeatureDto[];
 }
 
+export interface AirQualityAnalysisDto {
+  score: number;
+  level: "bon" | "moyen" | "dégradé" | "mauvais" | "très_mauvais";
+  message: string;
+}
+
 export interface SummaryDto {
   strengths: string[];
   warnings: string[];
@@ -173,6 +179,7 @@ export interface LocationAnalysisDto {
   mobility: MobilityAnalysisDto;
   risks: RiskAnalysisDto;
   realEstate: RealEstateAnalysisDto;
+  airQuality: AirQualityAnalysisDto;
   neighborhood: NeighborhoodAnalysisDto;
   demographics: DemographicsAnalysisDto | null;
   cadastre: CadastreAnalysisDto;

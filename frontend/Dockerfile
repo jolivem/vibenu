@@ -7,7 +7,6 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY frontend/package.json frontend/package.json
-COPY backend/package.json backend/package.json
 RUN pnpm install --frozen-lockfile --filter claireadresse-frontend...
 
 FROM base AS builder

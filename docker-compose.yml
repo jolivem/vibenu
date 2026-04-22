@@ -26,7 +26,8 @@ services:
       NEXT_PUBLIC_DVF_SOURCE: ${NEXT_PUBLIC_DVF_SOURCE:-database}
       NEXT_PUBLIC_DEBUG: ${NEXT_PUBLIC_DEBUG:-false}
       SITE_URL: ${SITE_URL:-}
-      ATMO_API_TOKEN: ${ATMO_API_TOKEN:-}
+      ATMO_USERNAME: ${ATMO_USERNAME:-}
+      ATMO_PASSWORD: ${ATMO_PASSWORD:-}
     depends_on:
       postgres:
         condition: service_healthy
