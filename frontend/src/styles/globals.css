@@ -486,45 +486,63 @@ body {
   color: var(--muted);
 }
 
-.age-bars {
+.age-chart {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
-.age-bar-row {
+.age-chart-svg {
+  width: 100%;
+  height: auto;
+}
+
+.age-chart-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.age-chart-axis {
+  font-size: 10px;
+  fill: var(--muted);
+}
+
+.age-chart-axis--y {
+  dominant-baseline: middle;
+  text-anchor: end;
+}
+
+.age-chart-axis--x {
+  text-anchor: middle;
+}
+
+.age-chart-line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.age-chart-legend {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
   font-size: 0.8rem;
-}
-
-.age-bar-label {
-  width: 36px;
-  text-align: right;
   color: var(--muted);
-  flex-shrink: 0;
 }
 
-.age-bar-track {
-  flex: 1;
+.age-chart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.age-chart-legend-dot {
+  display: inline-block;
+  width: 10px;
   height: 10px;
-  background: var(--border);
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.age-bar-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 5px;
-}
-
-.age-bar-value {
-  width: 30px;
-  text-align: right;
-  font-size: 0.75rem;
-  color: var(--muted);
+  border-radius: 9999px;
   flex-shrink: 0;
 }
 
@@ -554,14 +572,6 @@ body {
   text-align: left;
   font-weight: 500;
   color: var(--muted);
-}
-
-.demographics-table .age-bar-row {
-  justify-content: flex-end;
-}
-
-.demographics-table .age-bar-track {
-  max-width: 80px;
 }
 
 .demographics-note {

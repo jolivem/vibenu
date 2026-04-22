@@ -1,4 +1,4 @@
-import type { AggregateStatsDto, DemographicsAnalysisDto } from "@/types/location-analysis";
+import type { AgeDistributionDto, DemographicsAnalysisDto } from "@/types/location-analysis";
 
 export function DemographicsCard({ demographics }: { demographics: DemographicsAnalysisDto }) {
   const { communeStats, nationalStats, communeIrisCount } = demographics;
@@ -59,66 +59,12 @@ export function DemographicsCard({ demographics }: { demographics: DemographicsA
       {demographics.ageDistribution && (
         <div className="demographics-age">
           <h3>Répartition par âge</h3>
-          <table className="demographics-table">
-            <thead>
-              <tr>
-                <th scope="col">Tranche</th>
-                <th scope="col">IRIS</th>
-                {showCommune && <th scope="col">Commune</th>}
-                {france && <th scope="col">France</th>}
-              </tr>
-            </thead>
-            <tbody>
-              <AgeRow
-                label="0-14"
-                iris={demographics.ageDistribution.pct0_14}
-                commune={showCommune ? commune?.ageDistribution?.pct0_14 : undefined}
-                france={france?.ageDistribution?.pct0_14}
-                showCommune={showCommune}
-                showFrance={france !== null}
-              />
-              <AgeRow
-                label="15-29"
-                iris={demographics.ageDistribution.pct15_29}
-                commune={showCommune ? commune?.ageDistribution?.pct15_29 : undefined}
-                france={france?.ageDistribution?.pct15_29}
-                showCommune={showCommune}
-                showFrance={france !== null}
-              />
-              <AgeRow
-                label="30-44"
-                iris={demographics.ageDistribution.pct30_44}
-                commune={showCommune ? commune?.ageDistribution?.pct30_44 : undefined}
-                france={france?.ageDistribution?.pct30_44}
-                showCommune={showCommune}
-                showFrance={france !== null}
-              />
-              <AgeRow
-                label="45-59"
-                iris={demographics.ageDistribution.pct45_59}
-                commune={showCommune ? commune?.ageDistribution?.pct45_59 : undefined}
-                france={france?.ageDistribution?.pct45_59}
-                showCommune={showCommune}
-                showFrance={france !== null}
-              />
-              <AgeRow
-                label="60-74"
-                iris={demographics.ageDistribution.pct60_74}
-                commune={showCommune ? commune?.ageDistribution?.pct60_74 : undefined}
-                france={france?.ageDistribution?.pct60_74}
-                showCommune={showCommune}
-                showFrance={france !== null}
-              />
-              <AgeRow
-                label="75+"
-                iris={demographics.ageDistribution.pct75Plus}
-                commune={showCommune ? commune?.ageDistribution?.pct75Plus : undefined}
-                france={france?.ageDistribution?.pct75Plus}
-                showCommune={showCommune}
-                showFrance={france !== null}
-              />
-            </tbody>
-          </table>
+          <AgeChart
+            iris={demographics.ageDistribution}
+            commune={commune?.ageDistribution ?? null}
+            france={france?.ageDistribution ?? null}
+            showCommune={showCommune}
+          />
         </div>
       )}
 
@@ -129,40 +75,94 @@ export function DemographicsCard({ demographics }: { demographics: DemographicsA
   );
 }
 
-function AgeRow({
-  label,
+const AGE_BUCKETS: ReadonlyArray<{ label: string; key: keyof AgeDistributionDto }> = [
+  { label: "0-14", key: "pct0_14" },
+  { label: "15-29", key: "pct15_29" },
+  { label: "30-44", key: "pct30_44" },
+  { label: "45-59", key: "pct45_59" },
+  { label: "60-74", key: "pct60_74" },
+  { label: "75+", key: "pct75Plus" },
+];
+
+function AgeChart({
   iris,
   commune,
   france,
   showCommune,
-  showFrance,
 }: {
-  label: string;
-  iris: number;
-  commune: number | undefined;
-  france: number | undefined;
+  iris: AgeDistributionDto;
+  commune: AgeDistributionDto | null;
+  france: AgeDistributionDto | null;
   showCommune: boolean;
-  showFrance: boolean;
 }) {
-  return (
-    <tr>
-      <th scope="row">{label}</th>
-      <td>
-        <AgeCell pct={iris} />
-      </td>
-      {showCommune && <td>{commune !== undefined ? <AgeCell pct={commune} /> : "—"}</td>}
-      {showFrance && <td>{france !== undefined ? <AgeCell pct={france} /> : "—"}</td>}
-    </tr>
-  );
-}
+  const series: Array<{ name: string; color: string; data: AgeDistributionDto }> = [
+    { name: "IRIS", color: "#78be20", data: iris },
+  ];
+  if (showCommune && commune) series.push({ name: "Commune", color: "#ea580c", data: commune });
+  if (france) series.push({ name: "France", color: "#6b7280", data: france });
 
-function AgeCell({ pct }: { pct: number }) {
+  const allValues = series.flatMap((s) => AGE_BUCKETS.map((b) => s.data[b.key]));
+  const rawMax = Math.max(...allValues, 10);
+  const maxY = Math.ceil(rawMax / 5) * 5;
+
+  const W = 400;
+  const H = 220;
+  const padL = 36;
+  const padR = 12;
+  const padT = 10;
+  const padB = 38;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const x = (i: number) => padL + (i * plotW) / (AGE_BUCKETS.length - 1);
+  const y = (v: number) => padT + plotH - (v / maxY) * plotH;
+
+  const tickCount = 4;
+  const yTicks = Array.from({ length: tickCount + 1 }, (_, i) => (maxY * i) / tickCount);
+
   return (
-    <div className="age-bar-row">
-      <div className="age-bar-track">
-        <div className="age-bar-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
-      </div>
-      <span className="age-bar-value">{pct}%</span>
+    <div className="age-chart">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label="Répartition par âge — comparaison IRIS, commune et France"
+        className="age-chart-svg"
+      >
+        {yTicks.map((t) => (
+          <g key={t}>
+            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="age-chart-grid" />
+            <text x={padL - 4} y={y(t)} className="age-chart-axis age-chart-axis--y">
+              {t}%
+            </text>
+          </g>
+        ))}
+        {AGE_BUCKETS.map((b, i) => (
+          <text key={b.label} x={x(i)} y={H - padB + 14} className="age-chart-axis age-chart-axis--x">
+            {b.label}
+          </text>
+        ))}
+        {series.map((s) => {
+          const points = AGE_BUCKETS.map((b, i) => `${x(i)},${y(s.data[b.key])}`).join(" ");
+          return (
+            <g key={s.name}>
+              <polyline points={points} stroke={s.color} className="age-chart-line" />
+              {AGE_BUCKETS.map((b, i) => (
+                <circle key={b.label} cx={x(i)} cy={y(s.data[b.key])} r={3} fill={s.color}>
+                  <title>{`${s.name} — ${b.label} : ${s.data[b.key]}%`}</title>
+                </circle>
+              ))}
+            </g>
+          );
+        })}
+      </svg>
+      <ul className="age-chart-legend">
+        {series.map((s) => (
+          <li key={s.name}>
+            <span className="age-chart-legend-dot" style={{ background: s.color }} />
+            {s.name}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
