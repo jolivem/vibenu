@@ -19,11 +19,14 @@ interface MapProps {
   cadastreParcel?: CadastreParcelDto | null;
   dvfTransactions?: DvfTransactionFeatureDto[];
   irisGeojson?: string | null;
+  onReady?: (map: MapLibreMap) => void;
 }
 
-export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson }: MapProps) {
+export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, onReady }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
   const [visibleLayers, setVisibleLayers] = useState<Set<string>>(new Set());
 
   const handleToggle = useCallback((layerId: string) => {
@@ -199,6 +202,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
+      preserveDrawingBuffer: true,
       style: {
         version: 8,
         sources: {
@@ -227,6 +231,8 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
 
     // Add navigation controls
     map.current.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    onReadyRef.current?.(map.current);
 
     // Main marker for the searched address
     new maplibregl.Marker({ color: "#0066cc" })

@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import type { Map as MapLibreMap } from "maplibre-gl";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
 import { useDvfRealEstate } from "@/features/location-analysis/useDvfRealEstate";
 import { env } from "@/lib/config/env";
@@ -14,6 +16,7 @@ import { RealEstateCard } from "@/components/analysis/RealEstateCard";
 import { CadastreCard } from "@/components/analysis/CadastreCard";
 import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
 import { DemographicsCard } from "@/components/analysis/DemographicsCard";
+import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
 
 export function AnalysisScreen() {
   const searchParams = useSearchParams();
@@ -43,6 +46,12 @@ export function AnalysisScreen() {
   const realEstate =
     useCerema && dvfData && data ? dvfData : data?.realEstate;
 
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const handleMapReady = useCallback((map: MapLibreMap) => {
+    mapRef.current = map;
+  }, []);
+  const getMap = useCallback(() => mapRef.current, []);
+
   return (
     <main className="analysis-layout">
       <header className="analysis-topbar">
@@ -50,6 +59,13 @@ export function AnalysisScreen() {
           <Link href="/" className="analysis-back">
             &larr; <span className="analysis-brand">ClaireAdresse</span>
           </Link>
+          {data && (
+            <DownloadPdfButton
+              data={data}
+              realEstate={realEstate ?? null}
+              getMap={getMap}
+            />
+          )}
         </div>
       </header>
 
@@ -85,6 +101,7 @@ export function AnalysisScreen() {
                 cadastreParcel={data.cadastre?.parcel}
                 dvfTransactions={realEstate?.transactionFeatures}
                 irisGeojson={data.demographics?.irisGeojson}
+                onReady={handleMapReady}
               />
               <SummaryCard summary={data.summary} />
             </div>

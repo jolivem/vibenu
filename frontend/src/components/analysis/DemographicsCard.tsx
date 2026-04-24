@@ -1,4 +1,6 @@
 import type { AgeDistributionDto, DemographicsAnalysisDto } from "@/types/location-analysis";
+import { AGE_BUCKETS, AGE_CHART_DIMENSIONS, buildAgeChartModel } from "./ageChart";
+import { formatDensity, formatPct, formatPopulation, formatRevenu } from "./demographicsFormat";
 
 export function DemographicsCard({ demographics }: { demographics: DemographicsAnalysisDto }) {
   const { communeStats, nationalStats, communeIrisCount } = demographics;
@@ -75,15 +77,6 @@ export function DemographicsCard({ demographics }: { demographics: DemographicsA
   );
 }
 
-const AGE_BUCKETS: ReadonlyArray<{ label: string; key: keyof AgeDistributionDto }> = [
-  { label: "0-14", key: "pct0_14" },
-  { label: "15-29", key: "pct15_29" },
-  { label: "30-44", key: "pct30_44" },
-  { label: "45-59", key: "pct45_59" },
-  { label: "60-74", key: "pct60_74" },
-  { label: "75+", key: "pct75Plus" },
-];
-
 function AgeChart({
   iris,
   commune,
@@ -95,30 +88,8 @@ function AgeChart({
   france: AgeDistributionDto | null;
   showCommune: boolean;
 }) {
-  const series: Array<{ name: string; color: string; data: AgeDistributionDto }> = [
-    { name: "IRIS", color: "#78be20", data: iris },
-  ];
-  if (showCommune && commune) series.push({ name: "Commune", color: "#ea580c", data: commune });
-  if (france) series.push({ name: "France", color: "#6b7280", data: france });
-
-  const allValues = series.flatMap((s) => AGE_BUCKETS.map((b) => s.data[b.key]));
-  const rawMax = Math.max(...allValues, 10);
-  const maxY = Math.ceil(rawMax / 5) * 5;
-
-  const W = 400;
-  const H = 220;
-  const padL = 36;
-  const padR = 12;
-  const padT = 10;
-  const padB = 38;
-  const plotW = W - padL - padR;
-  const plotH = H - padT - padB;
-
-  const x = (i: number) => padL + (i * plotW) / (AGE_BUCKETS.length - 1);
-  const y = (v: number) => padT + plotH - (v / maxY) * plotH;
-
-  const tickCount = 4;
-  const yTicks = Array.from({ length: tickCount + 1 }, (_, i) => (maxY * i) / tickCount);
+  const { series, yTicks, x, y } = buildAgeChartModel({ iris, commune, france, showCommune });
+  const { W, H, padL, padR, padB } = AGE_CHART_DIMENSIONS;
 
   return (
     <div className="age-chart">
@@ -165,24 +136,4 @@ function AgeChart({
       </ul>
     </div>
   );
-}
-
-function formatPopulation(value: number | null): string {
-  if (value == null) return "—";
-  return `${Math.round(value).toLocaleString("fr-FR")} hab.`;
-}
-
-function formatDensity(value: number | null): string {
-  if (value == null) return "—";
-  return `${value.toLocaleString("fr-FR")} hab./km²`;
-}
-
-function formatRevenu(value: number | null): string {
-  if (value == null) return "—";
-  return `${Math.round(value).toLocaleString("fr-FR")} €/an`;
-}
-
-function formatPct(value: number | null): string {
-  if (value == null) return "—";
-  return `${value.toFixed(1)} %`;
 }
