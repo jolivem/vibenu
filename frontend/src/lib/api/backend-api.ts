@@ -1,4 +1,4 @@
-import type { AddressSuggestionDto, LocationAnalysisDto } from "@/types/location-analysis";
+import type { AddressSuggestionDto, LocationAnalysisDto, NarrativeDto } from "@/types/location-analysis";
 
 export const backendApi = {
   async searchAddress(query: string): Promise<AddressSuggestionDto[]> {
@@ -38,5 +38,19 @@ export const backendApi = {
     }
 
     return (await response.json()) as LocationAnalysisDto;
+  },
+
+  async generateNarrative(data: LocationAnalysisDto): Promise<NarrativeDto> {
+    const response = await fetch(`/api/location/narrative`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error("Impossible de générer la synthèse.");
+    }
+
+    return (await response.json()) as NarrativeDto;
   },
 };

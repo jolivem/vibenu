@@ -28,6 +28,8 @@ services:
       SITE_URL: ${SITE_URL:-}
       ATMO_USERNAME: ${ATMO_USERNAME:-}
       ATMO_PASSWORD: ${ATMO_PASSWORD:-}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      MISTRAL_MODEL: ${MISTRAL_MODEL:-}
     depends_on:
       postgres:
         condition: service_healthy

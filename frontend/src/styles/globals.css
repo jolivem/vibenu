@@ -311,6 +311,43 @@ body {
   cursor: progress;
 }
 
+/* Narrative card */
+.narrative-card {
+  background: linear-gradient(135deg, #ffffff 0%, var(--accent-light) 100%);
+  border-color: #d4e8bf;
+}
+
+.narrative-text {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin: 0;
+  color: var(--text);
+}
+
+.narrative-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.narrative-skeleton span {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+  background-size: 200% 100%;
+  animation: narrative-shimmer 1.4s infinite;
+}
+
+.narrative-skeleton--short {
+  width: 60%;
+}
+
+@keyframes narrative-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .analysis-back {
   color: white;
   text-decoration: none;

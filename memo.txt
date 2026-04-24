@@ -39,6 +39,9 @@ SELECT schemaname, relname, n_live_tup
 FROM pg_stat_user_tables
 ORDER BY n_live_tup DESC;"
 
+Update PostgreSQL:
+psql $POSTGRES_URL -f frontend/src/server-shared/infrastructure/database/migrations/002-narrative-cache.sql
+
 
 CONTROLE SEO
 Après déploiement, tester :

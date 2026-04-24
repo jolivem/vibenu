@@ -167,6 +167,12 @@ export interface DemographicsAnalysisDto {
   communeIrisCount: number;
 }
 
+export interface NarrativeDto {
+  paragraph: string;
+  generatedAt: string;
+  cached: boolean;
+}
+
 export interface LocationAnalysisDto {
   address: SelectedAddressDto;
   map: {

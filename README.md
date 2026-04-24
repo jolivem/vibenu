@@ -15,15 +15,19 @@ L'utilisateur saisit une adresse en France et obtient :
 - la qualité de l'air ;
 - les commerces et services de proximité ;
 - un score synthétique ;
-- un résumé en langage simple.
+- un résumé en langage simple ;
+- une **synthèse rédigée par IA** en langage courant (Mistral) ;
+- un **export PDF** du rapport complet, téléchargeable en un clic.
 
 ## Architecture
 
 - **Next.js** / React / TypeScript (frontend + API routes serveur)
 - **MapLibre GL** pour la carte interactive
-- **PostgreSQL / PostGIS** (Neon) pour les données OSM et DVF
+- **PostgreSQL / PostGIS** (Neon) pour les données OSM, DVF, IRIS et le cache des synthèses IA
+- **Mistral AI** pour la synthèse en langage courant (pattern port/adapter → fournisseur LLM interchangeable)
+- **@react-pdf/renderer** pour l'export PDF vectoriel côté client
 - Architecture modulaire (DDD) dans `frontend/src/server-modules/`
-- Cache en mémoire avec TTL par source de données
+- Cache en mémoire (TTL par source de données) + cache Postgres pour les synthèses LLM
 - Couches cartographiques WMS (risques) et GeoJSON (cadastre, prix DVF)
 
 ## Modules
@@ -39,7 +43,8 @@ L'utilisateur saisit une adresse en France et obtient :
 | `air-quality` | Qualité de l'air | Atmo France (admindata.atmo-france.org) |
 | `neighborhood` | Commerces et services proches | OSM + BPE INSEE (PostgreSQL/PostGIS) |
 | `demographics` | Données socio-démographiques (population, revenus, âge) | INSEE IRIS (PostgreSQL/PostGIS) |
-| `summary` | Construction du résumé textuel | - |
+| `summary` | Construction du résumé textuel (règles déterministes) | - |
+| `narrative` | Synthèse en langage courant générée par LLM + cache Postgres | Mistral AI (api.mistral.ai) |
 
 ## Carte interactive
 
@@ -59,17 +64,18 @@ L'utilisateur saisit une adresse en France et obtient :
 
 Le serveur utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés à la fréquence de mise à jour de chaque source :
 
-| Source | TTL cache | Fréquence de mise à jour |
-|--------|-----------|--------------------------|
-| Adresse (BAN) | 7 jours | quasi-statique |
-| DVF (prix immobiliers) | 7 jours | semestriel |
-| Cadastre / PLU | 7 jours | trimestriel |
-| Géorisques (risques) | 24 heures | mensuel à trimestriel |
-| Transport (GTFS) | 24 heures | hebdomadaire à mensuel |
-| Voisinage (OSM) | 7 jours | quotidien (Geofabrik) |
-| Qualité de l'air (Atmo) | 6 heures | quotidien |
+| Source | TTL cache | Stockage | Fréquence de mise à jour |
+|--------|-----------|----------|--------------------------|
+| Adresse (BAN) | 7 jours | in-memory | quasi-statique |
+| DVF (prix immobiliers) | 7 jours | in-memory | semestriel |
+| Cadastre / PLU | 7 jours | in-memory | trimestriel |
+| Géorisques (risques) | 24 heures | in-memory | mensuel à trimestriel |
+| Transport (GTFS) | 24 heures | in-memory | hebdomadaire à mensuel |
+| Voisinage (OSM) | 7 jours | in-memory | quotidien (Geofabrik) |
+| Qualité de l'air (Atmo) | 6 heures | in-memory | quotidien |
+| Synthèse IA (Mistral) | 30 jours | **PostgreSQL** (`narrative_cache`) | stable tant que les données sources ne changent pas |
 
-La clé de cache est basée sur les coordonnées arrondies (~10m de précision). Le cache est limité à 500 entrées par source.
+La clé de cache est basée sur les coordonnées arrondies (~10m de précision). Le cache in-memory est limité à 500 entrées par source ; le cache Postgres des synthèses persiste entre redéploiements.
 
 ## Score global
 
@@ -86,6 +92,26 @@ Pondération des sous-scores :
 |-------|-------------|
 | `GET /api/address/search?q=...` | Recherche d'adresse (autocomplétion) |
 | `GET /api/location/analyze?lat=...&lon=...` | Analyse complète d'une adresse |
+| `POST /api/location/narrative` | Synthèse rédigée par IA (corps = `LocationAnalysisDto`, réponse = `{ paragraph, generatedAt, cached }`) |
+
+## Synthèse IA (Mistral)
+
+En complément du résumé déterministe (points forts / points à vérifier), une **synthèse rédigée en langage courant** est générée par un LLM à partir des données d'analyse. Elle s'affiche au-dessus du résumé dans l'écran d'analyse et est incluse dans l'export PDF.
+
+- **Fournisseur par défaut** : Mistral AI (`mistral-small-latest`). Le module suit un pattern port/adapter ([`NarrativeProvider`](frontend/src/server-modules/narrative/infrastructure/narrative.provider.ts)), ce qui permet de basculer vers un autre LLM (Claude, OpenAI, Gemini…) en implémentant une nouvelle classe.
+- **Prompt** : système strict (3–4 phrases max, ton neutre, interdiction d'inventer des données, pas de jargon).
+- **Cache** : table `narrative_cache` en PostgreSQL avec TTL de 30 jours, clé = coordonnées arrondies. Évite de repayer l'API à chaque chargement et survit aux redéploiements.
+- **Dégradation gracieuse** : la route retourne 502 si Mistral est indisponible ; la page affiche alors silencieusement seulement le résumé déterministe.
+- **Obtenir une clé** : [console.mistral.ai/api-keys](https://console.mistral.ai/api-keys/).
+
+## Export PDF
+
+Un bouton **« Télécharger PDF »** dans la barre supérieure de l'écran d'analyse génère un PDF vectoriel du rapport complet, texte sélectionnable, directement dans le navigateur.
+
+- **Technologie** : [`@react-pdf/renderer`](https://react-pdf.org) chargé dynamiquement à la demande (pas d'impact sur le bundle initial).
+- **Contenu** : toutes les cards (résumé, synthèse IA, mobilité, risques, qualité de l'air, immobilier, voisinage, démographie avec graphique d'âge en SVG, cadastre).
+- **Carte** : capturée comme PNG depuis la toile MapLibre (`getCanvas().toDataURL()`), avec `preserveDrawingBuffer: true` activé sur la carte.
+- **Mise en cache** : aucune — le PDF est toujours généré à la volée côté client.
 
 ## Démarrage
 
@@ -113,7 +139,16 @@ python import_dvf.py
 python import_iris.py
 ```
 
-### 2. Lancer l'application
+### 2. Migrations SQL applicatives
+
+Les tables nécessaires au code applicatif (hors scripts d'import) sont dans `frontend/src/server-shared/infrastructure/database/migrations/`. À jouer une fois sur la base :
+
+```bash
+psql "$POSTGRES_URL" \
+  -f frontend/src/server-shared/infrastructure/database/migrations/002-narrative-cache.sql
+```
+
+### 3. Lancer l'application
 
 ```bash
 # Installation
@@ -129,10 +164,12 @@ pnpm dev
 
 | Variable | Description | Défaut |
 |----------|-------------|--------|
-| `POSTGRES_URL` | URL de connexion PostgreSQL/Neon (OSM + DVF) | - |
+| `POSTGRES_URL` | URL de connexion PostgreSQL/Neon (OSM + DVF + cache synthèses) | - |
 | `ATMO_USERNAME` | Email du compte Atmo France (optionnel) | - |
 | `ATMO_PASSWORD` | Mot de passe du compte Atmo France (optionnel) | - |
 | `NEXT_PUBLIC_DVF_SOURCE` | Source des prix DVF : `database` (PostgreSQL / data.gouv, défaut) ou `cerema` (API Cerema appelée depuis le navigateur) | `database` |
+| `MISTRAL_API_KEY` | Clé API Mistral pour la synthèse LLM. Sans elle, la card « Synthèse » n'apparaît pas | - |
+| `MISTRAL_MODEL` | Modèle Mistral à utiliser (optionnel) | `mistral-small-latest` |
 
 ### Choix de la source DVF
 
@@ -191,13 +228,19 @@ claireadresse/
 │   └── .env               # Config PostgreSQL locale (non versionné)
 └── frontend/              # Next.js / React / MapLibre
     └── src/
-        ├── app/api/           # Routes API Next.js
+        ├── app/api/              # Routes API Next.js (analyze, narrative, search)
         ├── components/
-        │   ├── map/           # Carte, couches WMS, toggles
-        │   ├── analysis/      # Cartes d'analyse (Mobilité, Risques, Cadastre, etc.)
-        │   └── score/         # Score global
-        ├── features/          # Hooks (useLocationAnalysis)
-        ├── server-modules/    # Modules serveur (DDD)
-        ├── server-shared/     # Database (Neon), cache, types partagés
-        └── types/             # DTOs frontend
+        │   ├── map/              # Carte, couches WMS, toggles
+        │   ├── analysis/         # Cartes d'analyse (Mobilité, Risques, Cadastre, Narrative, etc.)
+        │   └── score/            # Score global
+        ├── features/
+        │   ├── location-analysis/  # Hooks (useLocationAnalysis, useNarrative, useDvfRealEstate)
+        │   └── analysis-pdf/       # Export PDF (react-pdf) — document, sections, capture carte
+        ├── server-modules/       # Modules serveur (DDD) — incluant narrative/ pour la synthèse LLM
+        ├── server-shared/
+        │   ├── infrastructure/
+        │   │   ├── database/     # Pool Neon + migrations SQL applicatives
+        │   │   └── cache/        # InMemoryCache + buildGeoKey
+        │   └── types/            # DTOs serveur
+        └── types/                # DTOs frontend
 ```

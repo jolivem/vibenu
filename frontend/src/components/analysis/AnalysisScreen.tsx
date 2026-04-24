@@ -6,8 +6,10 @@ import { useSearchParams } from "next/navigation";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
 import { useDvfRealEstate } from "@/features/location-analysis/useDvfRealEstate";
+import { useNarrative } from "@/features/location-analysis/useNarrative";
 import { env } from "@/lib/config/env";
 import { Map } from "@/components/map/Map";
+import { NarrativeCard } from "@/components/analysis/NarrativeCard";
 import { SummaryCard } from "@/components/analysis/SummaryCard";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
 import { RisksCard } from "@/components/analysis/RisksCard";
@@ -45,6 +47,8 @@ export function AnalysisScreen() {
 
   const realEstate =
     useCerema && dvfData && data ? dvfData : data?.realEstate;
+
+  const { narrative, isLoading: narrativeLoading, error: narrativeError } = useNarrative(data ?? null);
 
   const mapRef = useRef<MapLibreMap | null>(null);
   const handleMapReady = useCallback((map: MapLibreMap) => {
@@ -102,6 +106,11 @@ export function AnalysisScreen() {
                 dvfTransactions={realEstate?.transactionFeatures}
                 irisGeojson={data.demographics?.irisGeojson}
                 onReady={handleMapReady}
+              />
+              <NarrativeCard
+                narrative={narrative}
+                isLoading={narrativeLoading}
+                error={narrativeError}
               />
               <SummaryCard summary={data.summary} />
             </div>
