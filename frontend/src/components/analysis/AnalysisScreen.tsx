@@ -67,6 +67,7 @@ export function AnalysisScreen() {
             <DownloadPdfButton
               data={data}
               realEstate={realEstate ?? null}
+              narrativeParagraph={narrative?.paragraph ?? null}
               getMap={getMap}
             />
           )}

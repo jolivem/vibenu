@@ -7,6 +7,7 @@ import type { LocationAnalysisDto, RealEstateAnalysisDto } from "@/types/locatio
 interface Props {
   data: LocationAnalysisDto;
   realEstate: RealEstateAnalysisDto | null;
+  narrativeParagraph: string | null;
   getMap: () => MapLibreMap | null;
 }
 
@@ -20,7 +21,7 @@ function slugify(label: string): string {
     .slice(0, 60) || "analyse";
 }
 
-export function DownloadPdfButton({ data, realEstate, getMap }: Props) {
+export function DownloadPdfButton({ data, realEstate, narrativeParagraph, getMap }: Props) {
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
@@ -48,6 +49,7 @@ export function DownloadPdfButton({ data, realEstate, getMap }: Props) {
           data={data}
           realEstate={realEstate}
           mapDataUrl={mapDataUrl}
+          narrativeParagraph={narrativeParagraph}
           generatedAt={new Date()}
         />,
       ).toBlob();

@@ -1,6 +1,7 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import type { LocationAnalysisDto, RealEstateAnalysisDto } from "@/types/location-analysis";
 import { pdfStyles } from "./pdfStyles";
+import { PdfNarrative } from "./sections/PdfNarrative";
 import { PdfSummary } from "./sections/PdfSummary";
 import { PdfMobility } from "./sections/PdfMobility";
 import { PdfRisks } from "./sections/PdfRisks";
@@ -15,10 +16,11 @@ interface Props {
   data: LocationAnalysisDto;
   realEstate: RealEstateAnalysisDto | null;
   mapDataUrl: string | null;
+  narrativeParagraph: string | null;
   generatedAt: Date;
 }
 
-export function AnalysisPdfDocument({ data, realEstate, mapDataUrl, generatedAt }: Props) {
+export function AnalysisPdfDocument({ data, realEstate, mapDataUrl, narrativeParagraph, generatedAt }: Props) {
   const formattedDate = generatedAt.toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "long",
@@ -39,6 +41,7 @@ export function AnalysisPdfDocument({ data, realEstate, mapDataUrl, generatedAt 
 
         {mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} addressLabel={data.address.label} />}
 
+        {narrativeParagraph && <PdfNarrative paragraph={narrativeParagraph} />}
         <PdfSummary summary={data.summary} />
         <PdfMobility mobility={data.mobility} />
         <PdfRisks risks={data.risks} />

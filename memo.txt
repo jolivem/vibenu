@@ -10,6 +10,7 @@ docker login ghcr.io -u jolivem           # PAT avec write:packages
 BUILD IMAGE AND PUSH
 # SITE_URL est baké dans le build pour les meta OG/Twitter/JSON-LD (gelés au build).
 # robots.txt et sitemap.xml sont force-dynamic et lisent SITE_URL au runtime.
+pnpm dev
 docker build --build-arg SITE_URL=https://claireadresse.fr -f frontend/Dockerfile -t ghcr.io/jolivem/vibenu:latest .
 docker push ghcr.io/jolivem/vibenu:latest
 
