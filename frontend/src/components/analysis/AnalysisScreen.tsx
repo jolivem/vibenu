@@ -65,7 +65,10 @@ export function AnalysisScreen() {
       <header className="analysis-topbar">
         <div className="analysis-topbar-inner">
           <Link href="/" className="analysis-back">
-            &larr; <span className="analysis-brand">ClaireAdresse</span>
+            <span aria-hidden>←</span>
+            <span className="analysis-brand">
+              Claire<i>Adresse</i>
+            </span>
           </Link>
           {data && (
             <DownloadPdfButton
@@ -80,7 +83,9 @@ export function AnalysisScreen() {
 
       <div className="analysis-hero-strip">
         <div className="analysis-hero-inner">
-          <p className="analysis-hero-eyebrow">Analyse</p>
+          <p className="analysis-hero-eyebrow">
+            Analyse{city ? ` · ${city}` : ""}{postcode ? ` · ${postcode}` : ""}
+          </p>
           <h1 className="analysis-hero-title">{label ?? "Adresse à analyser"}</h1>
         </div>
       </div>
@@ -96,7 +101,8 @@ export function AnalysisScreen() {
 
         {data && (
           <div className="analysis-grid">
-            <div className="analysis-main">
+            <section className="card map-section">
+              <h2>Localisation</h2>
               <Map
                 lat={data.map.center.lat}
                 lon={data.map.center.lon}
@@ -113,29 +119,32 @@ export function AnalysisScreen() {
                 communeContour={data.map.communeContour}
                 onReady={handleMapReady}
               />
-              <NarrativeCard
-                narrative={narrative}
-                isLoading={narrativeLoading}
-                error={narrativeError}
-              />
-              <SummaryCard summary={data.summary} />
+            </section>
+            <NarrativeCard
+              narrative={narrative}
+              isLoading={narrativeLoading}
+              error={narrativeError}
+            />
+            <SummaryCard summary={data.summary} />
+            <div className="analysis-pair">
+              <div className="analysis-stack">
+                <MobilityCard mobility={data.mobility} />
+                {realEstate && (
+                  <RealEstateCard
+                    realEstate={realEstate}
+                    loading={useCerema && dvfLoading}
+                    error={useCerema && dvfError}
+                  />
+                )}
+              </div>
+              <div className="analysis-stack">
+                <RisksCard risks={data.risks} />
+                <AirQualityCard airQuality={data.airQuality} />
+              </div>
             </div>
-
-            <aside className="analysis-side">
-              <MobilityCard mobility={data.mobility} />
-              <RisksCard risks={data.risks} />
-              <AirQualityCard airQuality={data.airQuality} />
-              {realEstate && (
-                <RealEstateCard
-                  realEstate={realEstate}
-                  loading={useCerema && dvfLoading}
-                  error={useCerema && dvfError}
-                />
-              )}
-              <NeighborhoodCard neighborhood={data.neighborhood} />
-              {data.demographics && <DemographicsCard demographics={data.demographics} />}
-              {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
-            </aside>
+            <NeighborhoodCard neighborhood={data.neighborhood} />
+            {data.demographics && <DemographicsCard demographics={data.demographics} />}
+            {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
           </div>
         )}
       </div>

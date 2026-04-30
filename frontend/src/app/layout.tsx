@@ -1,18 +1,28 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "../styles/globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+  style: ["normal", "italic"],
+});
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 const SITE_NAME = "ClaireAdresse";
-const SITE_TITLE = "ClaireAdresse — Analysez une adresse avant de louer ou acheter";
+const SITE_TITLE = "ClaireAdresse · Analysez une adresse avant de louer ou acheter";
 const SITE_DESCRIPTION =
-  "Transports, risques, cadastre, prix immobiliers, urbanisme — toutes les informations clés sur une adresse en France, en quelques secondes.";
+  "Transports, risques, cadastre, prix immobiliers, urbanisme. Toutes les informations clés sur une adresse en France, en quelques secondes.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_TITLE,
-    template: `%s — ${SITE_NAME}`,
+    template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
@@ -59,7 +69,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={`${inter.variable} ${playfair.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );
