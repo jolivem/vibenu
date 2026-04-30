@@ -15,78 +15,76 @@ export function PdfDemographics({ demographics }: { demographics: DemographicsAn
   const commune = showCommune ? communeStats : null;
   const france = nationalStats;
 
-  const renderRow = (
-    label: string,
-    iris: string,
-    communeValue: string | null,
-    franceValue: string | null,
-    isLast = false,
-  ) => (
-    <View style={isLast ? pdfStyles.tableRowLast : pdfStyles.tableRow}>
-      <Text style={pdfStyles.tableCellLabel}>{label}</Text>
-      <Text style={pdfStyles.tableCell}>{iris}</Text>
-      {showCommune && <Text style={pdfStyles.tableCell}>{communeValue ?? "—"}</Text>}
-      {france && <Text style={pdfStyles.tableCell}>{franceValue ?? "—"}</Text>}
-    </View>
-  );
+  const rows: Array<{ label: string; iris: string; commune: string; france: string }> = [
+    {
+      label: "Population",
+      iris: formatPopulation(demographics.population),
+      commune: formatPopulation(commune?.population ?? null),
+      france: formatPopulation(france?.population ?? null),
+    },
+    {
+      label: "Densité",
+      iris: formatDensity(demographics.density),
+      commune: "—",
+      france: "—",
+    },
+    {
+      label: "Revenu médian",
+      iris: formatRevenu(demographics.revenuMedian),
+      commune: formatRevenu(commune?.revenuMedian ?? null),
+      france: formatRevenu(france?.revenuMedian ?? null),
+    },
+    {
+      label: "Taux de pauvreté",
+      iris: formatPct(demographics.tauxPauvrete),
+      commune: formatPct(commune?.tauxPauvrete ?? null),
+      france: formatPct(france?.tauxPauvrete ?? null),
+    },
+  ];
 
   return (
-    <View style={pdfStyles.card} wrap={false}>
-      <Text style={pdfStyles.cardTitle}>Démographie</Text>
-      <Text style={[pdfStyles.p, pdfStyles.muted]}>
-        IRIS : {demographics.nomIris || demographics.codeIris}
+    <View>
+      <Text style={pdfStyles.demoIris}>
+        IRIS · {demographics.nomIris || demographics.codeIris}
         {demographics.nomCommune && ` — ${demographics.nomCommune}`}
       </Text>
-      {!showCommune && demographics.nomCommune && (
-        <Text style={[pdfStyles.p, pdfStyles.muted]}>
-          IRIS unique pour cette commune — les chiffres IRIS et communaux sont identiques.
-        </Text>
-      )}
 
-      <View style={pdfStyles.table}>
-        <View style={pdfStyles.tableRow}>
-          <Text style={pdfStyles.tableHeaderCell}>Indicateur</Text>
-          <Text style={pdfStyles.tableHeaderCell}>IRIS</Text>
-          {showCommune && <Text style={pdfStyles.tableHeaderCell}>Commune</Text>}
-          {france && <Text style={pdfStyles.tableHeaderCell}>France</Text>}
+      <View style={pdfStyles.demoTable}>
+        <View style={pdfStyles.demoTableHead}>
+          <Text style={pdfStyles.demoTableHeadCellFirst}>Indicateur</Text>
+          <Text style={pdfStyles.demoTableHeadCell}>IRIS</Text>
+          {showCommune && <Text style={pdfStyles.demoTableHeadCell}>Commune</Text>}
+          {france && <Text style={pdfStyles.demoTableHeadCell}>France</Text>}
         </View>
-        {renderRow(
-          "Population",
-          formatPopulation(demographics.population),
-          formatPopulation(commune?.population ?? null),
-          formatPopulation(france?.population ?? null),
-        )}
-        {renderRow("Densité", formatDensity(demographics.density), "—", "—")}
-        {renderRow(
-          "Revenu médian",
-          formatRevenu(demographics.revenuMedian),
-          formatRevenu(commune?.revenuMedian ?? null),
-          formatRevenu(france?.revenuMedian ?? null),
-        )}
-        {renderRow(
-          "Taux de pauvreté",
-          formatPct(demographics.tauxPauvrete),
-          formatPct(commune?.tauxPauvrete ?? null),
-          formatPct(france?.tauxPauvrete ?? null),
-          true,
-        )}
+        {rows.map((row) => (
+          <View key={row.label} style={pdfStyles.demoTableRow}>
+            <Text style={pdfStyles.demoTableCellLabel}>{row.label}</Text>
+            <Text style={pdfStyles.demoTableCellIris}>{row.iris}</Text>
+            {showCommune && (
+              <Text style={pdfStyles.demoTableCell}>{row.commune}</Text>
+            )}
+            {france && (
+              <Text style={pdfStyles.demoTableCell}>{row.france}</Text>
+            )}
+          </View>
+        ))}
       </View>
 
       {demographics.ageDistribution && (
-        <View>
-          <Text style={pdfStyles.subtitle}>Répartition par âge</Text>
+        <View style={pdfStyles.chartWrap} wrap={false}>
+          <Text style={pdfStyles.chartHead}>Répartition par âge</Text>
           <AgeChartPdf
             iris={demographics.ageDistribution}
             commune={commune?.ageDistribution ?? null}
             france={france?.ageDistribution ?? null}
             showCommune={showCommune}
           />
+          <Text style={pdfStyles.chartNote}>
+            Commune et France : moyennes pondérées par population calculées à partir des
+            IRIS (chiffres indicatifs).
+          </Text>
         </View>
       )}
-
-      <Text style={[pdfStyles.small, { marginTop: 6 }]}>
-        Commune et France : moyennes pondérées par population calculées à partir des IRIS (chiffres indicatifs).
-      </Text>
     </View>
   );
 }

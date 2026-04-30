@@ -8,7 +8,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   bakery: "Boulangerie",
   pharmacy: "Pharmacie",
   doctor: "Médecin",
-  park: "Parc",
+  park: "Espaces verts",
   sport: "Sport",
   restaurant: "Restaurant",
   post_office: "Poste",
@@ -28,29 +28,44 @@ function groupByCategory(pois: NeighborhoodAnalysisDto["pois"]) {
 
 export function PdfNeighborhood({ neighborhood }: { neighborhood: NeighborhoodAnalysisDto }) {
   const groups = groupByCategory(neighborhood.pois);
+  const level = neighborhood.label.charAt(0).toUpperCase() + neighborhood.label.slice(1);
+  const categoryCount = Object.keys(groups).length;
+
+  if (neighborhood.pois.length === 0) {
+    return (
+      <View>
+        <Text style={pdfStyles.airBandText}>
+          Aucun équipement trouvé à proximité.
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={pdfStyles.card} wrap={false}>
-      <Text style={pdfStyles.cardTitle}>Voisinage</Text>
-      <Text style={pdfStyles.p}>Niveau : {neighborhood.label}</Text>
+    <View>
+      <View style={pdfStyles.voisStatus}>
+        <Text style={pdfStyles.voisStatusLabel}>Niveau</Text>
+        <Text style={pdfStyles.voisStatusValue}>{level}</Text>
+        <Text style={[pdfStyles.airBandText, { marginLeft: "auto" }]}>
+          {categoryCount} catégorie{categoryCount > 1 ? "s" : ""} couverte{categoryCount > 1 ? "s" : ""}
+        </Text>
+      </View>
 
-      {Object.entries(groups).map(([category, pois]) => (
-        <View key={category}>
-          <Text style={pdfStyles.subtitle}>{CATEGORY_LABELS[category] ?? category}</Text>
-          {pois.slice(0, 3).map((poi, i) => (
-            <View key={i} style={pdfStyles.bullet}>
-              <Text style={pdfStyles.bulletDot}>• </Text>
-              <Text style={pdfStyles.bulletText}>
-                {poi.name} — {poi.distanceMeters} m
-              </Text>
-            </View>
-          ))}
-        </View>
-      ))}
-
-      {neighborhood.pois.length === 0 && (
-        <Text style={pdfStyles.p}>Aucun équipement trouvé à proximité.</Text>
-      )}
+      <View style={pdfStyles.voisGrid}>
+        {Object.entries(groups).map(([category, pois]) => (
+          <View key={category} style={pdfStyles.voisCat} wrap={false}>
+            <Text style={pdfStyles.voisCatTitle}>
+              {CATEGORY_LABELS[category] ?? category}
+            </Text>
+            {pois.slice(0, 3).map((poi, i) => (
+              <View key={i} style={pdfStyles.voisItem}>
+                <Text style={pdfStyles.voisItemName}>{poi.name}</Text>
+                <Text style={pdfStyles.voisItemDist}>{poi.distanceMeters} m</Text>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }

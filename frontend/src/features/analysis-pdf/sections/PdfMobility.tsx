@@ -2,47 +2,36 @@ import { Text, View } from "@react-pdf/renderer";
 import type { MobilityAnalysisDto } from "@/types/location-analysis";
 import { pdfStyles } from "../pdfStyles";
 
-function stationLabel(mode: string): string {
-  switch (mode) {
-    case "métro/RER": return "Métro / RER";
-    case "metro": return "Métro";
-    case "rer": return "RER";
-    case "train": return "Gare";
-    default: return "Station";
-  }
-}
-
 export function PdfMobility({ mobility }: { mobility: MobilityAnalysisDto }) {
+  const stops = [
+    ...(mobility.nearestStation
+      ? [
+          {
+            id: "station-" + mobility.nearestStation.name,
+            name: mobility.nearestStation.name,
+            distanceMeters: mobility.nearestStation.distanceMeters,
+          },
+        ]
+      : []),
+    ...mobility.nearestStops,
+  ].slice(0, 6);
+
+  const level = mobility.label.charAt(0).toUpperCase() + mobility.label.slice(1);
+
   return (
-    <View style={pdfStyles.card} wrap={false}>
-      <Text style={pdfStyles.cardTitle}>Mobilité</Text>
-      <Text style={pdfStyles.p}>Niveau : {mobility.label}</Text>
-
-      {mobility.nearestStation && (
-        <View>
-          <Text style={pdfStyles.subtitle}>{stationLabel(mobility.nearestStation.mode)}</Text>
-          <View style={pdfStyles.bullet}>
-            <Text style={pdfStyles.bulletDot}>• </Text>
-            <Text style={pdfStyles.bulletText}>
-              {mobility.nearestStation.name} — {mobility.nearestStation.distanceMeters} m
-            </Text>
+    <View style={pdfStyles.mobilityBand} wrap={false}>
+      <View style={pdfStyles.mobilityStatus}>
+        <Text style={pdfStyles.mobilityStatusLabel}>Niveau</Text>
+        <Text style={pdfStyles.mobilityStatusValue}>{level}</Text>
+      </View>
+      <View style={pdfStyles.mobilityList}>
+        {stops.map((stop) => (
+          <View key={stop.id} style={pdfStyles.mobilityStop}>
+            <Text style={pdfStyles.mobilityStopName}>{stop.name}</Text>
+            <Text style={pdfStyles.mobilityStopDist}>{stop.distanceMeters} m</Text>
           </View>
-        </View>
-      )}
-
-      {mobility.nearestStops.length > 0 && (
-        <View>
-          <Text style={pdfStyles.subtitle}>Bus</Text>
-          {mobility.nearestStops.map((stop) => (
-            <View key={stop.id} style={pdfStyles.bullet}>
-              <Text style={pdfStyles.bulletDot}>• </Text>
-              <Text style={pdfStyles.bulletText}>
-                {stop.name} — {stop.distanceMeters} m
-              </Text>
-            </View>
-          ))}
-        </View>
-      )}
+        ))}
+      </View>
     </View>
   );
 }
