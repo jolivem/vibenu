@@ -1,7 +1,19 @@
 import type { AddressProvider } from "./address.provider";
-import type { AddressDetails, AddressSuggestion } from "../domain/address.types";
+import type { AddressDetails, AddressSuggestion, AddressSuggestionType } from "../domain/address.types";
 import { HttpClient } from "../../../server-shared/infrastructure/http/http-client";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
+
+function parseSuggestionType(value: string): AddressSuggestionType | undefined {
+  if (
+    value === "housenumber" ||
+    value === "street" ||
+    value === "locality" ||
+    value === "municipality"
+  ) {
+    return value;
+  }
+  return undefined;
+}
 
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
@@ -51,6 +63,8 @@ export class GeoApiAddressProvider implements AddressProvider {
         street: feature.properties.street ?? feature.properties.name,
         city: feature.properties.city,
         postcode: feature.properties.postcode,
+        citycode: feature.properties.citycode,
+        type: parseSuggestionType(feature.properties._type),
         coordinates: {
           latitude: feature.geometry.coordinates[1],
           longitude: feature.geometry.coordinates[0],

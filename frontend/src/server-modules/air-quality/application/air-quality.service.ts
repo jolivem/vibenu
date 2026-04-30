@@ -43,6 +43,7 @@ export class AirQualityServiceImpl implements AirQualityService {
     return {
       level: data.level,
       message,
+      ...(data.debugRaw !== undefined ? { debugRaw: data.debugRaw } : {}),
     };
   }
 }

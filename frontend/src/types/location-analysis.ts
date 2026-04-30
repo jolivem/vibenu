@@ -1,9 +1,17 @@
+export type AddressSuggestionTypeDto =
+  | "housenumber"
+  | "street"
+  | "locality"
+  | "municipality";
+
 export interface AddressSuggestionDto {
   id: string;
   label: string;
   street?: string;
   city: string;
   postcode: string;
+  citycode?: string;
+  type?: AddressSuggestionTypeDto;
   latitude: number;
   longitude: number;
 }
@@ -71,6 +79,8 @@ export interface RealEstateAnalysisDto {
 export interface AirQualityAnalysisDto {
   level: "bon" | "moyen" | "dégradé" | "mauvais" | "très_mauvais";
   message: string;
+  /** Présent uniquement quand NEXT_PUBLIC_DEBUG=true. */
+  debugRaw?: unknown;
 }
 
 export interface SummaryDto {
@@ -167,6 +177,8 @@ export interface LocationAnalysisDto {
       lon: number;
     };
     zoom: number;
+    /** Contour de la commune si l'analyse a été lancée sur un nom de commune (type=municipality). */
+    communeContour?: GeoJsonGeometryDto;
   };
   mobility: MobilityAnalysisDto;
   risks: RiskAnalysisDto;

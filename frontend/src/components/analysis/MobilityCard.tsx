@@ -10,18 +10,31 @@ function stationLabel(mode: string): string {
   }
 }
 
+function formatDistance(meters: number): string {
+  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
+  return `${meters} m`;
+}
+
 export function MobilityCard({ mobility }: { mobility: MobilityAnalysisDto }) {
+  const station = mobility.nearestStation;
+  const stationIsClose = station && station.distanceMeters <= 1500;
+
   return (
     <section className="card">
       <h2>Mobilité</h2>
-      <p>Niveau : {mobility.label}</p>
+      {(mobility.label === "bon" || mobility.label === "très bon") && (
+        <p>Niveau : {mobility.label}</p>
+      )}
 
-      {mobility.nearestStation && (
+      {station && (
         <>
-          <h3>{stationLabel(mobility.nearestStation.mode)}</h3>
+          <h3>
+            {stationLabel(station.mode)}
+            {!stationIsClose && " la plus proche"}
+          </h3>
           <ul>
             <li>
-              {mobility.nearestStation.name} - {mobility.nearestStation.distanceMeters} m
+              {station.name} — {formatDistance(station.distanceMeters)}
             </li>
           </ul>
         </>
@@ -33,7 +46,7 @@ export function MobilityCard({ mobility }: { mobility: MobilityAnalysisDto }) {
           <ul>
             {mobility.nearestStops.map((stop) => (
               <li key={stop.id}>
-                {stop.name} - {stop.distanceMeters} m
+                {stop.name} — {formatDistance(stop.distanceMeters)}
               </li>
             ))}
           </ul>

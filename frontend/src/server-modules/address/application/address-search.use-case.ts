@@ -13,6 +13,8 @@ export class AddressSearchUseCase {
       street: suggestion.street,
       city: suggestion.city,
       postcode: suggestion.postcode,
+      citycode: suggestion.citycode,
+      type: suggestion.type,
       latitude: suggestion.coordinates.latitude,
       longitude: suggestion.coordinates.longitude,
     }));

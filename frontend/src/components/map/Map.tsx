@@ -6,10 +6,41 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { RISK_LAYERS, buildWmsTileUrl } from "./riskLayers";
 import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
-import type { CadastreParcelDto, DvfTransactionFeatureDto } from "@/types/location-analysis";
+import type { CadastreParcelDto, DvfTransactionFeatureDto, GeoJsonGeometryDto } from "@/types/location-analysis";
 
 const DVF_LAYER_ID = "dvf-transactions";
 const IRIS_LAYER_ID = "iris-boundary";
+const COMMUNE_LAYER_ID = "commune-contour";
+
+type LngLatBounds = [[number, number], [number, number]];
+
+function computeBbox(geometry: GeoJsonGeometryDto): LngLatBounds | null {
+  let minLon = Infinity;
+  let minLat = Infinity;
+  let maxLon = -Infinity;
+  let maxLat = -Infinity;
+
+  const visit = (coords: unknown): void => {
+    if (!Array.isArray(coords)) return;
+    if (typeof coords[0] === "number" && typeof coords[1] === "number") {
+      const lon = coords[0] as number;
+      const lat = coords[1] as number;
+      if (lon < minLon) minLon = lon;
+      if (lat < minLat) minLat = lat;
+      if (lon > maxLon) maxLon = lon;
+      if (lat > maxLat) maxLat = lat;
+      return;
+    }
+    for (const c of coords) visit(c);
+  };
+
+  visit(geometry.coordinates);
+  if (!Number.isFinite(minLon) || !Number.isFinite(minLat)) return null;
+  return [
+    [minLon, minLat],
+    [maxLon, maxLat],
+  ];
+}
 
 interface MapProps {
   lat: number;
@@ -19,10 +50,11 @@ interface MapProps {
   cadastreParcel?: CadastreParcelDto | null;
   dvfTransactions?: DvfTransactionFeatureDto[];
   irisGeojson?: string | null;
+  communeContour?: GeoJsonGeometryDto | null;
   onReady?: (map: MapLibreMap) => void;
 }
 
-export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, onReady }: MapProps) {
+export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, onReady }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -157,6 +189,41 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
       );
     }
 
+    // Build commune contour source (always visible when provided)
+    const communeSources: Record<string, maplibregl.SourceSpecification> = {};
+    const communeLayers: maplibregl.LayerSpecification[] = [];
+
+    if (communeContour) {
+      communeSources[COMMUNE_LAYER_ID] = {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: communeContour as GeoJSON.Geometry,
+          properties: {},
+        },
+      };
+      communeLayers.push(
+        {
+          id: `${COMMUNE_LAYER_ID}-fill`,
+          type: "fill",
+          source: COMMUNE_LAYER_ID,
+          paint: {
+            "fill-color": "#2563eb",
+            "fill-opacity": 0.1,
+          },
+        },
+        {
+          id: `${COMMUNE_LAYER_ID}-outline`,
+          type: "line",
+          source: COMMUNE_LAYER_ID,
+          paint: {
+            "line-color": "#1d4ed8",
+            "line-width": 2,
+          },
+        },
+      );
+    }
+
     // Build IRIS source if available
     const irisSources: Record<string, maplibregl.SourceSpecification> = {};
     const irisLayers: maplibregl.LayerSpecification[] = [];
@@ -215,6 +282,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           ...wmsSources,
           ...dvfSources,
           ...irisSources,
+          ...communeSources,
           ...cadastreSources,
         },
         layers: [
@@ -222,6 +290,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           ...wmsLayers,
           ...dvfLayers,
           ...irisLayers,
+          ...communeLayers,
           ...cadastreLayers, // cadastre on top of DVF
         ],
       },
@@ -234,11 +303,21 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
 
     onReadyRef.current?.(map.current);
 
-    // Main marker for the searched address
-    new maplibregl.Marker({ color: "#0066cc" })
+    // Main marker — plus discret quand on affiche un contour de commune
+    const markerColor = communeContour ? "#94a3b8" : "#0066cc";
+    const markerScale = communeContour ? 0.55 : 1;
+    new maplibregl.Marker({ color: markerColor, scale: markerScale })
       .setLngLat([lon, lat])
       .setPopup(new maplibregl.Popup().setText(label))
       .addTo(map.current);
+
+    // Si on a le contour de la commune, ajuste le zoom à son emprise
+    if (communeContour) {
+      const bbox = computeBbox(communeContour);
+      if (bbox) {
+        map.current.fitBounds(bbox, { padding: 24, duration: 0 });
+      }
+    }
 
     // Add transport markers
     transports.forEach((transport) => {
@@ -280,7 +359,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         map.current.remove();
       }
     };
-  }, [lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson]);
+  }, [lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour]);
 
   // Sync layer visibility
   useEffect(() => {

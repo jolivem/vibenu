@@ -10,9 +10,13 @@ export interface AirQualityData {
   };
   source: string;
   lastUpdated: Date;
+  /** Brut renvoyé par Atmo. Présent uniquement en mode debug (NEXT_PUBLIC_DEBUG=true). */
+  debugRaw?: unknown;
 }
 
 export interface AirQualityAnalysis {
   level: AirQualityData["level"];
   message: string;
+  /** Brut renvoyé par Atmo. Présent uniquement en mode debug (NEXT_PUBLIC_DEBUG=true). */
+  debugRaw?: unknown;
 }

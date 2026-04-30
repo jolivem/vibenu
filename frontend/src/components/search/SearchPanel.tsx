@@ -18,6 +18,8 @@ export function SearchPanel() {
       city: address.city,
       postcode: address.postcode,
     });
+    if (address.type) params.set("type", address.type);
+    if (address.citycode) params.set("citycode", address.citycode);
 
     router.push(`/analyze?${params.toString()}`);
   };

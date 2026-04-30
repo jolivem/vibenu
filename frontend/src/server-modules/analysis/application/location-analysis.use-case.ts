@@ -1,4 +1,5 @@
 import type { AddressProvider } from "../../address/infrastructure/address.provider";
+import type { CommuneContourProvider } from "../../address/infrastructure/commune-contour.provider";
 import type { MobilityService } from "../../mobility/application/mobility.service";
 import type { RiskService } from "../../risks/application/risk.service";
 import type { RealEstateService } from "../../real-estate/application/real-estate.service";
@@ -12,6 +13,7 @@ import type { LocationAnalysisDto } from "../../../server-shared/types/location-
 
 interface Dependencies {
   addressProvider: AddressProvider;
+  communeContourProvider: CommuneContourProvider;
   mobilityService: MobilityService;
   riskService: RiskService;
   realEstateService: RealEstateService;
@@ -33,16 +35,24 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
     // Resolve address first — we need codeInsee for DVF and Atmo
     const addressDetails = await this.dependencies.addressProvider.reverseGeocode(input.lat, input.lon);
     const codeInsee = addressDetails?.citycode;
+    const contourCitycode = input.citycode ?? codeInsee;
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics] = await Promise.all([
-      this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
-      this.dependencies.riskService.getRiskData(input.lat, input.lon),
-      this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee),
-      this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon, codeInsee),
-      this.dependencies.neighborhoodService.getNeighborhoodData(input.lat, input.lon),
-      this.dependencies.cadastreService.getCadastreData(input.lat, input.lon),
-      this.dependencies.demographicsService.getDemographicsData(input.lat, input.lon),
-    ]);
+    const contourPromise =
+      input.type === "municipality" && contourCitycode
+        ? this.dependencies.communeContourProvider.getContour(contourCitycode)
+        : Promise.resolve(null);
+
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour] =
+      await Promise.all([
+        this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
+        this.dependencies.riskService.getRiskData(input.lat, input.lon),
+        this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee),
+        this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon, codeInsee),
+        this.dependencies.neighborhoodService.getNeighborhoodData(input.lat, input.lon),
+        this.dependencies.cadastreService.getCadastreData(input.lat, input.lon),
+        this.dependencies.demographicsService.getDemographicsData(input.lat, input.lon),
+        contourPromise,
+      ]);
 
     const address = {
       label: input.label ?? addressDetails?.label ?? `${input.lat}, ${input.lon}`,
@@ -64,6 +74,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       map: {
         center: { lat: input.lat, lon: input.lon },
         zoom: 14,
+        ...(communeContour ? { communeContour } : {}),
       },
       mobility,
       risks,

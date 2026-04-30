@@ -1,11 +1,19 @@
 import type { ConfidenceLevel, MobilityLabel, PriceLevel, RiskCategoryLevel, RiskLevel } from "../domain/common.types";
 
+export type AddressSuggestionTypeDto =
+  | "housenumber"
+  | "street"
+  | "locality"
+  | "municipality";
+
 export interface AddressSuggestionDto {
   id: string;
   label: string;
   street?: string;
   city: string;
   postcode: string;
+  citycode?: string;
+  type?: AddressSuggestionTypeDto;
   latitude: number;
   longitude: number;
 }
@@ -72,6 +80,8 @@ export interface RealEstateAnalysisDto {
 export interface AirQualityAnalysisDto {
   level: string;
   message: string;
+  /** Présent uniquement quand NEXT_PUBLIC_DEBUG=true. */
+  debugRaw?: unknown;
 }
 
 export interface NeighborhoodPoiDto {
@@ -127,6 +137,8 @@ export interface MapContextDto {
     lon: number;
   };
   zoom: number;
+  /** Contour de la commune si l'analyse a été lancée sur un nom de commune (type=municipality). */
+  communeContour?: GeoJsonGeometryDto;
 }
 
 export interface AgeDistributionDto {

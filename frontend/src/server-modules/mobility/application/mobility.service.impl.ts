@@ -6,13 +6,21 @@ export class MobilityServiceImpl implements MobilityService {
   constructor(private readonly transportProvider: TransportProvider) {}
 
   async getMobilityData(lat: number, lon: number): Promise<MobilityAnalysis> {
-    const data = await this.transportProvider.findNearbyStops(lat, lon, 1000);
+    const close = await this.transportProvider.findNearbyStops(lat, lon, 1000);
 
-    const label = deriveLabel(data);
+    // Si aucune gare/métro/RER dans un rayon de 1 km, élargit la recherche
+    // pour trouver la plus proche (rayon 50 km, couvre la quasi-totalité de la France).
+    let nearestStation = close.nearestStation;
+    if (!nearestStation) {
+      const wide = await this.transportProvider.findNearbyStops(lat, lon, 50_000);
+      nearestStation = wide.nearestStation;
+    }
+
+    const label = deriveLabel({ nearestStops: close.nearestStops, nearestStation });
 
     return {
-      nearestStops: data.nearestStops,
-      nearestStation: data.nearestStation,
+      nearestStops: close.nearestStops,
+      nearestStation,
       label,
     };
   }

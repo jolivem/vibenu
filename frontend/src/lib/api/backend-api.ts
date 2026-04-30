@@ -19,6 +19,8 @@ export const backendApi = {
     label?: string;
     city?: string;
     postcode?: string;
+    type?: string;
+    citycode?: string;
   }): Promise<LocationAnalysisDto> {
     const params = new URLSearchParams({
       lat: String(input.lat),
@@ -28,6 +30,8 @@ export const backendApi = {
     if (input.label) params.set("label", input.label);
     if (input.city) params.set("city", input.city);
     if (input.postcode) params.set("postcode", input.postcode);
+    if (input.type) params.set("type", input.type);
+    if (input.citycode) params.set("citycode", input.citycode);
 
     const response = await fetch(`/api/location/analyze?${params.toString()}`, {
       cache: "no-store",

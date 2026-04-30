@@ -32,9 +32,13 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
   private readonly baseUrl = "https://admindata.atmo-france.org";
 
   async getAirQuality(lat: number, lon: number, codeInsee?: string): Promise<AirQualityData> {
+    const debug = process.env.NEXT_PUBLIC_DEBUG === "true";
     const cacheKey = buildGeoKey(lat, lon);
-    const cached = AtmoAirQualityProvider.cache.get(cacheKey);
-    if (cached) return cached;
+
+    if (!debug) {
+      const cached = AtmoAirQualityProvider.cache.get(cacheKey);
+      if (cached) return cached;
+    }
 
     if (!this.username || !this.password) {
       return this.getFallbackData("Identifiants Atmo non configurés");
@@ -66,7 +70,16 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
       }
 
       const result = this.mapAtmoData(feature.properties);
-      AtmoAirQualityProvider.cache.set(cacheKey, result);
+      if (debug) {
+        result.debugRaw = {
+          codeInsee,
+          requestedDate: today,
+          allFeatures: data.features?.map((f) => f.properties) ?? [],
+          selectedFeature: feature.properties,
+        };
+      } else {
+        AtmoAirQualityProvider.cache.set(cacheKey, result);
+      }
       return result;
     } catch (error) {
       console.warn("Atmo provider error:", error);

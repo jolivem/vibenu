@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { LocationAnalysisUseCase } from "@/server-modules/analysis/application/location-analysis.use-case";
 import { GeoApiAddressProvider } from "@/server-modules/address/infrastructure/geo-api-address.provider";
+import { CommuneContourProvider } from "@/server-modules/address/infrastructure/commune-contour.provider";
 import { TransportDataGouvProvider } from "@/server-modules/mobility/infrastructure/transport-data-gouv.provider";
 import { GeorisquesRiskProvider } from "@/server-modules/risks/infrastructure/brgm-risk.provider";
 import { DvfDatabaseProvider } from "@/server-modules/real-estate/infrastructure/dvf-database.provider";
@@ -27,6 +28,8 @@ const analyzeQuerySchema = z.object({
   label: z.string().trim().min(1).optional(),
   city: z.string().trim().optional(),
   postcode: z.string().trim().optional(),
+  type: z.enum(["housenumber", "street", "locality", "municipality"]).optional(),
+  citycode: z.string().trim().regex(/^[0-9AB]{5}$/i).optional(), // 5 chiffres ou Corse (2A/2B)
 });
 
 const realEstateProvider: RealEstateProvider =
@@ -36,6 +39,7 @@ const realEstateProvider: RealEstateProvider =
 
 const useCase = new LocationAnalysisUseCase({
   addressProvider: new GeoApiAddressProvider(),
+  communeContourProvider: new CommuneContourProvider(),
   mobilityService: new MobilityServiceImpl(new TransportDataGouvProvider()),
   riskService: new RiskServiceImpl(new GeorisquesRiskProvider()),
   realEstateService: new RealEstateServiceImpl(realEstateProvider),

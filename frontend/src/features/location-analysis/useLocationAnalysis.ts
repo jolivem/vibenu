@@ -10,6 +10,8 @@ export const useLocationAnalysis = (input: {
   label?: string;
   city?: string;
   postcode?: string;
+  type?: string;
+  citycode?: string;
 }) => {
   const [data, setData] = useState<LocationAnalysisDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +32,8 @@ export const useLocationAnalysis = (input: {
           label: input.label,
           city: input.city,
           postcode: input.postcode,
+          type: input.type,
+          citycode: input.citycode,
         });
         setData(analysis);
       } catch (err) {
@@ -40,7 +44,7 @@ export const useLocationAnalysis = (input: {
     };
 
     void load();
-  }, [input.city, input.label, input.lat, input.lon, input.postcode]);
+  }, [input.city, input.label, input.lat, input.lon, input.postcode, input.type, input.citycode]);
 
   return { data, isLoading, error };
 };

@@ -27,6 +27,8 @@ export function AnalysisScreen() {
   const label = searchParams.get("label") ?? undefined;
   const city = searchParams.get("city") ?? undefined;
   const postcode = searchParams.get("postcode") ?? undefined;
+  const type = searchParams.get("type") ?? undefined;
+  const citycode = searchParams.get("citycode") ?? undefined;
 
   const latNum = lat ? Number(lat) : undefined;
   const lonNum = lon ? Number(lon) : undefined;
@@ -37,6 +39,8 @@ export function AnalysisScreen() {
     label,
     city,
     postcode,
+    type,
+    citycode,
   });
 
   const useCerema = env.dvfSource === "cerema";
@@ -106,6 +110,7 @@ export function AnalysisScreen() {
                 cadastreParcel={data.cadastre?.parcel}
                 dvfTransactions={realEstate?.transactionFeatures}
                 irisGeojson={data.demographics?.irisGeojson}
+                communeContour={data.map.communeContour}
                 onReady={handleMapReady}
               />
               <NarrativeCard

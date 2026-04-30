@@ -21,6 +21,12 @@ export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisD
         Niveau : <span className={config.className}>{config.label}</span>
       </p>
       <p className="muted">{airQuality.message}</p>
+      {airQuality.debugRaw !== undefined && (
+        <details className="narrative-debug">
+          <summary>Données reçues d&apos;Atmo (debug)</summary>
+          <pre>{JSON.stringify(airQuality.debugRaw, null, 2)}</pre>
+        </details>
+      )}
     </section>
   );
 }
