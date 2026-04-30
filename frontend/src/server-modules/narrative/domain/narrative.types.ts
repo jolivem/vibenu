@@ -6,7 +6,6 @@
 export interface NarrativeInput {
   addressLabel: string;
   mobility: {
-    score: number;
     label: string;
     hasNearbyStation: boolean;
     nearestStationDistanceMeters: number | null;
@@ -20,13 +19,11 @@ export interface NarrativeInput {
     level: string;
   };
   realEstate: {
-    score: number;
     priceLevel: string | null;
     medianPricePerSquareMeter: number | null;
     nearbyTransactionsCount: number | null;
   } | null;
   neighborhood: {
-    score: number;
     label: string;
     categoriesPresent: string[];
   };
@@ -47,4 +44,6 @@ export interface NarrativeDto {
   paragraph: string;
   generatedAt: string;
   cached: boolean;
+  /** Données envoyées au LLM. Présent uniquement en mode debug (NEXT_PUBLIC_DEBUG=true). */
+  debugInput?: NarrativeInput;
 }

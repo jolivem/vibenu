@@ -13,9 +13,7 @@ export class AirQualityServiceImpl implements AirQualityService {
       return this.analyzeAirQuality(data);
     } catch (error) {
       console.error("Air quality service error:", error);
-      // Return neutral score on error
       return {
-        score: 50,
         level: "moyen",
         message: "Données de qualité de l'air indisponibles.",
       };
@@ -23,9 +21,6 @@ export class AirQualityServiceImpl implements AirQualityService {
   }
 
   private analyzeAirQuality(data: AirQualityData): AirQualityAnalysis {
-    // Convert AQI to score (higher AQI = lower score)
-    const score = Math.max(0, Math.min(100, 100 - (data.aqi / 5)));
-
     let message = "";
     switch (data.level) {
       case "bon":
@@ -46,7 +41,6 @@ export class AirQualityServiceImpl implements AirQualityService {
     }
 
     return {
-      score: Math.round(score),
       level: data.level,
       message,
     };

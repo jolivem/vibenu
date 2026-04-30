@@ -37,8 +37,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const debug = process.env.NEXT_PUBLIC_DEBUG === "true";
+
   try {
-    const result = await getService().generate(body);
+    const result = await getService().generate(body, { debug });
     return NextResponse.json(result);
   } catch (error) {
     console.warn("Narrative generation failed:", error);

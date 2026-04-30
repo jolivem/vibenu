@@ -16,7 +16,6 @@ export function PdfMobility({ mobility }: { mobility: MobilityAnalysisDto }) {
   return (
     <View style={pdfStyles.card} wrap={false}>
       <Text style={pdfStyles.cardTitle}>Mobilité</Text>
-      <Text style={pdfStyles.p}>Score : {mobility.score}/100</Text>
       <Text style={pdfStyles.p}>Niveau : {mobility.label}</Text>
 
       {mobility.nearestStation && (

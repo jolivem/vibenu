@@ -13,7 +13,6 @@ export interface AirQualityData {
 }
 
 export interface AirQualityAnalysis {
-  score: number; // 0-100, higher is better air quality
   level: AirQualityData["level"];
   message: string;
 }

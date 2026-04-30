@@ -30,7 +30,6 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodA
   return (
     <section className="card">
       <h2>Voisinage</h2>
-      <p>Score : {neighborhood.score}/100</p>
       <p>Niveau : {neighborhood.label}</p>
 
       {Object.entries(groups).map(([category, pois]) => (

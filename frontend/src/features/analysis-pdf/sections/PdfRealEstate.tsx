@@ -6,7 +6,6 @@ export function PdfRealEstate({ realEstate }: { realEstate: RealEstateAnalysisDt
   return (
     <View style={pdfStyles.card} wrap={false}>
       <Text style={pdfStyles.cardTitle}>Immobilier</Text>
-      <Text style={pdfStyles.p}>Score : {realEstate.score}/100</Text>
       <Text style={pdfStyles.p}>Transactions proches : {realEstate.nearbyTransactionsCount ?? "n/a"}</Text>
       <Text style={pdfStyles.p}>Niveau de prix : {realEstate.priceLevel ?? "n/a"}</Text>
       <Text style={pdfStyles.p}>Confiance : {realEstate.confidence ?? "n/a"}</Text>

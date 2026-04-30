@@ -10,5 +10,4 @@ export interface RiskCategory {
 export interface RiskAnalysis {
   categories: RiskCategory[];
   level: RiskLevel;
-  score: number;
 }

@@ -32,7 +32,6 @@ export function PdfNeighborhood({ neighborhood }: { neighborhood: NeighborhoodAn
   return (
     <View style={pdfStyles.card} wrap={false}>
       <Text style={pdfStyles.cardTitle}>Voisinage</Text>
-      <Text style={pdfStyles.p}>Score : {neighborhood.score}/100</Text>
       <Text style={pdfStyles.p}>Niveau : {neighborhood.label}</Text>
 
       {Object.entries(groups).map(([category, pois]) => (

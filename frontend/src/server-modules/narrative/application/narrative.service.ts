@@ -9,27 +9,35 @@ export class NarrativeService {
     private readonly cache: NarrativeCacheRepository,
   ) {}
 
-  async generate(data: LocationAnalysisDto): Promise<NarrativeDto> {
+  async generate(
+    data: LocationAnalysisDto,
+    options: { debug?: boolean } = {},
+  ): Promise<NarrativeDto> {
     const { lat, lon } = data.map.center;
+    const input = buildNarrativeInput(data);
 
-    const cached = await this.cache.get(lat, lon);
-    if (cached) {
-      return {
-        paragraph: cached.paragraph,
-        generatedAt: cached.generatedAt.toISOString(),
-        cached: true,
-      };
+    if (!options.debug) {
+      const cached = await this.cache.get(lat, lon);
+      if (cached) {
+        return {
+          paragraph: cached.paragraph,
+          generatedAt: cached.generatedAt.toISOString(),
+          cached: true,
+        };
+      }
     }
 
-    const input = buildNarrativeInput(data);
     const paragraph = await this.provider.generate(input);
 
-    await this.cache.set(lat, lon, paragraph);
+    if (!options.debug) {
+      await this.cache.set(lat, lon, paragraph);
+    }
 
     return {
       paragraph,
       generatedAt: new Date().toISOString(),
       cached: false,
+      ...(options.debug ? { debugInput: input } : {}),
     };
   }
 }
@@ -46,7 +54,6 @@ function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
   return {
     addressLabel: data.address.label,
     mobility: {
-      score: data.mobility.score,
       label: data.mobility.label,
       hasNearbyStation: data.mobility.nearestStation != null,
       nearestStationDistanceMeters: data.mobility.nearestStation?.distanceMeters ?? null,
@@ -61,14 +68,12 @@ function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
     },
     realEstate: data.realEstate
       ? {
-          score: data.realEstate.score,
           priceLevel: data.realEstate.priceLevel ?? null,
           medianPricePerSquareMeter: data.realEstate.medianPricePerSquareMeter ?? null,
           nearbyTransactionsCount: data.realEstate.nearbyTransactionsCount ?? null,
         }
       : null,
     neighborhood: {
-      score: data.neighborhood.score,
       label: data.neighborhood.label,
       categoriesPresent,
     },

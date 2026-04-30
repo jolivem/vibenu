@@ -30,22 +30,10 @@ export interface StationDto {
   mode: string;
 }
 
-export interface MobilityScoreBreakdownDto {
-  base: number;
-  nearestStop: string;
-  nearestStopPoints: number;
-  station: string;
-  stationPoints: number;
-  density: string;
-  densityPoints: number;
-}
-
 export interface MobilityAnalysisDto {
   nearestStops: TransportStopDto[];
   nearestStation?: StationDto;
-  score: number;
   label: "faible" | "correct" | "bon" | "très bon";
-  scoreBreakdown: MobilityScoreBreakdownDto;
 }
 
 export interface RiskCategoryDto {
@@ -58,7 +46,6 @@ export interface RiskCategoryDto {
 export interface RiskAnalysisDto {
   level: "faible" | "modéré" | "élevé";
   categories: RiskCategoryDto[];
-  score: number;
 }
 
 export interface DvfTransactionFeatureDto {
@@ -77,13 +64,11 @@ export interface RealEstateAnalysisDto {
   nearbyTransactionsCount?: number;
   priceLevel?: "faible" | "moyen" | "élevé";
   confidence?: "faible" | "moyenne" | "élevée";
-  score: number;
   medianPricePerSquareMeter?: number;
   transactionFeatures?: DvfTransactionFeatureDto[];
 }
 
 export interface AirQualityAnalysisDto {
-  score: number;
   level: "bon" | "moyen" | "dégradé" | "mauvais" | "très_mauvais";
   message: string;
 }
@@ -132,7 +117,6 @@ export interface NeighborhoodPoiDto {
 
 export interface NeighborhoodAnalysisDto {
   pois: NeighborhoodPoiDto[];
-  score: number;
   label: string;
 }
 
@@ -171,6 +155,8 @@ export interface NarrativeDto {
   paragraph: string;
   generatedAt: string;
   cached: boolean;
+  /** Présent uniquement quand NEXT_PUBLIC_DEBUG=true côté serveur. */
+  debugInput?: unknown;
 }
 
 export interface LocationAnalysisDto {

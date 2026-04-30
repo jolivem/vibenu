@@ -19,6 +19,5 @@ export type PoiCategory =
 
 export interface NeighborhoodAnalysis {
   pois: NeighborhoodPoi[];
-  score: number;   // 0-100
   label: string;
 }

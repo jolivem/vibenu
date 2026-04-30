@@ -19,7 +19,6 @@ export interface RealEstateAnalysis {
   nearbyTransactionsCount?: number;
   priceLevel?: PriceLevel;
   confidence?: ConfidenceLevel;
-  score: number;
   medianPricePerSquareMeter?: number;
   transactionFeatures?: DvfTransactionFeature[];
 }

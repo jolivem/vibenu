@@ -50,7 +50,6 @@ function analyzeTransactions(
     nearbyTransactionsCount: 0,
     priceLevel: "moyen",
     confidence: "faible",
-    score: 50,
     medianPricePerSquareMeter: 0,
     transactionFeatures: [],
   };
@@ -98,14 +97,6 @@ function analyzeTransactions(
   if (pool.length >= 10) confidence = "moyenne";
   if (pool.length >= 50) confidence = "élevée";
 
-  // Score (same logic as server-side RealEstateServiceImpl)
-  let score = 50;
-  if (pool.length >= 10) score += 15;
-  if (confidence === "élevée") score += 10;
-  if (priceLevel === "moyen") score += 10;
-  if (priceLevel === "élevé") score += 5;
-  score = Math.min(score, 100);
-
   const transactionFeatures = buildTransactionFeatures(
     pool,
     centerLat,
@@ -116,7 +107,6 @@ function analyzeTransactions(
     nearbyTransactionsCount: pool.length,
     priceLevel,
     confidence,
-    score,
     medianPricePerSquareMeter: Math.round(median),
     transactionFeatures,
   };

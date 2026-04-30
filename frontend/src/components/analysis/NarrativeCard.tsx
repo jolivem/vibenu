@@ -21,6 +21,12 @@ export function NarrativeCard({ narrative, isLoading, error }: Props) {
         </div>
       )}
       {narrative && <p className="narrative-text">{narrative.paragraph}</p>}
+      {narrative?.debugInput !== undefined && (
+        <details className="narrative-debug">
+          <summary>Données envoyées à Mistral (debug)</summary>
+          <pre>{JSON.stringify(narrative.debugInput, null, 2)}</pre>
+        </details>
+      )}
     </section>
   );
 }

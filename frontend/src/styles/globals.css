@@ -348,6 +348,32 @@ body {
   100% { background-position: -200% 0; }
 }
 
+.narrative-debug {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+}
+
+.narrative-debug summary {
+  cursor: pointer;
+  user-select: none;
+}
+
+.narrative-debug pre {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.45;
+  overflow-x: auto;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
 .analysis-back {
   color: white;
   text-decoration: none;

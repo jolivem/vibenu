@@ -31,22 +31,10 @@ export interface StationDto {
   distanceMeters: number;
 }
 
-export interface MobilityScoreBreakdownDto {
-  base: number;
-  nearestStop: string;
-  nearestStopPoints: number;
-  station: string;
-  stationPoints: number;
-  density: string;
-  densityPoints: number;
-}
-
 export interface MobilityAnalysisDto {
   nearestStops: TransportStopDto[];
   nearestStation?: StationDto;
-  score: number;
   label: MobilityLabel;
-  scoreBreakdown: MobilityScoreBreakdownDto;
 }
 
 export interface RiskCategoryDto {
@@ -59,7 +47,6 @@ export interface RiskCategoryDto {
 export interface RiskAnalysisDto {
   level: RiskLevel;
   categories: RiskCategoryDto[];
-  score: number;
 }
 
 export interface DvfTransactionFeatureDto {
@@ -78,13 +65,11 @@ export interface RealEstateAnalysisDto {
   nearbyTransactionsCount?: number;
   priceLevel?: PriceLevel;
   confidence?: ConfidenceLevel;
-  score: number;
   medianPricePerSquareMeter?: number;
   transactionFeatures?: DvfTransactionFeatureDto[];
 }
 
 export interface AirQualityAnalysisDto {
-  score: number;
   level: string;
   message: string;
 }
@@ -97,7 +82,6 @@ export interface NeighborhoodPoiDto {
 
 export interface NeighborhoodAnalysisDto {
   pois: NeighborhoodPoiDto[];
-  score: number;
   label: string;
 }
 
