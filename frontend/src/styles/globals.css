@@ -1064,6 +1064,15 @@ body {
   font-size: 0.85rem;
 }
 
+.realestate-hint {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--accent-light);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #2a2a2a;
+}
+
 .climate-value {
   min-width: 80px;
 }

@@ -112,6 +112,19 @@ export class TransportDataGouvProvider implements TransportProvider {
     const isRailDataset =
       title.includes("sncf") || title.includes("transilien") || /\bter\b/.test(title);
 
+    // Détection par nom : couvre les datasets régionaux qui n'ont pas
+    // "sncf"/"ter" dans leur titre mais incluent quand même des gares
+    // (ex. "Agrégat des réseaux ... de Nouvelle Aquitaine" → "Gare St Jean").
+    // Filtres anti-faux-positifs :
+    //  - "gare routière" = gare bus, pas train
+    //  - noms de rues / places contenant "gare" (rue de la gare, place de la gare…)
+    const looksLikeStation =
+      feature.properties.location_type === 1 &&
+      /\bgare\b/.test(name) &&
+      !name.includes("/") &&
+      !name.includes("gare routière") &&
+      !/^(rue|avenue|av\.|place|boulevard|bd\.|chemin|impasse|allée|cours)\b/i.test(name);
+
     if (isRailDataset) {
       // SNCF Transilien includes all IDFM stations (metro, RER, train) without distinction.
       // Only location_type=1 with simple names (no "/") are real stations.
@@ -121,6 +134,10 @@ export class TransportDataGouvProvider implements TransportProvider {
         return isIdf ? "métro/RER" : "train";
       }
       return "bus";
+    }
+
+    if (looksLikeStation) {
+      return isIdf ? "métro/RER" : "train";
     }
 
     if (isIdf) {

@@ -6,20 +6,24 @@ export class MobilityServiceImpl implements MobilityService {
   constructor(private readonly transportProvider: TransportProvider) {}
 
   async getMobilityData(lat: number, lon: number): Promise<MobilityAnalysis> {
-    const close = await this.transportProvider.findNearbyStops(lat, lon, 1000);
+    // Deux recherches en parallèle :
+    // - 1 km : on garde uniquement les arrêts (bus, tram) — pertinents pour la marche
+    // - 20 km : on garde la gare/métro/RER la plus proche.
+    //   Au-delà de ~25 km, l'API gtfs-stops de transport.data.gouv.fr cap silencieusement
+    //   les bboxes trop larges (renvoie 0 features). 20 km laisse de la marge tout en
+    //   couvrant la quasi-totalité des cas en France habitée.
+    const [close, wide] = await Promise.all([
+      this.transportProvider.findNearbyStops(lat, lon, 1000),
+      this.transportProvider.findNearbyStops(lat, lon, 20_000),
+    ]);
 
-    // Si aucune gare/métro/RER dans un rayon de 1 km, élargit la recherche
-    // pour trouver la plus proche (rayon 50 km, couvre la quasi-totalité de la France).
-    let nearestStation = close.nearestStation;
-    if (!nearestStation) {
-      const wide = await this.transportProvider.findNearbyStops(lat, lon, 50_000);
-      nearestStation = wide.nearestStation;
-    }
+    const nearestStops = close.nearestStops;
+    const nearestStation = wide.nearestStation;
 
-    const label = deriveLabel({ nearestStops: close.nearestStops, nearestStation });
+    const label = deriveLabel({ nearestStops, nearestStation });
 
     return {
-      nearestStops: close.nearestStops,
+      nearestStops,
       nearestStation,
       label,
     };

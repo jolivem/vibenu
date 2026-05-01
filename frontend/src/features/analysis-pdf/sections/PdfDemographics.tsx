@@ -53,7 +53,11 @@ export function PdfDemographics({ demographics }: { demographics: DemographicsAn
         <View style={pdfStyles.demoTableHead}>
           <Text style={pdfStyles.demoTableHeadCellFirst}>Indicateur</Text>
           <Text style={pdfStyles.demoTableHeadCell}>Zone</Text>
-          {showCommune && <Text style={pdfStyles.demoTableHeadCell}>Commune</Text>}
+          {showCommune && (
+            <Text style={pdfStyles.demoTableHeadCell}>
+              {demographics.nomCommune || "Commune"}
+            </Text>
+          )}
           {france && <Text style={pdfStyles.demoTableHeadCell}>France</Text>}
         </View>
         {rows.map((row) => (

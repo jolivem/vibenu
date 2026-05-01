@@ -26,7 +26,7 @@ export function DemographicsCard({ demographics }: { demographics: DemographicsA
           <tr>
             <th scope="col">Indicateur</th>
             <th scope="col">Zone</th>
-            {showCommune && <th scope="col">Commune</th>}
+            {showCommune && <th scope="col">{demographics.nomCommune || "Commune"}</th>}
             {france && <th scope="col">France</th>}
           </tr>
         </thead>
