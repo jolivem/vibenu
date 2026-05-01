@@ -21,6 +21,8 @@ import { ApiCartoCadastreProvider } from "@/server-modules/cadastre/infrastructu
 import { CadastreServiceImpl } from "@/server-modules/cadastre/application/cadastre.service.impl";
 import { IrisDemographicsProvider } from "@/server-modules/demographics/infrastructure/iris-demographics.provider";
 import { DemographicsServiceImpl } from "@/server-modules/demographics/application/demographics.service";
+import { ElectionsDatabaseProvider } from "@/server-modules/elections/infrastructure/elections-database.provider";
+import { ElectionsServiceImpl } from "@/server-modules/elections/application/elections.service.impl";
 
 const analyzeQuerySchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
@@ -48,6 +50,7 @@ const useCase = new LocationAnalysisUseCase({
   summaryService: new SummaryBuilderService(),
   cadastreService: new CadastreServiceImpl(new ApiCartoCadastreProvider()),
   demographicsService: new DemographicsServiceImpl(new IrisDemographicsProvider()),
+  electionsService: new ElectionsServiceImpl(new ElectionsDatabaseProvider()),
 });
 
 export async function GET(request: NextRequest) {

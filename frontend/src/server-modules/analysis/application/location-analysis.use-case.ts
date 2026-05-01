@@ -8,6 +8,7 @@ import type { NeighborhoodService } from "../../neighborhood/application/neighbo
 import type { SummaryService } from "../../summary/application/summary.service";
 import type { CadastreService } from "../../cadastre/application/cadastre.service";
 import type { DemographicsService } from "../../demographics/application/demographics.service";
+import type { ElectionsService } from "../../elections/application/elections.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
 import type { LocationAnalysisDto } from "../../../server-shared/types/location-analysis.dto";
 
@@ -22,6 +23,7 @@ interface Dependencies {
   summaryService: SummaryService;
   cadastreService: CadastreService;
   demographicsService: DemographicsService;
+  electionsService: ElectionsService;
 }
 
 export class LocationAnalysisUseCase implements LocationAnalysisService {
@@ -50,7 +52,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       ? Promise.resolve({ parcel: null, urbanZone: null, prescriptions: [] })
       : this.dependencies.cadastreService.getCadastreData(input.lat, input.lon);
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour] =
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
@@ -60,6 +62,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         cadastrePromise,
         this.dependencies.demographicsService.getDemographicsData(input.lat, input.lon),
         contourPromise,
+        this.dependencies.electionsService.getElectionsData(codeInsee),
       ]);
 
     const address = {
@@ -92,6 +95,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       demographics,
       cadastre,
       summary,
+      elections,
     };
   }
 }

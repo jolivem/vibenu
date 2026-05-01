@@ -38,6 +38,18 @@ export interface NarrativeInput {
     urbanZoneLabel: string | null;
     parcelSurface: number | null;
   } | null;
+  elections: {
+    scrutin: string;
+    participationPct: number;
+    nationalParticipationPct: number;
+    /** Top 3 candidats par score communal, avec écart au national. */
+    topCandidats: Array<{
+      candidat: string;
+      parti: string;
+      pctCommune: number;
+      pctNational: number;
+    }>;
+  } | null;
 }
 
 export interface NarrativeDto {

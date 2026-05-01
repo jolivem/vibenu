@@ -7,14 +7,15 @@ Monorepo pour **ClaireAdresse**, une application web permettant à un citoyen de
 ClaireAdresse n'est pas un portail immobilier complet. Le produit est pensé comme un **assistant de décision avant location/achat**.
 
 L'utilisateur saisit une adresse en France et obtient :
-- la localisation sur une carte interactive ;
-- les transports proches (bus, métro/RER, gare) ;
+- la localisation sur une carte interactive (zoom adresse précise ou contour communal selon la recherche) ;
+- les transports proches (bus, métro/RER, gare) avec extension automatique en zone rurale ;
 - les risques naturels et technologiques ;
 - le cadastre et les règles d'urbanisme (zone PLU, prescriptions) ;
 - les prix immobiliers du secteur avec visualisation cartographique ;
 - la qualité de l'air ;
 - les commerces et services de proximité ;
-- un score synthétique ;
+- les données socio-démographiques (population, âge, revenus, pauvreté) ;
+- les **résultats de la dernière élection présidentielle** (1er tour 2022) avec comparaison commune / national ;
 - un résumé en langage simple ;
 - une **synthèse rédigée par IA** en langage courant (Mistral) ;
 - un **export PDF** du rapport complet, téléchargeable en un clic.
@@ -43,6 +44,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `air-quality` | Qualité de l'air | Atmo France (admindata.atmo-france.org) |
 | `neighborhood` | Commerces et services proches | OSM + BPE INSEE (PostgreSQL/PostGIS) |
 | `demographics` | Données socio-démographiques (population, revenus, âge) | INSEE IRIS (PostgreSQL/PostGIS) |
+| `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
 | `summary` | Construction du résumé textuel (règles déterministes) | - |
 | `narrative` | Synthèse en langage courant générée par LLM + cache Postgres | Mistral AI (api.mistral.ai) |
 
@@ -77,14 +79,11 @@ Le serveur utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés 
 
 La clé de cache est basée sur les coordonnées arrondies (~10m de précision). Le cache in-memory est limité à 500 entrées par source ; le cache Postgres des synthèses persiste entre redéploiements.
 
-## Score global
+## Approche d'évaluation
 
-Pondération des sous-scores :
-- mobilité : 25 %
-- risques : 25 %
-- contexte immobilier : 20 %
-- environnement : 10 %
-- voisinage : 20 %
+L'application présente les données **factuelles** sans jugement synthétique chiffré : pas de score global ni de score par module. Chaque indicateur est exposé avec ses propres unités (niveau de mobilité, niveau de risque, prix médian €/m², qualité de l'air, etc.) et — quand c'est pertinent — comparé à une référence (commune, France).
+
+L'interprétation finale est laissée à l'utilisateur, complétée optionnellement par la **synthèse IA en langage courant** qui transforme les indicateurs en paragraphe narratif.
 
 ## API Routes (Next.js)
 
@@ -93,6 +92,17 @@ Pondération des sous-scores :
 | `GET /api/address/search?q=...` | Recherche d'adresse (autocomplétion) |
 | `GET /api/location/analyze?lat=...&lon=...` | Analyse complète d'une adresse |
 | `POST /api/location/narrative` | Synthèse rédigée par IA (corps = `LocationAnalysisDto`, réponse = `{ paragraph, generatedAt, cached }`) |
+
+## Élections (Présidentielle 2022, 1er tour)
+
+L'écran d'analyse expose le **profil électoral** de la commune sous forme de barres horizontales colorées par parti, triées par score communal décroissant, avec un **repère du score national** sur chaque barre et un delta en points (vert/orange) indiquant l'écart au résultat national.
+
+- **Source** : Ministère de l'Intérieur via [data.gouv.fr — Présidentielle 2022 1er tour](https://www.data.gouv.fr/fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/), niveau bureau de vote (`burvot`)
+- **Granularité** : agrégation côté Python au niveau **commune** par sommation des bureaux de vote, puis recalcul des pourcentages
+- **Tables Postgres** : `elections_pres_2022_t1_commune` (inscrits/votants/exprimés) + `elections_pres_2022_t1_results` (1 ligne par candidat × commune). L'agrégat France est stocké sous le pseudo-code `'FRANCE'` calculé à l'import
+- **Affichage** : la card « Présidentielle 2022 — 1er tour » apparaît si la commune est trouvée. Si la table est vide ou le code INSEE inconnu, la card est silencieusement masquée
+- **PDF + IA** : la section est aussi incluse dans le PDF, et le top 3 des candidats (avec écart au national) est passé au prompt Mistral pour enrichir la synthèse narrative
+- **Licence** : Licence Ouverte Etalab 2.0
 
 ## Synthèse IA (Mistral)
 
@@ -137,16 +147,28 @@ python import_dvf.py
 
 # Importer IRIS (démographie) — ~5 min
 python import_iris.py
+
+# Importer Présidentielle 2022 T1 — ~1 min
+# Télécharger d'abord resultats-par-niveau-burvot-t1-france-entiere.xlsx (31,9 Mo)
+# depuis https://www.data.gouv.fr/fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/
+python import_elections.py --file ~/Downloads/resultats-par-niveau-burvot-t1-france-entiere.xlsx
 ```
 
 ### 2. Migrations SQL applicatives
 
-Les tables nécessaires au code applicatif (hors scripts d'import) sont dans `frontend/src/server-shared/infrastructure/database/migrations/`. À jouer une fois sur la base :
+Les tables nécessaires au code applicatif (hors scripts d'import) sont dans `frontend/src/server-shared/infrastructure/database/migrations/`. À jouer **dans l'ordre** sur la base, ou en boucle :
 
 ```bash
-psql "$POSTGRES_URL" \
-  -f frontend/src/server-shared/infrastructure/database/migrations/002-narrative-cache.sql
+for f in frontend/src/server-shared/infrastructure/database/migrations/*.sql; do
+  psql "$POSTGRES_URL" -f "$f"
+done
 ```
+
+Migrations actuelles :
+- `002-narrative-cache.sql` — table `narrative_cache` (cache des synthèses IA, TTL 30j)
+- `003-elections.sql` — tables `elections_pres_2022_t1_commune` + `elections_pres_2022_t1_results`
+
+Le script `update.sh` exécute automatiquement toutes les migrations à chaque déploiement (idempotent grâce à `CREATE TABLE IF NOT EXISTS`).
 
 ### 3. Lancer l'application
 
@@ -214,25 +236,34 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - Licence : Licence Ouverte Etalab 2.0
 - Mise à jour : annuelle
 
+### Élections (Présidentielle 2022 T1)
+- **Source** : Ministère de l'Intérieur — [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/)
+- **Fichier utilisé** : `resultats-par-niveau-burvot-t1-france-entiere.xlsx` (31,9 Mo, ~70 000 bureaux de vote)
+- Données agrégées au niveau commune (somme des bureaux + recalcul des pourcentages) puis insérées dans PostgreSQL via `scripts/import_elections.py`
+- 12 candidats T1 2022 stockés avec leur étiquette parti (REN, RN, LFI, LR, EELV, PS, REC, DLF, NPA, RES, PCF, LO)
+- Agrégat national stocké sous le code commune `'FRANCE'`
+- Licence : Licence Ouverte Etalab 2.0
+- Mise à jour : à chaque nouveau scrutin national (relancer le script avec le nouveau fichier)
+
 ## Structure du repository
 
 ```text
 claireadresse/
 ├── README.md
 ├── scripts/               # Scripts Python d'import de données
-│   ├── import_osm.py      # Import OpenStreetMap POIs → PostgreSQL
-│   ├── import_bpe.py      # Import BPE INSEE → PostgreSQL
-│   ├── import_dvf.py      # Import DVF géolocalisé → PostgreSQL
-│   ├── import_iris.py     # Import INSEE IRIS (démographie) → PostgreSQL
-│   ├── requirements.txt   # Dépendances Python
-│   └── .env               # Config PostgreSQL locale (non versionné)
+│   ├── import_osm.py        # Import OpenStreetMap POIs → PostgreSQL
+│   ├── import_bpe.py        # Import BPE INSEE → PostgreSQL
+│   ├── import_dvf.py        # Import DVF géolocalisé → PostgreSQL
+│   ├── import_iris.py       # Import INSEE IRIS (démographie) → PostgreSQL
+│   ├── import_elections.py  # Import Présidentielle 2022 T1 (agrégation par commune)
+│   ├── requirements.txt     # Dépendances Python
+│   └── .env                 # Config PostgreSQL locale (non versionné)
 └── frontend/              # Next.js / React / MapLibre
     └── src/
         ├── app/api/              # Routes API Next.js (analyze, narrative, search)
         ├── components/
-        │   ├── map/              # Carte, couches WMS, toggles
-        │   ├── analysis/         # Cartes d'analyse (Mobilité, Risques, Cadastre, Narrative, etc.)
-        │   └── score/            # Score global
+        │   ├── map/              # Carte, couches WMS, toggles, contour communal
+        │   └── analysis/         # Cards d'analyse (Mobilité, Risques, Cadastre, Élections, Narrative, etc.)
         ├── features/
         │   ├── location-analysis/  # Hooks (useLocationAnalysis, useNarrative, useDvfRealEstate)
         │   └── analysis-pdf/       # Export PDF (react-pdf) — document, sections, capture carte

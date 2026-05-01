@@ -92,5 +92,21 @@ function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
           parcelSurface: data.cadastre.parcel?.contenance ?? null,
         }
       : null,
+    elections: data.elections
+      ? {
+          scrutin: data.elections.scrutin,
+          participationPct: data.elections.participationPct,
+          nationalParticipationPct: data.elections.nationalParticipationPct,
+          topCandidats: [...data.elections.candidates]
+            .sort((a, b) => b.pctCommune - a.pctCommune)
+            .slice(0, 3)
+            .map((c) => ({
+              candidat: c.candidat,
+              parti: c.parti,
+              pctCommune: c.pctCommune,
+              pctNational: c.pctNational,
+            })),
+        }
+      : null,
   };
 }

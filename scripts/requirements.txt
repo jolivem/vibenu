@@ -1,4 +1,5 @@
 pandas
+openpyxl
 pyproj
 psycopg2-binary
 requests

@@ -947,6 +947,120 @@ body {
   font-style: italic;
 }
 
+/* Elections card */
+.elections-card .muted {
+  margin: 4px 0 14px;
+  font-size: 0.85rem;
+}
+
+.elections-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.elections-row {
+  display: grid;
+  gap: 5px;
+}
+
+.elections-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.elections-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.elections-parti {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.elections-delta-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: #f3f4f6;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.elections-delta-up {
+  background: #e8f5e9;
+  color: #166534;
+}
+
+.elections-delta-down {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.elections-bar-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 60px;
+  align-items: center;
+  gap: 8px;
+}
+
+.elections-bar-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.elections-bar {
+  position: relative;
+  height: 9px;
+  background: #f3f4f6;
+  border-radius: 4.5px;
+  overflow: hidden;
+}
+
+.elections-bar-fill {
+  height: 100%;
+  border-radius: 4.5px;
+  transition: width 0.3s ease;
+}
+
+.elections-bar-fill--national {
+  opacity: 0.4;
+}
+
+.elections-bar-pct {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.elections-bar-pct--national {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.elections-footnote {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 14px;
+  font-style: italic;
+}
+
 /* Cadastre card */
 .cadastre-section {
   margin-top: 12px;

@@ -8,6 +8,7 @@ import { PdfAirQuality } from "./sections/PdfAirQuality";
 import { PdfRealEstate } from "./sections/PdfRealEstate";
 import { PdfNeighborhood } from "./sections/PdfNeighborhood";
 import { PdfDemographics } from "./sections/PdfDemographics";
+import { PdfElections } from "./sections/PdfElections";
 import { PdfCadastre } from "./sections/PdfCadastre";
 import { PdfMap } from "./sections/PdfMap";
 
@@ -282,6 +283,8 @@ export function AnalysisPdfDocument({
         />
 
         {data.demographics && <PdfDemographics demographics={data.demographics} />}
+
+        {data.elections && <PdfElections elections={data.elections} />}
 
         {realEstate && <PdfRealEstate realEstate={realEstate} />}
 

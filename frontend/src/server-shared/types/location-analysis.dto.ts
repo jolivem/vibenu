@@ -101,6 +101,24 @@ export interface SummaryDto {
   shortText: string;
 }
 
+export interface ElectionsCandidateDto {
+  candidat: string;
+  parti: string;
+  panneau: number;
+  pctCommune: number;
+  pctNational: number;
+}
+
+export interface ElectionsAnalysisDto {
+  scrutin: "presidentielle-2022-t1";
+  inscrits: number;
+  votants: number;
+  exprimes: number;
+  participationPct: number;
+  nationalParticipationPct: number;
+  candidates: ElectionsCandidateDto[];
+}
+
 export interface GeoJsonGeometryDto {
   type: "Polygon" | "MultiPolygon";
   coordinates: number[][][] | number[][][][];
@@ -183,4 +201,5 @@ export interface LocationAnalysisDto {
   demographics: DemographicsAnalysisDto | null;
   cadastre: CadastreAnalysisDto;
   summary: SummaryDto;
+  elections?: ElectionsAnalysisDto | null;
 }

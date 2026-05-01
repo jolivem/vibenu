@@ -659,6 +659,99 @@ export const pdfStyles = StyleSheet.create({
     marginTop: 6,
   },
 
+  // Elections
+  elecHeading: {
+    fontFamily: FONTS.serifItalic,
+    fontSize: 14,
+    color: COLORS.accent,
+    marginTop: 14,
+    marginBottom: 4,
+    paddingBottom: 5,
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.accent,
+  },
+  elecSub: {
+    fontSize: 9,
+    color: COLORS.muted,
+    marginBottom: 8,
+  },
+  elecList: {
+    flexDirection: "column",
+    gap: 6,
+  },
+  elecRow: {
+    flexDirection: "column",
+    gap: 2,
+  },
+  elecRowHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+  },
+  elecName: {
+    fontSize: 9.5,
+    color: COLORS.text,
+    fontFamily: FONTS.sansBold,
+  },
+  elecParti: {
+    fontSize: 8,
+    color: COLORS.mutedSoft,
+    marginLeft: 6,
+    letterSpacing: 0.5,
+  },
+  elecPct: {
+    width: 38,
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    color: COLORS.text,
+    textAlign: "right",
+  },
+  elecPairRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 2,
+  },
+  elecBarLabel: {
+    width: 42,
+    fontSize: 7,
+    color: COLORS.muted,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  elecBarTrack: {
+    flex: 1,
+    height: 5,
+    backgroundColor: "#EDEAE0",
+    borderRadius: 2.5,
+    position: "relative",
+  },
+  elecBarFill: {
+    height: 5,
+    borderRadius: 2.5,
+  },
+  elecBarFillNational: {
+    opacity: 0.4,
+  },
+  elecPctNational: {
+    width: 38,
+    fontFamily: FONTS.mono,
+    fontSize: 9,
+    color: COLORS.muted,
+    textAlign: "right",
+  },
+  elecDelta: {
+    fontFamily: FONTS.mono,
+    fontSize: 8,
+    color: COLORS.muted,
+  },
+  elecDeltaUp: {
+    color: COLORS.accentDark,
+  },
+  elecDeltaDown: {
+    color: COLORS.amberDark,
+  },
+
   // Cadastre
   cadHeading: {
     fontFamily: FONTS.serifItalic,
