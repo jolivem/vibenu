@@ -6,6 +6,12 @@ import type { RealEstateProvider } from "./real-estate.provider";
  */
 export class NoOpRealEstateProvider implements RealEstateProvider {
   async getNearbyTransactions() {
+    return this.empty();
+  }
+  async getCommuneTransactions() {
+    return this.empty();
+  }
+  private empty() {
     return {
       nearbyTransactionsCount: 0,
       priceLevel: "moyen" as const,

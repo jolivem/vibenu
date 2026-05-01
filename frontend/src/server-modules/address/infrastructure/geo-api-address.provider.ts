@@ -29,7 +29,8 @@ interface GeoPlateformeFeature {
     citycode: string;
     context: string;
     score: number;
-    _type: string;
+    type: string; // "housenumber" | "street" | "locality" | "municipality"
+    _type: string; // "address" (toujours, indique le type de service)
   };
   geometry: {
     type: string;
@@ -64,7 +65,7 @@ export class GeoApiAddressProvider implements AddressProvider {
         city: feature.properties.city,
         postcode: feature.properties.postcode,
         citycode: feature.properties.citycode,
-        type: parseSuggestionType(feature.properties._type),
+        type: parseSuggestionType(feature.properties.type),
         coordinates: {
           latitude: feature.geometry.coordinates[1],
           longitude: feature.geometry.coordinates[0],

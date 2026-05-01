@@ -81,6 +81,31 @@ export class DvfRealEstateProvider implements RealEstateProvider {
     }
   }
 
+  async getCommuneTransactions(codeInsee: string) {
+    const cacheKey = `commune:${codeInsee}`;
+    const cached = DvfRealEstateProvider.cache.get(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const threeYearsAgo = new Date().getFullYear() - 3;
+      const url = `${this.dvfApiUrl}/?code_insee=${codeInsee}&anneemut_min=${threeYearsAgo}&page_size=500`;
+
+      const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!response.ok) {
+        console.warn(`DVF API (commune) error: ${response.status} ${response.statusText}`);
+        return this.getFallbackData();
+      }
+
+      const data = (await response.json()) as DvfResponse;
+      const result = this.analyzeTransactions(data.features, 0, 0);
+      DvfRealEstateProvider.cache.set(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error("DVF provider (commune) error:", error);
+      return this.getFallbackData();
+    }
+  }
+
   private analyzeTransactions(features: DvfFeature[], centerLat: number, centerLon: number) {
     if (features.length === 0) {
       return this.getFallbackData();

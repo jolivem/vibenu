@@ -37,19 +37,27 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
     const codeInsee = addressDetails?.citycode;
     const contourCitycode = input.citycode ?? codeInsee;
 
+    const isCommune = input.type === "municipality";
+
     const contourPromise =
-      input.type === "municipality" && contourCitycode
+      isCommune && contourCitycode
         ? this.dependencies.communeContourProvider.getContour(contourCitycode)
         : Promise.resolve(null);
+
+    // En mode commune, on n'affiche pas la parcelle au centroïde
+    // (elle ne représente rien pour l'utilisateur qui regarde le territoire entier).
+    const cadastrePromise = isCommune
+      ? Promise.resolve({ parcel: null, urbanZone: null, prescriptions: [] })
+      : this.dependencies.cadastreService.getCadastreData(input.lat, input.lon);
 
     const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
-        this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee),
+        this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee, { communeMode: isCommune }),
         this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon, codeInsee),
         this.dependencies.neighborhoodService.getNeighborhoodData(input.lat, input.lon),
-        this.dependencies.cadastreService.getCadastreData(input.lat, input.lon),
+        cadastrePromise,
         this.dependencies.demographicsService.getDemographicsData(input.lat, input.lon),
         contourPromise,
       ]);

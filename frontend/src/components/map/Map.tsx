@@ -295,7 +295,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         ],
       },
       center: [lon, lat],
-      zoom: cadastreParcel ? 17 : 14,
+      zoom: communeContour ? 10 : cadastreParcel ? 17 : 14,
     });
 
     // Add navigation controls
@@ -303,30 +303,30 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
 
     onReadyRef.current?.(map.current);
 
-    // Main marker — plus discret quand on affiche un contour de commune
-    const markerColor = communeContour ? "#94a3b8" : "#0066cc";
-    const markerScale = communeContour ? 0.55 : 1;
-    new maplibregl.Marker({ color: markerColor, scale: markerScale })
-      .setLngLat([lon, lat])
-      .setPopup(new maplibregl.Popup().setText(label))
-      .addTo(map.current);
-
-    // Si on a le contour de la commune, ajuste le zoom à son emprise
+    // Pas de marker en mode commune — le contour est l'élément central
     if (communeContour) {
       const bbox = computeBbox(communeContour);
       if (bbox) {
         map.current.fitBounds(bbox, { padding: 24, duration: 0 });
       }
+    } else {
+      new maplibregl.Marker({ color: "#0066cc" })
+        .setLngLat([lon, lat])
+        .setPopup(new maplibregl.Popup().setText(label))
+        .addTo(map.current);
     }
 
-    // Add transport markers
-    transports.forEach((transport) => {
-      const markerColor = transport.type === "train" ? "#ff6b6b" : "#ffc107";
-      const marker = new maplibregl.Marker({ color: markerColor });
-      marker.setLngLat([transport.lon, transport.lat]);
-      marker.setPopup(new maplibregl.Popup().setText(`${transport.type}: ${transport.name}`));
-      marker.addTo(map.current!);
-    });
+    // Pas de markers transport en mode commune
+    // (ils seraient tous empilés sur le centroïde, sans valeur informative)
+    if (!communeContour) {
+      transports.forEach((transport) => {
+        const markerColor = transport.type === "train" ? "#ff6b6b" : "#ffc107";
+        const marker = new maplibregl.Marker({ color: markerColor });
+        marker.setLngLat([transport.lon, transport.lat]);
+        marker.setPopup(new maplibregl.Popup().setText(`${transport.type}: ${transport.name}`));
+        marker.addTo(map.current!);
+      });
+    }
 
     // DVF popup on click
     if (dvfTransactions?.length) {

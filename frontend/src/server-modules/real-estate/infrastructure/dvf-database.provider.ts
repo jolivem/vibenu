@@ -74,6 +74,40 @@ export class DvfDatabaseProvider implements RealEstateProvider {
     }
   }
 
+  async getCommuneTransactions(codeInsee: string) {
+    const cacheKey = `commune:${codeInsee}`;
+    const cached = DvfDatabaseProvider.cache.get(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const rows = await query<DvfRow>(
+        `SELECT id_mutation, date_mutation, valeur_fonciere, surface_bati, type_local,
+                longitude, latitude,
+                ST_AsGeoJSON(geometry) AS geojson,
+                0 AS distance_meters
+         FROM dvf_transactions
+         WHERE code_commune = $1
+           AND date_mutation >= NOW() - INTERVAL '10 years'
+           AND valeur_fonciere > 0
+           AND surface_bati > 0
+         ORDER BY date_mutation DESC
+         LIMIT 500`,
+        [codeInsee],
+      );
+
+      if (rows.length === 0) {
+        return this.getFallbackData();
+      }
+
+      const result = this.analyzeTransactions(rows);
+      DvfDatabaseProvider.cache.set(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error("DVF database provider (commune) error:", error);
+      return this.getFallbackData();
+    }
+  }
+
   private analyzeTransactions(rows: DvfRow[]): DvfResult {
     const pricesPerSqm: number[] = [];
     const features: DvfTransactionFeature[] = [];
