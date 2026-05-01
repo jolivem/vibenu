@@ -11,7 +11,7 @@ import type { DemographicsService } from "../../demographics/application/demogra
 import type { ElectionsService } from "../../elections/application/elections.service";
 import type { ClimateService } from "../../climate/application/climate.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
-import type { LocationAnalysisDto } from "../../../server-shared/types/location-analysis.dto";
+import type { AnalysisMode, LocationAnalysisDto } from "../../../server-shared/types/location-analysis.dto";
 
 interface Dependencies {
   addressProvider: AddressProvider;
@@ -41,24 +41,25 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
     const codeInsee = addressDetails?.citycode;
     const contourCitycode = input.citycode ?? codeInsee;
 
-    const isCommune = input.type === "municipality";
+    const mode: AnalysisMode = input.type === "municipality" ? "commune" : "address";
 
     const contourPromise =
-      isCommune && contourCitycode
+      mode === "commune" && contourCitycode
         ? this.dependencies.communeContourProvider.getContour(contourCitycode)
         : Promise.resolve(null);
 
     // En mode commune, on n'affiche pas la parcelle au centroïde
     // (elle ne représente rien pour l'utilisateur qui regarde le territoire entier).
-    const cadastrePromise = isCommune
-      ? Promise.resolve({ parcel: null, urbanZone: null, prescriptions: [] })
-      : this.dependencies.cadastreService.getCadastreData(input.lat, input.lon);
+    const cadastrePromise =
+      mode === "commune"
+        ? Promise.resolve({ parcel: null, urbanZone: null, prescriptions: [] })
+        : this.dependencies.cadastreService.getCadastreData(input.lat, input.lon);
 
     const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
-        this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee, { communeMode: isCommune }),
+        this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee, { mode }),
         this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon, codeInsee),
         this.dependencies.neighborhoodService.getNeighborhoodData(input.lat, input.lon),
         cadastrePromise,
@@ -84,6 +85,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
     });
 
     return {
+      mode,
       address,
       map: {
         center: { lat: input.lat, lon: input.lon },

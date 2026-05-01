@@ -222,7 +222,7 @@ export function AnalysisPdfDocument({
             {" & transports"}
           </Text>
         </View>
-        <PdfMobility mobility={data.mobility} />
+        <PdfMobility mobility={data.mobility} mode={data.mode} />
 
         <RunningFooter
           date={formattedDate}

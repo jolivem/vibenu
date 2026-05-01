@@ -203,7 +203,18 @@ export interface DemographicsAnalysisDto {
   communeIrisCount: number;
 }
 
+/**
+ * Mode d'analyse :
+ *  - "address" : recherche par adresse précise (housenumber, street, locality)
+ *  - "commune" : recherche par nom de commune (municipality)
+ *
+ * Détermine le comportement de plusieurs services (DVF en commune entière vs rayon,
+ * affichage du contour communal sur la carte, masquage des distances de mobilité, etc.).
+ */
+export type AnalysisMode = "address" | "commune";
+
 export interface LocationAnalysisDto {
+  mode: AnalysisMode;
   address: SelectedAddressDto;
   map: MapContextDto;
   mobility: MobilityAnalysisDto;

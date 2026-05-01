@@ -21,6 +21,12 @@ export const AGE_CHART_DIMENSIONS = {
 export interface AgeChartSeries {
   name: string;
   color: string;
+  /** Épaisseur du trait (1.5 par défaut, 2.8 pour la série principale). */
+  strokeWidth: number;
+  /** Rayon des points (3 par défaut, 4.5 pour la série principale). */
+  dotRadius: number;
+  /** Opacité du trait (1 par défaut, 0.6 pour les séries de comparaison). */
+  opacity: number;
   data: AgeDistributionDto;
 }
 
@@ -41,10 +47,15 @@ export function buildAgeChartModel(params: {
   const { iris, commune, france, showCommune } = params;
 
   const series: AgeChartSeries[] = [
-    { name: "Zone", color: "#78be20", data: iris },
+    // Série principale : violet plein, trait épais, points larges
+    { name: "Zone", color: "#8b5cf6", strokeWidth: 2.8, dotRadius: 4.5, opacity: 1, data: iris },
   ];
-  if (showCommune && commune) series.push({ name: "Commune", color: "#ea580c", data: commune });
-  if (france) series.push({ name: "France", color: "#6b7280", data: france });
+  if (showCommune && commune) {
+    series.push({ name: "Commune", color: "#a78060", strokeWidth: 1.4, dotRadius: 2.5, opacity: 0.65, data: commune });
+  }
+  if (france) {
+    series.push({ name: "France", color: "#6b7280", strokeWidth: 1.4, dotRadius: 2.5, opacity: 0.65, data: france });
+  }
 
   const allValues = series.flatMap((s) => AGE_BUCKETS.map((b) => s.data[b.key]));
   const rawMax = Math.max(...allValues, 10);

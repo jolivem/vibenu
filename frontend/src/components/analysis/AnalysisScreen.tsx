@@ -130,7 +130,7 @@ export function AnalysisScreen() {
             <SummaryCard summary={data.summary} />
             <div className="analysis-pair">
               <div className="analysis-stack">
-                <MobilityCard mobility={data.mobility} />
+                <MobilityCard mobility={data.mobility} mode={data.mode} />
                 {realEstate && (
                   <RealEstateCard
                     realEstate={realEstate}

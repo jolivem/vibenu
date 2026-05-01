@@ -115,10 +115,22 @@ function AgeChart({
         {series.map((s) => {
           const points = AGE_BUCKETS.map((b, i) => `${x(i)},${y(s.data[b.key])}`).join(" ");
           return (
-            <g key={s.name}>
-              <polyline points={points} stroke={s.color} className="age-chart-line" />
+            <g key={s.name} opacity={s.opacity}>
+              <polyline
+                points={points}
+                stroke={s.color}
+                strokeWidth={s.strokeWidth}
+                fill="none"
+                className="age-chart-line"
+              />
               {AGE_BUCKETS.map((b, i) => (
-                <circle key={b.label} cx={x(i)} cy={y(s.data[b.key])} r={3} fill={s.color}>
+                <circle
+                  key={b.label}
+                  cx={x(i)}
+                  cy={y(s.data[b.key])}
+                  r={s.dotRadius}
+                  fill={s.color}
+                >
                   <title>{`${s.name} — ${b.label} : ${s.data[b.key]}%`}</title>
                 </circle>
               ))}

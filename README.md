@@ -86,12 +86,35 @@ Le serveur utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés 
 
 La clé de cache est basée sur les coordonnées arrondies (~10m de précision). Le cache in-memory est limité à 500 entrées par source ; le cache Postgres des synthèses persiste entre redéploiements.
 
-## Mode commune vs adresse
+## Mode d'analyse : `address` vs `commune`
 
-L'application détecte automatiquement le **type de la suggestion** sélectionnée (champ `type` retourné par la BAN/Géoplateforme : `housenumber`, `street`, `locality`, `municipality`).
+L'application détecte automatiquement le **type de la suggestion** sélectionnée (champ `type` retourné par la BAN/Géoplateforme : `housenumber`, `street`, `locality`, `municipality`) et le réduit à un **mode d'analyse binaire** :
 
-- **Adresse précise** (`housenumber` / `street` / `locality`) → marker bleu, zoom serré (17 si parcelle cadastre détectée, 14 sinon)
-- **Commune** (`municipality`) → contour communal IGN affiché en bleu pâle 10 % avec bordure 2 px, `fitBounds` automatique sur l'emprise, marker masqué. La parcelle cadastre est sautée (sans objet sur un territoire entier), DVF passe en mode commune (toutes les transactions de la commune via `code_commune`)
+```ts
+type AnalysisMode = "address" | "commune";
+```
+
+- **`address`** : recherche par adresse précise (`housenumber`, `street`, `locality`)
+- **`commune`** : recherche par nom de commune (`municipality`)
+
+Le mode est **calculé une seule fois** dans `LocationAnalysisUseCase` et **exposé dans le DTO** sous `LocationAnalysisDto.mode`. Tous les composants (frontend, PDF) lisent ce champ — pas besoin de re-propager le `type` brut de l'URL.
+
+### Comportement par mode
+
+| Aspect | Mode `address` | Mode `commune` |
+|---|---|---|
+| Carte (zoom) | Marker bleu + zoom 17 (parcelle) ou 14 | Contour communal IGN bleu pâle 10 % + bordure 2 px, `fitBounds` automatique, marker masqué |
+| Cadastre | Parcelle + zone PLU à l'adresse | Sauté (sans objet sur un territoire entier) |
+| DVF (immobilier) | Rayon 1 km autour du point | Toutes les transactions de la commune (`WHERE code_commune = ?`) |
+| Mobilité (bus) | Liste des arrêts dans 1 km avec distance + temps de marche | **Masquée** (les arrêts sont mesurés depuis le centroïde, peu pertinents) |
+| Mobilité (gare) | Gare la plus proche dans 20 km, avec distance + temps | Nom de la gare seul, sans distance |
+
+### Conventions de code
+
+- Le type `AnalysisMode` est exporté depuis `frontend/src/server-shared/types/location-analysis.dto.ts` et `frontend/src/types/location-analysis.ts`
+- Les services qui dépendent du mode reçoivent une option `{ mode: AnalysisMode }` (ex. `RealEstateService.getMarketData`)
+- Les composants UI reçoivent une prop `mode: AnalysisMode` (ex. `MobilityCard`, `PdfMobility`)
+- Aucune comparaison directe à `"municipality"` ne devrait subsister hors du use-case (qui fait la conversion `type` → `mode`)
 
 ## Layout d'analyse
 

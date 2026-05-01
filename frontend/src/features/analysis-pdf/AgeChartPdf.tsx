@@ -55,14 +55,19 @@ export function AgeChartPdf({ iris, commune, france, showCommune }: Props) {
         {series.map((s) => {
           const points = AGE_BUCKETS.map((b, i) => `${x(i)},${y(s.data[b.key])}`).join(" ");
           return (
-            <G key={s.name}>
-              <Polyline points={points} stroke={s.color} strokeWidth={1.5} fill="none" />
+            <G key={s.name} opacity={s.opacity}>
+              <Polyline
+                points={points}
+                stroke={s.color}
+                strokeWidth={s.strokeWidth}
+                fill="none"
+              />
               {AGE_BUCKETS.map((b, i) => (
                 <Circle
                   key={b.label}
                   cx={x(i)}
                   cy={y(s.data[b.key])}
-                  r={2.5}
+                  r={s.dotRadius}
                   fill={s.color}
                 />
               ))}

@@ -200,7 +200,15 @@ export interface NarrativeDto {
   debugInput?: unknown;
 }
 
+/**
+ * Mode d'analyse — voir `AnalysisMode` côté serveur.
+ *  - "address" : adresse précise
+ *  - "commune" : commune entière
+ */
+export type AnalysisMode = "address" | "commune";
+
 export interface LocationAnalysisDto {
+  mode: AnalysisMode;
   address: SelectedAddressDto;
   map: {
     center: {
