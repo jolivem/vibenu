@@ -19,6 +19,7 @@ import { CadastreCard } from "@/components/analysis/CadastreCard";
 import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
 import { DemographicsCard } from "@/components/analysis/DemographicsCard";
 import { ElectionsCard } from "@/components/analysis/ElectionsCard";
+import { ClimateCard } from "@/components/analysis/ClimateCard";
 import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
 
 export function AnalysisScreen() {
@@ -145,6 +146,7 @@ export function AnalysisScreen() {
             </div>
             <NeighborhoodCard neighborhood={data.neighborhood} />
             {data.demographics && <DemographicsCard demographics={data.demographics} />}
+            {data.climate && <ClimateCard climate={data.climate} />}
             {data.elections && <ElectionsCard elections={data.elections} />}
             {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
           </div>

@@ -214,7 +214,8 @@ export function useDvfRealEstate(lat?: number, lon?: number) {
         setData(analyzeTransactions(json.features, lat, lon));
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
-          console.error("DVF client-side error:", err);
+          // L'API Cerema (apidf-preprod) est instable — on dégrade silencieusement
+          console.warn("DVF Cerema API unreachable, hiding price card:", (err as Error).message);
           setError(true);
         }
       } finally {

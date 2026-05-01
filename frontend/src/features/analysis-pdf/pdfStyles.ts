@@ -740,6 +740,22 @@ export const pdfStyles = StyleSheet.create({
     color: COLORS.muted,
     textAlign: "right",
   },
+
+  // Climate — réutilise la grille des élections avec valeurs plus larges
+  climPctValue: {
+    width: 70,
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    color: COLORS.text,
+    textAlign: "right",
+  },
+  climPctValueNational: {
+    width: 70,
+    fontFamily: FONTS.mono,
+    fontSize: 9,
+    color: COLORS.muted,
+    textAlign: "right",
+  },
   elecDelta: {
     fontFamily: FONTS.mono,
     fontSize: 8,

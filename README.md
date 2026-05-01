@@ -15,6 +15,7 @@ L'utilisateur saisit une adresse en France et obtient :
 - la qualité de l'air ;
 - les commerces et services de proximité ;
 - les données socio-démographiques (population, âge, revenus, pauvreté) ;
+- les **normales climatiques 1991-2020** (température, pluviométrie, ensoleillement) avec comparaison commune / France ;
 - les **résultats de la dernière élection présidentielle** (1er tour 2022) avec comparaison commune / national ;
 - un résumé en langage simple ;
 - une **synthèse rédigée par IA** en langage courant (Mistral) ;
@@ -23,13 +24,14 @@ L'utilisateur saisit une adresse en France et obtient :
 ## Architecture
 
 - **Next.js** / React / TypeScript (frontend + API routes serveur)
-- **MapLibre GL** pour la carte interactive
-- **PostgreSQL / PostGIS** (Neon) pour les données OSM, DVF, IRIS et le cache des synthèses IA
+- **MapLibre GL** pour la carte interactive (avec contour de commune en mode recherche par nom)
+- **PostgreSQL / PostGIS** (Neon) pour les données OSM, DVF, IRIS, élections et le cache des synthèses IA
+- **Open-Meteo** (ERA5) pour les normales climatiques par coordonnées
 - **Mistral AI** pour la synthèse en langage courant (pattern port/adapter → fournisseur LLM interchangeable)
 - **@react-pdf/renderer** pour l'export PDF vectoriel côté client
 - Architecture modulaire (DDD) dans `frontend/src/server-modules/`
 - Cache en mémoire (TTL par source de données) + cache Postgres pour les synthèses LLM
-- Couches cartographiques WMS (risques) et GeoJSON (cadastre, prix DVF)
+- Couches cartographiques WMS (risques) et GeoJSON (cadastre, prix DVF, contour commune)
 
 ## Modules
 
@@ -45,6 +47,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `neighborhood` | Commerces et services proches | OSM + BPE INSEE (PostgreSQL/PostGIS) |
 | `demographics` | Données socio-démographiques (population, revenus, âge) | INSEE IRIS (PostgreSQL/PostGIS) |
 | `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
+| `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Open-Meteo Archive API (ERA5) + Météo-France pour la moyenne nationale |
 | `summary` | Construction du résumé textuel (règles déterministes) | - |
 | `narrative` | Synthèse en langage courant générée par LLM + cache Postgres | Mistral AI (api.mistral.ai) |
 
@@ -60,7 +63,8 @@ L'utilisateur saisit une adresse en France et obtient :
 | Zones inondables (PPR) | WMS raster | Géorisques (mapsref.brgm.fr) | oui |
 | Zonage sismique | WMS raster | BRGM | oui |
 | Potentiel radon | WMS raster | Géorisques | oui |
-| Quartier IRIS | GeoJSON (polygone) | INSEE IRIS (PostgreSQL) | oui |
+| Zone démographique (IRIS) | GeoJSON (polygone) | INSEE IRIS (PostgreSQL) | oui |
+| Contour de commune | GeoJSON (polygone) | API Découpage administratif IGN (geo.api.gouv.fr) | auto si recherche par nom de commune |
 
 ## Cache
 
@@ -75,9 +79,23 @@ Le serveur utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés 
 | Transport (GTFS) | 24 heures | in-memory | hebdomadaire à mensuel |
 | Voisinage (OSM) | 7 jours | in-memory | quotidien (Geofabrik) |
 | Qualité de l'air (Atmo) | 6 heures | in-memory | quotidien |
+| Climat (Open-Meteo, normales 1991-2020) | 30 jours | in-memory (clé arrondie ~11 km) | données figées (passé) |
+| Élections (Postgres local) | — | — | données figées (scrutin clos) |
+| Contour commune (geo.api.gouv.fr) | 30 jours | in-memory | quasi-statique |
 | Synthèse IA (Mistral) | 30 jours | **PostgreSQL** (`narrative_cache`) | stable tant que les données sources ne changent pas |
 
 La clé de cache est basée sur les coordonnées arrondies (~10m de précision). Le cache in-memory est limité à 500 entrées par source ; le cache Postgres des synthèses persiste entre redéploiements.
+
+## Mode commune vs adresse
+
+L'application détecte automatiquement le **type de la suggestion** sélectionnée (champ `type` retourné par la BAN/Géoplateforme : `housenumber`, `street`, `locality`, `municipality`).
+
+- **Adresse précise** (`housenumber` / `street` / `locality`) → marker bleu, zoom serré (17 si parcelle cadastre détectée, 14 sinon)
+- **Commune** (`municipality`) → contour communal IGN affiché en bleu pâle 10 % avec bordure 2 px, `fitBounds` automatique sur l'emprise, marker masqué. La parcelle cadastre est sautée (sans objet sur un territoire entier), DVF passe en mode commune (toutes les transactions de la commune via `code_commune`)
+
+## Layout d'analyse
+
+L'écran d'analyse utilise un layout **2 colonnes en mode masonry** (CSS multi-colonnes `column-count: 2`) en desktop pour éviter les vides verticaux entre cards de hauteurs inégales. La carte interactive et la card « Synthèse » (IA) sont en pleine largeur (`column-span: all`). En mobile (≤ 900 px), tout repasse en colonne unique.
 
 ## Approche d'évaluation
 
@@ -236,6 +254,14 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - Licence : Licence Ouverte Etalab 2.0
 - Mise à jour : annuelle
 
+### Climat (normales 1991-2020)
+- **Source commune** : [Open-Meteo Archive API](https://open-meteo.com/en/docs/historical-weather-api) (réanalyse ERA5, ECMWF) — gratuit, sans clé, licence CC-BY 4.0
+- **Source national (référence)** : [Météo-France — Climat](https://meteofrance.com/climat) ; les normales France métropolitaine 1991-2020 sont **hardcodées** dans `frontend/src/server-modules/climate/application/climate.service.impl.ts` (13,0 °C / 935 mm / 1969 h). À mettre à jour vers 2031 (nouvelle période de référence WMO 2001-2030)
+- Indicateurs : température annuelle moyenne, cumul annuel de précipitations (mm), ensoleillement annuel (heures)
+- Calcul : 30 ans × 365 valeurs quotidiennes par variable, agrégés en mémoire (moyenne pour la température, somme/30 pour les cumuls)
+- Cache 30 jours par coordonnées arrondies (~11 km, cohérent avec la grille ERA5) — en pratique les normales ne bougent jamais donc le cache n'expire utilement qu'au redémarrage du serveur
+- **Aucun setup requis** : pas d'import, pas de table, pas d'API key — le module appelle Open-Meteo en runtime
+
 ### Élections (Présidentielle 2022 T1)
 - **Source** : Ministère de l'Intérieur — [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/)
 - **Fichier utilisé** : `resultats-par-niveau-burvot-t1-france-entiere.xlsx` (31,9 Mo, ~70 000 bureaux de vote)
@@ -267,7 +293,7 @@ claireadresse/
         ├── features/
         │   ├── location-analysis/  # Hooks (useLocationAnalysis, useNarrative, useDvfRealEstate)
         │   └── analysis-pdf/       # Export PDF (react-pdf) — document, sections, capture carte
-        ├── server-modules/       # Modules serveur (DDD) — incluant narrative/ pour la synthèse LLM
+        ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, summary, narrative
         ├── server-shared/
         │   ├── infrastructure/
         │   │   ├── database/     # Pool Neon + migrations SQL applicatives

@@ -14,6 +14,7 @@ Règles strictes :
 - Ton neutre : pas de "magnifique", "exceptionnel", "idéal"
 - Ne conclus pas par un appel à l'action (pas de "à visiter", "à ne pas manquer")
 - Si les données électorales sont présentes, mentionne brièvement le profil politique uniquement via l'écart au national pour les 1 ou 2 candidats les plus marquants (ex. "vote nettement plus à gauche que la moyenne nationale", "score Le Pen 8 points au-dessus du national"). Reste descriptif et factuel, sans jugement de valeur, sans qualifier les électeurs.
+- Si les données climatiques sont présentes, ne mentionne le climat **que** s'il s'écarte nettement de la moyenne France (>1,5 °C, >150 mm, >200 h). Décris alors brièvement le caractère (ex. "climat plus doux et ensoleillé que la moyenne nationale", "pluviométrie supérieure à la moyenne française").
 - Réponds uniquement avec le paragraphe, sans guillemets ni préambule`;
 
 interface MistralMessage {

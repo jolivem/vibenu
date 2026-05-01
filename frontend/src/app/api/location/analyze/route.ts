@@ -23,6 +23,8 @@ import { IrisDemographicsProvider } from "@/server-modules/demographics/infrastr
 import { DemographicsServiceImpl } from "@/server-modules/demographics/application/demographics.service";
 import { ElectionsDatabaseProvider } from "@/server-modules/elections/infrastructure/elections-database.provider";
 import { ElectionsServiceImpl } from "@/server-modules/elections/application/elections.service.impl";
+import { OpenMeteoClimateProvider } from "@/server-modules/climate/infrastructure/open-meteo-climate.provider";
+import { ClimateServiceImpl } from "@/server-modules/climate/application/climate.service.impl";
 
 const analyzeQuerySchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
@@ -51,6 +53,7 @@ const useCase = new LocationAnalysisUseCase({
   cadastreService: new CadastreServiceImpl(new ApiCartoCadastreProvider()),
   demographicsService: new DemographicsServiceImpl(new IrisDemographicsProvider()),
   electionsService: new ElectionsServiceImpl(new ElectionsDatabaseProvider()),
+  climateService: new ClimateServiceImpl(new OpenMeteoClimateProvider()),
 });
 
 export async function GET(request: NextRequest) {

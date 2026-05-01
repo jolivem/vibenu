@@ -727,36 +727,33 @@ body {
   color: var(--muted);
 }
 
+/* Layout type masonry : colonnes verticales sans gaps liés aux hauteurs */
 .analysis-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  max-width: 980px;
+  column-count: 2;
+  column-gap: 20px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-.analysis-pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  align-items: start;
+.analysis-grid > *,
+.analysis-grid .card {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 20px;
+  display: block;
 }
 
-.analysis-pair > .card {
-  margin: 0;
+/* Carte plein écran (carte maplibre + carte de synthèse) — span sur les 2 colonnes */
+.analysis-grid > .map-section,
+.analysis-grid > .narrative-card {
+  column-span: all;
 }
 
-.analysis-stack {
-  display: grid;
-  gap: 20px;
-  align-content: start;
-}
-
+.analysis-pair,
+.analysis-stack,
 .analysis-main,
 .analysis-side {
-  display: grid;
-  gap: 20px;
-  align-content: start;
+  display: contents;
 }
 
 .summary-grid {
@@ -1061,6 +1058,16 @@ body {
   font-style: italic;
 }
 
+/* Climate card — réutilise les styles .elections-* */
+.climate-card .muted {
+  margin: 4px 0 14px;
+  font-size: 0.85rem;
+}
+
+.climate-value {
+  min-width: 80px;
+}
+
 /* Cadastre card */
 .cadastre-section {
   margin-top: 12px;
@@ -1261,7 +1268,10 @@ body {
 }
 
 @media (max-width: 900px) {
-  .analysis-grid,
+  .analysis-grid {
+    column-count: 1;
+  }
+
   .analysis-pair,
   .summary-grid {
     grid-template-columns: 1fr;

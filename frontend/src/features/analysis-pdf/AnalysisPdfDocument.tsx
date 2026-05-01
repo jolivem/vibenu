@@ -9,6 +9,7 @@ import { PdfRealEstate } from "./sections/PdfRealEstate";
 import { PdfNeighborhood } from "./sections/PdfNeighborhood";
 import { PdfDemographics } from "./sections/PdfDemographics";
 import { PdfElections } from "./sections/PdfElections";
+import { PdfClimate } from "./sections/PdfClimate";
 import { PdfCadastre } from "./sections/PdfCadastre";
 import { PdfMap } from "./sections/PdfMap";
 
@@ -138,7 +139,7 @@ export function AnalysisPdfDocument({
   }
   if (data.demographics?.nomIris) {
     coverMeta.push({
-      label: "Quartier IRIS",
+      label: "Zone démographique",
       value: data.demographics.nomIris,
     });
   }
@@ -231,9 +232,9 @@ export function AnalysisPdfDocument({
         />
       </Page>
 
-      {/* PAGE 3 — RISQUES + AIR */}
+      {/* PAGE 3 — RISQUES + AIR + CLIMAT */}
       <Page size="A4" style={pdfStyles.page}>
-        <RunningHeader chapter="Risques & air" />
+        <RunningHeader chapter="Risques, air & climat" />
         <ChapterTitle
           chapter="Chapitre III"
           italic={`${data.risks.categories.length} risques`}
@@ -243,6 +244,8 @@ export function AnalysisPdfDocument({
         <PdfRisks risks={data.risks} />
 
         <PdfAirQuality airQuality={data.airQuality} />
+
+        {data.climate && <PdfClimate climate={data.climate} />}
 
         <RunningFooter
           date={formattedDate}

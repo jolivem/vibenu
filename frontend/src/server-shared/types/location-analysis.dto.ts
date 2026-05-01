@@ -109,6 +109,19 @@ export interface ElectionsCandidateDto {
   pctNational: number;
 }
 
+export interface ClimateAnalysisDto {
+  periodStart: number;
+  periodEnd: number;
+  temperatureC: number;
+  precipitationMm: number;
+  sunshineHours: number;
+  national: {
+    temperatureC: number;
+    precipitationMm: number;
+    sunshineHours: number;
+  };
+}
+
 export interface ElectionsAnalysisDto {
   scrutin: "presidentielle-2022-t1";
   inscrits: number;
@@ -202,4 +215,5 @@ export interface LocationAnalysisDto {
   cadastre: CadastreAnalysisDto;
   summary: SummaryDto;
   elections?: ElectionsAnalysisDto | null;
+  climate?: ClimateAnalysisDto | null;
 }

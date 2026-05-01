@@ -41,7 +41,7 @@ export function buildAgeChartModel(params: {
   const { iris, commune, france, showCommune } = params;
 
   const series: AgeChartSeries[] = [
-    { name: "IRIS", color: "#78be20", data: iris },
+    { name: "Zone", color: "#78be20", data: iris },
   ];
   if (showCommune && commune) series.push({ name: "Commune", color: "#ea580c", data: commune });
   if (france) series.push({ name: "France", color: "#6b7280", data: france });

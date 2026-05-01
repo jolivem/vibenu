@@ -45,14 +45,14 @@ export function PdfDemographics({ demographics }: { demographics: DemographicsAn
   return (
     <View>
       <Text style={pdfStyles.demoIris}>
-        IRIS · {demographics.nomIris || demographics.codeIris}
+        Zone · {demographics.nomIris || demographics.codeIris}
         {demographics.nomCommune && ` — ${demographics.nomCommune}`}
       </Text>
 
       <View style={pdfStyles.demoTable}>
         <View style={pdfStyles.demoTableHead}>
           <Text style={pdfStyles.demoTableHeadCellFirst}>Indicateur</Text>
-          <Text style={pdfStyles.demoTableHeadCell}>IRIS</Text>
+          <Text style={pdfStyles.demoTableHeadCell}>Zone</Text>
           {showCommune && <Text style={pdfStyles.demoTableHeadCell}>Commune</Text>}
           {france && <Text style={pdfStyles.demoTableHeadCell}>France</Text>}
         </View>
@@ -81,7 +81,7 @@ export function PdfDemographics({ demographics }: { demographics: DemographicsAn
           />
           <Text style={pdfStyles.chartNote}>
             Commune et France : moyennes pondérées par population calculées à partir des
-            IRIS (chiffres indicatifs).
+            zones démographiques (chiffres indicatifs).
           </Text>
         </View>
       )}

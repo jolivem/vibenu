@@ -12,12 +12,12 @@ export function DemographicsCard({ demographics }: { demographics: DemographicsA
     <section className="card">
       <h2>Démographie</h2>
       <p className="demographics-iris">
-        IRIS : {demographics.nomIris || demographics.codeIris}
+        Zone : {demographics.nomIris || demographics.codeIris}
         {demographics.nomCommune && ` — ${demographics.nomCommune}`}
       </p>
       {!showCommune && demographics.nomCommune && (
         <p className="demographics-note">
-          IRIS unique pour cette commune — les chiffres IRIS et communaux sont identiques.
+          Zone unique pour cette commune — les chiffres de la zone et de la commune sont identiques.
         </p>
       )}
 
@@ -25,7 +25,7 @@ export function DemographicsCard({ demographics }: { demographics: DemographicsA
         <thead>
           <tr>
             <th scope="col">Indicateur</th>
-            <th scope="col">IRIS</th>
+            <th scope="col">Zone</th>
             {showCommune && <th scope="col">Commune</th>}
             {france && <th scope="col">France</th>}
           </tr>
@@ -71,7 +71,7 @@ export function DemographicsCard({ demographics }: { demographics: DemographicsA
       )}
 
       <p className="demographics-footnote">
-        Commune et France : moyennes pondérées par population calculées à partir des IRIS (chiffres indicatifs).
+        Commune et France : moyennes pondérées par population calculées à partir des zones démographiques (chiffres indicatifs).
       </p>
     </section>
   );
@@ -96,7 +96,7 @@ function AgeChart({
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label="Répartition par âge — comparaison IRIS, commune et France"
+        aria-label="Répartition par âge — comparaison zone, commune et France"
         className="age-chart-svg"
       >
         {yTicks.map((t) => (

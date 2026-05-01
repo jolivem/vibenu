@@ -161,6 +161,19 @@ export interface DemographicsAnalysisDto {
   communeIrisCount: number;
 }
 
+export interface ClimateAnalysisDto {
+  periodStart: number;
+  periodEnd: number;
+  temperatureC: number;
+  precipitationMm: number;
+  sunshineHours: number;
+  national: {
+    temperatureC: number;
+    precipitationMm: number;
+    sunshineHours: number;
+  };
+}
+
 export interface ElectionsCandidateDto {
   candidat: string;
   parti: string;
@@ -207,4 +220,5 @@ export interface LocationAnalysisDto {
   cadastre: CadastreAnalysisDto;
   summary: SummaryDto;
   elections?: ElectionsAnalysisDto | null;
+  climate?: ClimateAnalysisDto | null;
 }

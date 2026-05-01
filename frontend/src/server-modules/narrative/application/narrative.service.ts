@@ -108,5 +108,15 @@ function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
             })),
         }
       : null,
+    climate: data.climate
+      ? {
+          temperatureC: data.climate.temperatureC,
+          precipitationMm: data.climate.precipitationMm,
+          sunshineHours: data.climate.sunshineHours,
+          nationalTemperatureC: data.climate.national.temperatureC,
+          nationalPrecipitationMm: data.climate.national.precipitationMm,
+          nationalSunshineHours: data.climate.national.sunshineHours,
+        }
+      : null,
   };
 }

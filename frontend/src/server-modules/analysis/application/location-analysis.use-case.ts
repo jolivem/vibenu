@@ -9,6 +9,7 @@ import type { SummaryService } from "../../summary/application/summary.service";
 import type { CadastreService } from "../../cadastre/application/cadastre.service";
 import type { DemographicsService } from "../../demographics/application/demographics.service";
 import type { ElectionsService } from "../../elections/application/elections.service";
+import type { ClimateService } from "../../climate/application/climate.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
 import type { LocationAnalysisDto } from "../../../server-shared/types/location-analysis.dto";
 
@@ -24,6 +25,7 @@ interface Dependencies {
   cadastreService: CadastreService;
   demographicsService: DemographicsService;
   electionsService: ElectionsService;
+  climateService: ClimateService;
 }
 
 export class LocationAnalysisUseCase implements LocationAnalysisService {
@@ -52,7 +54,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       ? Promise.resolve({ parcel: null, urbanZone: null, prescriptions: [] })
       : this.dependencies.cadastreService.getCadastreData(input.lat, input.lon);
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections] =
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
@@ -63,6 +65,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         this.dependencies.demographicsService.getDemographicsData(input.lat, input.lon),
         contourPromise,
         this.dependencies.electionsService.getElectionsData(codeInsee),
+        this.dependencies.climateService.getClimateData(input.lat, input.lon),
       ]);
 
     const address = {
@@ -96,6 +99,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       cadastre,
       summary,
       elections,
+      climate,
     };
   }
 }

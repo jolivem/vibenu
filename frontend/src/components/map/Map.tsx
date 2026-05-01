@@ -79,7 +79,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
       layers.push({ id: DVF_LAYER_ID, label: "Prix immobiliers (DVF)", color: "#eab308" });
     }
     if (irisGeojson) {
-      layers.push({ id: IRIS_LAYER_ID, label: "Quartier IRIS", color: "#8b5cf6" });
+      layers.push({ id: IRIS_LAYER_ID, label: "Zone démographique", color: "#8b5cf6" });
     }
     return layers;
   }, [dvfTransactions, irisGeojson]);

@@ -50,6 +50,14 @@ export interface NarrativeInput {
       pctNational: number;
     }>;
   } | null;
+  climate: {
+    temperatureC: number;
+    precipitationMm: number;
+    sunshineHours: number;
+    nationalTemperatureC: number;
+    nationalPrecipitationMm: number;
+    nationalSunshineHours: number;
+  } | null;
 }
 
 export interface NarrativeDto {
