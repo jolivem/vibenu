@@ -1,5 +1,5 @@
 import type { MobilityService } from "./mobility.service";
-import type { MobilityAnalysis } from "../domain/mobility.types";
+import type { MobilityAnalysis, Station } from "../domain/mobility.types";
 import type { TransportProvider } from "../infrastructure/transport.provider";
 
 export class MobilityServiceImpl implements MobilityService {
@@ -7,41 +7,68 @@ export class MobilityServiceImpl implements MobilityService {
 
   async getMobilityData(lat: number, lon: number): Promise<MobilityAnalysis> {
     // Deux recherches en parallèle :
-    // - 1 km : on garde uniquement les arrêts (bus, tram) — pertinents pour la marche
-    // - 20 km : on garde la gare/métro/RER la plus proche.
-    //   Au-delà de ~25 km, l'API gtfs-stops de transport.data.gouv.fr cap silencieusement
-    //   les bboxes trop larges (renvoie 0 features). 20 km laisse de la marge tout en
-    //   couvrant la quasi-totalité des cas en France habitée.
+    // - 1 km : arrêts (bus, tram) marchables + gares à proximité immédiate (zones denses
+    //   type Paris où plusieurs RER/métros sont dans le rayon)
+    // - 20 km : trouve la gare la plus proche pour les zones rurales.
+    //
+    // On fusionne les deux listes de stations : utile car le wide search peut renvoyer
+    // 0 résultat dans les zones très denses (cap implicite de l'API à ~20 000 features),
+    // auquel cas le close search prend le relais.
     const [close, wide] = await Promise.all([
       this.transportProvider.findNearbyStops(lat, lon, 1000),
       this.transportProvider.findNearbyStops(lat, lon, 20_000),
     ]);
 
     const nearestStops = close.nearestStops;
-    const nearestStation = wide.nearestStation;
+    const nearestStations = mergeStations(close.nearestStations, wide.nearestStations);
 
-    const label = deriveLabel({ nearestStops, nearestStation });
+    const label = deriveLabel({ nearestStops, nearestStations });
 
     return {
       nearestStops,
-      nearestStation,
+      nearestStations,
       label,
     };
   }
 }
 
+function mergeStations(closeStations: Station[], wideStations: Station[]): Station[] {
+  const seen = new Map<string, Station>();
+  for (const s of [...closeStations, ...wideStations]) {
+    const key = `${s.name.toLowerCase().trim()}|${s.mode}`;
+    const existing = seen.get(key);
+    if (!existing || s.distanceMeters < existing.distanceMeters) {
+      seen.set(key, s);
+    }
+  }
+  return Array.from(seen.values())
+    .sort((a, b) => a.distanceMeters - b.distanceMeters)
+    .slice(0, 8);
+}
+
 function deriveLabel(data: {
   nearestStops: Array<{ distanceMeters: number }>;
-  nearestStation?: { distanceMeters: number };
+  nearestStations: Station[];
 }): MobilityAnalysis["label"] {
   const nearestDistance = data.nearestStops[0]?.distanceMeters ?? 2000;
   const hasStop300 = nearestDistance <= 300;
   const hasStop600 = nearestDistance <= 600;
-  const hasStation = data.nearestStation && data.nearestStation.distanceMeters <= 1500;
+  const closestStation = data.nearestStations[0];
+  const hasStation = closestStation != null && closestStation.distanceMeters <= 1500;
   const dense = data.nearestStops.length >= 3;
 
-  if (hasStop300 && hasStation && dense) return "très bon";
+  // Densité bus immédiate (utile pour les centres urbains sans gare/métro à proximité).
+  // Note : nearestStops est tronqué à 5 par le provider, donc stops300 plafonne à 5.
+  const stops300 = data.nearestStops.filter((s) => s.distanceMeters <= 300).length;
+  const stops600 = data.nearestStops.filter((s) => s.distanceMeters <= 600).length;
+
+  // Très bon : gare proche + densité, OU réseau de bus très dense (≥4 arrêts dans 300 m)
+  if ((hasStop300 && hasStation && dense) || stops300 >= 4) return "très bon";
+
+  // Bon : combo arrêt+gare proches, OU densité bus correcte (≥2 arrêts dans 300 m / ≥3 dans 600 m)
   if ((hasStop300 || hasStop600) && hasStation) return "bon";
+  if (stops300 >= 2 || stops600 >= 3) return "bon";
+
   if (hasStop600 || hasStation) return "correct";
   return "faible";
 }

@@ -37,11 +37,13 @@ export interface StationDto {
   id: string;
   name: string;
   distanceMeters: number;
+  mode: string; // "train", "métro/RER", "rer", "metro", ...
 }
 
 export interface MobilityAnalysisDto {
   nearestStops: TransportStopDto[];
-  nearestStation?: StationDto;
+  /** Gares/métros/RER les plus proches, triés par distance (max 5). */
+  nearestStations: StationDto[];
   label: MobilityLabel;
 }
 

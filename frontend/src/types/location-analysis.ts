@@ -40,7 +40,8 @@ export interface StationDto {
 
 export interface MobilityAnalysisDto {
   nearestStops: TransportStopDto[];
-  nearestStation?: StationDto;
+  /** Gares/métros/RER les plus proches, triés par distance (max 5). */
+  nearestStations: StationDto[];
   label: "faible" | "correct" | "bon" | "très bon";
 }
 

@@ -32,6 +32,28 @@ export interface NarrativeInput {
     population: number | null;
     revenuMedian: number | null;
     tauxPauvrete: number | null;
+    /** Répartition par âge (% de chaque tranche) pour la zone analysée. */
+    ageDistribution: {
+      pct0_14: number;
+      pct15_29: number;
+      pct30_44: number;
+      pct45_59: number;
+      pct60_74: number;
+      pct75Plus: number;
+    } | null;
+    /** Références nationales pour permettre les comparaisons. */
+    national: {
+      revenuMedian: number | null;
+      tauxPauvrete: number | null;
+      ageDistribution: {
+        pct0_14: number;
+        pct15_29: number;
+        pct30_44: number;
+        pct45_59: number;
+        pct60_74: number;
+        pct75Plus: number;
+      } | null;
+    } | null;
   } | null;
   cadastre: {
     urbanZoneType: string | null;

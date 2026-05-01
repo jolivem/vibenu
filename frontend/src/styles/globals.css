@@ -511,20 +511,18 @@ body {
   font-family: var(--font-sans);
   font-size: 1.05rem;
   line-height: 1.6;
-  margin: 0;
   color: #2A2A2A;
   font-weight: 400;
 }
 
-.narrative-text::first-letter {
-  font-family: var(--font-sans);
-  font-size: 2.6rem;
-  float: left;
-  line-height: 0.9;
-  padding: 6px 10px 0 0;
-  color: var(--accent);
-  font-weight: 400;
+.narrative-text p {
+  margin: 0 0 6px;
 }
+
+.narrative-text p:last-child {
+  margin-bottom: 0;
+}
+
 
 .narrative-skeleton {
   display: flex;
@@ -1072,6 +1070,13 @@ body {
   border-radius: 6px;
   font-size: 0.8rem;
   color: #2a2a2a;
+}
+
+/* Distance discrète à côté du temps de marche dans Voisinage et Mobilité */
+.poi-distance {
+  color: var(--muted-soft);
+  font-size: 0.8em;
+  font-variant-numeric: tabular-nums;
 }
 
 .climate-value {

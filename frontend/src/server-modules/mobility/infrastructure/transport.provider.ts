@@ -5,5 +5,5 @@ export interface TransportProvider {
     lat: number,
     lon: number,
     radiusMeters: number,
-  ): Promise<Pick<MobilityAnalysis, "nearestStops" | "nearestStation">>;
+  ): Promise<Pick<MobilityAnalysis, "nearestStops" | "nearestStations">>;
 }

@@ -32,7 +32,7 @@ interface GtfsStopsResponse {
  * https://transport.data.gouv.fr
  */
 export class TransportDataGouvProvider implements TransportProvider {
-  private static cache = new InMemoryCache<{ nearestStops: { id: string; name: string; distanceMeters: number; mode: string }[]; nearestStation?: { id: string; name: string; distanceMeters: number; mode: string } }>(ONE_DAY);
+  private static cache = new InMemoryCache<{ nearestStops: { id: string; name: string; distanceMeters: number; mode: string }[]; nearestStations: { id: string; name: string; distanceMeters: number; mode: string }[] }>(ONE_DAY);
   private readonly apiUrl = "https://transport.data.gouv.fr/api";
 
   async findNearbyStops(lat: number, lon: number, radiusMeters: number) {
@@ -51,7 +51,7 @@ export class TransportDataGouvProvider implements TransportProvider {
 
       if (!response.ok) {
         console.warn(`transport.data.gouv.fr API error: ${response.status}`);
-        return { nearestStops: [], nearestStation: undefined };
+        return { nearestStops: [], nearestStations: [] };
       }
 
       const data = (await response.json()) as GtfsStopsResponse;
@@ -60,7 +60,7 @@ export class TransportDataGouvProvider implements TransportProvider {
       return result;
     } catch (error) {
       console.error("transport.data.gouv.fr provider error:", error);
-      return { nearestStops: [], nearestStation: undefined };
+      return { nearestStops: [], nearestStations: [] };
     }
   }
 
@@ -99,7 +99,7 @@ export class TransportDataGouvProvider implements TransportProvider {
 
     return {
       nearestStops: regularStops.slice(0, 5),
-      nearestStation: stations.length > 0 ? stations[0] : undefined,
+      nearestStations: stations.slice(0, 5),
     };
   }
 

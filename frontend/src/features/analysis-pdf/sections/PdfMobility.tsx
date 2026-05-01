@@ -27,27 +27,8 @@ export function PdfMobility({
   // En mode commune, on n'affiche que la gare la plus proche (les bus stops sont
   // mesurés depuis le centroïde, donc peu pertinents). Les distances sont aussi masquées.
   const stops = isCommune
-    ? mobility.nearestStation
-      ? [
-          {
-            id: "station-" + mobility.nearestStation.name,
-            name: mobility.nearestStation.name,
-            distanceMeters: mobility.nearestStation.distanceMeters,
-          },
-        ]
-      : []
-    : [
-        ...(mobility.nearestStation
-          ? [
-              {
-                id: "station-" + mobility.nearestStation.name,
-                name: mobility.nearestStation.name,
-                distanceMeters: mobility.nearestStation.distanceMeters,
-              },
-            ]
-          : []),
-        ...mobility.nearestStops,
-      ].slice(0, 6);
+    ? mobility.nearestStations.slice(0, 1)
+    : [...mobility.nearestStops, ...mobility.nearestStations].slice(0, 8);
 
   const level = mobility.label.charAt(0).toUpperCase() + mobility.label.slice(1);
 

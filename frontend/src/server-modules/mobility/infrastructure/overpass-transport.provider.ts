@@ -73,7 +73,7 @@ export class OverpassTransportProvider implements TransportProvider {
 
       if (!response.ok) {
         console.warn(`Overpass API error: ${response.statusText}`);
-        return { nearestStops: [], nearestStation: undefined };
+        return { nearestStops: [], nearestStations: [] };
       }
 
       const data = (await response.json()) as OverpassResponse;
@@ -83,11 +83,11 @@ export class OverpassTransportProvider implements TransportProvider {
 
       return {
         nearestStops,
-        nearestStation: stations.length > 0 ? stations[0] : undefined,
+        nearestStations: stations.slice(0, 5),
       };
     } catch (error) {
       console.error("Overpass transport provider error:", error);
-      return { nearestStops: [], nearestStation: undefined };
+      return { nearestStops: [], nearestStations: [] };
     }
   }
 

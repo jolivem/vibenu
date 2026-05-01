@@ -11,10 +11,12 @@ export interface Station {
   id: string;
   name: string;
   distanceMeters: number;
+  mode: string; // train, métro/RER, rer, metro, ...
 }
 
 export interface MobilityAnalysis {
   nearestStops: TransportStop[];
-  nearestStation?: Station;
+  /** Gares/métros/RER les plus proches, triés par distance (max 5). */
+  nearestStations: Station[];
   label: MobilityLabel;
 }

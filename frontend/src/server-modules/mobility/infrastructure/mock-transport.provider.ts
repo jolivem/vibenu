@@ -3,7 +3,7 @@ import type { TransportProvider } from "./transport.provider";
 export class MockTransportProvider implements TransportProvider {
   async findNearbyStops(): Promise<{
     nearestStops: Array<{ id: string; name: string; distanceMeters: number; mode: string }>;
-    nearestStation?: { id: string; name: string; distanceMeters: number };
+    nearestStations: Array<{ id: string; name: string; distanceMeters: number; mode: string }>;
   }> {
     return {
       nearestStops: [
@@ -11,7 +11,9 @@ export class MockTransportProvider implements TransportProvider {
         { id: "stop_2", name: "Arrêt Gare Centre", distanceMeters: 420, mode: "tram" },
         { id: "stop_3", name: "Arrêt République", distanceMeters: 650, mode: "bus" },
       ],
-      nearestStation: { id: "station_1", name: "Gare Versailles Chantiers", distanceMeters: 1200 },
+      nearestStations: [
+        { id: "station_1", name: "Gare Versailles Chantiers", distanceMeters: 1200, mode: "train" },
+      ],
     };
   }
 }

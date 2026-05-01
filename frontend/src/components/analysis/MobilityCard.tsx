@@ -32,8 +32,9 @@ interface Props {
 
 export function MobilityCard({ mobility, mode }: Props) {
   const isCommune = mode === "commune";
-  const station = mobility.nearestStation;
-  const stationIsClose = station && station.distanceMeters <= 1500;
+  const stations = mobility.nearestStations;
+  const closestStation = stations[0];
+  const closestStationIsNear = closestStation && closestStation.distanceMeters <= 1500;
 
   return (
     <section className="card">
@@ -42,28 +43,36 @@ export function MobilityCard({ mobility, mode }: Props) {
         <p>Niveau : {mobility.label}</p>
       )}
 
-      {station && (
-        <>
-          <h3>
-            {stationLabel(station.mode)}
-            {!isCommune && !stationIsClose && " la plus proche"}
-          </h3>
-          <ul>
-            <li>
-              {station.name}
-              {!isCommune && ` — ${formatWalkingTime(station.distanceMeters)} (${formatDistance(station.distanceMeters)})`}
-            </li>
-          </ul>
-        </>
-      )}
-
       {!isCommune && mobility.nearestStops.length > 0 && (
         <>
           <h3>Bus</h3>
           <ul>
             {mobility.nearestStops.map((stop) => (
               <li key={stop.id}>
-                {stop.name} — {formatWalkingTime(stop.distanceMeters)} ({formatDistance(stop.distanceMeters)})
+                {stop.name} — {formatWalkingTime(stop.distanceMeters)}{" "}
+                <span className="poi-distance">({formatDistance(stop.distanceMeters)})</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {stations.length > 0 && (
+        <>
+          <h3>
+            {stationsHeading(stations)}
+            {!isCommune && !closestStationIsNear && " la plus proche"}
+          </h3>
+          <ul>
+            {(isCommune ? stations.slice(0, 1) : stations).map((s) => (
+              <li key={s.id}>
+                {s.name}
+                {!isCommune && (
+                  <>
+                    {" "}— {formatWalkingTime(s.distanceMeters)}{" "}
+                    <span className="poi-distance">({formatDistance(s.distanceMeters)})</span>
+                  </>
+                )}
               </li>
             ))}
           </ul>
@@ -71,4 +80,20 @@ export function MobilityCard({ mobility, mode }: Props) {
       )}
     </section>
   );
+}
+
+/** Titre de section : reflète les modes présents dans la liste. */
+function stationsHeading(stations: { mode: string }[]): string {
+  const modes = new Set(stations.map((s) => s.mode));
+  if (modes.size === 1) {
+    return stationLabel(stations[0].mode);
+  }
+  // Mix de plusieurs modes (ex. métro + RER + train) → titre générique
+  if (modes.has("train") && (modes.has("metro") || modes.has("rer") || modes.has("métro/RER"))) {
+    return "Gare, métro & RER";
+  }
+  if (modes.has("rer") || modes.has("métro/RER")) {
+    return "Métro & RER";
+  }
+  return "Stations";
 }

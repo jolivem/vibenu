@@ -55,8 +55,8 @@ function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
     addressLabel: data.address.label,
     mobility: {
       label: data.mobility.label,
-      hasNearbyStation: data.mobility.nearestStation != null,
-      nearestStationDistanceMeters: data.mobility.nearestStation?.distanceMeters ?? null,
+      hasNearbyStation: data.mobility.nearestStations.length > 0,
+      nearestStationDistanceMeters: data.mobility.nearestStations[0]?.distanceMeters ?? null,
       busStopsCount: data.mobility.nearestStops.length,
     },
     risks: {
@@ -83,6 +83,32 @@ function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
           population: data.demographics.population,
           revenuMedian: data.demographics.revenuMedian,
           tauxPauvrete: data.demographics.tauxPauvrete,
+          ageDistribution: data.demographics.ageDistribution
+            ? {
+                pct0_14: data.demographics.ageDistribution.pct0_14,
+                pct15_29: data.demographics.ageDistribution.pct15_29,
+                pct30_44: data.demographics.ageDistribution.pct30_44,
+                pct45_59: data.demographics.ageDistribution.pct45_59,
+                pct60_74: data.demographics.ageDistribution.pct60_74,
+                pct75Plus: data.demographics.ageDistribution.pct75Plus,
+              }
+            : null,
+          national: data.demographics.nationalStats
+            ? {
+                revenuMedian: data.demographics.nationalStats.revenuMedian,
+                tauxPauvrete: data.demographics.nationalStats.tauxPauvrete,
+                ageDistribution: data.demographics.nationalStats.ageDistribution
+                  ? {
+                      pct0_14: data.demographics.nationalStats.ageDistribution.pct0_14,
+                      pct15_29: data.demographics.nationalStats.ageDistribution.pct15_29,
+                      pct30_44: data.demographics.nationalStats.ageDistribution.pct30_44,
+                      pct45_59: data.demographics.nationalStats.ageDistribution.pct45_59,
+                      pct60_74: data.demographics.nationalStats.ageDistribution.pct60_74,
+                      pct75Plus: data.demographics.nationalStats.ageDistribution.pct75Plus,
+                    }
+                  : null,
+              }
+            : null,
         }
       : null,
     cadastre: data.cadastre

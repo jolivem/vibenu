@@ -24,6 +24,20 @@ function groupByCategory(pois: NeighborhoodAnalysisDto["pois"]) {
   return groups;
 }
 
+function formatDistance(meters: number): string {
+  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
+  return `${meters} m`;
+}
+
+// Vitesse de marche moyenne ≈ 4,5 km/h (75 m/min)
+function formatWalkingTime(meters: number): string {
+  const minutes = Math.max(1, Math.round(meters / 75));
+  if (minutes < 60) return `${minutes} min à pied`;
+  const h = Math.floor(minutes / 60);
+  const m = Math.round((minutes - h * 60) / 5) * 5;
+  return m === 0 ? `${h} h à pied` : `${h} h ${String(m).padStart(2, "0")} à pied`;
+}
+
 export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodAnalysisDto }) {
   const groups = groupByCategory(neighborhood.pois);
 
@@ -38,7 +52,8 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodA
           <ul>
             {pois.slice(0, 3).map((poi, i) => (
               <li key={i}>
-                {poi.name} — {poi.distanceMeters} m
+                {poi.name} — {formatWalkingTime(poi.distanceMeters)}{" "}
+                <span className="poi-distance">({formatDistance(poi.distanceMeters)})</span>
               </li>
             ))}
           </ul>
