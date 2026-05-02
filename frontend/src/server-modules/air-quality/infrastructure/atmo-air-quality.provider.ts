@@ -1,4 +1,4 @@
-import type { AirQualityData } from "../domain/air-quality.types";
+import type { AirQualityData, AirQualityHistoryDay } from "../domain/air-quality.types";
 import type { AirQualityProvider } from "../application/air-quality.service";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 
@@ -48,10 +48,17 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
     }
 
     try {
-      const today = new Date().toISOString().split("T")[0];
+      // Filtre = 7 jours en arrière jusqu'à aujourd'hui (les jours futurs/prévisions
+      // sont tolérés mais on prend le jour courant comme référence).
+      const today = new Date();
+      const todayStr = today.toISOString().split("T")[0];
+      const sevenDaysAgo = new Date(today.getTime() - 7 * 86400_000)
+        .toISOString()
+        .split("T")[0];
+
       const filter = JSON.stringify({
         code_zone: { operator: "=", value: codeInsee },
-        date_ech: { operator: ">=", value: today },
+        date_ech: { operator: ">=", value: sevenDaysAgo },
       });
       const url = `${this.baseUrl}/api/data/112/${encodeURIComponent(filter)}?withGeom=false`;
 
@@ -62,20 +69,55 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
       }
 
       const data = (await response.json()) as AtmoGeoJson;
-      const feature =
-        data.features?.find((f) => f.properties?.date_ech?.startsWith(today)) ??
-        data.features?.[0];
-      if (!feature) {
+      const features = data.features ?? [];
+
+      // Construit l'historique : un point par jour, du plus ancien au plus récent.
+      const byDate = new Map<string, AtmoProperties>();
+      for (const f of features) {
+        const d = f.properties?.date_ech?.slice(0, 10);
+        if (!d) continue;
+        // En cas de doublon (forecast vs observé), garde le plus récent (date_maj).
+        const existing = byDate.get(d);
+        if (!existing) byDate.set(d, f.properties);
+        else {
+          const e = (existing.date_maj ?? "") > (f.properties.date_maj ?? "") ? existing : f.properties;
+          byDate.set(d, e);
+        }
+      }
+
+      const history: AirQualityHistoryDay[] = Array.from(byDate.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .filter(([d]) => d <= todayStr) // on garde uniquement passé + aujourd'hui
+        .map(([d, p]) => {
+          const m = this.mapAtmoData(p);
+          return { date: d, level: m.level, aqi: m.aqi };
+        });
+
+      // Référence "jour courant" : aujourd'hui si présent, sinon le plus récent passé,
+      // sinon le 1er feature retourné.
+      const todayProps =
+        features.find((f) => f.properties?.date_ech?.startsWith(todayStr))?.properties ??
+        (history.length > 0
+          ? features.find(
+              (f) => f.properties?.date_ech?.startsWith(history[history.length - 1].date),
+            )?.properties
+          : undefined) ??
+        features[0]?.properties;
+
+      if (!todayProps) {
         return this.getFallbackData("Aucun indice disponible");
       }
 
-      const result = this.mapAtmoData(feature.properties);
+      const result = this.mapAtmoData(todayProps);
+      result.history = history;
+
       if (debug) {
         result.debugRaw = {
           codeInsee,
-          requestedDate: today,
-          allFeatures: data.features?.map((f) => f.properties) ?? [],
-          selectedFeature: feature.properties,
+          requestedRange: { from: sevenDaysAgo, to: todayStr },
+          allFeatures: features.map((f) => f.properties),
+          selectedFeature: todayProps,
+          history,
         };
       } else {
         AtmoAirQualityProvider.cache.set(cacheKey, result);
@@ -157,6 +199,7 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
       pollutants: this.extractSubIndices(p),
       source: p.source ?? "Atmo France",
       lastUpdated: new Date(p.date_maj ?? p.date_ech ?? Date.now()),
+      history: [],
     };
   }
 
@@ -177,6 +220,7 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
       pollutants: {},
       source,
       lastUpdated: new Date(),
+      history: [],
     };
   }
 }

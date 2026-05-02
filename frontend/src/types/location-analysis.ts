@@ -77,9 +77,23 @@ export interface RealEstateAnalysisDto {
   transactionFeatures?: DvfTransactionFeatureDto[];
 }
 
+export type AirQualityLevel = "bon" | "moyen" | "dégradé" | "mauvais" | "très_mauvais";
+
+export interface AirQualityDayDto {
+  /** ISO date (YYYY-MM-DD). */
+  date: string;
+  level: AirQualityLevel;
+}
+
 export interface AirQualityAnalysisDto {
-  level: "bon" | "moyen" | "dégradé" | "mauvais" | "très_mauvais";
+  level: AirQualityLevel;
   message: string;
+  /** Polluant le plus contributeur à l'indice (ex. "ozone (O₃)"). */
+  dominantPollutant: string | null;
+  /** Date ISO de la dernière mise à jour Atmo. */
+  lastUpdated: string;
+  /** Historique récent (typiquement 7 jours, du plus ancien au plus récent). */
+  recentDays: AirQualityDayDto[];
   /** Présent uniquement quand NEXT_PUBLIC_DEBUG=true. */
   debugRaw?: unknown;
 }

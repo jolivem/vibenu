@@ -1079,6 +1079,101 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Air quality card — échelle, polluant dominant, historique 7 jours */
+.air-headline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 12px;
+}
+
+.air-headline-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.air-scale {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+  margin-bottom: 14px;
+}
+
+.air-scale-step {
+  height: 22px;
+  border-radius: 3px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+
+.air-scale-step--active {
+  opacity: 1;
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+.air-scale-step-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+  padding: 0 4px;
+  text-align: center;
+}
+
+.air-pollutant {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.air-history {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 0.5px dashed var(--border);
+}
+
+.air-history-title {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.air-history-strip {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.air-history-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 36px;
+}
+
+.air-history-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.air-history-date {
+  font-size: 0.7rem;
+  color: var(--muted-soft);
+  font-variant-numeric: tabular-nums;
+}
+
 .climate-value {
   min-width: 80px;
 }
