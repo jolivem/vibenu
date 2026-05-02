@@ -230,14 +230,8 @@ pnpm dev
 | `POSTGRES_URL` | URL de connexion PostgreSQL/Neon (OSM + DVF + cache synthèses) | - |
 | `ATMO_USERNAME` | Email du compte Atmo France (optionnel) | - |
 | `ATMO_PASSWORD` | Mot de passe du compte Atmo France (optionnel) | - |
-| `NEXT_PUBLIC_DVF_SOURCE` | Source des prix DVF : `database` (PostgreSQL / data.gouv, défaut) ou `cerema` (API Cerema appelée depuis le navigateur) | `database` |
 | `MISTRAL_API_KEY` | Clé API Mistral pour la synthèse LLM. Sans elle, la card « Synthèse » n'apparaît pas | - |
 | `MISTRAL_MODEL` | Modèle Mistral à utiliser (optionnel) | `mistral-small-latest` |
-
-### Choix de la source DVF
-
-- `database` (par défaut) : lecture de la table `dvf_transactions` importée depuis data.gouv.fr. Nécessite l'import préalable via `scripts/import_dvf.py`.
-- `cerema` : la route serveur renvoie des prix vides et le navigateur interroge directement l'[API Cerema](https://apidf-preprod.cerema.fr/dvf_opendata/geomutations). Utile en déploiement (ex. Vercel) où l'IP serveur est bloquée par l'API Cerema, ou lorsque PostgreSQL n'est pas configuré.
 
 ## Sources de données — notes et accès
 
@@ -246,7 +240,8 @@ pnpm dev
 - Données importées dans PostgreSQL/PostGIS via le script `scripts/import_dvf.py`
 - Import de toute la France (95 départements), ventes d'appartements et maisons sur 10 ans
 - Licence : Licence Ouverte Etalab 2.0
-- Mise à jour : semestrielle (avril et octobre) — relancer `import_dvf.py`
+- **Dernier import** : millésime DVF 2024 (transactions jusqu'au 2024-12-31), importé en DB le 2026-05-02
+- Mise à jour : semestrielle (avril et octobre) — relancer `python scripts/import_dvf.py` pour récupérer le nouveau millésime data.gouv.fr
 
 ### Atmo France (qualité de l'air)
 - **Inscription** : [admindata.atmo-france.org/inscription-api](https://admindata.atmo-france.org/inscription-api)
@@ -314,7 +309,7 @@ claireadresse/
         │   ├── map/              # Carte, couches WMS, toggles, contour communal
         │   └── analysis/         # Cards d'analyse (Mobilité, Risques, Cadastre, Élections, Narrative, etc.)
         ├── features/
-        │   ├── location-analysis/  # Hooks (useLocationAnalysis, useNarrative, useDvfRealEstate)
+        │   ├── location-analysis/  # Hooks (useLocationAnalysis, useNarrative)
         │   └── analysis-pdf/       # Export PDF (react-pdf) — document, sections, capture carte
         ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, summary, narrative
         ├── server-shared/

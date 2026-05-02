@@ -6,9 +6,6 @@ import { CommuneContourProvider } from "@/server-modules/address/infrastructure/
 import { TransportDataGouvProvider } from "@/server-modules/mobility/infrastructure/transport-data-gouv.provider";
 import { GeorisquesRiskProvider } from "@/server-modules/risks/infrastructure/brgm-risk.provider";
 import { DvfDatabaseProvider } from "@/server-modules/real-estate/infrastructure/dvf-database.provider";
-import { NoOpRealEstateProvider } from "@/server-modules/real-estate/infrastructure/noop-real-estate.provider";
-import type { RealEstateProvider } from "@/server-modules/real-estate/infrastructure/real-estate.provider";
-import { env } from "@/lib/config/env";
 import { SummaryBuilderService } from "@/server-modules/summary/application/summary-builder.service";
 import { MobilityServiceImpl } from "@/server-modules/mobility/application/mobility.service.impl";
 import { RiskServiceImpl } from "@/server-modules/risks/application/risk.service.impl";
@@ -36,17 +33,12 @@ const analyzeQuerySchema = z.object({
   citycode: z.string().trim().regex(/^[0-9AB]{5}$/i).optional(), // 5 chiffres ou Corse (2A/2B)
 });
 
-const realEstateProvider: RealEstateProvider =
-  env.dvfSource === "cerema"
-    ? new NoOpRealEstateProvider()
-    : new DvfDatabaseProvider();
-
 const useCase = new LocationAnalysisUseCase({
   addressProvider: new GeoApiAddressProvider(),
   communeContourProvider: new CommuneContourProvider(),
   mobilityService: new MobilityServiceImpl(new TransportDataGouvProvider()),
   riskService: new RiskServiceImpl(new GeorisquesRiskProvider()),
-  realEstateService: new RealEstateServiceImpl(realEstateProvider),
+  realEstateService: new RealEstateServiceImpl(new DvfDatabaseProvider()),
   airQualityService: new AirQualityServiceImpl(new AtmoAirQualityProvider()),
   neighborhoodService: new NeighborhoodServiceImpl(new CombinedNeighborhoodProvider()),
   summaryService: new SummaryBuilderService(),

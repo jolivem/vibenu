@@ -55,13 +55,19 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         ? Promise.resolve({ parcel: null, urbanZone: null, prescriptions: [] })
         : this.dependencies.cadastreService.getCadastreData(input.lat, input.lon);
 
+    // Idem pour le voisinage (POIs autour d'un point) : pas pertinent pour une commune entière.
+    const neighborhoodPromise =
+      mode === "commune"
+        ? Promise.resolve({ pois: [], label: "" })
+        : this.dependencies.neighborhoodService.getNeighborhoodData(input.lat, input.lon);
+
     const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
         this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee, { mode }),
         this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon, codeInsee),
-        this.dependencies.neighborhoodService.getNeighborhoodData(input.lat, input.lon),
+        neighborhoodPromise,
         cadastrePromise,
         this.dependencies.demographicsService.getDemographicsData(input.lat, input.lon),
         contourPromise,

@@ -122,7 +122,8 @@ export function AnalysisPdfDocument({
     data.address.postcode,
   );
 
-  const totalPages = 5;
+  const showNeighborhood = data.mode !== "commune";
+  const totalPages = showNeighborhood ? 5 : 4;
 
   const coverMeta: Array<{ label: string; value: string }> = [];
   if (data.cadastre?.parcel) {
@@ -260,26 +261,28 @@ export function AnalysisPdfDocument({
         />
       </Page>
 
-      {/* PAGE 4 — VOISINAGE */}
-      <Page size="A4" style={pdfStyles.page}>
-        <RunningHeader chapter="Voisinage" />
-        <ChapterTitle
-          chapter="Chapitre V"
-          pre="Le "
-          italic="voisinage"
-          post=" immédiat"
-          subtitle="Commerces, services et équipements à proximité"
-        />
+      {/* PAGE 4 — VOISINAGE (masquée en mode commune) */}
+      {showNeighborhood && (
+        <Page size="A4" style={pdfStyles.page}>
+          <RunningHeader chapter="Voisinage" />
+          <ChapterTitle
+            chapter="Chapitre V"
+            pre="Le "
+            italic="voisinage"
+            post=" immédiat"
+            subtitle="Commerces, services et équipements à proximité"
+          />
 
-        <PdfNeighborhood neighborhood={data.neighborhood} />
+          <PdfNeighborhood neighborhood={data.neighborhood} />
 
-        <RunningFooter
-          date={formattedDate}
-          address={street}
-          pageNumber={4}
-          totalPages={totalPages}
-        />
-      </Page>
+          <RunningFooter
+            date={formattedDate}
+            address={street}
+            pageNumber={4}
+            totalPages={totalPages}
+          />
+        </Page>
+      )}
 
       {/* PAGE 5 — DÉMO + IMMO + CADASTRE */}
       <Page size="A4" style={pdfStyles.page}>
@@ -324,7 +327,7 @@ export function AnalysisPdfDocument({
         <RunningFooter
           date={formattedDate}
           address={`Sources : IGN · DVF · Géorisques · INSEE · ATMO`}
-          pageNumber={5}
+          pageNumber={showNeighborhood ? 5 : 4}
           totalPages={totalPages}
         />
       </Page>

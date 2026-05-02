@@ -6,8 +6,15 @@ aggregated at the commune level + national aggregate.
 Source : Ministère de l'Intérieur via data.gouv.fr.
 Page :   https://www.data.gouv.fr/fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/
 
-Recommended file : "resultats-par-niveau-burvot-t1-france-entiere.xlsx" (31,9 Mo)
-The script aggregates the per-bureau-de-vote rows into commune totals.
+REQUIRED file : "resultats-par-niveau-burvot-t1-france-entiere.xlsx" (~33 Mo)
+This is the per-polling-station file. It is the only public file that lets us split
+Paris / Marseille / Lyon into their arrondissements (the BAN returns arrondissement
+INSEE codes 75101-75120, 13201-13216, 69381-69389, never the parent commune).
+
+Splitting rule : for these three cities, the first two characters of the bureau-de-vote
+code give the arrondissement number, so we rewrite the commune INSEE accordingly.
+Special bureaux that don't map to an arrondissement (e.g. Paris "JUS1" prison vote,
+~1% of inscrits) are dropped — they have no associated INSEE the frontend could query.
 
 Usage :
     python import_elections.py --file /path/to/resultats-par-niveau-burvot-t1-france-entiere.xlsx
@@ -97,6 +104,15 @@ def parse_dataframe(df: pd.DataFrame):
     inscrits_col = find_col(cols, "inscrits")
     votants_col = find_col(cols, "votants")
     exprimes_col = find_col(cols, "exprim")
+    # Bureau-de-vote column (only present in burvot file). Required to split Paris /
+    # Marseille / Lyon into arrondissements.
+    try:
+        bureau_col = find_col(cols, "b.vote")
+    except KeyError:
+        try:
+            bureau_col = find_col(cols, "bureau", "vote")
+        except KeyError:
+            bureau_col = None
 
     # Localisation des blocs candidats (par position).
     # Le fichier officiel a un en-tête à 2 niveaux : seul le 1er bloc est nommé
@@ -138,6 +154,56 @@ def parse_dataframe(df: pd.DataFrame):
     df["_code_dep"] = df[code_dep_col].astype(str).str.strip().str.zfill(2)
     df["_code_com"] = df[code_com_col].astype(str).str.strip().str.zfill(3)
     df["_code_commune"] = (df["_code_dep"] + df["_code_com"]).str[:5]
+
+    # Paris / Marseille / Lyon : la commune INSEE officielle (75056, 13055, 69123) est
+    # une seule entité, mais la BAN renvoie systématiquement le code arrondissement
+    # (75101-75120, 13201-13216, 69381-69389). Les deux premiers chiffres du code
+    # bureau-de-vote identifient l'arrondissement → on réécrit _code_commune.
+    # Bureaux spéciaux (ex. Paris "JUS1", vote en détention) : pas d'arrondissement
+    # → on les écarte (~1% de Paris, 0% ailleurs).
+    if bureau_col is not None:
+        bureau_str = df[bureau_col].astype(str).str.strip()
+        bureau_pref = bureau_str.str[:2]
+        is_arr = bureau_pref.str.match(r"^[0-9]{2}$")
+
+        is_paris = (df["_code_dep"] == "75") & (df["_code_com"] == "056")
+        is_mars = (df["_code_dep"] == "13") & (df["_code_com"] == "055")
+        is_lyon = (df["_code_dep"] == "69") & (df["_code_com"] == "123")
+
+        # Paris : 01..20 → 75101..75120
+        m = is_paris & is_arr & bureau_pref.between("01", "20")
+        df.loc[m, "_code_commune"] = "751" + bureau_pref[m]
+        # Marseille : 01..16 → 13201..13216
+        m = is_mars & is_arr & bureau_pref.between("01", "16")
+        df.loc[m, "_code_commune"] = "132" + bureau_pref[m]
+        # Lyon : 01..09 → 69381..69389
+        m = is_lyon & is_arr & bureau_pref.between("01", "09")
+        df.loc[m, "_code_commune"] = "6938" + bureau_pref[m].str[1]
+
+        # Écarter les bureaux non rattachables à un arrondissement.
+        special_mask = (is_paris | is_mars | is_lyon) & (
+            df["_code_commune"].isin(["75056", "13055", "69123"])
+        )
+        if special_mask.any():
+            sample = (
+                df.loc[special_mask, [bureau_col]]
+                .drop_duplicates()
+                [bureau_col]
+                .astype(str)
+                .head(5)
+                .tolist()
+            )
+            print(
+                f"Skipping {int(special_mask.sum())} special bureau rows "
+                f"in Paris/Marseille/Lyon (no arrondissement). Examples: {sample}"
+            )
+            df = df.loc[~special_mask].copy()
+    else:
+        print(
+            "WARNING: no bureau-de-vote column detected — Paris/Marseille/Lyon will be "
+            "aggregated into a single row each (75056/13055/69123) which the frontend "
+            "cannot match against BAN INSEE codes. Use the burvot file."
+        )
 
     # Forcer les numériques pour pouvoir sommer
     df["_inscrits"] = pd.to_numeric(df[inscrits_col], errors="coerce").fillna(0).astype(int)

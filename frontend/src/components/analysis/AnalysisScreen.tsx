@@ -5,12 +5,9 @@ import { useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
-import { useDvfRealEstate } from "@/features/location-analysis/useDvfRealEstate";
 import { useNarrative } from "@/features/location-analysis/useNarrative";
-import { env } from "@/lib/config/env";
 import { Map } from "@/components/map/Map";
 import { NarrativeCard } from "@/components/analysis/NarrativeCard";
-import { SummaryCard } from "@/components/analysis/SummaryCard";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
 import { RisksCard } from "@/components/analysis/RisksCard";
 import { AirQualityCard } from "@/components/analysis/AirQualityCard";
@@ -45,14 +42,7 @@ export function AnalysisScreen() {
     citycode,
   });
 
-  const useCerema = env.dvfSource === "cerema";
-  const { dvfData, dvfLoading, dvfError } = useDvfRealEstate(
-    useCerema ? latNum : undefined,
-    useCerema ? lonNum : undefined,
-  );
-
-  const realEstate =
-    useCerema && dvfData && data ? dvfData : data?.realEstate;
+  const realEstate = data?.realEstate;
 
   const { narrative, isLoading: narrativeLoading, error: narrativeError } = useNarrative(data ?? null);
 
@@ -127,24 +117,17 @@ export function AnalysisScreen() {
               isLoading={narrativeLoading}
               error={narrativeError}
             />
-            <SummaryCard summary={data.summary} />
             <div className="analysis-pair">
               <div className="analysis-stack">
                 <MobilityCard mobility={data.mobility} mode={data.mode} />
-                {realEstate && (
-                  <RealEstateCard
-                    realEstate={realEstate}
-                    loading={useCerema && dvfLoading}
-                    error={useCerema && dvfError}
-                  />
-                )}
+                {realEstate && <RealEstateCard realEstate={realEstate} />}
               </div>
               <div className="analysis-stack">
                 <RisksCard risks={data.risks} />
                 <AirQualityCard airQuality={data.airQuality} />
               </div>
             </div>
-            <NeighborhoodCard neighborhood={data.neighborhood} />
+            {data.mode !== "commune" && <NeighborhoodCard neighborhood={data.neighborhood} />}
             {data.demographics && <DemographicsCard demographics={data.demographics} />}
             {data.climate && <ClimateCard climate={data.climate} />}
             {data.elections && <ElectionsCard elections={data.elections} />}

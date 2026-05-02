@@ -724,6 +724,23 @@ body {
   flex-shrink: 0;
 }
 
+.spinner {
+  width: 96px;
+  height: 96px;
+  border: 8px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  flex-shrink: 0;
+}
+
+.analysis-loader p {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
