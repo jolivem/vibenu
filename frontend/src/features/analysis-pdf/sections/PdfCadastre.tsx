@@ -1,12 +1,13 @@
 import { Text, View } from "@react-pdf/renderer";
 import type { CadastreAnalysisDto } from "@/types/location-analysis";
+import { formatFr } from "@/lib/format";
 import { pdfStyles } from "../pdfStyles";
 
 function formatSurface(m2: number): string {
   if (m2 >= 10_000) {
     return `${(m2 / 10_000).toFixed(2)} ha`;
   }
-  return `${m2.toLocaleString("fr-FR")} m²`;
+  return `${formatFr(m2)} m²`;
 }
 
 const ZONE_LABEL: Record<string, string> = {
@@ -21,7 +22,6 @@ export function PdfCadastre({ cadastre }: { cadastre: CadastreAnalysisDto }) {
 
   return (
     <View wrap={false}>
-      <Text style={pdfStyles.cadHeading}>Cadastre &amp; urbanisme</Text>
       <View style={pdfStyles.cadCols}>
         <View style={pdfStyles.cadCol}>
           {cadastre.parcel && (

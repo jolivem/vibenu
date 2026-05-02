@@ -7,6 +7,7 @@ import { RISK_LAYERS, buildWmsTileUrl } from "./riskLayers";
 import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
 import type { CadastreParcelDto, DvfTransactionFeatureDto, GeoJsonGeometryDto } from "@/types/location-analysis";
+import { formatFr } from "@/lib/format";
 
 const DVF_LAYER_ID = "dvf-transactions";
 const IRIS_LAYER_ID = "iris-boundary";
@@ -335,8 +336,8 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         if (!e.features?.length) return;
         const props = e.features[0].properties;
         const html = `
-          <strong>${Number(props.pricePerSqm).toLocaleString("fr-FR")} €/m²</strong><br/>
-          Prix : ${Number(props.price).toLocaleString("fr-FR")} €<br/>
+          <strong>${formatFr(Number(props.pricePerSqm))} €/m²</strong><br/>
+          Prix : ${formatFr(Number(props.price))} €<br/>
           Surface : ${props.surface} m²<br/>
           Date : ${props.date}<br/>
           ${props.propertyType}

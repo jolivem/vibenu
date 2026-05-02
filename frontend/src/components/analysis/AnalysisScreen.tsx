@@ -69,7 +69,7 @@ export function AnalysisScreen() {
           <Link href="/" className="analysis-back">
             <span aria-hidden>←</span>
             <span className="analysis-brand">
-              Claire<i>Adresse</i>
+              Claire<span>Adresse</span>
             </span>
           </Link>
           {data && (

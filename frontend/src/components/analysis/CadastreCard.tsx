@@ -1,10 +1,11 @@
 import type { CadastreAnalysisDto } from "@/types/location-analysis";
+import { formatFr } from "@/lib/format";
 
 function formatSurface(m2: number): string {
   if (m2 >= 10_000) {
     return `${(m2 / 10_000).toFixed(2)} ha`;
   }
-  return `${m2.toLocaleString("fr-FR")} m²`;
+  return `${formatFr(m2)} m²`;
 }
 
 function zoneTypeBadge(type: string) {

@@ -13,7 +13,6 @@ const LEVEL_LABEL: Record<AirQualityAnalysisDto["level"], string> = {
 export function PdfAirQuality({ airQuality }: { airQuality: AirQualityAnalysisDto }) {
   return (
     <View style={pdfStyles.airBand} wrap={false}>
-      <Text style={pdfStyles.airBandTitle}>Qualité de l&apos;air</Text>
       <Text style={pdfStyles.airBandLevel}>{LEVEL_LABEL[airQuality.level]}</Text>
       {airQuality.message && (
         <Text style={pdfStyles.airBandText}>{airQuality.message}</Text>

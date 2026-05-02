@@ -39,7 +39,7 @@ export default function HomePage() {
       <nav className="landing-nav">
         <div className="landing-nav-inner">
           <Link href="/" className="landing-brand">
-            Claire<i>Adresse</i>
+            Claire<span>Adresse</span>
           </Link>
           <div className="landing-nav-links">
             <a href="#decouvrez">Comment ça marche</a>

@@ -1,5 +1,6 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import type { LocationAnalysisDto, RealEstateAnalysisDto } from "@/types/location-analysis";
+import { formatFr } from "@/lib/format";
 import { pdfStyles } from "./pdfStyles";
 import { PdfCoverResume } from "./sections/PdfSummary";
 import { PdfMobility } from "./sections/PdfMobility";
@@ -134,7 +135,7 @@ export function AnalysisPdfDocument({
       value:
         data.cadastre.parcel.contenance >= 10_000
           ? `${(data.cadastre.parcel.contenance / 10_000).toFixed(2)} ha`
-          : `${data.cadastre.parcel.contenance.toLocaleString("fr-FR")} m²`,
+          : `${formatFr(data.cadastre.parcel.contenance)} m²`,
     });
   }
   if (data.demographics?.nomIris) {
@@ -193,10 +194,7 @@ export function AnalysisPdfDocument({
           ))}
         </View>
 
-        <PdfCoverResume
-          summary={data.summary}
-          narrativeParagraph={narrativeParagraph}
-        />
+        <PdfCoverResume narrativeParagraph={narrativeParagraph} />
 
         <View style={pdfStyles.coverFooter}>
           <Text style={pdfStyles.runningFooterDate}>{formattedDate}</Text>
@@ -243,7 +241,14 @@ export function AnalysisPdfDocument({
 
         <PdfRisks risks={data.risks} />
 
-        <PdfAirQuality airQuality={data.airQuality} />
+        <View style={{ marginTop: 36 }} wrap={false}>
+          <Text style={pdfStyles.chapterEyebrow}>Chapitre IV</Text>
+          <Text style={pdfStyles.chapterTitle}>
+            {"Qualité de "}
+            <Text style={pdfStyles.chapterTitleItalic}>l&apos;air</Text>
+          </Text>
+          <PdfAirQuality airQuality={data.airQuality} />
+        </View>
 
         {data.climate && <PdfClimate climate={data.climate} />}
 
@@ -259,7 +264,7 @@ export function AnalysisPdfDocument({
       <Page size="A4" style={pdfStyles.page}>
         <RunningHeader chapter="Voisinage" />
         <ChapterTitle
-          chapter="Chapitre IV"
+          chapter="Chapitre V"
           pre="Le "
           italic="voisinage"
           post=" immédiat"
@@ -280,7 +285,7 @@ export function AnalysisPdfDocument({
       <Page size="A4" style={pdfStyles.page}>
         <RunningHeader chapter="Démographie & cadastre" />
         <ChapterTitle
-          chapter="Chapitre V"
+          chapter="Chapitre VI"
           italic="Démographie"
           post=" du quartier"
         />
@@ -289,9 +294,26 @@ export function AnalysisPdfDocument({
 
         {data.elections && <PdfElections elections={data.elections} />}
 
-        {realEstate && <PdfRealEstate realEstate={realEstate} />}
+        {realEstate && (
+          <View style={{ marginTop: 36 }} wrap={false}>
+            <Text style={pdfStyles.chapterEyebrow}>Chapitre VII</Text>
+            <Text style={pdfStyles.chapterTitle}>
+              <Text style={pdfStyles.chapterTitleItalic}>Immobilier</Text>
+            </Text>
+            <PdfRealEstate realEstate={realEstate} />
+          </View>
+        )}
 
-        {data.cadastre && <PdfCadastre cadastre={data.cadastre} />}
+        {data.cadastre && (
+          <View style={{ marginTop: 36 }} wrap={false}>
+            <Text style={pdfStyles.chapterEyebrow}>Chapitre VIII</Text>
+            <Text style={pdfStyles.chapterTitle}>
+              {"Cadastre & "}
+              <Text style={pdfStyles.chapterTitleItalic}>urbanisme</Text>
+            </Text>
+            <PdfCadastre cadastre={data.cadastre} />
+          </View>
+        )}
 
         <View style={pdfStyles.endMark}>
           <View style={pdfStyles.endMarkLine} />

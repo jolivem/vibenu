@@ -1,16 +1,18 @@
+import { formatFr } from "@/lib/format";
+
 export function formatPopulation(value: number | null): string {
   if (value == null) return "—";
-  return `${Math.round(value).toLocaleString("fr-FR")} hab.`;
+  return `${formatFr(Math.round(value))} hab.`;
 }
 
 export function formatDensity(value: number | null): string {
   if (value == null) return "—";
-  return `${value.toLocaleString("fr-FR")} hab./km²`;
+  return `${formatFr(value)} hab./km²`;
 }
 
 export function formatRevenu(value: number | null): string {
   if (value == null) return "—";
-  return `${Math.round(value).toLocaleString("fr-FR")} €/an`;
+  return `${formatFr(Math.round(value))} €/an`;
 }
 
 export function formatPct(value: number | null): string {

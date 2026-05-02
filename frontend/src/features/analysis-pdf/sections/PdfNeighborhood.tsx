@@ -46,7 +46,7 @@ export function PdfNeighborhood({ neighborhood }: { neighborhood: NeighborhoodAn
       <View style={pdfStyles.voisStatus}>
         <Text style={pdfStyles.voisStatusLabel}>Niveau</Text>
         <Text style={pdfStyles.voisStatusValue}>{level}</Text>
-        <Text style={[pdfStyles.airBandText, { marginLeft: "auto" }]}>
+        <Text style={[pdfStyles.airBandText, { marginLeft: "auto", paddingLeft: 24 }]}>
           {categoryCount} catégorie{categoryCount > 1 ? "s" : ""} couverte{categoryCount > 1 ? "s" : ""}
         </Text>
       </View>

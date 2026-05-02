@@ -246,11 +246,10 @@ export const pdfStyles = StyleSheet.create({
     lineHeight: 1.2,
   },
   resumeLede: {
-    fontSize: 10,
+    fontSize: 10.5,
     color: COLORS.cream,
     opacity: 0.95,
-    lineHeight: 1.55,
-    marginBottom: 14,
+    lineHeight: 1.6,
   },
   resumeColsWrap: {
     flexDirection: "row",
@@ -494,9 +493,6 @@ export const pdfStyles = StyleSheet.create({
   airBand: {
     flexDirection: "row",
     alignItems: "baseline",
-    paddingTop: 14,
-    borderTopWidth: 0.5,
-    borderTopColor: COLORS.hairlineStrong,
     marginTop: 12,
   },
   airBandTitle: {
@@ -837,10 +833,7 @@ export const pdfStyles = StyleSheet.create({
 
   // === Real estate compact ===
   immoBlock: {
-    marginTop: 14,
-    paddingTop: 12,
-    borderTopWidth: 0.5,
-    borderTopColor: COLORS.hairlineStrong,
+    marginTop: 10,
   },
   immoHeading: {
     fontFamily: FONTS.serifItalic,

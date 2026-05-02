@@ -1,5 +1,6 @@
 import { Text, View } from "@react-pdf/renderer";
 import type { RealEstateAnalysisDto } from "@/types/location-analysis";
+import { formatFr } from "@/lib/format";
 import { pdfStyles } from "../pdfStyles";
 
 function fmtPriceLevel(level: string | null | undefined): string {
@@ -10,13 +11,12 @@ function fmtPriceLevel(level: string | null | undefined): string {
 export function PdfRealEstate({ realEstate }: { realEstate: RealEstateAnalysisDto }) {
   return (
     <View style={pdfStyles.immoBlock} wrap={false}>
-      <Text style={pdfStyles.immoHeading}>Immobilier</Text>
       <View style={pdfStyles.immoRow}>
         <View style={pdfStyles.immoStat}>
           <Text style={pdfStyles.immoStatLabel}>Prix médian</Text>
           <Text style={pdfStyles.immoStatValue}>
             {realEstate.medianPricePerSquareMeter != null
-              ? `${realEstate.medianPricePerSquareMeter.toLocaleString("fr-FR")} €/m²`
+              ? `${formatFr(realEstate.medianPricePerSquareMeter)} €/m²`
               : "n/a"}
           </Text>
         </View>
