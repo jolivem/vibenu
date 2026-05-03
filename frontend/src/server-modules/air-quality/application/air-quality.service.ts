@@ -1,4 +1,12 @@
-import type { AirQualityAnalysis, AirQualityData } from "../domain/air-quality.types";
+import type {
+  AirQualityAnalysis,
+  AirQualityData,
+  AirQualityHistoryDay,
+  AirQualityLevel,
+  MonthlyAirQualityStats,
+  MonthlyPollutantStat,
+  PollutantCode,
+} from "../domain/air-quality.types";
 
 export interface AirQualityService {
   getAirQualityData(lat: number, lon: number, codeInsee?: string): Promise<AirQualityAnalysis>;
@@ -49,9 +57,93 @@ export class AirQualityServiceImpl implements AirQualityService {
       dominantPollutant: dominantPollutant(data.pollutants, data.aqi),
       lastUpdated: data.lastUpdated.toISOString(),
       recentDays: data.history.map((d) => ({ date: d.date, level: d.level })),
+      monthly: aggregateMonthly(data.history),
       ...(data.debugRaw !== undefined ? { debugRaw: data.debugRaw } : {}),
     };
   }
+}
+
+const POLLUTANT_LABELS: Record<PollutantCode, string> = {
+  no2: "dioxyde d'azote (NO₂)",
+  o3: "ozone (O₃)",
+  pm10: "particules PM10",
+  pm25: "particules fines PM2,5",
+  so2: "dioxyde de soufre (SO₂)",
+};
+
+const CODE_TO_LEVEL: Record<number, AirQualityLevel> = {
+  1: "bon",
+  2: "moyen",
+  3: "dégradé",
+  4: "mauvais",
+  5: "très_mauvais",
+  6: "très_mauvais",
+  7: "très_mauvais",
+};
+
+function codeToLevel(code: number): AirQualityLevel {
+  return CODE_TO_LEVEL[Math.round(code)] ?? "moyen";
+}
+
+function aggregateMonthly(history: AirQualityHistoryDay[]): MonthlyAirQualityStats | undefined {
+  if (history.length === 0) return undefined;
+
+  // Niveau global = moyenne des codes (1..7) sur les jours connus.
+  const codes: number[] = history
+    .map((d) => levelToCode(d.level))
+    .filter((c): c is number => c !== null);
+  if (codes.length === 0) return undefined;
+  const meanCode = codes.reduce((s, v) => s + v, 0) / codes.length;
+  const monthlyLevel = codeToLevel(meanCode);
+
+  // Par polluant : moyenne sur les jours où un code est présent.
+  const accumulator: Record<string, { sum: number; count: number }> = {};
+  for (const day of history) {
+    if (!day.pollutantCodes) continue;
+    for (const [code, value] of Object.entries(day.pollutantCodes)) {
+      if (typeof value !== "number" || value <= 0) continue;
+      if (!accumulator[code]) accumulator[code] = { sum: 0, count: 0 };
+      accumulator[code].sum += value;
+      accumulator[code].count += 1;
+    }
+  }
+
+  const pollutants: MonthlyPollutantStat[] = (Object.keys(POLLUTANT_LABELS) as PollutantCode[])
+    .map((code) => {
+      const acc = accumulator[code];
+      if (!acc || acc.count === 0) return null;
+      const mean = acc.sum / acc.count;
+      return {
+        code,
+        label: POLLUTANT_LABELS[code],
+        level: codeToLevel(mean),
+        daysCovered: acc.count,
+      };
+    })
+    .filter((p): p is MonthlyPollutantStat => p !== null)
+    .sort((a, b) => levelOrder(b.level) - levelOrder(a.level));
+
+  return {
+    level: monthlyLevel,
+    daysCovered: history.length,
+    pollutants,
+  };
+}
+
+const LEVEL_TO_CODE: Record<AirQualityLevel, number> = {
+  bon: 1,
+  moyen: 2,
+  dégradé: 3,
+  mauvais: 4,
+  très_mauvais: 5,
+};
+
+function levelToCode(level: AirQualityLevel): number | null {
+  return LEVEL_TO_CODE[level] ?? null;
+}
+
+function levelOrder(level: AirQualityLevel): number {
+  return LEVEL_TO_CODE[level] ?? 0;
 }
 
 /** Identifie le polluant qui « tire » l'indice global vers le haut. */

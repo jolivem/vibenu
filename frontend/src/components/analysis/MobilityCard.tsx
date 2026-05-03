@@ -39,7 +39,7 @@ export function MobilityCard({ mobility, mode }: Props) {
   return (
     <section className="card">
       <h2>Mobilité</h2>
-      {(mobility.label === "bon" || mobility.label === "très bon") && (
+      {(mobility.label === "bon" || mobility.label === "très bon" || mobility.label === "excellent") && (
         <p>Niveau : {mobility.label}</p>
       )}
 
@@ -49,8 +49,10 @@ export function MobilityCard({ mobility, mode }: Props) {
           <ul>
             {mobility.nearestStops.map((stop) => (
               <li key={stop.id}>
-                {stop.name} — {formatWalkingTime(stop.distanceMeters)}{" "}
-                <span className="poi-distance">({formatDistance(stop.distanceMeters)})</span>
+                {stop.name}{" "}
+                <span className="poi-distance">
+                  — {formatWalkingTime(stop.distanceMeters)} ({formatDistance(stop.distanceMeters)})
+                </span>
               </li>
             ))}
           </ul>
@@ -69,8 +71,10 @@ export function MobilityCard({ mobility, mode }: Props) {
                 {s.name}
                 {!isCommune && (
                   <>
-                    {" "}— {formatWalkingTime(s.distanceMeters)}{" "}
-                    <span className="poi-distance">({formatDistance(s.distanceMeters)})</span>
+                    {" "}
+                    <span className="poi-distance">
+                      — {formatWalkingTime(s.distanceMeters)} ({formatDistance(s.distanceMeters)})
+                    </span>
                   </>
                 )}
               </li>

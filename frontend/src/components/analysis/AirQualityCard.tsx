@@ -32,7 +32,6 @@ function modalLevel(days: AirQualityAnalysisDto["recentDays"]): AirQualityLevel 
 }
 
 export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisDto }) {
-  const config = LEVEL_CONFIG[airQuality.level];
   const past = airQuality.recentDays;
   const avgLevel = modalLevel(past);
 
@@ -40,20 +39,14 @@ export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisD
     <section className="card air-card">
       <h2>Qualité de l&apos;air</h2>
 
-      <div className="air-headline">
-        <span className="air-headline-label">Aujourd&apos;hui</span>
-        <span className={config.className}>{config.label}</span>
-      </div>
-
-      {/* Échelle visuelle 5 niveaux — sert aussi de légende pour l'historique */}
+      {/* Échelle visuelle 5 niveaux — sert de légende pour l'historique */}
       <div className="air-scale">
         {LEVEL_ORDER.map((lvl) => {
           const cfg = LEVEL_CONFIG[lvl];
-          const active = lvl === airQuality.level;
           return (
             <div
               key={lvl}
-              className={`air-scale-step${active ? " air-scale-step--active" : ""}`}
+              className="air-scale-step"
               style={{ background: cfg.color }}
               title={cfg.label}
             >
@@ -62,14 +55,6 @@ export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisD
           );
         })}
       </div>
-
-      <p className="muted">{airQuality.message}</p>
-
-      {airQuality.dominantPollutant && (
-        <p className="air-pollutant">
-          Polluant principal : <strong>{airQuality.dominantPollutant}</strong>
-        </p>
-      )}
 
       {past.length >= 2 && (
         <div className="air-history">
@@ -95,6 +80,31 @@ export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisD
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {airQuality.monthly && airQuality.monthly.daysCovered > 0 && (
+        <div className="air-monthly">
+          <p className="air-monthly-title">
+            Sur les {airQuality.monthly.daysCovered} derniers jours — qualité moyenne{" "}
+            <span className={LEVEL_CONFIG[airQuality.monthly.level].className}>
+              {LEVEL_CONFIG[airQuality.monthly.level].label}
+            </span>
+          </p>
+          {airQuality.monthly.pollutants.length > 0 && (
+            <ul className="air-monthly-pollutants">
+              {airQuality.monthly.pollutants.map((p) => (
+                <li key={p.code}>
+                  <span
+                    className="air-monthly-dot"
+                    style={{ background: LEVEL_CONFIG[p.level].color }}
+                  />
+                  {p.label}{" "}
+                  <span className="poi-distance">— {LEVEL_CONFIG[p.level].label}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 

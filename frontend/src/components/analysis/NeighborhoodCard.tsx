@@ -14,6 +14,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   library: "Bibliothèque",
 };
 
+const DEFAULT_PER_CATEGORY_LIMIT = 3;
+const PER_CATEGORY_LIMIT: Record<string, number> = {
+  school: 6,
+};
+
 function groupByCategory(pois: NeighborhoodAnalysisDto["pois"]) {
   const groups: Record<string, typeof pois> = {};
   for (const poi of pois) {
@@ -40,25 +45,38 @@ function formatWalkingTime(meters: number): string {
 
 export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodAnalysisDto }) {
   const groups = groupByCategory(neighborhood.pois);
+  const isTruncated = Object.entries(groups).some(([category, pois]) => {
+    const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
+    return pois.length > limit;
+  });
 
   return (
     <section className="card">
       <h2>Voisinage</h2>
       <p>Niveau : {neighborhood.label}</p>
 
-      {Object.entries(groups).map(([category, pois]) => (
-        <div key={category}>
-          <h3>{CATEGORY_LABELS[category] ?? category}</h3>
-          <ul>
-            {pois.slice(0, 3).map((poi, i) => (
-              <li key={i}>
-                {poi.name} — {formatWalkingTime(poi.distanceMeters)}{" "}
-                <span className="poi-distance">({formatDistance(poi.distanceMeters)})</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      {Object.entries(groups).map(([category, pois]) => {
+        const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
+        return (
+          <div key={category}>
+            <h3>{CATEGORY_LABELS[category] ?? category}</h3>
+            <ul>
+              {pois.slice(0, limit).map((poi, i) => (
+                <li key={i}>
+                  {poi.name}{" "}
+                  <span className="poi-distance">
+                    — {formatWalkingTime(poi.distanceMeters)} ({formatDistance(poi.distanceMeters)})
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+
+      {isTruncated && (
+        <p className="poi-distance">Liste non exhaustive — seuls les équipements les plus proches sont affichés.</p>
+      )}
 
       {neighborhood.pois.length === 0 && (
         <p>Aucun équipement trouvé à proximité.</p>

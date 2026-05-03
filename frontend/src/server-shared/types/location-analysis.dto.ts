@@ -87,6 +87,19 @@ export interface AirQualityDayDto {
   level: AirQualityLevel;
 }
 
+export interface MonthlyPollutantDto {
+  code: "no2" | "o3" | "pm10" | "pm25" | "so2";
+  label: string;
+  level: AirQualityLevel;
+  daysCovered: number;
+}
+
+export interface MonthlyAirQualityDto {
+  level: AirQualityLevel;
+  daysCovered: number;
+  pollutants: MonthlyPollutantDto[];
+}
+
 export interface AirQualityAnalysisDto {
   level: AirQualityLevel;
   message: string;
@@ -96,6 +109,8 @@ export interface AirQualityAnalysisDto {
   lastUpdated: string;
   /** Historique récent (typiquement 7 jours, du plus ancien au plus récent). */
   recentDays: AirQualityDayDto[];
+  /** Statistiques agrégées sur ~30 jours. */
+  monthly?: MonthlyAirQualityDto;
   /** Présent uniquement quand NEXT_PUBLIC_DEBUG=true. */
   debugRaw?: unknown;
 }

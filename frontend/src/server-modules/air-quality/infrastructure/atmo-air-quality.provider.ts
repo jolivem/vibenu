@@ -4,6 +4,19 @@ import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructur
 
 const SIX_HOURS = 6 * 60 * 60 * 1000;
 const TOKEN_TTL_MS = 55 * 60 * 1000;
+const FETCH_TIMEOUT_MS = 5000;
+const DATA_FETCH_TIMEOUT_MS = 15000;
+const CACHE_VERSION = "v3"; // bump when AirQualityData shape changes
+
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = FETCH_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 interface AtmoProperties {
   date_ech?: string;
@@ -33,7 +46,7 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
 
   async getAirQuality(lat: number, lon: number, codeInsee?: string): Promise<AirQualityData> {
     const debug = process.env.NEXT_PUBLIC_DEBUG === "true";
-    const cacheKey = buildGeoKey(lat, lon);
+    const cacheKey = `${CACHE_VERSION}:${buildGeoKey(lat, lon)}`;
 
     if (!debug) {
       const cached = AtmoAirQualityProvider.cache.get(cacheKey);
@@ -48,17 +61,17 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
     }
 
     try {
-      // Filtre = 7 jours en arrière jusqu'à aujourd'hui (les jours futurs/prévisions
+      // Filtre = 15 jours en arrière jusqu'à aujourd'hui (les jours futurs/prévisions
       // sont tolérés mais on prend le jour courant comme référence).
       const today = new Date();
       const todayStr = today.toISOString().split("T")[0];
-      const sevenDaysAgo = new Date(today.getTime() - 7 * 86400_000)
+      const fifteenDaysAgo = new Date(today.getTime() - 15 * 86400_000)
         .toISOString()
         .split("T")[0];
 
       const filter = JSON.stringify({
         code_zone: { operator: "=", value: codeInsee },
-        date_ech: { operator: ">=", value: sevenDaysAgo },
+        date_ech: { operator: ">=", value: fifteenDaysAgo },
       });
       const url = `${this.baseUrl}/api/data/112/${encodeURIComponent(filter)}?withGeom=false`;
 
@@ -90,7 +103,8 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
         .filter(([d]) => d <= todayStr) // on garde uniquement passé + aujourd'hui
         .map(([d, p]) => {
           const m = this.mapAtmoData(p);
-          return { date: d, level: m.level, aqi: m.aqi };
+          const pollutantCodes = this.extractSubIndices(p);
+          return { date: d, level: m.level, aqi: m.aqi, pollutantCodes };
         });
 
       // Référence "jour courant" : aujourd'hui si présent, sinon le plus récent passé,
@@ -105,6 +119,9 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
         features[0]?.properties;
 
       if (!todayProps) {
+        console.warn(
+          `Atmo: no features for codeInsee=${codeInsee} in range ${fifteenDaysAgo}..${todayStr}`,
+        );
         return this.getFallbackData("Aucun indice disponible");
       }
 
@@ -114,7 +131,7 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
       if (debug) {
         result.debugRaw = {
           codeInsee,
-          requestedRange: { from: sevenDaysAgo, to: todayStr },
+          requestedRange: { from: fifteenDaysAgo, to: todayStr },
           allFeatures: features.map((f) => f.properties),
           selectedFeature: todayProps,
           history,
@@ -124,17 +141,32 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
       }
       return result;
     } catch (error) {
-      console.warn("Atmo provider error:", error);
-      return this.getFallbackData("Erreur API Atmo");
+      const cause = (error as { cause?: { code?: string } })?.cause?.code;
+      const isNetwork = error instanceof Error
+        && (error.name === "AbortError"
+          || cause === "ETIMEDOUT"
+          || cause === "ENOTFOUND"
+          || cause === "ECONNREFUSED"
+          || cause === "UND_ERR_CONNECT_TIMEOUT");
+      if (isNetwork) {
+        console.info(`Atmo API unreachable (${cause ?? error.name}) — using fallback`);
+      } else {
+        console.warn("Atmo provider error:", error);
+      }
+      return this.getFallbackData("API Atmo indisponible");
     }
   }
 
   private async fetchWithAuth(url: string): Promise<Response> {
     const token = await this.getToken();
     const doFetch = (t: string) =>
-      fetch(url, {
-        headers: { Accept: "application/json", Authorization: `Bearer ${t}` },
-      });
+      fetchWithTimeout(
+        url,
+        {
+          headers: { Accept: "application/json", Authorization: `Bearer ${t}` },
+        },
+        DATA_FETCH_TIMEOUT_MS,
+      );
     const response = await doFetch(token);
     if (response.status !== 401) return response;
     AtmoAirQualityProvider.token = null;
@@ -153,7 +185,7 @@ export class AtmoAirQualityProvider implements AirQualityProvider {
   }
 
   private async login(): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/api/login`, {
+    const response = await fetchWithTimeout(`${this.baseUrl}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({ username: this.username, password: this.password }),

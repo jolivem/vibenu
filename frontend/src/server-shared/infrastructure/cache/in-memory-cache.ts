@@ -3,6 +3,13 @@ interface CacheEntry<T> {
   expiresAt: number;
 }
 
+function isCacheDisabled(): boolean {
+  const flag = process.env.DISABLE_CACHE;
+  if (!flag) return false;
+  const v = flag.toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
 export class InMemoryCache<T> {
   private readonly store = new Map<string, CacheEntry<T>>();
   private readonly ttlMs: number;
@@ -14,6 +21,8 @@ export class InMemoryCache<T> {
   }
 
   get(key: string): T | undefined {
+    if (isCacheDisabled()) return undefined;
+
     const entry = this.store.get(key);
     if (!entry) return undefined;
 
@@ -26,6 +35,8 @@ export class InMemoryCache<T> {
   }
 
   set(key: string, value: T): void {
+    if (isCacheDisabled()) return;
+
     // Evict expired entries if we're at capacity
     if (this.store.size >= this.maxEntries) {
       this.evictExpired();

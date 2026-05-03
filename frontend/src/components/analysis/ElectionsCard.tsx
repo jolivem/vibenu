@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { ElectionsAnalysisDto } from "@/types/location-analysis";
 
 const PARTI_COLOR: Record<string, string> = {
@@ -27,6 +30,8 @@ function deltaLabel(delta: number): string {
 }
 
 export function ElectionsCard({ elections }: { elections: ElectionsAnalysisDto }) {
+  const [expanded, setExpanded] = useState(false);
+
   // Tri par score communal décroissant
   const sorted = [...elections.candidates].sort(
     (a, b) => b.pctCommune - a.pctCommune,
@@ -37,6 +42,10 @@ export function ElectionsCard({ elections }: { elections: ElectionsAnalysisDto }
     1,
   );
 
+  const visibleCount = Math.ceil(sorted.length / 2);
+  const visible = expanded ? sorted : sorted.slice(0, visibleCount);
+  const hiddenCount = sorted.length - visibleCount;
+
   return (
     <section className="card elections-card">
       <h2>Présidentielle 2022 — 1er tour</h2>
@@ -46,7 +55,7 @@ export function ElectionsCard({ elections }: { elections: ElectionsAnalysisDto }
       </p>
 
       <ul className="elections-list">
-        {sorted.map((c) => {
+        {visible.map((c) => {
           const delta = c.pctCommune - c.pctNational;
           const wCommune = (c.pctCommune / max) * 100;
           const wNational = (c.pctNational / max) * 100;
@@ -98,6 +107,19 @@ export function ElectionsCard({ elections }: { elections: ElectionsAnalysisDto }
           );
         })}
       </ul>
+
+      {hiddenCount > 0 && (
+        <button
+          type="button"
+          className="elections-toggle"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+        >
+          {expanded
+            ? "Masquer les autres candidats"
+            : `Voir les ${hiddenCount} autres candidats`}
+        </button>
+      )}
 
       <p className="elections-footnote">
         Source : Ministère de l&apos;Intérieur · Comparaison commune ↔ France à la même échelle.

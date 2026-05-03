@@ -2,6 +2,17 @@ import type { ClimateNormales, ClimateProvider } from "./climate.provider";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+const FETCH_TIMEOUT_MS = 30_000;
+
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = FETCH_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 interface OpenMeteoArchiveResponse {
   daily?: {
@@ -47,7 +58,7 @@ export class OpenMeteoClimateProvider implements ClimateProvider {
         `&daily=temperature_2m_mean,precipitation_sum,sunshine_duration` +
         `&timezone=Europe%2FParis`;
 
-      const response = await fetch(url, {
+      const response = await fetchWithTimeout(url, {
         headers: { Accept: "application/json" },
       });
 
@@ -62,7 +73,18 @@ export class OpenMeteoClimateProvider implements ClimateProvider {
       OpenMeteoClimateProvider.cache.set(cacheKey, result);
       return result;
     } catch (error) {
-      console.warn("Open-Meteo climate provider error:", error);
+      const cause = (error as { cause?: { code?: string } })?.cause?.code;
+      const isNetwork = error instanceof Error
+        && (error.name === "AbortError"
+          || cause === "UND_ERR_CONNECT_TIMEOUT"
+          || cause === "ETIMEDOUT"
+          || cause === "ENOTFOUND"
+          || cause === "ECONNREFUSED");
+      if (isNetwork) {
+        console.info(`Open-Meteo climate API unreachable (${cause ?? error.name}) — using fallback`);
+      } else {
+        console.warn("Open-Meteo climate provider error:", error);
+      }
       return null;
     }
   }

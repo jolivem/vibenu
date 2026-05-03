@@ -35,9 +35,7 @@ export function PdfClimate({ climate }: { climate: ClimateAnalysisDto }) {
 
   return (
     <View wrap={false}>
-      <Text style={pdfStyles.elecHeading}>
-        Climat (normales {climate.periodStart}–{climate.periodEnd})
-      </Text>
+      <Text style={pdfStyles.elecHeading}>Climat</Text>
       <Text style={pdfStyles.elecSub}>
         Source : Open-Meteo (ERA5) · moyenne France : Météo-France
       </Text>

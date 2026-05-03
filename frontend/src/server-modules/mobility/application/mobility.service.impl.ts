@@ -62,6 +62,10 @@ function deriveLabel(data: {
   const stops300 = data.nearestStops.filter((s) => s.distanceMeters <= 300).length;
   const stops600 = data.nearestStops.filter((s) => s.distanceMeters <= 600).length;
 
+  // Excellent : gare/métro/RER à très courte distance (<300 m) + au moins 2 arrêts à 300 m.
+  const stationVeryClose = closestStation != null && closestStation.distanceMeters <= 300;
+  if (stationVeryClose && stops300 >= 2) return "excellent";
+
   // Très bon : gare proche + densité, OU réseau de bus très dense (≥4 arrêts dans 300 m)
   if ((hasStop300 && hasStation && dense) || stops300 >= 4) return "très bon";
 

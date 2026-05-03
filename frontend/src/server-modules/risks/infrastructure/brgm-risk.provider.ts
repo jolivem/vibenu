@@ -105,16 +105,13 @@ export class GeorisquesRiskProvider implements RiskProvider {
   }
 
   private parseRapport(data: GeorisquesRapportResponse): RiskCategory[] {
-    const risks: RiskCategory[] = [];
+    const entries: Array<{ category: RiskCategory; raw: RisqueDto }> = [];
 
-    // Natural risks
     for (const [code, risque] of Object.entries(data.risquesNaturels)) {
-      risks.push(this.mapRisque(code, risque));
+      entries.push({ category: this.mapRisque(code, risque), raw: risque });
     }
-
-    // Technological risks
     for (const [code, risque] of Object.entries(data.risquesTechnologiques)) {
-      risks.push(this.mapRisque(code, risque));
+      entries.push({ category: this.mapRisque(code, risque), raw: risque });
     }
 
     // Only return present/relevant risks, plus always include key ones
@@ -127,9 +124,23 @@ export class GeorisquesRiskProvider implements RiskProvider {
       "icpe",
     ]);
 
-    return risks.filter(
-      (r) => r.level !== "absent" || keyRiskCodes.has(r.code),
-    );
+    return entries
+      .filter(({ category, raw }) => {
+        // BRGM marque "Risque non Concerne" quand le risque ne s'applique pas
+        // à cette adresse — on retire toujours ces lignes (même les key risks).
+        if (this.isNotApplicable(raw)) return false;
+        return category.level !== "absent" || keyRiskCodes.has(category.code);
+      })
+      .map(({ category }) => category);
+  }
+
+  private isNotApplicable(risque: RisqueDto): boolean {
+    const statut = (
+      risque.libelleStatutAdresse ??
+      risque.libelleStatutCommune ??
+      ""
+    ).toLowerCase();
+    return statut.includes("non concerne") || statut.includes("non concerné");
   }
 
   private mapRisque(code: string, risque: RisqueDto): RiskCategory {

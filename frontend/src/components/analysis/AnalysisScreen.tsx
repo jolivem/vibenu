@@ -109,6 +109,7 @@ export function AnalysisScreen() {
                 dvfTransactions={realEstate?.transactionFeatures}
                 irisGeojson={data.demographics?.irisGeojson}
                 communeContour={data.map.communeContour}
+                risks={data.risks}
                 onReady={handleMapReady}
               />
             </section>

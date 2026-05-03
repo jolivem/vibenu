@@ -6,7 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { RISK_LAYERS, buildWmsTileUrl } from "./riskLayers";
 import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
-import type { CadastreParcelDto, DvfTransactionFeatureDto, GeoJsonGeometryDto } from "@/types/location-analysis";
+import type { CadastreParcelDto, DvfTransactionFeatureDto, GeoJsonGeometryDto, RiskAnalysisDto } from "@/types/location-analysis";
 import { formatFr } from "@/lib/format";
 
 const DVF_LAYER_ID = "dvf-transactions";
@@ -52,10 +52,11 @@ interface MapProps {
   dvfTransactions?: DvfTransactionFeatureDto[];
   irisGeojson?: string | null;
   communeContour?: GeoJsonGeometryDto | null;
+  risks?: RiskAnalysisDto;
   onReady?: (map: MapLibreMap) => void;
 }
 
-export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, onReady }: MapProps) {
+export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, risks, onReady }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -73,6 +74,16 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
       return next;
     });
   }, []);
+
+  // La couche WMS "Zonage sismique" n'apporte rien quand le risque est faible/absent
+  // (la France entière est en zone sismique 1+ : Géorisques renvoie toujours "Existant").
+  const availableRiskLayers = useMemo(() => {
+    const seismeLevel = risks?.categories.find((c) => c.code === "seisme")?.level;
+    return RISK_LAYERS.filter((layer) => {
+      if (layer.riskCode !== "seisme") return true;
+      return seismeLevel === "modéré" || seismeLevel === "élevé";
+    });
+  }, [risks]);
 
   const overlayLayers = useMemo<OverlayLayerConfig[]>(() => {
     const layers: OverlayLayerConfig[] = [];
@@ -406,7 +417,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         }}
       />
       <LayerTogglePanel
-        riskLayers={RISK_LAYERS}
+        riskLayers={availableRiskLayers}
         priceLayers={overlayLayers}
         visibleLayers={visibleLayers}
         onToggle={handleToggle}

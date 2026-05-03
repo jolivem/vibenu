@@ -1,9 +1,29 @@
 export type AirQualityLevel = "bon" | "moyen" | "dégradé" | "mauvais" | "très_mauvais";
 
+export type PollutantCode = "no2" | "o3" | "pm10" | "pm25" | "so2";
+
 export interface AirQualityHistoryDay {
   date: string; // ISO YYYY-MM-DD
   level: AirQualityLevel;
   aqi: number;
+  /** Codes Atmo 0-7 par sous-polluant pour ce jour (optionnel selon disponibilité). */
+  pollutantCodes?: Partial<Record<PollutantCode, number>>;
+}
+
+export interface MonthlyPollutantStat {
+  code: PollutantCode;
+  /** Libellé long affichable, ex. "ozone (O₃)". */
+  label: string;
+  /** Niveau moyen sur la période. */
+  level: AirQualityLevel;
+  /** Nombre de jours avec donnée. */
+  daysCovered: number;
+}
+
+export interface MonthlyAirQualityStats {
+  level: AirQualityLevel;
+  daysCovered: number;
+  pollutants: MonthlyPollutantStat[];
 }
 
 export interface AirQualityData {
@@ -38,6 +58,8 @@ export interface AirQualityAnalysis {
   lastUpdated: string;
   /** Historique récent (typiquement 7 jours, du plus ancien au plus récent). */
   recentDays: AirQualityRecentDay[];
+  /** Statistiques agrégées sur ~30 jours. */
+  monthly?: MonthlyAirQualityStats;
   /** Brut renvoyé par Atmo. Présent uniquement en mode debug (NEXT_PUBLIC_DEBUG=true). */
   debugRaw?: unknown;
 }

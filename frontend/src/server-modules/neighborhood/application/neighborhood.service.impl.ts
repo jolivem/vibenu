@@ -22,14 +22,16 @@ export class NeighborhoodServiceImpl implements NeighborhoodService {
     const veryClose = pois.filter((p) => p.distanceMeters <= 200).length;
 
     let label = "peu équipé";
-    if (essentialFound >= 4 && (pois.length >= 10 || veryClose >= 3)) {
+    if (essentialFound === essentialCategories.length && veryClose >= 6) {
+      label = "excellent";
+    } else if (essentialFound >= 4 && (pois.length >= 10 || veryClose >= 3)) {
       label = "bien équipé";
     } else if (essentialFound >= 2 || pois.length >= 5) {
       label = "équipement moyen";
     }
 
     return {
-      pois: pois.slice(0, 15),
+      pois: pois.slice(0, 50),
       label,
     };
   }

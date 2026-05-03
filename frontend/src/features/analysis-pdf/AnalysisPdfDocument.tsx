@@ -1,6 +1,7 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import type { LocationAnalysisDto, RealEstateAnalysisDto } from "@/types/location-analysis";
 import { formatFr } from "@/lib/format";
+import "./registerFonts";
 import { pdfStyles } from "./pdfStyles";
 import { PdfCoverResume } from "./sections/PdfSummary";
 import { PdfMobility } from "./sections/PdfMobility";
@@ -78,13 +79,11 @@ function RunningFooter({
 }
 
 function ChapterTitle({
-  chapter,
   pre,
   italic,
   post,
   subtitle,
 }: {
-  chapter: string;
   pre?: string;
   italic: string;
   post?: string;
@@ -92,7 +91,6 @@ function ChapterTitle({
 }) {
   return (
     <View>
-      <Text style={pdfStyles.chapterEyebrow}>{chapter}</Text>
       <Text style={pdfStyles.chapterTitle}>
         {pre}
         <Text style={pdfStyles.chapterTitleItalic}>{italic}</Text>
@@ -128,21 +126,11 @@ export function AnalysisPdfDocument({
   const coverMeta: Array<{ label: string; value: string }> = [];
   if (data.cadastre?.parcel) {
     coverMeta.push({
-      label: "Parcelle",
-      value: `${data.cadastre.parcel.section} · ${data.cadastre.parcel.numero}`,
-    });
-    coverMeta.push({
       label: "Surface",
       value:
         data.cadastre.parcel.contenance >= 10_000
           ? `${(data.cadastre.parcel.contenance / 10_000).toFixed(2)} ha`
           : `${formatFr(data.cadastre.parcel.contenance)} m²`,
-    });
-  }
-  if (data.demographics?.nomIris) {
-    coverMeta.push({
-      label: "Zone démographique",
-      value: data.demographics.nomIris,
     });
   }
   if (coverMeta.length === 0) {
@@ -170,14 +158,11 @@ export function AnalysisPdfDocument({
         </View>
 
         <Text style={pdfStyles.coverEyebrow}>
-          Dossier d&apos;analyse · {data.address.city} {data.address.postcode}
+          Dossier d&apos;analyse
         </Text>
         <View style={pdfStyles.coverEyebrowRule} />
 
-        <Text style={pdfStyles.coverTitle}>
-          {street}
-          <Text style={pdfStyles.coverTitleItalic}>.</Text>
-        </Text>
+        <Text style={pdfStyles.coverTitle}>{street}</Text>
         <Text style={pdfStyles.coverSubtitle}>{locality}</Text>
 
         <View style={pdfStyles.coverMeta}>
@@ -207,7 +192,6 @@ export function AnalysisPdfDocument({
       <Page size="A4" style={pdfStyles.page}>
         <RunningHeader chapter="Carte" />
         <ChapterTitle
-          chapter="Chapitre I"
           italic="Carte"
           subtitle={data.address.label}
         />
@@ -215,7 +199,6 @@ export function AnalysisPdfDocument({
         {mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} />}
 
         <View style={{ marginTop: 6 }}>
-          <Text style={pdfStyles.chapterEyebrow}>Chapitre II</Text>
           <Text style={pdfStyles.chapterTitle}>
             <Text style={pdfStyles.chapterTitleItalic}>Mobilité</Text>
             {" & transports"}
@@ -234,16 +217,11 @@ export function AnalysisPdfDocument({
       {/* PAGE 3 — RISQUES + AIR + CLIMAT */}
       <Page size="A4" style={pdfStyles.page}>
         <RunningHeader chapter="Risques, air & climat" />
-        <ChapterTitle
-          chapter="Chapitre III"
-          italic={`${data.risks.categories.length} risques`}
-          post={" évalués"}
-        />
+        <ChapterTitle italic="Risques" />
 
         <PdfRisks risks={data.risks} />
 
         <View style={{ marginTop: 36 }} wrap={false}>
-          <Text style={pdfStyles.chapterEyebrow}>Chapitre IV</Text>
           <Text style={pdfStyles.chapterTitle}>
             {"Qualité de "}
             <Text style={pdfStyles.chapterTitleItalic}>l&apos;air</Text>
@@ -266,7 +244,6 @@ export function AnalysisPdfDocument({
         <Page size="A4" style={pdfStyles.page}>
           <RunningHeader chapter="Voisinage" />
           <ChapterTitle
-            chapter="Chapitre V"
             pre="Le "
             italic="voisinage"
             post=" immédiat"
@@ -288,7 +265,6 @@ export function AnalysisPdfDocument({
       <Page size="A4" style={pdfStyles.page}>
         <RunningHeader chapter="Démographie & cadastre" />
         <ChapterTitle
-          chapter="Chapitre VI"
           italic="Démographie"
           post=" du quartier"
         />
@@ -299,7 +275,6 @@ export function AnalysisPdfDocument({
 
         {realEstate && (
           <View style={{ marginTop: 36 }} wrap={false}>
-            <Text style={pdfStyles.chapterEyebrow}>Chapitre VII</Text>
             <Text style={pdfStyles.chapterTitle}>
               <Text style={pdfStyles.chapterTitleItalic}>Immobilier</Text>
             </Text>
@@ -309,7 +284,6 @@ export function AnalysisPdfDocument({
 
         {data.cadastre && (
           <View style={{ marginTop: 36 }} wrap={false}>
-            <Text style={pdfStyles.chapterEyebrow}>Chapitre VIII</Text>
             <Text style={pdfStyles.chapterTitle}>
               {"Cadastre & "}
               <Text style={pdfStyles.chapterTitleItalic}>urbanisme</Text>

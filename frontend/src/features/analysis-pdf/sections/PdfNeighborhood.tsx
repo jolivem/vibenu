@@ -16,6 +16,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   library: "Bibliothèque",
 };
 
+const DEFAULT_PER_CATEGORY_LIMIT = 3;
+const PER_CATEGORY_LIMIT: Record<string, number> = {
+  school: 6,
+};
+
 function groupByCategory(pois: NeighborhoodAnalysisDto["pois"]) {
   const groups: Record<string, typeof pois> = {};
   for (const poi of pois) {
@@ -24,6 +29,19 @@ function groupByCategory(pois: NeighborhoodAnalysisDto["pois"]) {
     groups[key].push(poi);
   }
   return groups;
+}
+
+function formatDistance(meters: number): string {
+  return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${meters} m`;
+}
+
+// Vitesse de marche moyenne ≈ 4,5 km/h (75 m/min)
+function formatWalkingTime(meters: number): string {
+  const minutes = Math.max(1, Math.round(meters / 75));
+  if (minutes < 60) return `${minutes} min à pied`;
+  const h = Math.floor(minutes / 60);
+  const r = Math.round((minutes - h * 60) / 5) * 5;
+  return r === 0 ? `${h} h à pied` : `${h} h ${String(r).padStart(2, "0")} à pied`;
 }
 
 export function PdfNeighborhood({ neighborhood }: { neighborhood: NeighborhoodAnalysisDto }) {
@@ -52,19 +70,25 @@ export function PdfNeighborhood({ neighborhood }: { neighborhood: NeighborhoodAn
       </View>
 
       <View style={pdfStyles.voisGrid}>
-        {Object.entries(groups).map(([category, pois]) => (
-          <View key={category} style={pdfStyles.voisCat} wrap={false}>
-            <Text style={pdfStyles.voisCatTitle}>
-              {CATEGORY_LABELS[category] ?? category}
-            </Text>
-            {pois.slice(0, 3).map((poi, i) => (
-              <View key={i} style={pdfStyles.voisItem}>
-                <Text style={pdfStyles.voisItemName}>{poi.name}</Text>
-                <Text style={pdfStyles.voisItemDist}>{poi.distanceMeters} m</Text>
-              </View>
-            ))}
-          </View>
-        ))}
+        {Object.entries(groups).map(([category, pois]) => {
+          const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
+          return (
+            <View key={category} style={pdfStyles.voisCat} wrap={false}>
+              <Text style={pdfStyles.voisCatTitle}>
+                {CATEGORY_LABELS[category] ?? category}
+              </Text>
+              {pois.slice(0, limit).map((poi, i) => (
+                <Text key={i} style={pdfStyles.voisItem}>
+                  <Text style={pdfStyles.voisItemName}>{poi.name}</Text>
+                  <Text style={pdfStyles.voisItemDist}>
+                    {" — "}
+                    {formatWalkingTime(poi.distanceMeters)} ({formatDistance(poi.distanceMeters)})
+                  </Text>
+                </Text>
+              ))}
+            </View>
+          );
+        })}
       </View>
     </View>
   );

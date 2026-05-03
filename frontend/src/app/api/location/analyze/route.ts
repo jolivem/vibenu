@@ -59,6 +59,17 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const result = await useCase.execute(parsed.data);
-  return NextResponse.json(result);
+  try {
+    const result = await useCase.execute(parsed.data);
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("[/api/location/analyze] failed:", error);
+    return NextResponse.json(
+      {
+        message: "Erreur lors de l'analyse de la localisation.",
+        error: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    );
+  }
 }

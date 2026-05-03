@@ -24,10 +24,11 @@ export const COLORS = {
 export const FONTS = {
   sans: "Helvetica",
   sansBold: "Helvetica-Bold",
-  serif: "Times-Roman",
-  serifBold: "Times-Bold",
-  serifItalic: "Times-Italic",
-  serifBoldItalic: "Times-BoldItalic",
+  serif: "Fraunces",
+  serifBold: "Fraunces",
+  // Italic aliases retained for type compatibility but render upright (italics removed by design).
+  serifItalic: "Fraunces",
+  serifBoldItalic: "Fraunces",
   mono: "Courier",
 } as const;
 
@@ -77,7 +78,6 @@ export const pdfStyles = StyleSheet.create({
     textAlign: "center",
   },
   runningHeaderBrandItalic: {
-    fontFamily: FONTS.serifItalic,
     color: COLORS.accent,
   },
 
@@ -151,7 +151,6 @@ export const pdfStyles = StyleSheet.create({
     color: COLORS.text,
   },
   coverBrandItalic: {
-    fontFamily: FONTS.serifItalic,
     color: COLORS.accent,
   },
   coverStamp: {
@@ -165,7 +164,7 @@ export const pdfStyles = StyleSheet.create({
     color: COLORS.accent,
     letterSpacing: 2.4,
     textTransform: "uppercase",
-    fontFamily: FONTS.sansBold,
+    fontFamily: FONTS.serif,
     marginBottom: 12,
   },
   coverEyebrowRule: {
@@ -176,7 +175,7 @@ export const pdfStyles = StyleSheet.create({
   },
   coverTitle: {
     fontFamily: FONTS.serif,
-    fontSize: 44,
+    fontSize: 32,
     color: COLORS.text,
     lineHeight: 1.05,
     marginBottom: 6,
@@ -186,9 +185,10 @@ export const pdfStyles = StyleSheet.create({
     color: COLORS.accent,
   },
   coverSubtitle: {
-    fontFamily: FONTS.serifItalic,
-    fontSize: 14,
-    color: COLORS.muted,
+    fontFamily: FONTS.serif,
+    fontSize: 20,
+    color: COLORS.text,
+    lineHeight: 1.05,
     marginBottom: 22,
   },
   coverMeta: {
@@ -222,33 +222,31 @@ export const pdfStyles = StyleSheet.create({
     color: COLORS.text,
   },
 
-  // Green resume block on cover
+  // Resume block on cover — green outline, light background
   resumeBlock: {
-    backgroundColor: COLORS.accent,
-    color: COLORS.cream,
+    backgroundColor: COLORS.cream,
+    borderWidth: 2.5,
+    borderColor: COLORS.accent,
     padding: 22,
     marginBottom: 8,
   },
   resumeEyebrow: {
-    fontSize: 9,
-    color: COLORS.cream,
-    opacity: 0.85,
-    letterSpacing: 2.4,
-    textTransform: "uppercase",
-    fontFamily: FONTS.sansBold,
-    marginBottom: 8,
+    fontFamily: FONTS.serif,
+    fontSize: 28,
+    color: COLORS.accent,
+    lineHeight: 1.05,
+    marginBottom: 10,
   },
   resumeTitle: {
-    fontFamily: FONTS.serifItalic,
+    fontFamily: FONTS.serif,
     fontSize: 19,
-    color: COLORS.cream,
+    color: COLORS.text,
     marginBottom: 10,
     lineHeight: 1.2,
   },
   resumeLede: {
     fontSize: 10.5,
-    color: COLORS.cream,
-    opacity: 0.95,
+    color: COLORS.text,
     lineHeight: 1.6,
   },
   resumeColsWrap: {
@@ -413,6 +411,7 @@ export const pdfStyles = StyleSheet.create({
     borderColor: COLORS.amber,
     backgroundColor: COLORS.amberBg,
     padding: 11,
+    marginTop: 12,
     marginBottom: 12,
   },
   modereHead: {
@@ -513,6 +512,39 @@ export const pdfStyles = StyleSheet.create({
     flex: 1,
     fontFamily: FONTS.serifItalic,
   },
+  airPollutant: {
+    fontSize: 10,
+    color: COLORS.text,
+    marginTop: 6,
+    fontFamily: FONTS.serif,
+  },
+  airHistoryWrap: {
+    marginTop: 10,
+  },
+  airHistoryTitle: {
+    fontSize: 9,
+    color: COLORS.muted,
+    fontFamily: FONTS.serif,
+    marginBottom: 4,
+  },
+  airHistoryStrip: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  airHistoryDay: {
+    alignItems: "center",
+  },
+  airHistoryDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginBottom: 2,
+  },
+  airHistoryDate: {
+    fontSize: 7,
+    color: COLORS.muted,
+    fontFamily: FONTS.serif,
+  },
 
   // === Voisinage ===
   voisStatus: {
@@ -548,27 +580,24 @@ export const pdfStyles = StyleSheet.create({
     borderBottomColor: COLORS.hairline,
   },
   voisCatTitle: {
-    fontFamily: FONTS.serifItalic,
+    fontFamily: FONTS.serif,
     fontSize: 12.5,
-    color: COLORS.text,
+    color: COLORS.accent,
     marginBottom: 6,
   },
   voisItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "baseline",
     paddingVertical: 3,
+    fontSize: 10,
+    lineHeight: 1.35,
   },
   voisItemName: {
     fontSize: 10,
     color: COLORS.textSoft,
-    flex: 1,
-    paddingRight: 6,
   },
   voisItemDist: {
-    fontFamily: FONTS.mono,
+    fontFamily: FONTS.serif,
     fontSize: 9,
-    color: COLORS.accent,
+    color: COLORS.muted,
   },
 
   // === Demographics + Cadastre ===
@@ -657,14 +686,12 @@ export const pdfStyles = StyleSheet.create({
 
   // Elections
   elecHeading: {
-    fontFamily: FONTS.serifItalic,
-    fontSize: 14,
+    fontFamily: FONTS.serif,
+    fontSize: 28,
     color: COLORS.accent,
     marginTop: 14,
-    marginBottom: 4,
-    paddingBottom: 5,
-    borderBottomWidth: 0.5,
-    borderBottomColor: COLORS.accent,
+    marginBottom: 8,
+    lineHeight: 1.05,
   },
   elecSub: {
     fontSize: 9,

@@ -42,7 +42,7 @@ export interface MobilityAnalysisDto {
   nearestStops: TransportStopDto[];
   /** Gares/métros/RER les plus proches, triés par distance (max 5). */
   nearestStations: StationDto[];
-  label: "faible" | "correct" | "bon" | "très bon";
+  label: "faible" | "correct" | "bon" | "très bon" | "excellent";
 }
 
 export interface RiskCategoryDto {
@@ -85,6 +85,19 @@ export interface AirQualityDayDto {
   level: AirQualityLevel;
 }
 
+export interface MonthlyPollutantDto {
+  code: "no2" | "o3" | "pm10" | "pm25" | "so2";
+  label: string;
+  level: AirQualityLevel;
+  daysCovered: number;
+}
+
+export interface MonthlyAirQualityDto {
+  level: AirQualityLevel;
+  daysCovered: number;
+  pollutants: MonthlyPollutantDto[];
+}
+
 export interface AirQualityAnalysisDto {
   level: AirQualityLevel;
   message: string;
@@ -94,6 +107,8 @@ export interface AirQualityAnalysisDto {
   lastUpdated: string;
   /** Historique récent (typiquement 7 jours, du plus ancien au plus récent). */
   recentDays: AirQualityDayDto[];
+  /** Statistiques agrégées sur ~30 jours (qualité moyenne + polluants observés). */
+  monthly?: MonthlyAirQualityDto;
   /** Présent uniquement quand NEXT_PUBLIC_DEBUG=true. */
   debugRaw?: unknown;
 }
