@@ -1,6 +1,6 @@
 import type { NeighborhoodProvider } from "./neighborhood.provider";
 import type { NeighborhoodPoi, PoiCategory } from "../domain/neighborhood.types";
-import { query } from "../../../server-shared/infrastructure/database/neon";
+import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;

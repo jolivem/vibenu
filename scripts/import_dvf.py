@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Import DVF (Demandes de Valeurs Foncières) geolocalised data into PostgreSQL/Neon,
+Import DVF (Demandes de Valeurs Foncières) geolocalised data into PostgreSQL,
 then enrich with cadastre parcel geometries from Etalab.
 
 Usage:

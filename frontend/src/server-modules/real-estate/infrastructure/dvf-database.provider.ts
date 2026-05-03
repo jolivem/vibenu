@@ -1,7 +1,7 @@
 import type { RealEstateProvider } from "./real-estate.provider";
 import type { DvfTransactionFeature } from "../domain/real-estate.types";
 import type { ConfidenceLevel, PriceLevel } from "../../../server-shared/domain/common.types";
-import { query } from "../../../server-shared/infrastructure/database/neon";
+import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;

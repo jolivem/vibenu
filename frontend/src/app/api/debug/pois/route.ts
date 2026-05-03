@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query } from "@/server-shared/infrastructure/database/neon";
+import { query } from "@/server-shared/infrastructure/database/postgres";
 
 // Debug endpoint: returns raw POIs from osm_pois + bpe_equipment for given coordinates,
 // without dedup or per-category caps. Useful for diagnosing missing POIs.

@@ -9,7 +9,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.2",
     "@react-pdf/renderer": "^4.5.1",
     "dotenv": "^16.6.1",
     "maplibre-gl": "^4.5.0",

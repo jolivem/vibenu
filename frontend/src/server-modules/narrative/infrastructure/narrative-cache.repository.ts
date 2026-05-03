@@ -1,4 +1,4 @@
-import { query } from "@/server-shared/infrastructure/database/neon";
+import { query } from "@/server-shared/infrastructure/database/postgres";
 import { buildGeoKey } from "@/server-shared/infrastructure/cache/in-memory-cache";
 
 interface NarrativeCacheRow {

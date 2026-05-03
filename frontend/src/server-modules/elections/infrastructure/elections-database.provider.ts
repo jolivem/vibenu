@@ -1,4 +1,4 @@
-import { query } from "../../../server-shared/infrastructure/database/neon";
+import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 import type { CandidateResult, ElectionsAnalysis } from "../domain/elections.types";
 import type { ElectionsProvider } from "./elections.provider";

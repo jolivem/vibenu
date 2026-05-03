@@ -25,7 +25,7 @@ L'utilisateur saisit une adresse en France et obtient :
 
 - **Next.js** / React / TypeScript (frontend + API routes serveur)
 - **MapLibre GL** pour la carte interactive (avec contour de commune en mode recherche par nom)
-- **PostgreSQL / PostGIS** (Neon) pour les données OSM, DVF, IRIS, élections et le cache des synthèses IA
+- **PostgreSQL / PostGIS** (auto-hébergé via Docker) pour les données OSM, DVF, IRIS, élections et le cache des synthèses IA
 - **Open-Meteo** (ERA5) pour les normales climatiques par coordonnées
 - **Mistral AI** pour la synthèse en langage courant (pattern port/adapter → fournisseur LLM interchangeable)
 - **@react-pdf/renderer** pour l'export PDF vectoriel côté client
@@ -227,7 +227,7 @@ pnpm dev
 
 | Variable | Description | Défaut |
 |----------|-------------|--------|
-| `POSTGRES_URL` | URL de connexion PostgreSQL/Neon (OSM + DVF + cache synthèses) | - |
+| `POSTGRES_URL` | URL de connexion PostgreSQL (OSM + DVF + cache synthèses) | - |
 | `ATMO_USERNAME` | Email du compte Atmo France (optionnel) | - |
 | `ATMO_PASSWORD` | Mot de passe du compte Atmo France (optionnel) | - |
 | `MISTRAL_API_KEY` | Clé API Mistral pour la synthèse LLM. Sans elle, la card « Synthèse » n'apparaît pas | - |
@@ -314,7 +314,7 @@ claireadresse/
         ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, summary, narrative
         ├── server-shared/
         │   ├── infrastructure/
-        │   │   ├── database/     # Pool Neon + migrations SQL applicatives
+        │   │   ├── database/     # Pool PostgreSQL + migrations SQL applicatives
         │   │   └── cache/        # InMemoryCache + buildGeoKey
         │   └── types/            # DTOs serveur
         └── types/                # DTOs frontend
