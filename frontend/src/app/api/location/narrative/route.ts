@@ -10,7 +10,7 @@ let service: NarrativeService | null = null;
 
 function getService(): NarrativeService {
   if (!service) {
-    const model = process.env.MISTRAL_MODEL ?? DEFAULT_MODEL;
+    const model = process.env.MISTRAL_MODEL?.trim() || DEFAULT_MODEL;
     service = new NarrativeService(
       new MistralNarrativeProvider({ model }),
       new NarrativeCacheRepository({ model }),

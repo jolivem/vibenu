@@ -35,12 +35,12 @@ export class MistralNarrativeProvider implements NarrativeProvider {
   private readonly model: string;
 
   constructor(options: { apiKey?: string; model?: string } = {}) {
-    const apiKey = options.apiKey ?? process.env.MISTRAL_API_KEY;
+    const apiKey = (options.apiKey ?? process.env.MISTRAL_API_KEY)?.trim();
     if (!apiKey) {
       throw new Error("MISTRAL_API_KEY environment variable is required.");
     }
     this.apiKey = apiKey;
-    this.model = options.model ?? process.env.MISTRAL_MODEL ?? DEFAULT_MODEL;
+    this.model = options.model?.trim() || process.env.MISTRAL_MODEL?.trim() || DEFAULT_MODEL;
   }
 
   async generate(input: NarrativeInput): Promise<string> {
