@@ -29,34 +29,75 @@ load_dotenv()
 BPE_URL = "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE24.zip"
 
 # BPE TYPEQU codes → our PoiCategory (2024 nomenclature)
+# Étendu phase 0 SEO communes : ajout restauration, culture, plus de santé/commerce/éducation.
+# Re-lancer `python import_bpe.py` après modification pour recharger la table.
 TYPEQU_MAPPING = {
-    # school
-    "C107": "school",    # École maternelle
-    "C108": "school",    # École élémentaire
-    "C109": "school",    # Collège
-    "C201": "school",    # Lycée général ou technologique
-    "C301": "school",    # Lycée professionnel
-    # supermarket
-    "B104": "supermarket",  # Hypermarché
-    "B105": "supermarket",  # Supermarché
-    # bakery
+    # education
+    "C101": "preschool",     # Crèche / Halte-garderie
+    "C104": "preschool",     # Garde d'enfants d'âge préscolaire
+    "C107": "school",        # École maternelle
+    "C108": "school",        # École élémentaire
+    "C109": "school",        # Collège
+    "C201": "school",        # Lycée général ou technologique
+    "C301": "school",        # Lycée professionnel
+    "C501": "higher_ed",     # Enseignement supérieur (université, IUT)
+    "C502": "higher_ed",     # STS-CPGE
+    # food retail
+    "B104": "supermarket",   # Hypermarché
+    "B105": "supermarket",   # Supermarché
+    "B106": "supermarket",   # Supérette
     "B201": "bakery",
-    # pharmacy
+    "B202": "butcher",       # Boucherie / Charcuterie
+    "B203": "frozen_food",   # Produits surgelés
+    "B204": "grocery",       # Épicerie
+    "B205": "fish_shop",     # Poissonnerie
+    # restauration
+    "A504": "restaurant",    # Restaurant
+    # general commerce (a subset, broad signal)
+    "B206": "bookstore",     # Librairie-papeterie-journaux
+    "B301": "clothing",      # Magasin de vêtements
+    "B302": "home_goods",    # Magasin d'équipement du foyer
+    "B303": "shoes",         # Chaussures
+    "B312": "florist",       # Fleurs
+    "B315": "gas_station",   # Station-service
+    # health
+    "D101": "doctor",        # Médecin omnipraticien
+    "D102": "specialist",    # Spécialiste (cardio/derma/…)
+    "D201": "dentist",       # Chirurgien-dentiste
+    "D202": "nurse",         # Infirmier
+    "D203": "physio",        # Masseur-kinésithérapeute
+    "D206": "speech_therapist",  # Orthophoniste
+    "D207": "podiatrist",    # Pédicure-podologue
+    "D208": "optician",      # Audioprothésiste / Opticien
+    "D211": "psychologist",  # Psychologue
+    "D232": "lab",           # Laboratoire d'analyses médicales
+    "D301": "hospital",      # Établissement de santé (court séjour)
+    "D302": "clinic",        # Établissement psychiatrique
+    "D304": "emergency",     # Urgences
     "D307": "pharmacy",
-    # doctor
-    "D101": "doctor",    # Médecin omnipraticien
-    # bank
+    # public services
+    "A101": "police",        # Police / Gendarmerie
     "A104": "bank",
-    # post_office
-    "A203": "post_office",  # Bureau de poste
-    # library
-    "F303": "library",   # Bibliothèque
-    # sport
-    "F101": "sport",  # Bassin de natation
-    "F102": "sport",  # Boulodrome
-    "F103": "sport",  # Tennis
-    "F106": "sport",  # Terrain de grands jeux
-    "F109": "sport",  # Salle non spécialisée
+    "A105": "atm",           # DAB
+    "A203": "post_office",   # Bureau de poste
+    "A206": "town_hall",     # Mairie / Préfecture
+    # culture
+    "F303": "library",       # Bibliothèque
+    "F305": "cinema",        # Cinéma
+    "F309": "museum",        # Musée
+    "F311": "theatre",       # Théâtre / Salle de spectacle
+    "F312": "concert_hall",  # Conservatoire / Salle de musique
+    # sport / leisure
+    "F101": "sport",         # Bassin de natation
+    "F102": "sport",         # Boulodrome
+    "F103": "sport",         # Tennis
+    "F106": "sport",         # Terrain de grands jeux
+    "F109": "sport",         # Salle non spécialisée
+    "F113": "sport",         # Athlétisme
+    "F121": "park",          # Espace vert / parc
+    # transports
+    "E102": "rail_station",  # Gare ferroviaire
+    "E107": "metro_station", # Métro / Tramway / RER
 }
 
 BATCH_SIZE = 1000

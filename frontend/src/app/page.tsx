@@ -3,6 +3,34 @@ import { SearchPanel } from "@/components/search/SearchPanel";
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
+const faqItems = [
+  {
+    question: "ClaireAdresse est-il gratuit ?",
+    answer:
+      "Oui. L'analyse d'une adresse française est entièrement gratuite et sans inscription. Le service s'appuie sur des données publiques ouvertes.",
+  },
+  {
+    question: "D'où viennent les données affichées ?",
+    answer:
+      "Toutes les informations proviennent de sources officielles françaises : DVF pour les prix immobiliers, Géorisques pour les risques naturels et technologiques, cadastre et GPU pour l'urbanisme, INSEE pour la démographie IRIS, et les bases de transports publics.",
+  },
+  {
+    question: "Quelles adresses puis-je analyser ?",
+    answer:
+      "N'importe quelle adresse située en France métropolitaine et dans les départements et régions d'outre-mer, du studio parisien à la maison en province.",
+  },
+  {
+    question: "Combien de temps prend une analyse ?",
+    answer:
+      "Quelques secondes. ClaireAdresse interroge en parallèle les bases publiques et agrège les résultats sur une carte interactive.",
+  },
+  {
+    question: "Les prix au m² sont-ils fiables ?",
+    answer:
+      "Les prix proviennent de la base DVF (Demandes de Valeurs Foncières) publiée par l'État, qui recense les transactions immobilières réelles enregistrées chez les notaires. Les chiffres correspondent à des ventes effectivement réalisées.",
+  },
+];
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
@@ -28,12 +56,29 @@ const jsonLd = {
   ],
 };
 
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
 export default function HomePage() {
   return (
     <main className="landing">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <nav className="landing-nav">
@@ -43,8 +88,9 @@ export default function HomePage() {
           </Link>
           <div className="landing-nav-links">
             <a href="#decouvrez">Comment ça marche</a>
-            <a href="#decouvrez">Données</a>
-            <a href="#about">À propos</a>
+            <Link href="/commune/paris">Explorer Paris</Link>
+            <a href="#faq">Questions</a>
+            <Link href="/a-propos">À propos</Link>
           </div>
           <button type="button" className="landing-login">
             Se connecter
@@ -158,11 +204,72 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="landing-section" id="explorer">
+        <div className="section-head">
+          <span className="section-num">03</span>
+          <h2 className="section-title">
+            Explorer par <i>commune</i>
+          </h2>
+          <span className="section-meta">Pages dédiées · données agrégées</span>
+        </div>
+        <div className="explore-grid">
+          <Link href="/commune/paris" className="explore-card explore-card--featured">
+            <div className="explore-card-head">
+              <span className="explore-card-eyebrow">Île-de-France</span>
+              <h3>Paris</h3>
+            </div>
+            <p>
+              Les 20 arrondissements analysés : prix immobilier, démographie, équipements,
+              qualité de l&apos;air et résultats électoraux.
+            </p>
+            <span className="explore-card-cta">Découvrir les 20 arrondissements →</span>
+          </Link>
+          <div className="explore-card explore-card--soon">
+            <div className="explore-card-head">
+              <span className="explore-card-eyebrow">Bientôt</span>
+              <h3>Lyon · Marseille</h3>
+            </div>
+            <p>Les autres métropoles arriveront progressivement.</p>
+            <span className="explore-card-cta is-muted">En préparation</span>
+          </div>
+          <div className="explore-card explore-card--soon">
+            <div className="explore-card-head">
+              <span className="explore-card-eyebrow">Bientôt</span>
+              <h3>Top 500 communes</h3>
+            </div>
+            <p>Toutes les villes françaises de plus de 20 000 habitants.</p>
+            <span className="explore-card-cta is-muted">En préparation</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-section landing-section--alt" id="faq">
+        <div className="section-head">
+          <span className="section-num">04</span>
+          <h2 className="section-title">
+            Questions <i>fréquentes</i>
+          </h2>
+          <span className="section-meta">À propos du service</span>
+        </div>
+        <div className="faq-list">
+          {faqItems.map((item) => (
+            <details key={item.question} className="faq-item">
+              <summary>{item.question}</summary>
+              <p>{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       <footer className="landing-footer">
         <div className="landing-footer-brand">
           Claire<i>Adresse</i>
         </div>
         <span>Données ouvertes françaises · Gratuit, sans inscription</span>
+        <div className="landing-footer-links">
+          <Link href="/commune/paris">Explorer Paris</Link>
+          <Link href="/a-propos">À propos</Link>
+        </div>
       </footer>
     </main>
   );

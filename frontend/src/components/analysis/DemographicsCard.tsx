@@ -1,5 +1,5 @@
-import type { AgeDistributionDto, DemographicsAnalysisDto } from "@/types/location-analysis";
-import { AGE_BUCKETS, AGE_CHART_DIMENSIONS, buildAgeChartModel } from "./ageChart";
+import type { DemographicsAnalysisDto } from "@/types/location-analysis";
+import { AgeChart } from "./AgeChart";
 import { formatDensity, formatPct, formatPopulation, formatRevenu } from "./demographicsFormat";
 
 export function DemographicsCard({ demographics }: { demographics: DemographicsAnalysisDto }) {
@@ -74,78 +74,5 @@ export function DemographicsCard({ demographics }: { demographics: DemographicsA
         Commune et France : moyennes pondérées par population calculées à partir des zones démographiques (chiffres indicatifs).
       </p>
     </section>
-  );
-}
-
-function AgeChart({
-  iris,
-  commune,
-  france,
-  showCommune,
-}: {
-  iris: AgeDistributionDto;
-  commune: AgeDistributionDto | null;
-  france: AgeDistributionDto | null;
-  showCommune: boolean;
-}) {
-  const { series, yTicks, x, y } = buildAgeChartModel({ iris, commune, france, showCommune });
-  const { W, H, padL, padR, padB } = AGE_CHART_DIMENSIONS;
-
-  return (
-    <div className="age-chart">
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        role="img"
-        aria-label="Répartition par âge — comparaison zone, commune et France"
-        className="age-chart-svg"
-      >
-        {yTicks.map((t) => (
-          <g key={t}>
-            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="age-chart-grid" />
-            <text x={padL - 4} y={y(t)} className="age-chart-axis age-chart-axis--y">
-              {t}%
-            </text>
-          </g>
-        ))}
-        {AGE_BUCKETS.map((b, i) => (
-          <text key={b.label} x={x(i)} y={H - padB + 14} className="age-chart-axis age-chart-axis--x">
-            {b.label}
-          </text>
-        ))}
-        {series.map((s) => {
-          const points = AGE_BUCKETS.map((b, i) => `${x(i)},${y(s.data[b.key])}`).join(" ");
-          return (
-            <g key={s.name} opacity={s.opacity}>
-              <polyline
-                points={points}
-                stroke={s.color}
-                strokeWidth={s.strokeWidth}
-                fill="none"
-                className="age-chart-line"
-              />
-              {AGE_BUCKETS.map((b, i) => (
-                <circle
-                  key={b.label}
-                  cx={x(i)}
-                  cy={y(s.data[b.key])}
-                  r={s.dotRadius}
-                  fill={s.color}
-                >
-                  <title>{`${s.name} — ${b.label} : ${s.data[b.key]}%`}</title>
-                </circle>
-              ))}
-            </g>
-          );
-        })}
-      </svg>
-      <ul className="age-chart-legend">
-        {series.map((s) => (
-          <li key={s.name}>
-            <span className="age-chart-legend-dot" style={{ background: s.color }} />
-            {s.name}
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }

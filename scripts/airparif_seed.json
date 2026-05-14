@@ -1,0 +1,33 @@
+{
+  "annee": 2023,
+  "source": "AirParif (valeurs indicatives — à valider sur le bilan annuel officiel)",
+  "seuils_oms": {
+    "PM25": 5,
+    "PM10": 15,
+    "NO2": 10,
+    "O3": 60
+  },
+  "_commentaire": "Ordres de grandeur basés sur les bilans AirParif récents. Pour chaque arrondissement, polluant en µg/m³ (moyenne annuelle). NO2 plus élevé sur arrondissements centraux et bordant le périph. PM2.5 et PM10 relativement homogènes. O3 généralement plus élevé en périphérie.",
+  "communes": {
+    "75101": { "PM25": 11, "PM10": 19, "NO2": 35, "O3": 55 },
+    "75102": { "PM25": 11, "PM10": 19, "NO2": 34, "O3": 55 },
+    "75103": { "PM25": 11, "PM10": 19, "NO2": 33, "O3": 55 },
+    "75104": { "PM25": 11, "PM10": 19, "NO2": 32, "O3": 56 },
+    "75105": { "PM25": 11, "PM10": 19, "NO2": 30, "O3": 57 },
+    "75106": { "PM25": 11, "PM10": 19, "NO2": 30, "O3": 57 },
+    "75107": { "PM25": 11, "PM10": 19, "NO2": 31, "O3": 56 },
+    "75108": { "PM25": 11, "PM10": 19, "NO2": 36, "O3": 55 },
+    "75109": { "PM25": 11, "PM10": 19, "NO2": 33, "O3": 55 },
+    "75110": { "PM25": 11, "PM10": 19, "NO2": 31, "O3": 56 },
+    "75111": { "PM25": 11, "PM10": 19, "NO2": 28, "O3": 58 },
+    "75112": { "PM25": 11, "PM10": 19, "NO2": 28, "O3": 58 },
+    "75113": { "PM25": 11, "PM10": 19, "NO2": 27, "O3": 59 },
+    "75114": { "PM25": 11, "PM10": 19, "NO2": 27, "O3": 59 },
+    "75115": { "PM25": 11, "PM10": 19, "NO2": 28, "O3": 58 },
+    "75116": { "PM25": 11, "PM10": 19, "NO2": 27, "O3": 60 },
+    "75117": { "PM25": 11, "PM10": 19, "NO2": 30, "O3": 58 },
+    "75118": { "PM25": 11, "PM10": 19, "NO2": 28, "O3": 58 },
+    "75119": { "PM25": 11, "PM10": 19, "NO2": 26, "O3": 60 },
+    "75120": { "PM25": 11, "PM10": 19, "NO2": 26, "O3": 60 }
+  }
+}

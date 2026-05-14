@@ -1,0 +1,188 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import {
+  ALL_COMMUNE_SLUGS,
+  getCommuneBySlug,
+  isParisGlobalSlug,
+  type CommuneSlugEntry,
+} from "@/lib/commune-slugs";
+import { getCommuneStatsService } from "@/server-modules/commune-stats/application/commune-stats.service";
+import { getCommuneNarrativeService } from "@/server-modules/narrative/application/commune-narrative.service";
+import { CommuneHero } from "@/components/commune/CommuneHero";
+import { CommunePriceSection } from "@/components/commune/CommunePriceSection";
+import { CommuneDemographicsSection } from "@/components/commune/CommuneDemographicsSection";
+import { CommuneEquipmentsSection } from "@/components/commune/CommuneEquipmentsSection";
+import { CommuneAirQualitySection } from "@/components/commune/CommuneAirQualitySection";
+import { CommuneElectionsSection } from "@/components/commune/CommuneElectionsSection";
+import { CommuneNarrativeSection } from "@/components/commune/CommuneNarrativeSection";
+import { CommuneFaqSection } from "@/components/commune/CommuneFaqSection";
+import { CommuneRelatedLinks } from "@/components/commune/CommuneRelatedLinks";
+import { formatEur, formatInt } from "@/components/commune/format";
+
+export const revalidate = 86400; // 24h ISR
+export const dynamicParams = false; // 404 sur les slugs non listés
+
+const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
+
+export async function generateStaticParams() {
+  // Le hub Paris est sur /commune (page.tsx parent), pas dans [slug].
+  return ALL_COMMUNE_SLUGS
+    .filter((c) => !isParisGlobalSlug(c.slug))
+    .map((c) => ({ slug: c.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const commune = getCommuneBySlug(slug);
+  if (!commune || isParisGlobalSlug(commune.slug)) {
+    return { title: "Page introuvable" };
+  }
+  // On essaie de récupérer les stats (cached) pour enrichir la description
+  let descParts: string[] = [];
+  try {
+    const stats = await getCommuneStatsService().getStats(commune.codeCommune);
+    if (stats.prix.prixM2Median) descParts.push(`${formatEur(stats.prix.prixM2Median)}/m²`);
+    if (stats.demo.populationTotale > 0) descParts.push(`${formatInt(stats.demo.populationTotale)} habitants`);
+    if (stats.demo.revenuMedianPondere) descParts.push(`${formatEur(stats.demo.revenuMedianPondere)} de revenu médian`);
+  } catch {
+    // tolérant : si la DB n'est pas dispo, fallback générique
+  }
+  const desc = descParts.length > 0
+    ? `${descParts.join(" · ")}. Analyse complète du ${commune.nomCourt} : prix immobilier, démographie, équipements, qualité de l'air.`
+    : `Analyse complète du ${commune.nomCourt} : prix immobilier, démographie, équipements, qualité de l'air. Données publiques.`;
+
+  return {
+    title: `${commune.nomAffiche} — Prix immobilier, démographie, cadre de vie`,
+    description: desc.slice(0, 158),
+    alternates: { canonical: `/commune/${commune.slug}` },
+    openGraph: {
+      type: "article",
+      locale: "fr_FR",
+      url: `${SITE_URL}/commune/${commune.slug}`,
+      title: `${commune.nomAffiche} — ClaireAdresse`,
+      description: desc.slice(0, 158),
+    },
+  };
+}
+
+export default async function CommunePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const commune = getCommuneBySlug(slug);
+  if (!commune || isParisGlobalSlug(commune.slug)) {
+    notFound();
+  }
+
+  const statsService = getCommuneStatsService();
+  const narrativeService = getCommuneNarrativeService();
+
+  const stats = await statsService.getStats(commune.codeCommune);
+  const narrative = await narrativeService.getNarrative({
+    codeCommune: commune.codeCommune,
+    nomAffiche: commune.nomAffiche,
+    stats,
+  });
+
+  const placeJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    name: commune.nomAffiche,
+    url: `${SITE_URL}/commune/${commune.slug}`,
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: commune.lat,
+      longitude: commune.lon,
+    },
+    ...(commune.parentNom && {
+      containedInPlace: { "@type": "Place", name: commune.parentNom },
+    }),
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: SITE_URL },
+      ...(commune.parentSlug
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: commune.parentNom,
+              item: `${SITE_URL}/commune/${commune.parentSlug}`,
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: commune.nomAffiche,
+              item: `${SITE_URL}/commune/${commune.slug}`,
+            },
+          ]
+        : [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: commune.nomAffiche,
+              item: `${SITE_URL}/commune/${commune.slug}`,
+            },
+          ]),
+    ],
+  };
+
+  return (
+    <main className="landing">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+
+      <nav className="landing-nav">
+        <div className="landing-nav-inner">
+          <Link href="/" className="landing-brand">
+            Claire<span>Adresse</span>
+          </Link>
+          <div className="landing-nav-links">
+            <Link href="/">Accueil</Link>
+            {commune.parentSlug && (
+              <Link href={`/commune/${commune.parentSlug}`}>{commune.parentNom}</Link>
+            )}
+            <Link href="/a-propos">À propos</Link>
+          </div>
+        </div>
+      </nav>
+
+      <CommuneHero commune={commune} stats={stats} />
+      {narrative && <CommuneNarrativeSection content={narrative.content} nomCourt={commune.nomCourt} />}
+      <CommunePriceSection stats={stats} nomCourt={commune.nomCourt} />
+      <CommuneDemographicsSection stats={stats} nomCourt={commune.nomCourt} />
+      <CommuneEquipmentsSection stats={stats} />
+      <CommuneAirQualitySection stats={stats} />
+      <CommuneElectionsSection stats={stats} />
+      <CommuneFaqSection stats={stats} nomCourt={commune.nomCourt} />
+      <CommuneRelatedLinks commune={commune} />
+
+      <footer className="landing-footer">
+        <div className="landing-footer-brand">
+          Claire<i>Adresse</i>
+        </div>
+        <span>Données publiques · DVF · INSEE · AirParif</span>
+        <div className="landing-footer-links">
+          <Link href="/">Analyser une adresse</Link>
+          <Link href="/a-propos">À propos</Link>
+        </div>
+      </footer>
+    </main>
+  );
+}

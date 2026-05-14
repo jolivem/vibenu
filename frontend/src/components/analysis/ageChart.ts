@@ -43,12 +43,13 @@ export function buildAgeChartModel(params: {
   commune: AgeDistributionDto | null;
   france: AgeDistributionDto | null;
   showCommune: boolean;
+  mainSeriesName?: string;
 }): AgeChartModel {
-  const { iris, commune, france, showCommune } = params;
+  const { iris, commune, france, showCommune, mainSeriesName = "Zone" } = params;
 
   const series: AgeChartSeries[] = [
     // Série principale : violet plein, trait épais, points larges
-    { name: "Zone", color: "#8b5cf6", strokeWidth: 2.8, dotRadius: 4.5, opacity: 1, data: iris },
+    { name: mainSeriesName, color: "#8b5cf6", strokeWidth: 2.8, dotRadius: 4.5, opacity: 1, data: iris },
   ];
   if (showCommune && commune) {
     series.push({ name: "Commune", color: "#a78060", strokeWidth: 1.4, dotRadius: 2.5, opacity: 0.65, data: commune });
