@@ -42,3 +42,6 @@ venv/
 scripts/france-latest.osm.pbf
 
 *.sql
+
+# Database dumps
+*.dump
