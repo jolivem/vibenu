@@ -143,13 +143,21 @@ export interface ElectionsCandidateDto {
 export interface ClimateAnalysisDto {
   periodStart: number;
   periodEnd: number;
-  temperatureC: number;
-  precipitationMm: number;
-  sunshineHours: number;
+  /** Température annuelle moyenne (°C). Peut être null si la station ne fournit pas T. */
+  temperatureC: number | null;
+  /** Cumul annuel moyen de précipitations (mm). Peut être null. */
+  precipitationMm: number | null;
+  /** Cumul annuel moyen d'ensoleillement (h). Souvent null (stations héliographes rares). */
+  sunshineHours: number | null;
   national: {
     temperatureC: number;
     precipitationMm: number;
     sunshineHours: number;
+  };
+  /** Station Météo-France de référence (mode adresse). */
+  station?: {
+    name: string;
+    distanceKm: number;
   };
 }
 

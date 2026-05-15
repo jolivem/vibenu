@@ -4,7 +4,7 @@ import type { CommuneNarrativeInput, CommuneNarrativeContent } from "../domain/c
  * Bump this version when the prompt changes.
  * Cache entries with a different version are ignored and regenerated.
  */
-export const COMMUNE_PROMPT_VERSION = 2;
+export const COMMUNE_PROMPT_VERSION = 3;
 
 export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement parisien pour un site d'analyse immobilière.
 Ton : clair, factuel, ni promotionnel ni alarmiste.
@@ -83,17 +83,19 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
     })),
     surperformances_equipements: stats.highlights.surperformances,
     sousrepresentation_equipements: stats.highlights.sousrepresentations,
-    qualite_air: stats.airQuality
+    qualite_air_paris: stats.airQuality && stats.airQuality.historique.length > 0
       ? {
-          annee: stats.airQuality.annee,
-          polluants: stats.airQuality.polluants.map((p) => ({
-            code: p.code,
-            label: p.label,
-            concentration_ug_m3: p.concentration,
-            seuil_oms_ug_m3: p.seuilOms,
-            ratio_oms: p.ratioOms !== null ? +p.ratioOms.toFixed(2) : null,
-          })),
-          polluants_au_dessus_oms: stats.highlights.pollutionCritique,
+          note: "Indice ATMO agrégé pour Paris entière — même valeur pour tous les arrondissements.",
+          derniere_annee: stats.airQuality.historique[0].annee,
+          jours_par_categorie_derniere_annee: {
+            bon: stats.airQuality.historique[0].joursBonne,
+            moyen: stats.airQuality.historique[0].joursMoyenne,
+            degrade: stats.airQuality.historique[0].joursDegradee,
+            mauvais: stats.airQuality.historique[0].joursMauvaise,
+            tres_mauvais: stats.airQuality.historique[0].joursTresMauvaise,
+            extremement_mauvais: stats.airQuality.historique[0].joursExtremementMauvaise,
+          },
+          total_jours_mesures: stats.airQuality.historique[0].totalJours,
         }
       : null,
     elections: stats.elections

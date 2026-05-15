@@ -46,22 +46,18 @@ function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] {
     });
   }
 
-  if (stats.airQuality) {
-    const pm25 = stats.airQuality.polluants.find((p) => p.code === "PM25");
-    const no2 = stats.airQuality.polluants.find((p) => p.code === "NO2");
-    if (pm25 || no2) {
-      const parts: string[] = [];
-      if (pm25) {
-        parts.push(`particules fines PM2.5 à ${pm25.concentration} µg/m³`);
-      }
-      if (no2) {
-        parts.push(`dioxyde d'azote NO₂ à ${no2.concentration} µg/m³`);
-      }
-      items.push({
-        question: `Quelle est la qualité de l'air à ${nomCourt} ?`,
-        answer: `En ${stats.airQuality.annee}, la concentration moyenne annuelle à ${nomCourt} était : ${parts.join(", ")}. Les seuils OMS 2021 sont de 5 µg/m³ pour les PM2.5 et 10 µg/m³ pour le NO₂.`,
-      });
-    }
+  if (stats.airQuality && stats.airQuality.historique.length > 0) {
+    const latest = stats.airQuality.historique[0];
+    const joursAcceptables = latest.joursBonne + latest.joursMoyenne;
+    const joursDegradesOuPire =
+      latest.joursDegradee +
+      latest.joursMauvaise +
+      latest.joursTresMauvaise +
+      latest.joursExtremementMauvaise;
+    items.push({
+      question: `Quelle est la qualité de l'air à ${nomCourt} ?`,
+      answer: `En ${latest.annee}, Paris a enregistré ${joursAcceptables} jours de qualité de l'air bonne ou moyenne et ${joursDegradesOuPire} jours dégradés ou plus, selon l'indice ATMO d'AirParif. La même mesure couvre l'ensemble de la capitale, ${nomCourt} compris.`,
+    });
   }
 
   if (stats.elections) {

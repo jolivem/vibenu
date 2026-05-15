@@ -107,7 +107,7 @@ export function AnalysisScreen() {
                 }))}
                 cadastreParcel={data.cadastre?.parcel}
                 dvfTransactions={realEstate?.transactionFeatures}
-                irisGeojson={data.demographics?.irisGeojson}
+                irisGeojson={data.mode === "commune" ? undefined : data.demographics?.irisGeojson}
                 communeContour={data.map.communeContour}
                 risks={data.risks}
                 onReady={handleMapReady}
@@ -129,7 +129,7 @@ export function AnalysisScreen() {
               </div>
             </div>
             {data.mode !== "commune" && <NeighborhoodCard neighborhood={data.neighborhood} />}
-            {data.demographics && <DemographicsCard demographics={data.demographics} />}
+            {data.demographics && <DemographicsCard demographics={data.demographics} mode={data.mode} />}
             {data.climate && <ClimateCard climate={data.climate} />}
             {data.elections && <ElectionsCard elections={data.elections} />}
             {data.cadastre && <CadastreCard cadastre={data.cadastre} />}

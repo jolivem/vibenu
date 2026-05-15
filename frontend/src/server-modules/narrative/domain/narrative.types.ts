@@ -4,9 +4,12 @@
  * no coordinates, no technical IDs, no GeoJSON blobs.
  */
 export interface NarrativeInput {
+  /** "address" = adresse précise, "commune" = recherche commune (centroïde). */
+  mode: "address" | "commune";
   addressLabel: string;
   mobility: {
     label: string;
+    /** En mode commune, ces champs sont mis à null car calculés depuis le centroïde (sans sens). */
     hasNearbyStation: boolean;
     nearestStationDistanceMeters: number | null;
     busStopsCount: number;
@@ -73,9 +76,9 @@ export interface NarrativeInput {
     }>;
   } | null;
   climate: {
-    temperatureC: number;
-    precipitationMm: number;
-    sunshineHours: number;
+    temperatureC: number | null;
+    precipitationMm: number | null;
+    sunshineHours: number | null;
     nationalTemperatureC: number;
     nationalPrecipitationMm: number;
     nationalSunshineHours: number;

@@ -3,13 +3,12 @@ import type { ClimateAnalysis } from "../domain/climate.types";
 import type { ClimateProvider } from "../infrastructure/climate.provider";
 
 /**
- * Normales 1991-2020 — France métropolitaine.
- * Source : Météo-France (https://meteofrance.com/climat) — moyennes spatiales
- * homogénéisées sur tout le territoire métropolitain (référence WMO actuelle).
- *
- * À mettre à jour vers 2031 (nouvelle période de référence WMO 2001-2030).
+ * Normales France métropolitaine 1991-2020 — valeurs officielles Météo-France.
+ * Source : https://meteofrance.com/climat — moyennes spatiales homogénéisées
+ * sur tout le territoire (référence WMO). Utilisées comme référence nationale
+ * absolue, et comme fallback si le provider runtime est indisponible.
  */
-const FRANCE_NORMALES = {
+const FRANCE_NORMALES_OFFICIAL = {
   temperatureC: 13.0,
   precipitationMm: 935,
   sunshineHours: 1969,
@@ -22,7 +21,13 @@ export class ClimateServiceImpl implements ClimateService {
   constructor(private readonly provider: ClimateProvider) {}
 
   async getClimateData(lat: number, lon: number): Promise<ClimateAnalysis | null> {
-    const local = await this.provider.getNormales(lat, lon);
+    // local et national en parallèle (le national peut être hardcodé → instantané)
+    const [local, national] = await Promise.all([
+      this.provider.getNormales(lat, lon),
+      this.provider.getNationalNormales(),
+    ]);
+
+    // Si aucune station de référence à <30 km → section climat masquée.
     if (!local) return null;
 
     return {
@@ -31,7 +36,12 @@ export class ClimateServiceImpl implements ClimateService {
       temperatureC: local.temperatureC,
       precipitationMm: local.precipitationMm,
       sunshineHours: local.sunshineHours,
-      national: FRANCE_NORMALES,
+      national: {
+        temperatureC: national?.temperatureC ?? FRANCE_NORMALES_OFFICIAL.temperatureC,
+        precipitationMm: national?.precipitationMm ?? FRANCE_NORMALES_OFFICIAL.precipitationMm,
+        sunshineHours: national?.sunshineHours ?? FRANCE_NORMALES_OFFICIAL.sunshineHours,
+      },
+      station: local.station,
     };
   }
 }

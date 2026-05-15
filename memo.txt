@@ -57,3 +57,28 @@ https://ton-domaine/opengraph-image — doit renvoyer un PNG.
 Google Rich Results Test sur la home — vérifier le JSON-LD.
 Opengraph.xyz pour prévisualiser le partage social.
 Soumettre le sitemap dans Google Search Console (et Bing Webmaster Tools).
+
+
+
+
+DONNEES DE METEO:
+-----------------
+https://www.data.gouv.fr/datasets/donnees-climatologiques-de-base-decadaires
+1950-2024
+
+
+DONNEES ATMO POUR PAGES SEO PARIS:
+http://data.gouv.fr/datasets/qualite-de-lair-indice-atmo-a-partir-de-2021
+
+
+CONTOUR DE COMMUNES
+-------------------
+Actuellement : geo.api.gouv.fr (l'API officielle Etalab)
++ cache SQL 100 jours dans table commune_contour_cache
+possibilité recuperation zip, voir https://adresse.data.gouv.fr/data/ban/adresses/latest/addok/addok-france-bundle.zip
+
+Voici la correspondance entre notre vocabulaire et le code :
+Notre nom	Code	Où
+adresse	AnalysisMode = "address"	location-analysis.dto.ts:253
+commune SEO	(pas de type — routage Next.js)	/app/commune/[slug]/page.tsx, commune-slugs.ts
+commune utilisateur	AnalysisMode = "commune"	location-analysis.use-case.ts:44

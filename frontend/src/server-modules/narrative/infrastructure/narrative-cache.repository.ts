@@ -20,8 +20,23 @@ export class NarrativeCacheRepository {
     this.model = options.model;
   }
 
-  async get(lat: number, lon: number): Promise<CachedNarrative | null> {
-    const geoKey = buildGeoKey(lat, lon);
+  /**
+   * Clé de cache différenciée par mode : address vs commune, même lat/lon
+   * peuvent donner des narratives différentes (la commune utilise un centroïde).
+   */
+  private cacheKey(lat: number, lon: number, mode: "address" | "commune"): string {
+    // Bump le préfixe quand le prompt change matériellement → invalide les anciennes entrées.
+    // C2 : retrait des distances et clarification de hasNearbyStation pour le mode commune.
+    const prefix = mode === "commune" ? "C2:" : "A:";
+    return prefix + buildGeoKey(lat, lon);
+  }
+
+  async get(
+    lat: number,
+    lon: number,
+    mode: "address" | "commune" = "address",
+  ): Promise<CachedNarrative | null> {
+    const geoKey = this.cacheKey(lat, lon, mode);
     try {
       const rows = await query<NarrativeCacheRow>(
         `SELECT paragraph, generated_at
@@ -42,8 +57,13 @@ export class NarrativeCacheRepository {
     }
   }
 
-  async set(lat: number, lon: number, paragraph: string): Promise<void> {
-    const geoKey = buildGeoKey(lat, lon);
+  async set(
+    lat: number,
+    lon: number,
+    paragraph: string,
+    mode: "address" | "commune" = "address",
+  ): Promise<void> {
+    const geoKey = this.cacheKey(lat, lon, mode);
     try {
       await query(
         `INSERT INTO narrative_cache (geo_key, model, paragraph, generated_at)

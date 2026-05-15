@@ -49,16 +49,25 @@ export interface EquipmentDomainStats {
   ratioVsBenchmark: number | null;
 }
 
+/**
+ * Répartition annuelle des jours par catégorie de l'indice ATMO (Paris global).
+ * Source : opendata.paris.fr — dataset "qualite-de-l-air-indice-atmo".
+ */
+export interface AirQualityAtmoYear {
+  annee: number;
+  joursBonne: number;
+  joursMoyenne: number;
+  joursDegradee: number;
+  joursMauvaise: number;
+  joursTresMauvaise: number;
+  joursExtremementMauvaise: number;
+  /** Somme des 6 catégories (généralement 365 ou 366). */
+  totalJours: number;
+}
+
 export interface AirQualityStats {
-  annee: number | null;
-  polluants: Array<{
-    code: string; // "PM25", "PM10", "NO2", "O3"
-    label: string;
-    concentration: number;
-    seuilOms: number | null;
-    /** ratio concentration / seuilOms (>1 = au-dessus du seuil OMS) */
-    ratioOms: number | null;
-  }>;
+  /** Historique trié par année DÉCROISSANTE (le plus récent en premier). */
+  historique: AirQualityAtmoYear[];
 }
 
 export interface ElectionCandidateResult {
@@ -94,8 +103,6 @@ export interface CommuneHighlights {
   surperformances: EquipmentDomain[];
   /** Domaines significativement en-dessous (ratio <= 0.5) */
   sousrepresentations: EquipmentDomain[];
-  /** Polluants au-dessus du seuil OMS */
-  pollutionCritique: string[];
   /** Candidats avec un écart >=5pp vs France (signe inclus, ordre voix décroissantes) */
   ecartsElectorauxNotables: Array<{
     candidat: string;

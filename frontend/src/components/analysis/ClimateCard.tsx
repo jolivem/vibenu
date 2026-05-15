@@ -5,7 +5,7 @@ interface IndicatorRow {
   unit: string;
   format: (n: number) => string;
   color: string;
-  commune: number;
+  commune: number | null;
   national: number;
 }
 
@@ -54,17 +54,30 @@ export function ClimateCard({ climate }: { climate: ClimateAnalysisDto }) {
     },
   ];
 
+  // Toutes valeurs locales nulles → la section n'a rien à montrer
+  const hasAnyValue = rows.some((r) => r.commune !== null);
+  if (!hasAnyValue) return null;
+
   return (
     <section className="card climate-card">
       <h2>Climat (normales {climate.periodStart}–{climate.periodEnd})</h2>
-      <p className="muted">Comparaison avec les moyennes France métropolitaine.</p>
+      <p className="muted">
+        Comparaison avec les moyennes France métropolitaine.
+        {climate.station && (
+          <>
+            {" "}Station de référence : <strong>{climate.station.name}</strong>
+            {" "}({climate.station.distanceKm.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km).
+          </>
+        )}
+      </p>
 
       <ul className="elections-list">
-        {rows.map((r) => {
-          const max = Math.max(r.commune, r.national, 1);
-          const wCommune = (r.commune / max) * 100;
+        {rows.filter((r) => r.commune !== null).map((r) => {
+          const communeValue = r.commune as number;
+          const max = Math.max(communeValue, r.national, 1);
+          const wCommune = (communeValue / max) * 100;
           const wNational = (r.national / max) * 100;
-          const delta = r.commune - r.national;
+          const delta = communeValue - r.national;
           return (
             <li key={r.label} className="elections-row">
               <div className="elections-row-head">
@@ -91,7 +104,7 @@ export function ClimateCard({ climate }: { climate: ClimateAnalysisDto }) {
                   />
                 </div>
                 <span className="elections-bar-pct climate-value">
-                  {r.format(r.commune)}
+                  {r.format(communeValue)}
                 </span>
               </div>
 
@@ -113,7 +126,7 @@ export function ClimateCard({ climate }: { climate: ClimateAnalysisDto }) {
       </ul>
 
       <p className="elections-footnote">
-        Source : Open-Meteo (réanalyse ERA5) pour la commune · Météo-France pour la moyenne nationale.
+        Source : Météo-France · Normales 1991-2020 par station (licence Etalab 2.0).
       </p>
     </section>
   );

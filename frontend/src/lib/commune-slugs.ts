@@ -190,9 +190,18 @@ const PARIS_HUB: CommuneSlugEntry = {
 export const ALL_COMMUNE_SLUGS: CommuneSlugEntry[] = [PARIS_HUB, ...PARIS_ARRONDISSEMENTS];
 
 const BY_SLUG = new Map(ALL_COMMUNE_SLUGS.map((c) => [c.slug, c]));
+const BY_CODE_INSEE = new Map(ALL_COMMUNE_SLUGS.map((c) => [c.codeCommune, c]));
 
 export function getCommuneBySlug(slug: string): CommuneSlugEntry | undefined {
   return BY_SLUG.get(slug);
+}
+
+/**
+ * Lookup commune entry par code INSEE.
+ * Renvoie undefined si aucune page SEO n'existe pour ce code (à compléter en phase 2).
+ */
+export function getCommuneByCodeInsee(codeInsee: string): CommuneSlugEntry | undefined {
+  return BY_CODE_INSEE.get(codeInsee);
 }
 
 export function getParisArrondissements(): CommuneSlugEntry[] {

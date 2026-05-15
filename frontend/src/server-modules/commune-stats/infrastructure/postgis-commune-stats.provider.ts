@@ -6,6 +6,7 @@ import type {
   DemographicsStats,
   EquipmentDomainStats,
   AirQualityStats,
+  AirQualityAtmoYear,
   ElectionsStats,
   ElectionCandidateResult,
   CommuneHighlights,
@@ -51,11 +52,14 @@ interface BpeCategoryRow {
   nb: number;
 }
 
-interface AirQualityRow {
+interface AirQualityAtmoRow {
   annee: number;
-  polluant: string;
-  concentration_moyenne: number;
-  seuil_oms: number | null;
+  jours_bonne: number;
+  jours_moyenne: number;
+  jours_degradee: number;
+  jours_mauvaise: number;
+  jours_tres_mauvaise: number;
+  jours_extremement_mauvaise: number;
 }
 
 interface ElectionsCommuneRow {
@@ -73,13 +77,6 @@ interface ElectionsResultRow {
   pct_exprimes: number;
 }
 
-const POLLUANT_LABELS: Record<string, string> = {
-  PM25: "Particules fines (PM2.5)",
-  PM10: "Particules (PM10)",
-  NO2: "Dioxyde d'azote (NO₂)",
-  O3: "Ozone (O₃)",
-};
-
 /**
  * Provider d'agrégations Postgres pour les pages /commune/[slug].
  * Cache 24h par code_commune.
@@ -93,6 +90,7 @@ export class PostgisCommuneStatsProvider {
     candidats: Map<string, number>; // candidat → pct exprimés France
   }>(ONE_DAY);
   private static franceDemoCache = new InMemoryCache<DemographicsStats>(ONE_DAY);
+  private static atmoCache = new InMemoryCache<AirQualityStats | null>(ONE_DAY);
 
   async getStats(codeCommune: string): Promise<CommuneStats> {
     const cached = PostgisCommuneStatsProvider.cache.get(codeCommune);
@@ -112,7 +110,7 @@ export class PostgisCommuneStatsProvider {
       this.queryPriceStats({ codeCommune }),
       this.queryDemographics(codeCommune),
       this.queryBpeCounts(codeCommune),
-      this.queryAirQuality(codeCommune),
+      this.queryAirQuality(),
       this.queryElections(codeCommune),
       this.getParisBenchmarkPrice(),
       this.getParisBenchmarkEquipment(),
@@ -120,7 +118,7 @@ export class PostgisCommuneStatsProvider {
     ]);
 
     const equipements = this.aggregateEquipment(bpeRows, demo.populationTotale, equipBenchmark);
-    const highlights = this.computeHighlights(demo, equipements, airQuality, elections);
+    const highlights = this.computeHighlights(demo, equipements, elections);
 
     const stats: CommuneStats = {
       codeCommune,
@@ -264,35 +262,47 @@ export class PostgisCommuneStatsProvider {
     );
   }
 
-  private async queryAirQuality(codeCommune: string): Promise<AirQualityStats | null> {
-    const rows = await query<AirQualityRow>(
-      `SELECT annee, polluant, concentration_moyenne, seuil_oms
-       FROM air_quality_annual
-       WHERE code_commune = $1
-       ORDER BY annee DESC, polluant`,
-      [codeCommune],
+  private async queryAirQuality(): Promise<AirQualityStats | null> {
+    // Indice ATMO agrégé pour Paris global — même donnée pour tous les arrondissements.
+    const cached = PostgisCommuneStatsProvider.atmoCache.get("PARIS");
+    if (cached !== undefined) return cached;
+
+    const rows = await query<AirQualityAtmoRow>(
+      `SELECT annee,
+              jours_bonne, jours_moyenne, jours_degradee,
+              jours_mauvaise, jours_tres_mauvaise, jours_extremement_mauvaise
+       FROM air_quality_atmo_paris
+       ORDER BY annee DESC`,
     );
 
-    if (rows.length === 0) return null;
+    if (rows.length === 0) {
+      PostgisCommuneStatsProvider.atmoCache.set("PARIS", null);
+      return null;
+    }
 
-    // Garde uniquement le dernier millésime disponible
-    const latestYear = rows[0].annee;
-    const filtered = rows.filter((r) => r.annee === latestYear);
+    const historique: AirQualityAtmoYear[] = rows.map((r) => {
+      const joursBonne = Number(r.jours_bonne);
+      const joursMoyenne = Number(r.jours_moyenne);
+      const joursDegradee = Number(r.jours_degradee);
+      const joursMauvaise = Number(r.jours_mauvaise);
+      const joursTresMauvaise = Number(r.jours_tres_mauvaise);
+      const joursExtremementMauvaise = Number(r.jours_extremement_mauvaise);
+      return {
+        annee: r.annee,
+        joursBonne,
+        joursMoyenne,
+        joursDegradee,
+        joursMauvaise,
+        joursTresMauvaise,
+        joursExtremementMauvaise,
+        totalJours:
+          joursBonne + joursMoyenne + joursDegradee + joursMauvaise + joursTresMauvaise + joursExtremementMauvaise,
+      };
+    });
 
-    return {
-      annee: latestYear,
-      polluants: filtered.map((r) => {
-        const concentration = Number(r.concentration_moyenne);
-        const seuilOms = r.seuil_oms !== null ? Number(r.seuil_oms) : null;
-        return {
-          code: r.polluant,
-          label: POLLUANT_LABELS[r.polluant] ?? r.polluant,
-          concentration,
-          seuilOms,
-          ratioOms: seuilOms && seuilOms > 0 ? concentration / seuilOms : null,
-        };
-      }),
-    };
+    const stats: AirQualityStats = { historique };
+    PostgisCommuneStatsProvider.atmoCache.set("PARIS", stats);
+    return stats;
   }
 
   private async getFranceDemographics(): Promise<DemographicsStats | null> {
@@ -492,7 +502,6 @@ export class PostgisCommuneStatsProvider {
   private computeHighlights(
     demo: DemographicsStats,
     equipements: EquipmentDomainStats[],
-    airQuality: AirQualityStats | null,
     elections: ElectionsStats | null,
   ): CommuneHighlights {
     // Profil âge dominant
@@ -514,11 +523,6 @@ export class PostgisCommuneStatsProvider {
       .filter((e) => e.ratioVsBenchmark !== null && e.ratioVsBenchmark <= 0.5)
       .map((e) => e.domain);
 
-    const pollutionCritique =
-      airQuality?.polluants
-        .filter((p) => p.ratioOms !== null && p.ratioOms > 1)
-        .map((p) => p.code) ?? [];
-
     const ecartsElectorauxNotables =
       elections?.candidats
         .filter(
@@ -539,7 +543,6 @@ export class PostgisCommuneStatsProvider {
       profilAgeDominant,
       surperformances,
       sousrepresentations,
-      pollutionCritique,
       ecartsElectorauxNotables,
     };
   }

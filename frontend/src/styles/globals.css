@@ -250,6 +250,22 @@ body {
   margin-top: 2px;
 }
 
+.search-result-type {
+  font-style: normal;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--hairline);
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.search-result-item--municipality .search-result-type {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
 /* Sections */
 .landing-section {
   border-top: 0.5px solid var(--hairline);
@@ -731,61 +747,128 @@ body {
   line-height: 1.5;
 }
 
-/* Qualité de l'air */
-.commune-air-table {
+/* Qualité de l'air — indice ATMO */
+.commune-air-wrap {
   max-width: 1100px;
   margin: 0 auto;
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
 }
 
-.commune-air-table thead th {
-  text-align: left;
+.commune-air-latest-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.commune-air-latest-year {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.commune-air-latest-sub {
+  font-size: 13px;
+  color: var(--muted-soft);
+}
+
+.commune-air-bar {
+  display: flex;
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--hairline);
+}
+
+.commune-air-bar-seg {
+  height: 100%;
+  transition: filter 0.15s ease;
+}
+
+.commune-air-bar-seg:hover {
+  filter: brightness(0.92);
+}
+
+.commune-air-legend {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 20px;
+}
+
+.commune-air-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.commune-air-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.commune-air-legend-label {
+  color: var(--muted);
+  flex: 1;
+}
+
+.commune-air-legend-value {
+  color: var(--text);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.commune-air-legend-unit {
+  color: var(--muted-soft);
+  font-weight: 400;
+}
+
+.commune-air-history-title {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted-soft);
-  border-bottom: 0.5px solid var(--hairline-strong);
-  padding: 12px 16px;
   font-weight: 500;
+  margin: 0 0 14px;
 }
 
-.commune-air-table tbody th {
-  text-align: left;
-  font-weight: 500;
-  color: var(--text);
-  padding: 14px 16px;
-  border-bottom: 0.5px solid var(--hairline);
+.commune-air-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.commune-air-table tbody td {
-  padding: 14px 16px;
-  border-bottom: 0.5px solid var(--hairline);
-  color: var(--muted);
+.commune-air-history-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  align-items: center;
+  gap: 14px;
 }
 
-.commune-air-ratio {
-  font-weight: 500;
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
+.commune-air-history-year {
   font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
-.commune-air-ratio.is-ok {
-  background: var(--accent-light);
-  color: var(--accent);
-}
-
-.commune-air-ratio.is-warn {
-  background: #fef3c7;
-  color: #b45309;
+.commune-air-history-bar {
+  width: 100%;
 }
 
 .commune-air-note {
   max-width: 1100px;
-  margin: 16px auto 0;
+  margin: 24px auto 0;
   font-size: 13px;
   color: var(--muted-soft);
   line-height: 1.5;

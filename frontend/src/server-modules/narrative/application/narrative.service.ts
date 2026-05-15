@@ -17,7 +17,7 @@ export class NarrativeService {
     const input = buildNarrativeInput(data);
 
     if (!options.debug) {
-      const cached = await this.cache.get(lat, lon);
+      const cached = await this.cache.get(lat, lon, input.mode);
       if (cached) {
         return {
           paragraph: cached.paragraph,
@@ -30,7 +30,7 @@ export class NarrativeService {
     const paragraph = await this.provider.generate(input);
 
     if (!options.debug) {
-      await this.cache.set(lat, lon, paragraph);
+      await this.cache.set(lat, lon, paragraph, input.mode);
     }
 
     return {
@@ -51,12 +51,19 @@ function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
     new Set(data.neighborhood.pois.map((p) => p.category)),
   );
 
+  const isCommune = data.mode === "commune";
+
   return {
+    mode: data.mode,
     addressLabel: data.address.label,
     mobility: {
       label: data.mobility.label,
+      // En mode commune, on garde les *présences* (au moins une gare, nombre d'arrêts
+      // de bus) mais on retire les distances (calculées depuis le centroïde, sans sens).
       hasNearbyStation: data.mobility.nearestStations.length > 0,
-      nearestStationDistanceMeters: data.mobility.nearestStations[0]?.distanceMeters ?? null,
+      nearestStationDistanceMeters: isCommune
+        ? null
+        : data.mobility.nearestStations[0]?.distanceMeters ?? null,
       busStopsCount: data.mobility.nearestStops.length,
     },
     risks: {

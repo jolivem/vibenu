@@ -194,13 +194,20 @@ export interface DemographicsAnalysisDto {
 export interface ClimateAnalysisDto {
   periodStart: number;
   periodEnd: number;
-  temperatureC: number;
-  precipitationMm: number;
-  sunshineHours: number;
+  /** Peut être null si la station de référence ne fournit pas cette mesure. */
+  temperatureC: number | null;
+  precipitationMm: number | null;
+  /** Souvent null : peu de stations héliographes en France. */
+  sunshineHours: number | null;
   national: {
     temperatureC: number;
     precipitationMm: number;
     sunshineHours: number;
+  };
+  /** Station Météo-France de référence (mode adresse uniquement). */
+  station?: {
+    name: string;
+    distanceKm: number;
   };
 }
 

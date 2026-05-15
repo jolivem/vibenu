@@ -43,10 +43,12 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
 
     const mode: AnalysisMode = input.type === "municipality" ? "commune" : "address";
 
-    const contourPromise =
-      mode === "commune" && contourCitycode
-        ? this.dependencies.communeContourProvider.getContour(contourCitycode)
-        : Promise.resolve(null);
+    // Le contour commune est utile dans les deux modes :
+    // - mode commune : c'est la zone d'analyse principale
+    // - mode adresse : sert de repère géographique sur la carte
+    const contourPromise = contourCitycode
+      ? this.dependencies.communeContourProvider.getContour(contourCitycode)
+      : Promise.resolve(null);
 
     // En mode commune, on n'affiche pas la parcelle au centroïde
     // (elle ne représente rien pour l'utilisateur qui regarde le territoire entier).

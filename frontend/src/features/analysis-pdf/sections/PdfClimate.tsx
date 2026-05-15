@@ -11,7 +11,7 @@ interface Row {
   unit: string;
   format: (n: number) => string;
   color: string;
-  commune: number;
+  commune: number | null;
   national: number;
 }
 
@@ -33,19 +33,26 @@ export function PdfClimate({ climate }: { climate: ClimateAnalysisDto }) {
     { label: "Ensoleillement annuel", unit: "h", format: fmtHours, color: COLOR_SUN, commune: climate.sunshineHours, national: climate.national.sunshineHours },
   ];
 
+  const visibleRows = rows.filter((r) => r.commune !== null);
+  if (visibleRows.length === 0) return null;
+  const stationLine = climate.station
+    ? ` · Station : ${climate.station.name} (${climate.station.distanceKm.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km)`
+    : "";
+
   return (
     <View wrap={false}>
       <Text style={pdfStyles.elecHeading}>Climat</Text>
       <Text style={pdfStyles.elecSub}>
-        Source : Open-Meteo (ERA5) · moyenne France : Météo-France
+        Source : Météo-France · Normales 1991-2020{stationLine}
       </Text>
 
       <View style={pdfStyles.elecList}>
-        {rows.map((r) => {
-          const max = Math.max(r.commune, r.national, 1);
-          const wCommune = (r.commune / max) * 100;
+        {visibleRows.map((r) => {
+          const communeValue = r.commune as number;
+          const max = Math.max(communeValue, r.national, 1);
+          const wCommune = (communeValue / max) * 100;
           const wNational = (r.national / max) * 100;
-          const delta = r.commune - r.national;
+          const delta = communeValue - r.national;
 
           return (
             <View key={r.label} style={pdfStyles.elecRow}>
@@ -74,7 +81,7 @@ export function PdfClimate({ climate }: { climate: ClimateAnalysisDto }) {
                     ]}
                   />
                 </View>
-                <Text style={pdfStyles.climPctValue}>{r.format(r.commune)}</Text>
+                <Text style={pdfStyles.climPctValue}>{r.format(communeValue)}</Text>
               </View>
 
               <View style={pdfStyles.elecPairRow}>
