@@ -1,5 +1,6 @@
 import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache } from "../../../server-shared/infrastructure/cache/in-memory-cache";
+import { CITIES, getCityForCodeInsee, type City } from "@/lib/commune-slugs";
 import type {
   CommuneStats,
   PriceStats,
@@ -20,7 +21,6 @@ import {
 } from "./bpe-domain-mapping";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
-const PARIS_BENCHMARK_KEY = "__paris_global__";
 
 interface DvfAggRow {
   prix_m2_median: number | null;
@@ -96,24 +96,28 @@ export class PostgisCommuneStatsProvider {
     const cached = PostgisCommuneStatsProvider.cache.get(codeCommune);
     if (cached) return cached;
 
-    // Benchmark Paris global, calculé une fois et caché
+    const city = getCityForCodeInsee(codeCommune);
+    if (!city) {
+      throw new Error(`No SEO city configured for codeCommune=${codeCommune}`);
+    }
+
     const [
       prix,
       demo,
       bpeRows,
       airQuality,
       elections,
-      prixBenchmarkParis,
+      prixBenchmarkVille,
       equipBenchmark,
       demoFrance,
     ] = await Promise.all([
       this.queryPriceStats({ codeCommune }),
       this.queryDemographics(codeCommune),
       this.queryBpeCounts(codeCommune),
-      this.queryAirQuality(),
+      this.queryAirQuality(city),
       this.queryElections(codeCommune),
-      this.getParisBenchmarkPrice(),
-      this.getParisBenchmarkEquipment(),
+      this.getCityBenchmarkPrice(city),
+      this.getCityBenchmarkEquipment(city),
       this.getFranceDemographics(),
     ]);
 
@@ -122,8 +126,9 @@ export class PostgisCommuneStatsProvider {
 
     const stats: CommuneStats = {
       codeCommune,
+      city,
       prix,
-      prixBenchmarkParis,
+      prixBenchmarkVille,
       demo,
       demoFrance,
       equipements,
@@ -253,30 +258,33 @@ export class PostgisCommuneStatsProvider {
     );
   }
 
-  private async queryBpeCountsParis(): Promise<BpeCategoryRow[]> {
+  private async queryBpeCountsForCity(city: City): Promise<BpeCategoryRow[]> {
     return await query<BpeCategoryRow>(
       `SELECT category, COUNT(*)::int AS nb
        FROM bpe_equipment
-       WHERE depcom LIKE '751%'
+       WHERE depcom LIKE $1
        GROUP BY category`,
+      [CITIES[city].sqlPattern],
     );
   }
 
-  private async queryAirQuality(): Promise<AirQualityStats | null> {
-    // Indice ATMO agrégé pour Paris global — même donnée pour tous les arrondissements.
-    const cached = PostgisCommuneStatsProvider.atmoCache.get("PARIS");
+  private async queryAirQuality(city: City): Promise<AirQualityStats | null> {
+    // Indice ATMO agrégé par ville — même donnée pour tous les arrondissements d'une ville.
+    const cached = PostgisCommuneStatsProvider.atmoCache.get(city);
     if (cached !== undefined) return cached;
 
     const rows = await query<AirQualityAtmoRow>(
       `SELECT annee,
               jours_bonne, jours_moyenne, jours_degradee,
               jours_mauvaise, jours_tres_mauvaise, jours_extremement_mauvaise
-       FROM air_quality_atmo_paris
+       FROM air_quality_atmo
+       WHERE ville = $1
        ORDER BY annee DESC`,
+      [city],
     );
 
     if (rows.length === 0) {
-      PostgisCommuneStatsProvider.atmoCache.set("PARIS", null);
+      PostgisCommuneStatsProvider.atmoCache.set(city, null);
       return null;
     }
 
@@ -301,7 +309,7 @@ export class PostgisCommuneStatsProvider {
     });
 
     const stats: AirQualityStats = { historique };
-    PostgisCommuneStatsProvider.atmoCache.set("PARIS", stats);
+    PostgisCommuneStatsProvider.atmoCache.set(city, stats);
     return stats;
   }
 
@@ -438,34 +446,37 @@ export class PostgisCommuneStatsProvider {
     return result;
   }
 
-  private async getParisBenchmarkPrice(): Promise<PriceStats> {
-    const cached = PostgisCommuneStatsProvider.benchmarkCache.get(PARIS_BENCHMARK_KEY);
+  private async getCityBenchmarkPrice(city: City): Promise<PriceStats> {
+    const cached = PostgisCommuneStatsProvider.benchmarkCache.get(city);
     if (cached) return cached;
-    const stats = await this.queryPriceStats({ codeCommunePattern: "751%" });
-    PostgisCommuneStatsProvider.benchmarkCache.set(PARIS_BENCHMARK_KEY, stats);
+    const stats = await this.queryPriceStats({ codeCommunePattern: CITIES[city].sqlPattern });
+    PostgisCommuneStatsProvider.benchmarkCache.set(city, stats);
     return stats;
   }
 
-  private async getParisBenchmarkEquipment(): Promise<EquipmentDomainStats[]> {
-    const cached = PostgisCommuneStatsProvider.benchmarkEquipCache.get(PARIS_BENCHMARK_KEY);
+  private async getCityBenchmarkEquipment(city: City): Promise<EquipmentDomainStats[]> {
+    const cached = PostgisCommuneStatsProvider.benchmarkEquipCache.get(city);
     if (cached) return cached;
 
-    const [bpeRows, demoParis] = await Promise.all([
-      this.queryBpeCountsParis(),
-      this.queryDemographics("75056"), // code commune Paris global (synthèse INSEE)
+    const cityDef = CITIES[city];
+    const [bpeRows, demoCity] = await Promise.all([
+      this.queryBpeCountsForCity(city),
+      this.queryDemographics(cityDef.codeCommune), // code INSEE global de la ville
     ]);
 
-    // Si le code 75056 ne ramène rien, on agrège la pop des arrondissements
-    let populationParis = demoParis.populationTotale;
-    if (populationParis === 0) {
+    // Si le code commune global ne ramène rien (cas fréquent pour Paris/Lyon/Marseille
+    // dont la "commune" INSEE peut être vide), on agrège la pop des arrondissements.
+    let populationVille = demoCity.populationTotale;
+    if (populationVille === 0) {
       const rows = await query<{ pop: number }>(
-        `SELECT SUM(population)::int AS pop FROM iris_demographics WHERE LEFT(code_iris, 5) LIKE '751%'`,
+        `SELECT SUM(population)::int AS pop FROM iris_demographics WHERE LEFT(code_iris, 5) LIKE $1`,
+        [cityDef.sqlPattern],
       );
-      populationParis = rows[0]?.pop ? Number(rows[0].pop) : 0;
+      populationVille = rows[0]?.pop ? Number(rows[0].pop) : 0;
     }
 
-    const result = this.aggregateEquipment(bpeRows, populationParis, null);
-    PostgisCommuneStatsProvider.benchmarkEquipCache.set(PARIS_BENCHMARK_KEY, result);
+    const result = this.aggregateEquipment(bpeRows, populationVille, null);
+    PostgisCommuneStatsProvider.benchmarkEquipCache.set(city, result);
     return result;
   }
 

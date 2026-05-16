@@ -3,13 +3,16 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
   ALL_COMMUNE_SLUGS,
+  CITIES,
   getCommuneBySlug,
-  isParisGlobalSlug,
+  isCityHubSlug,
   type CommuneSlugEntry,
 } from "@/lib/commune-slugs";
 import { getCommuneStatsService } from "@/server-modules/commune-stats/application/commune-stats.service";
 import { getCommuneNarrativeService } from "@/server-modules/narrative/application/commune-narrative.service";
+import { CommuneContourProvider } from "@/server-modules/address/infrastructure/commune-contour.provider";
 import { CommuneHero } from "@/components/commune/CommuneHero";
+import { CommuneMapSection } from "@/components/commune/CommuneMapSection";
 import { CommunePriceSection } from "@/components/commune/CommunePriceSection";
 import { CommuneDemographicsSection } from "@/components/commune/CommuneDemographicsSection";
 import { CommuneEquipmentsSection } from "@/components/commune/CommuneEquipmentsSection";
@@ -28,7 +31,7 @@ const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 export async function generateStaticParams() {
   // Le hub Paris est sur /commune (page.tsx parent), pas dans [slug].
   return ALL_COMMUNE_SLUGS
-    .filter((c) => !isParisGlobalSlug(c.slug))
+    .filter((c) => !isCityHubSlug(c.slug))
     .map((c) => ({ slug: c.slug }));
 }
 
@@ -39,7 +42,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const commune = getCommuneBySlug(slug);
-  if (!commune || isParisGlobalSlug(commune.slug)) {
+  if (!commune || isCityHubSlug(commune.slug)) {
     return { title: "Page introuvable" };
   }
   // On essaie de récupérer les stats (cached) pour enrichir la description
@@ -77,19 +80,23 @@ export default async function CommunePage({
 }) {
   const { slug } = await params;
   const commune = getCommuneBySlug(slug);
-  if (!commune || isParisGlobalSlug(commune.slug)) {
+  if (!commune || isCityHubSlug(commune.slug)) {
     notFound();
   }
 
   const statsService = getCommuneStatsService();
   const narrativeService = getCommuneNarrativeService();
+  const contourProvider = new CommuneContourProvider();
 
   const stats = await statsService.getStats(commune.codeCommune);
-  const narrative = await narrativeService.getNarrative({
-    codeCommune: commune.codeCommune,
-    nomAffiche: commune.nomAffiche,
-    stats,
-  });
+  const [narrative, contour] = await Promise.all([
+    narrativeService.getNarrative({
+      codeCommune: commune.codeCommune,
+      nomAffiche: commune.nomAffiche,
+      stats,
+    }),
+    contourProvider.getContour(commune.codeCommune),
+  ]);
 
   const placeJsonLd = {
     "@context": "https://schema.org",
@@ -164,6 +171,7 @@ export default async function CommunePage({
       </nav>
 
       <CommuneHero commune={commune} stats={stats} />
+      <CommuneMapSection commune={commune} contour={contour} />
       {narrative && <CommuneNarrativeSection content={narrative.content} nomCourt={commune.nomCourt} />}
       <CommunePriceSection stats={stats} nomCourt={commune.nomCourt} />
       <CommuneDemographicsSection stats={stats} nomCourt={commune.nomCourt} />
@@ -177,7 +185,7 @@ export default async function CommunePage({
         <div className="landing-footer-brand">
           Claire<i>Adresse</i>
         </div>
-        <span>Données publiques · DVF · INSEE · AirParif</span>
+        <span>Données publiques · DVF · INSEE · {CITIES[commune.city].airSourceLabel}</span>
         <div className="landing-footer-links">
           <Link href="/">Analyser une adresse</Link>
           <Link href="/a-propos">À propos</Link>

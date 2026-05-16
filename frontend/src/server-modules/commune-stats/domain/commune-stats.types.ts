@@ -3,6 +3,8 @@
  * Toutes les valeurs numériques sont des nombres bruts (pas de formatting).
  */
 
+import type { City } from "@/lib/commune-slugs";
+
 export interface PriceStats {
   prixM2Median: number | null;
   p25: number | null;
@@ -115,8 +117,9 @@ export interface CommuneHighlights {
 
 export interface CommuneStats {
   codeCommune: string;
+  city: City;
   prix: PriceStats;
-  prixBenchmarkParis: PriceStats; // benchmark Paris global pour comparatif
+  prixBenchmarkVille: PriceStats; // benchmark de la ville (Paris/Lyon/Marseille) pour comparatif
   demo: DemographicsStats;
   demoFrance: DemographicsStats | null; // benchmark France pour la pyramide des âges
   equipements: EquipmentDomainStats[];

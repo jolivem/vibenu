@@ -1,4 +1,5 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
+import { CITIES } from "@/lib/commune-slugs";
 import { formatEur, formatInt, formatPct } from "./format";
 
 interface FaqItem {
@@ -47,6 +48,7 @@ function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] {
   }
 
   if (stats.airQuality && stats.airQuality.historique.length > 0) {
+    const cityDef = CITIES[stats.city];
     const latest = stats.airQuality.historique[0];
     const joursAcceptables = latest.joursBonne + latest.joursMoyenne;
     const joursDegradesOuPire =
@@ -56,7 +58,7 @@ function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] {
       latest.joursExtremementMauvaise;
     items.push({
       question: `Quelle est la qualité de l'air à ${nomCourt} ?`,
-      answer: `En ${latest.annee}, Paris a enregistré ${joursAcceptables} jours de qualité de l'air bonne ou moyenne et ${joursDegradesOuPire} jours dégradés ou plus, selon l'indice ATMO d'AirParif. La même mesure couvre l'ensemble de la capitale, ${nomCourt} compris.`,
+      answer: `En ${latest.annee}, ${cityDef.nomAffiche} a enregistré ${joursAcceptables} jours de qualité de l'air bonne ou moyenne et ${joursDegradesOuPire} jours dégradés ou plus, selon l'indice ATMO de ${cityDef.airSourceLabel}. La même mesure couvre l'ensemble de la ville, ${nomCourt} compris.`,
     });
   }
 

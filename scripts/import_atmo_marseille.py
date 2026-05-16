@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """
-Import de l'indice ATMO annuel pour Paris dans PostgreSQL.
+Import de l'indice ATMO annuel pour Marseille dans PostgreSQL.
 
-Source : opendata.paris.fr — dataset "qualite-de-l-air-indice-atmo"
-URL : https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/qualite-de-l-air-indice-atmo/exports/json
+Source : AtmoSud (https://www.atmosud.org/)
+À téléverser dans scripts/data/atmo-marseille.json au format normalisé suivant :
 
-Le fichier JSON contient, pour chaque année, le nombre de jours dans chacune
-des 6 catégories de l'indice ATMO (Bon, Moyen, Dégradé, Mauvais, Très mauvais,
-Extrêmement mauvais), agrégé pour Paris.
+[
+  {"annee": 2025, "jours_bonne": ..., "jours_moyenne": ..., "jours_degradee": ...,
+   "jours_mauvaise": ..., "jours_tres_mauvaise": ..., "jours_extremement_mauvaise": ...},
+  ...
+]
 
-Pour rafraîchir : retélécharger le JSON dans scripts/data/ puis relancer ce script.
+Si la source officielle utilise d'autres noms de champs (ex. ind_jour_qa_*), adapter
+le mapping dans normalize_entry().
 
 Usage:
-    python import_atmo_paris.py
+    python import_atmo_marseille.py
 
 Environment:
     POSTGRES_URL - chaîne de connexion PostgreSQL
@@ -28,9 +31,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATA_FILE = Path(__file__).parent / "data" / "qualite-de-l-air-indice-atmo.json"
-SOURCE_LABEL = "AirParif / opendata.paris.fr — indice ATMO annuel"
-VILLE = "paris"
+DATA_FILE = Path(__file__).parent / "data" / "atmo-marseille.json"
+SOURCE_LABEL = "AtmoSud — indice ATMO annuel"
+VILLE = "marseille"
 
 
 def get_connection():
@@ -44,27 +47,42 @@ def get_connection():
 def load_data():
     if not DATA_FILE.exists():
         print(f"Error: data file not found at {DATA_FILE}")
+        print(f"Placer le bilan ATMO Marseille dans ce fichier puis relancer le script.")
         sys.exit(1)
     with open(DATA_FILE, encoding="utf-8") as f:
         return json.load(f)
 
 
-def to_row(entry):
+def normalize_entry(entry):
+    """Convertit une entrée du fichier source vers le format DB.
+    Adapter ici si AtmoSud utilise d'autres noms de champs."""
+    return {
+        "annee": int(entry["annee"]),
+        "jours_bonne": int(entry.get("jours_bonne", entry.get("ind_jour_qa_bonne", 0))),
+        "jours_moyenne": int(entry.get("jours_moyenne", entry.get("ind_jour_qa_moyenne", 0))),
+        "jours_degradee": int(entry.get("jours_degradee", entry.get("ind_jour_qa_degradee", 0))),
+        "jours_mauvaise": int(entry.get("jours_mauvaise", entry.get("ind_jour_qa_mauvaise", 0))),
+        "jours_tres_mauvaise": int(entry.get("jours_tres_mauvaise", entry.get("ind_jour_qa_tres_mauvaise", 0))),
+        "jours_extremement_mauvaise": int(entry.get("jours_extremement_mauvaise", entry.get("ind_jour_qa_extremement_mauvaise", 0))),
+    }
+
+
+def to_row(normalized):
     return (
         VILLE,
-        int(entry["annee"]),
-        int(entry.get("ind_jour_qa_bonne", 0)),
-        int(entry.get("ind_jour_qa_moyenne", 0)),
-        int(entry.get("ind_jour_qa_degradee", 0)),
-        int(entry.get("ind_jour_qa_mauvaise", 0)),
-        int(entry.get("ind_jour_qa_tres_mauvaise", 0)),
-        int(entry.get("ind_jour_qa_extremement_mauvaise", 0)),
+        normalized["annee"],
+        normalized["jours_bonne"],
+        normalized["jours_moyenne"],
+        normalized["jours_degradee"],
+        normalized["jours_mauvaise"],
+        normalized["jours_tres_mauvaise"],
+        normalized["jours_extremement_mauvaise"],
         SOURCE_LABEL,
     )
 
 
 def insert(conn, data):
-    rows = [to_row(e) for e in data]
+    rows = [to_row(normalize_entry(e)) for e in data]
     if not rows:
         print("No rows to insert.")
         return
@@ -113,7 +131,7 @@ def print_stats(conn):
 
 
 def main():
-    print("=== Import indice ATMO Paris (annuel) ===")
+    print(f"=== Import indice ATMO {VILLE} (annuel) ===")
     data = load_data()
     print(f"Loaded {len(data)} year(s) from {DATA_FILE.name}")
     conn = get_connection()

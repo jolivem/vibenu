@@ -1,5 +1,5 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
-import type { CommuneSlugEntry } from "@/lib/commune-slugs";
+import { CITIES, type CommuneSlugEntry } from "@/lib/commune-slugs";
 import { formatEur, formatInt, formatDelta, pctDelta } from "./format";
 
 interface Props {
@@ -8,7 +8,8 @@ interface Props {
 }
 
 export function CommuneHero({ commune, stats }: Props) {
-  const deltaPrix = pctDelta(stats.prix.prixM2Median, stats.prixBenchmarkParis.prixM2Median);
+  const deltaPrix = pctDelta(stats.prix.prixM2Median, stats.prixBenchmarkVille.prixM2Median);
+  const villeNom = CITIES[stats.city].nomAffiche;
 
   return (
     <section className="commune-hero">
@@ -30,7 +31,7 @@ export function CommuneHero({ commune, stats }: Props) {
           <span className="commune-stat-value">{formatEur(stats.prix.prixM2Median)}</span>
           {deltaPrix !== null && (
             <span className={`commune-stat-delta ${deltaPrix >= 0 ? "is-up" : "is-down"}`}>
-              {formatDelta(deltaPrix)} vs Paris
+              {formatDelta(deltaPrix)} vs {villeNom}
             </span>
           )}
         </div>

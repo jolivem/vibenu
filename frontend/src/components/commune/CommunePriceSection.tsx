@@ -1,4 +1,5 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
+import { CITIES } from "@/lib/commune-slugs";
 import { formatEur, formatInt, formatDelta, pctDelta } from "./format";
 
 interface Props {
@@ -7,8 +8,9 @@ interface Props {
 }
 
 export function CommunePriceSection({ stats, nomCourt }: Props) {
-  const { prix, prixBenchmarkParis } = stats;
-  const deltaPrix = pctDelta(prix.prixM2Median, prixBenchmarkParis.prixM2Median);
+  const { prix, prixBenchmarkVille } = stats;
+  const deltaPrix = pctDelta(prix.prixM2Median, prixBenchmarkVille.prixM2Median);
+  const adjectif = CITIES[stats.city].adjectif;
 
   // Mini courbe d'évolution (SVG inline, dépendance zéro)
   const evol = prix.evolution.filter((e) => e.nbTransactions >= 30);
@@ -33,7 +35,7 @@ export function CommunePriceSection({ stats, nomCourt }: Props) {
           <span className="commune-price-value">{formatEur(prix.prixM2Median)}</span>
           {deltaPrix !== null && (
             <span className={`commune-stat-delta ${deltaPrix >= 0 ? "is-up" : "is-down"}`}>
-              {formatDelta(deltaPrix)} vs moyenne parisienne ({formatEur(prixBenchmarkParis.prixM2Median)})
+              {formatDelta(deltaPrix)} vs moyenne {adjectif} ({formatEur(prixBenchmarkVille.prixM2Median)})
             </span>
           )}
         </div>

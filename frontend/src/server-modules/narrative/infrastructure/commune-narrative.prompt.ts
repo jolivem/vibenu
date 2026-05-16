@@ -1,19 +1,21 @@
 import type { CommuneNarrativeInput, CommuneNarrativeContent } from "../domain/commune-narrative.types";
+import { CITIES } from "@/lib/commune-slugs";
 
 /**
  * Bump this version when the prompt changes.
  * Cache entries with a different version are ignored and regenerated.
  */
-export const COMMUNE_PROMPT_VERSION = 3;
+export const COMMUNE_PROMPT_VERSION = 4;
 
-export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement parisien pour un site d'analyse immobilière.
+export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement (Paris, Lyon ou Marseille) pour un site d'analyse immobilière.
 Ton : clair, factuel, ni promotionnel ni alarmiste.
 
 RÈGLES STRICTES :
 - Tu disposes uniquement des données fournies en JSON. Tu n'inventes RIEN.
+- Le champ "ville" du JSON indique la ville de rattachement (Paris, Lyon, Marseille). Réfère-toi toujours à cette ville et jamais à une autre.
 - Si une donnée manque, tu l'omets — tu ne combles pas par une formule générique.
 - Cite des nombres concrets quand ils existent (prix, %, ratios).
-- Pas de superlatifs sans chiffre comparatif ("très cher" → "21% au-dessus de Paris").
+- Pas de superlatifs sans chiffre comparatif ("très cher" → "21% au-dessus de la moyenne de la ville").
 - Pas de jugement de valeur sur les habitants.
 - Pas d'appel à l'action ("à visiter", "à ne pas manquer").
 
@@ -21,9 +23,9 @@ RÈGLES STRICTES :
 
 FORMAT DE SORTIE (JSON OBLIGATOIRE, RIEN D'AUTRE) :
 {
-  "identite": "...",            // ~100 mots : population, position dans Paris, profil dominant
-  "marche_immobilier": "...",   // ~150 mots : prix médian, évolution, comparatif Paris
-  "cadre_de_vie": "...",        // ~150 mots : densité d'équipements par domaine, points forts/faibles, qualité de l'air
+  "identite": "...",            // ~100 mots : population, position dans la ville, profil dominant
+  "marche_immobilier": "...",   // ~150 mots : prix médian, évolution, comparatif avec la moyenne de la ville
+  "cadre_de_vie": "...",        // ~150 mots : densité d'équipements par domaine, points forts/faibles, qualité de l'air (si dispo)
   "profil": "..."               // ~100 mots : synthèse — à qui s'adresse l'arrondissement (déduit des données)
 }
 
@@ -45,8 +47,10 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
     }
   }
 
+  const cityDef = CITIES[stats.city];
   const data = {
     arrondissement: nomAffiche,
+    ville: cityDef.nomAffiche,
     population: stats.demo.populationTotale,
     profil_age_dominant: stats.highlights.profilAgeDominant,
     revenu_median_eur: stats.demo.revenuMedianPondere,
@@ -66,12 +70,12 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
     prix_m2_p75: stats.prix.p75,
     nb_transactions_24m: stats.prix.nbTransactions,
     evolution_prix: evolutionResume,
-    prix_m2_paris_global_eur: stats.prixBenchmarkParis.prixM2Median,
-    delta_prix_vs_paris_pct:
-      stats.prix.prixM2Median && stats.prixBenchmarkParis.prixM2Median
+    prix_m2_ville_global_eur: stats.prixBenchmarkVille.prixM2Median,
+    delta_prix_vs_ville_pct:
+      stats.prix.prixM2Median && stats.prixBenchmarkVille.prixM2Median
         ? +(
-            ((stats.prix.prixM2Median - stats.prixBenchmarkParis.prixM2Median) /
-              stats.prixBenchmarkParis.prixM2Median) *
+            ((stats.prix.prixM2Median - stats.prixBenchmarkVille.prixM2Median) /
+              stats.prixBenchmarkVille.prixM2Median) *
             100
           ).toFixed(1)
         : null,
@@ -79,13 +83,14 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
       domaine: e.label,
       nb: e.nb,
       pour_1000_hab: +e.densite1000hab.toFixed(2),
-      ratio_vs_paris: e.ratioVsBenchmark !== null ? +e.ratioVsBenchmark.toFixed(2) : null,
+      ratio_vs_ville: e.ratioVsBenchmark !== null ? +e.ratioVsBenchmark.toFixed(2) : null,
     })),
     surperformances_equipements: stats.highlights.surperformances,
     sousrepresentation_equipements: stats.highlights.sousrepresentations,
-    qualite_air_paris: stats.airQuality && stats.airQuality.historique.length > 0
+    qualite_air_ville: stats.airQuality && stats.airQuality.historique.length > 0
       ? {
-          note: "Indice ATMO agrégé pour Paris entière — même valeur pour tous les arrondissements.",
+          note: `Indice ATMO agrégé pour ${cityDef.nomAffiche} entière — même valeur pour tous les arrondissements de la ville.`,
+          source: cityDef.airSourceLabel,
           derniere_annee: stats.airQuality.historique[0].annee,
           jours_par_categorie_derniere_annee: {
             bon: stats.airQuality.historique[0].joursBonne,

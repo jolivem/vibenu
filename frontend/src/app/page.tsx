@@ -224,14 +224,22 @@ export default function HomePage() {
             </p>
             <span className="explore-card-cta">Découvrir les 20 arrondissements →</span>
           </Link>
-          <div className="explore-card explore-card--soon">
+          <Link href="/commune/lyon" className="explore-card">
             <div className="explore-card-head">
-              <span className="explore-card-eyebrow">Bientôt</span>
-              <h3>Lyon · Marseille</h3>
+              <span className="explore-card-eyebrow">Auvergne-Rhône-Alpes</span>
+              <h3>Lyon</h3>
             </div>
-            <p>Les autres métropoles arriveront progressivement.</p>
-            <span className="explore-card-cta is-muted">En préparation</span>
-          </div>
+            <p>Les 9 arrondissements analysés : prix, démographie, équipements, qualité de l&apos;air.</p>
+            <span className="explore-card-cta">Découvrir les 9 arrondissements →</span>
+          </Link>
+          <Link href="/commune/marseille" className="explore-card">
+            <div className="explore-card-head">
+              <span className="explore-card-eyebrow">Provence-Alpes-Côte d&apos;Azur</span>
+              <h3>Marseille</h3>
+            </div>
+            <p>Les 16 arrondissements analysés : prix, démographie, équipements, qualité de l&apos;air.</p>
+            <span className="explore-card-cta">Découvrir les 16 arrondissements →</span>
+          </Link>
           <div className="explore-card explore-card--soon">
             <div className="explore-card-head">
               <span className="explore-card-eyebrow">Bientôt</span>

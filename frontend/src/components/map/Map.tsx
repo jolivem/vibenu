@@ -54,9 +54,11 @@ interface MapProps {
   communeContour?: GeoJsonGeometryDto | null;
   risks?: RiskAnalysisDto;
   onReady?: (map: MapLibreMap) => void;
+  height?: string;
+  showLayerToggle?: boolean;
 }
 
-export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, risks, onReady }: MapProps) {
+export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, risks, onReady, height = "400px", showLayerToggle = true }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -411,17 +413,19 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         className="map-container"
         style={{
           width: "100%",
-          height: "400px",
+          height,
           borderRadius: "8px",
           overflow: "hidden",
         }}
       />
-      <LayerTogglePanel
-        riskLayers={availableRiskLayers}
-        priceLayers={overlayLayers}
-        visibleLayers={visibleLayers}
-        onToggle={handleToggle}
-      />
+      {showLayerToggle && (
+        <LayerTogglePanel
+          riskLayers={availableRiskLayers}
+          priceLayers={overlayLayers}
+          visibleLayers={visibleLayers}
+          onToggle={handleToggle}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type {
   CommuneStats,
   AirQualityAtmoYear,
 } from "@/server-modules/commune-stats/domain/commune-stats.types";
+import { CITIES } from "@/lib/commune-slugs";
 
 interface Props {
   stats: CommuneStats;
@@ -52,6 +53,8 @@ function StackedBar({ year, height }: { year: AirQualityAtmoYear; height: number
 }
 
 export function CommuneAirQualitySection({ stats }: Props) {
+  const cityDef = CITIES[stats.city];
+
   if (!stats.airQuality || stats.airQuality.historique.length === 0) {
     return (
       <section className="commune-section commune-section--alt" id="qualite-air">
@@ -61,7 +64,9 @@ export function CommuneAirQualitySection({ stats }: Props) {
             Qualité de <i>l&apos;air</i>
           </h2>
         </div>
-        <p className="commune-empty">Données AirParif en cours d&apos;ingestion.</p>
+        <p className="commune-empty">
+          Données {cityDef.airSourceLabel} en cours d&apos;ingestion.
+        </p>
       </section>
     );
   }
@@ -78,7 +83,7 @@ export function CommuneAirQualitySection({ stats }: Props) {
           Qualité de <i>l&apos;air</i>
         </h2>
         <span className="section-meta">
-          AirParif · indice ATMO Paris · {latest.annee}
+          {cityDef.airSourceLabel} · indice ATMO {cityDef.nomAffiche} · {latest.annee}
         </span>
       </div>
 
@@ -131,7 +136,7 @@ export function CommuneAirQualitySection({ stats }: Props) {
       <p className="commune-air-note">
         L&apos;indice ATMO synthétise quotidiennement les concentrations de polluants
         (PM2.5, PM10, NO₂, O₃, SO₂) en une catégorie. La même mesure couvre l&apos;ensemble
-        de Paris.
+        de {cityDef.nomAffiche}.
       </p>
     </section>
   );
