@@ -22,6 +22,7 @@ export class AirQualityServiceImpl implements AirQualityService {
     } catch (error) {
       console.error("Air quality service error:", error);
       return {
+        available: false,
         level: "moyen",
         message: "Données de qualité de l'air indisponibles.",
         dominantPollutant: null,
@@ -51,7 +52,13 @@ export class AirQualityServiceImpl implements AirQualityService {
         break;
     }
 
+    // Atmo a répondu mais sans aucun indice publié pour cette commune → on signale
+    // l'absence de donnée pour que l'UI masque la card (au lieu d'afficher un fallback
+    // "moyen" trompeur).
+    const available = data.source !== "Aucun indice disponible";
+
     return {
+      available,
       level: data.level,
       message,
       dominantPollutant: dominantPollutant(data.pollutants, data.aqi),

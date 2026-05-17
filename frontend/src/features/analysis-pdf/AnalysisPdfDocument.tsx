@@ -222,13 +222,15 @@ export function AnalysisPdfDocument({
 
         <PdfRisks risks={data.risks} />
 
-        <View style={{ marginTop: 36 }} wrap={false}>
-          <Text style={pdfStyles.chapterTitle}>
-            {"Qualité de "}
-            <Text style={pdfStyles.chapterTitleItalic}>l&apos;air</Text>
-          </Text>
-          <PdfAirQuality airQuality={data.airQuality} />
-        </View>
+        {data.airQuality.available && (
+          <View style={{ marginTop: 36 }} wrap={false}>
+            <Text style={pdfStyles.chapterTitle}>
+              {"Qualité de "}
+              <Text style={pdfStyles.chapterTitleItalic}>l&apos;air</Text>
+            </Text>
+            <PdfAirQuality airQuality={data.airQuality} />
+          </View>
+        )}
 
         {data.climate && <PdfClimate climate={data.climate} />}
 

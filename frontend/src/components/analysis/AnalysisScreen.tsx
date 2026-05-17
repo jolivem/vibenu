@@ -127,7 +127,7 @@ export function AnalysisScreen() {
                 {realEstate && <RealEstateCard realEstate={realEstate} />}
               </div>
               <div className="analysis-stack">
-                <AirQualityCard airQuality={data.airQuality} />
+                {data.airQuality.available && <AirQualityCard airQuality={data.airQuality} />}
               </div>
             </div>
             {data.schoolSector && <SchoolSectorCard schoolSector={data.schoolSector} />}

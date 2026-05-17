@@ -99,6 +99,9 @@ export interface MonthlyAirQualityDto {
 }
 
 export interface AirQualityAnalysisDto {
+  /** `false` quand Atmo a répondu mais n'a aucun indice publié pour la commune.
+   *  L'UI masque la card pour éviter d'afficher un fallback "moyen" trompeur. */
+  available: boolean;
   level: AirQualityLevel;
   message: string;
   /** Polluant le plus contributeur à l'indice (ex. "ozone (O₃)"). */

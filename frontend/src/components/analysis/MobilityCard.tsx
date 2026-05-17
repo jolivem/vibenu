@@ -43,16 +43,21 @@ export function MobilityCard({ mobility, mode }: Props) {
         <p>Niveau : {mobility.label}</p>
       )}
 
-      {!isCommune && mobility.nearestStops.length > 0 && (
+      {mobility.nearestStops.length > 0 && (
         <>
           <h3>Bus</h3>
           <ul>
-            {mobility.nearestStops.map((stop) => (
+            {(isCommune ? mobility.nearestStops.slice(0, 3) : mobility.nearestStops).map((stop) => (
               <li key={stop.id}>
-                {stop.name}{" "}
-                <span className="poi-distance">
-                  — {formatWalkingTime(stop.distanceMeters)} ({formatDistance(stop.distanceMeters)})
-                </span>
+                {stop.name}
+                {!isCommune && (
+                  <>
+                    {" "}
+                    <span className="poi-distance">
+                      — {formatWalkingTime(stop.distanceMeters)} ({formatDistance(stop.distanceMeters)})
+                    </span>
+                  </>
+                )}
               </li>
             ))}
           </ul>

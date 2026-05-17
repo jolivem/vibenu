@@ -52,18 +52,25 @@ function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
   );
 
   const isCommune = data.mode === "commune";
+  const nearestStationDistance = data.mobility.nearestStations[0]?.distanceMeters ?? null;
+
+  // En mode commune, on ne peut PAS prétendre "la commune dispose d'une gare" en se
+  // basant sur la simple présence d'une station dans le wide search (20 km), qui
+  // remonte aussi les gares des communes voisines (ex. Trégastel → Lannion). On
+  // resserre à un rayon plausible "à l'intérieur ou collée à la commune" : 1500 m.
+  // En mode adresse, la sémantique reste "il y a une gare à proximité raisonnable" :
+  // on garde le seuil du label deriveLabel (≤ 1500 m).
+  const STATION_INSIDE_THRESHOLD_M = 1500;
+  const hasNearbyStation =
+    nearestStationDistance !== null && nearestStationDistance <= STATION_INSIDE_THRESHOLD_M;
 
   return {
     mode: data.mode,
     addressLabel: data.address.label,
     mobility: {
       label: data.mobility.label,
-      // En mode commune, on garde les *présences* (au moins une gare, nombre d'arrêts
-      // de bus) mais on retire les distances (calculées depuis le centroïde, sans sens).
-      hasNearbyStation: data.mobility.nearestStations.length > 0,
-      nearestStationDistanceMeters: isCommune
-        ? null
-        : data.mobility.nearestStations[0]?.distanceMeters ?? null,
+      hasNearbyStation,
+      nearestStationDistanceMeters: isCommune ? null : nearestStationDistance,
       busStopsCount: data.mobility.nearestStops.length,
     },
     risks: {

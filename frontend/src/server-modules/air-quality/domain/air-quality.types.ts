@@ -50,6 +50,10 @@ export interface AirQualityRecentDay {
 }
 
 export interface AirQualityAnalysis {
+  /** `false` quand Atmo a répondu mais n'a aucun indice publié pour la commune
+   *  (typiquement petites communes hors zones urbaines couvertes). L'UI masque la card
+   *  dans ce cas pour éviter d'afficher un badge "moyen" trompeur basé sur le fallback. */
+  available: boolean;
   level: AirQualityData["level"];
   message: string;
   /** Polluant le plus contributeur à l'indice (ex. "ozone (O₃)"). null si non identifiable. */
