@@ -1,7 +1,8 @@
 import { CityHubPage } from "@/components/commune/CityHubPage";
 import type { Metadata } from "next";
 
-export const revalidate = 86400;
+// Rendu serveur à chaque requête (cf. /commune/paris/page.tsx pour la motivation).
+export const dynamic = "force-dynamic";
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 

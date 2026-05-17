@@ -1,7 +1,11 @@
 import { CityHubPage } from "@/components/commune/CityHubPage";
 import type { Metadata } from "next";
 
-export const revalidate = 86400;
+// Rendu serveur à chaque requête : évite la mise en cache de pages prerendues
+// au build Docker (où POSTGRES_URL n'est pas disponible) avec un meta vide.
+// Les requêtes lourdes (stats par arrondissement) sont protégées par InMemoryCache
+// côté provider, donc le coût runtime reste minimal.
+export const dynamic = "force-dynamic";
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 

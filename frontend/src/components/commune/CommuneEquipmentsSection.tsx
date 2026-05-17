@@ -1,4 +1,5 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
+import { CITIES } from "@/lib/commune-slugs";
 import { formatInt, formatDecimal, formatDelta } from "./format";
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
 
 export function CommuneEquipmentsSection({ stats }: Props) {
   const equipements = stats.equipements.filter((e) => e.nb > 0);
+  const cityDef = CITIES[stats.city];
 
   if (equipements.length === 0) {
     return null;
@@ -41,9 +43,9 @@ export function CommuneEquipmentsSection({ stats }: Props) {
                 {deltaPct !== null && Math.abs(deltaPct) >= 5 && (
                   <span
                     className={`commune-equip-delta ${deltaPct >= 0 ? "is-up" : "is-down"}`}
-                    title="Écart de densité par habitant par rapport à la moyenne de Paris"
+                    title={`Écart de densité par habitant par rapport à la moyenne de ${cityDef.nomAffiche}`}
                   >
-                    {formatDelta(deltaPct, 0)} vs Paris
+                    {formatDelta(deltaPct, 0)} vs {cityDef.nomAffiche}
                   </span>
                 )}
               </div>
@@ -52,7 +54,7 @@ export function CommuneEquipmentsSection({ stats }: Props) {
         })}
       </div>
       <p className="commune-equip-note">
-        Densité comparée à la moyenne parisienne (équipements rapportés à la population).
+        Densité comparée à la moyenne {cityDef.adjectif} (équipements rapportés à la population).
         Les écarts &lt; 5 % ne sont pas affichés.
       </p>
     </section>
