@@ -70,7 +70,9 @@ export function PdfNeighborhood({ neighborhood }: { neighborhood: NeighborhoodAn
       </View>
 
       <View style={pdfStyles.voisGrid}>
-        {Object.entries(groups).map(([category, pois]) => {
+        {Object.entries(groups)
+          .sort(([a], [b]) => (a === "school" ? -1 : b === "school" ? 1 : 0))
+          .map(([category, pois]) => {
           const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
           return (
             <View key={category} style={pdfStyles.voisCat} wrap={false}>

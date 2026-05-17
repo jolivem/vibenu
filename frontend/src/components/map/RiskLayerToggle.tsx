@@ -8,7 +8,7 @@ export interface OverlayLayerConfig {
 
 interface LayerToggleProps {
   riskLayers: RiskLayerConfig[];
-  priceLayers?: OverlayLayerConfig[];
+  overlayLayers?: OverlayLayerConfig[];
   visibleLayers: Set<string>;
   onToggle: (layerId: string) => void;
 }
@@ -27,7 +27,7 @@ function LayerCheckbox({
   );
 }
 
-export function LayerTogglePanel({ riskLayers, priceLayers = [], visibleLayers, onToggle }: LayerToggleProps) {
+export function LayerTogglePanel({ riskLayers, overlayLayers = [], visibleLayers, onToggle }: LayerToggleProps) {
   return (
     <div className="layer-toggle-panel">
       <div className="layer-toggle-group">
@@ -37,10 +37,10 @@ export function LayerTogglePanel({ riskLayers, priceLayers = [], visibleLayers, 
             checked={visibleLayers.has(l.id)} onToggle={onToggle} />
         ))}
       </div>
-      {priceLayers.length > 0 && (
+      {overlayLayers.length > 0 && (
         <div className="layer-toggle-group">
-          <span className="layer-toggle-title">Prix</span>
-          {priceLayers.map((l) => (
+          <span className="layer-toggle-title">Calques</span>
+          {overlayLayers.map((l) => (
             <LayerCheckbox key={l.id} id={l.id} label={l.label} color={l.color}
               checked={visibleLayers.has(l.id)} onToggle={onToggle} />
           ))}

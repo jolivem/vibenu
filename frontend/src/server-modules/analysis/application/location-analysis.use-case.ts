@@ -10,6 +10,7 @@ import type { CadastreService } from "../../cadastre/application/cadastre.servic
 import type { DemographicsService } from "../../demographics/application/demographics.service";
 import type { ElectionsService } from "../../elections/application/elections.service";
 import type { ClimateService } from "../../climate/application/climate.service";
+import type { SchoolSectorService } from "../../school-sector/application/school-sector.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
 import type { AnalysisMode, LocationAnalysisDto } from "../../../server-shared/types/location-analysis.dto";
 
@@ -26,6 +27,7 @@ interface Dependencies {
   demographicsService: DemographicsService;
   electionsService: ElectionsService;
   climateService: ClimateService;
+  schoolSectorService: SchoolSectorService;
 }
 
 export class LocationAnalysisUseCase implements LocationAnalysisService {
@@ -43,12 +45,13 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
 
     const mode: AnalysisMode = input.type === "municipality" ? "commune" : "address";
 
-    // Le contour commune est utile dans les deux modes :
-    // - mode commune : c'est la zone d'analyse principale
-    // - mode adresse : sert de repère géographique sur la carte
-    const contourPromise = contourCitycode
-      ? this.dependencies.communeContourProvider.getContour(contourCitycode)
-      : Promise.resolve(null);
+    // Le contour commune est affiché UNIQUEMENT en mode commune.
+    // En mode adresse, on ne montre que la parcelle cadastrale — pas l'arrondissement
+    // ni la commune (qui surchargeraient la carte sans valeur informative).
+    const contourPromise =
+      mode === "commune" && contourCitycode
+        ? this.dependencies.communeContourProvider.getContour(contourCitycode)
+        : Promise.resolve(null);
 
     // En mode commune, on n'affiche pas la parcelle au centroïde
     // (elle ne représente rien pour l'utilisateur qui regarde le territoire entier).
@@ -63,7 +66,14 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         ? Promise.resolve({ pois: [], label: "" })
         : this.dependencies.neighborhoodService.getNeighborhoodData(input.lat, input.lon);
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate] =
+    // Carte scolaire : uniquement en mode adresse (le point au centroïde d'une commune
+    // ne correspond pas à une vraie résidence et tomberait sur un secteur arbitraire).
+    const schoolSectorPromise =
+      mode === "commune"
+        ? Promise.resolve(null)
+        : this.dependencies.schoolSectorService.getCollegeSector(input.lat, input.lon);
+
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
@@ -75,6 +85,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         contourPromise,
         this.dependencies.electionsService.getElectionsData(codeInsee),
         this.dependencies.climateService.getClimateData(input.lat, input.lon),
+        schoolSectorPromise,
       ]);
 
     const address = {
@@ -110,6 +121,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       summary,
       elections,
       climate,
+      schoolSector,
     };
   }
 }

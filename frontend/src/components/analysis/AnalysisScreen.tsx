@@ -17,6 +17,7 @@ import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
 import { DemographicsCard } from "@/components/analysis/DemographicsCard";
 import { ElectionsCard } from "@/components/analysis/ElectionsCard";
 import { ClimateCard } from "@/components/analysis/ClimateCard";
+import { SchoolSectorCard } from "@/components/analysis/SchoolSectorCard";
 import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
 
 export function AnalysisScreen() {
@@ -109,6 +110,7 @@ export function AnalysisScreen() {
                 dvfTransactions={realEstate?.transactionFeatures}
                 irisGeojson={data.mode === "commune" ? undefined : data.demographics?.irisGeojson}
                 communeContour={data.map.communeContour}
+                schoolSector={data.schoolSector?.geometry}
                 risks={data.risks}
                 onReady={handleMapReady}
               />
@@ -118,20 +120,21 @@ export function AnalysisScreen() {
               isLoading={narrativeLoading}
               error={narrativeError}
             />
+            {data.mode !== "commune" && <NeighborhoodCard neighborhood={data.neighborhood} />}
             <div className="analysis-pair">
               <div className="analysis-stack">
                 <MobilityCard mobility={data.mobility} mode={data.mode} />
                 {realEstate && <RealEstateCard realEstate={realEstate} />}
               </div>
               <div className="analysis-stack">
-                <RisksCard risks={data.risks} />
                 <AirQualityCard airQuality={data.airQuality} />
               </div>
             </div>
-            {data.mode !== "commune" && <NeighborhoodCard neighborhood={data.neighborhood} />}
+            {data.schoolSector && <SchoolSectorCard schoolSector={data.schoolSector} />}
             {data.demographics && <DemographicsCard demographics={data.demographics} mode={data.mode} />}
             {data.climate && <ClimateCard climate={data.climate} />}
             {data.elections && <ElectionsCard elections={data.elections} />}
+            <RisksCard risks={data.risks} />
             {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
           </div>
         )}

@@ -63,7 +63,7 @@ export function DemographicsCard({ demographics, mode }: Props) {
         )}
 
         <p className="demographics-footnote">
-          Moyennes pondérées par population, agrégées à partir des zones IRIS de la commune.
+          Moyennes pondérées par population, agrégées à partir des quartiers IRIS de la commune.
         </p>
       </section>
     );
@@ -77,12 +77,12 @@ export function DemographicsCard({ demographics, mode }: Props) {
     <section className="card">
       <h2>Démographie</h2>
       <p className="demographics-iris">
-        Zone : {demographics.nomIris || demographics.codeIris}
+        Quartier : {demographics.nomIris || demographics.codeIris}
         {demographics.nomCommune && ` — ${demographics.nomCommune}`}
       </p>
       {!showCommune && demographics.nomCommune && (
         <p className="demographics-note">
-          Zone unique pour cette commune — les chiffres de la zone et de la commune sont identiques.
+          Quartier unique pour cette commune — les chiffres du quartier et de la commune sont identiques.
         </p>
       )}
 
@@ -90,7 +90,7 @@ export function DemographicsCard({ demographics, mode }: Props) {
         <thead>
           <tr>
             <th scope="col">Indicateur</th>
-            <th scope="col">Zone</th>
+            <th scope="col">Quartier</th>
             {showCommune && <th scope="col">{demographics.nomCommune || "Commune"}</th>}
             {france && <th scope="col">France</th>}
           </tr>
@@ -136,7 +136,7 @@ export function DemographicsCard({ demographics, mode }: Props) {
       )}
 
       <p className="demographics-footnote">
-        Commune et France : moyennes pondérées par population calculées à partir des zones démographiques (chiffres indicatifs).
+        Commune et France : moyennes pondérées par population calculées à partir des quartiers (chiffres indicatifs).
       </p>
     </section>
   );

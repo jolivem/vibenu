@@ -22,6 +22,8 @@ import { ElectionsDatabaseProvider } from "@/server-modules/elections/infrastruc
 import { ElectionsServiceImpl } from "@/server-modules/elections/application/elections.service.impl";
 import { MeteoFranceStationsProvider } from "@/server-modules/climate/infrastructure/meteo-france-stations.provider";
 import { ClimateServiceImpl } from "@/server-modules/climate/application/climate.service.impl";
+import { PostgisSchoolSectorProvider } from "@/server-modules/school-sector/infrastructure/postgis-school-sector.provider";
+import { SchoolSectorServiceImpl } from "@/server-modules/school-sector/application/school-sector.service.impl";
 
 const analyzeQuerySchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
@@ -46,6 +48,7 @@ const useCase = new LocationAnalysisUseCase({
   demographicsService: new DemographicsServiceImpl(new IrisDemographicsProvider()),
   electionsService: new ElectionsServiceImpl(new ElectionsDatabaseProvider()),
   climateService: new ClimateServiceImpl(new MeteoFranceStationsProvider()),
+  schoolSectorService: new SchoolSectorServiceImpl(new PostgisSchoolSectorProvider()),
 });
 
 export async function GET(request: NextRequest) {

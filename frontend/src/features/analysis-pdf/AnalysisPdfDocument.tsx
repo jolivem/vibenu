@@ -13,6 +13,7 @@ import { PdfDemographics } from "./sections/PdfDemographics";
 import { PdfElections } from "./sections/PdfElections";
 import { PdfClimate } from "./sections/PdfClimate";
 import { PdfCadastre } from "./sections/PdfCadastre";
+import { PdfSchoolSector } from "./sections/PdfSchoolSector";
 import { PdfMap } from "./sections/PdfMap";
 
 interface Props {
@@ -289,6 +290,16 @@ export function AnalysisPdfDocument({
               <Text style={pdfStyles.chapterTitleItalic}>urbanisme</Text>
             </Text>
             <PdfCadastre cadastre={data.cadastre} />
+          </View>
+        )}
+
+        {data.schoolSector && (
+          <View style={{ marginTop: 36 }} wrap={false}>
+            <Text style={pdfStyles.chapterTitle}>
+              {"Carte "}
+              <Text style={pdfStyles.chapterTitleItalic}>scolaire</Text>
+            </Text>
+            <PdfSchoolSector schoolSector={data.schoolSector} />
           </View>
         )}
 

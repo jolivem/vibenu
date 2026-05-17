@@ -55,7 +55,9 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodA
       <h2>Voisinage</h2>
       <p>Niveau : {neighborhood.label}</p>
 
-      {Object.entries(groups).map(([category, pois]) => {
+      {Object.entries(groups)
+        .sort(([a], [b]) => (a === "school" ? -1 : b === "school" ? 1 : 0))
+        .map(([category, pois]) => {
         const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
         return (
           <div key={category}>

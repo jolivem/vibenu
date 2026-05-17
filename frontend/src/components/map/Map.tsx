@@ -12,6 +12,7 @@ import { formatFr } from "@/lib/format";
 const DVF_LAYER_ID = "dvf-transactions";
 const IRIS_LAYER_ID = "iris-boundary";
 const COMMUNE_LAYER_ID = "commune-contour";
+const SCHOOL_SECTOR_LAYER_ID = "school-sector";
 
 type LngLatBounds = [[number, number], [number, number]];
 
@@ -52,13 +53,14 @@ interface MapProps {
   dvfTransactions?: DvfTransactionFeatureDto[];
   irisGeojson?: string | null;
   communeContour?: GeoJsonGeometryDto | null;
+  schoolSector?: GeoJsonGeometryDto | null;
   risks?: RiskAnalysisDto;
   onReady?: (map: MapLibreMap) => void;
   height?: string;
   showLayerToggle?: boolean;
 }
 
-export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, risks, onReady, height = "400px", showLayerToggle = true }: MapProps) {
+export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -93,10 +95,13 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
       layers.push({ id: DVF_LAYER_ID, label: "Prix immobiliers (DVF)", color: "#eab308" });
     }
     if (irisGeojson) {
-      layers.push({ id: IRIS_LAYER_ID, label: "Zone démographique", color: "#8b5cf6" });
+      layers.push({ id: IRIS_LAYER_ID, label: "Quartier démographique", color: "#8b5cf6" });
+    }
+    if (schoolSector) {
+      layers.push({ id: SCHOOL_SECTOR_LAYER_ID, label: "Secteur collège", color: "#d97706" });
     }
     return layers;
-  }, [dvfTransactions, irisGeojson]);
+  }, [dvfTransactions, irisGeojson, schoolSector]);
 
   // Initialize map
   useEffect(() => {
@@ -242,6 +247,43 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
     const irisSources: Record<string, maplibregl.SourceSpecification> = {};
     const irisLayers: maplibregl.LayerSpecification[] = [];
 
+    // Build school sector source if available (toggleable polygon)
+    const schoolSectorSources: Record<string, maplibregl.SourceSpecification> = {};
+    const schoolSectorLayers: maplibregl.LayerSpecification[] = [];
+
+    if (schoolSector) {
+      schoolSectorSources[SCHOOL_SECTOR_LAYER_ID] = {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          geometry: schoolSector as GeoJSON.Geometry,
+          properties: {},
+        },
+      };
+      schoolSectorLayers.push(
+        {
+          id: `${SCHOOL_SECTOR_LAYER_ID}-fill`,
+          type: "fill",
+          source: SCHOOL_SECTOR_LAYER_ID,
+          paint: {
+            "fill-color": "#f59e0b",
+            "fill-opacity": 0.15,
+          },
+          layout: { visibility: "none" },
+        },
+        {
+          id: `${SCHOOL_SECTOR_LAYER_ID}-outline`,
+          type: "line",
+          source: SCHOOL_SECTOR_LAYER_ID,
+          paint: {
+            "line-color": "#d97706",
+            "line-width": 2,
+          },
+          layout: { visibility: "none" },
+        },
+      );
+    }
+
     if (irisGeojson) {
       try {
         const geom = JSON.parse(irisGeojson);
@@ -296,6 +338,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           ...wmsSources,
           ...dvfSources,
           ...irisSources,
+          ...schoolSectorSources,
           ...communeSources,
           ...cadastreSources,
         },
@@ -304,6 +347,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           ...wmsLayers,
           ...dvfLayers,
           ...irisLayers,
+          ...schoolSectorLayers,
           ...communeLayers,
           ...cadastreLayers, // cadastre on top of DVF
         ],
@@ -373,7 +417,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         map.current.remove();
       }
     };
-  }, [lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour]);
+  }, [lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector]);
 
   // Sync layer visibility
   useEffect(() => {
@@ -396,6 +440,12 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         const irisVisibility = visibleLayers.has(IRIS_LAYER_ID) ? "visible" : "none";
         m.setLayoutProperty(`${IRIS_LAYER_ID}-fill`, "visibility", irisVisibility);
         m.setLayoutProperty(`${IRIS_LAYER_ID}-outline`, "visibility", irisVisibility);
+      }
+      // School sector layers
+      if (m.getLayer(`${SCHOOL_SECTOR_LAYER_ID}-fill`)) {
+        const v = visibleLayers.has(SCHOOL_SECTOR_LAYER_ID) ? "visible" : "none";
+        m.setLayoutProperty(`${SCHOOL_SECTOR_LAYER_ID}-fill`, "visibility", v);
+        m.setLayoutProperty(`${SCHOOL_SECTOR_LAYER_ID}-outline`, "visibility", v);
       }
     };
 
@@ -421,7 +471,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
       {showLayerToggle && (
         <LayerTogglePanel
           riskLayers={availableRiskLayers}
-          priceLayers={overlayLayers}
+          overlayLayers={overlayLayers}
           visibleLayers={visibleLayers}
           onToggle={handleToggle}
         />

@@ -75,7 +75,7 @@ export function CommuneDemographicsSection({ stats, nomCourt }: Props) {
       </div>
 
       <p className="commune-air-note">
-        Moyennes pondérées par population calculées à partir des zones IRIS (INSEE) ;
+        Moyennes pondérées par population calculées à partir des quartiers IRIS (INSEE) ;
         comparaison avec la France entière agrégée par la même méthode.
       </p>
     </section>

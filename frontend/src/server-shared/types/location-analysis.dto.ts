@@ -201,6 +201,15 @@ export interface CadastreAnalysisDto {
   prescriptions: UrbanPrescriptionDto[];
 }
 
+export interface SchoolSectorDto {
+  niveau: "college" | "lycee";
+  territoire: string;
+  codeUai: string | null;
+  nomEtablissement: string;
+  adresse: string | null;
+  geometry: GeoJsonGeometryDto;
+}
+
 export interface MapContextDto {
   center: {
     lat: number;
@@ -266,4 +275,5 @@ export interface LocationAnalysisDto {
   summary: SummaryDto;
   elections?: ElectionsAnalysisDto | null;
   climate?: ClimateAnalysisDto | null;
+  schoolSector?: SchoolSectorDto | null;
 }

@@ -45,7 +45,7 @@ export function buildAgeChartModel(params: {
   showCommune: boolean;
   mainSeriesName?: string;
 }): AgeChartModel {
-  const { iris, commune, france, showCommune, mainSeriesName = "Zone" } = params;
+  const { iris, commune, france, showCommune, mainSeriesName = "Quartier" } = params;
 
   const series: AgeChartSeries[] = [
     // Série principale : violet plein, trait épais, points larges

@@ -25,8 +25,8 @@ L'utilisateur saisit une adresse en France et obtient :
 
 - **Next.js** / React / TypeScript (frontend + API routes serveur)
 - **MapLibre GL** pour la carte interactive (avec contour de commune en mode recherche par nom)
-- **PostgreSQL / PostGIS** (auto-hébergé via Docker) pour les données OSM, DVF, IRIS, élections et le cache des synthèses IA
-- **Open-Meteo** (ERA5) pour les normales climatiques par coordonnées
+- **PostgreSQL / PostGIS** (auto-hébergé via Docker) pour les données OSM, DVF, IRIS, élections, normales climatiques par station et le cache des synthèses IA
+- **Météo-France** (normales 1991-2020 par station) pré-importées dans PostgreSQL — composition par métrique (la station la plus proche disposant de chaque indicateur)
 - **Mistral AI** pour la synthèse en langage courant (pattern port/adapter → fournisseur LLM interchangeable)
 - **@react-pdf/renderer** pour l'export PDF vectoriel côté client
 - Architecture modulaire (DDD) dans `frontend/src/server-modules/`
@@ -47,7 +47,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `neighborhood` | Commerces et services proches | OSM + BPE INSEE (PostgreSQL/PostGIS) |
 | `demographics` | Données socio-démographiques (population, revenus, âge) | INSEE IRIS (PostgreSQL/PostGIS) |
 | `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
-| `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Open-Meteo Archive API (ERA5) + Météo-France pour la moyenne nationale |
+| `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Météo-France — normales par station pré-importées (PostgreSQL/PostGIS) ; moyenne nationale hardcodée |
 | `summary` | Construction du résumé textuel (règles déterministes) | - |
 | `narrative` | Synthèse en langage courant générée par LLM + cache Postgres | Mistral AI (api.mistral.ai) |
 
@@ -79,7 +79,7 @@ Le serveur utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés 
 | Transport (GTFS) | 24 heures | in-memory | hebdomadaire à mensuel |
 | Voisinage (OSM) | 7 jours | in-memory | quotidien (Geofabrik) |
 | Qualité de l'air (Atmo) | 6 heures | in-memory | quotidien |
-| Climat (Open-Meteo, normales 1991-2020) | 30 jours | in-memory (clé arrondie ~11 km) | données figées (passé) |
+| Climat (Météo-France stations, normales 1991-2020) | 30 jours | in-memory (clé arrondie ~11 km) | données figées (passé) |
 | Élections (Postgres local) | — | — | données figées (scrutin clos) |
 | Contour commune (geo.api.gouv.fr) | 30 jours | in-memory | quasi-statique |
 | Synthèse IA (Mistral) | 30 jours | **PostgreSQL** (`narrative_cache`) | stable tant que les données sources ne changent pas |
@@ -273,12 +273,13 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - Mise à jour : annuelle
 
 ### Climat (normales 1991-2020)
-- **Source commune** : [Open-Meteo Archive API](https://open-meteo.com/en/docs/historical-weather-api) (réanalyse ERA5, ECMWF) — gratuit, sans clé, licence CC-BY 4.0
-- **Source national (référence)** : [Météo-France — Climat](https://meteofrance.com/climat) ; les normales France métropolitaine 1991-2020 sont **hardcodées** dans `frontend/src/server-modules/climate/application/climate.service.impl.ts` (13,0 °C / 935 mm / 1969 h). À mettre à jour vers 2031 (nouvelle période de référence WMO 2001-2030)
+- **Source locale** : [Météo-France — données SYNOP / RR quotidiennes](https://meteo.data.gouv.fr/) agrégées sur 30 ans (1991-2020) par station. Données mesurées réelles (pas de réanalyse), licence Etalab 2.0
+- **Source nationale (référence)** : [Météo-France — Climat](https://meteofrance.com/climat) ; les normales France métropolitaine 1991-2020 sont **hardcodées** dans `frontend/src/server-modules/climate/infrastructure/meteo-france-stations.provider.ts` (13,0 °C / 935 mm / 1969 h). À mettre à jour vers 2031 (nouvelle période de référence WMO 2001-2030)
 - Indicateurs : température annuelle moyenne, cumul annuel de précipitations (mm), ensoleillement annuel (heures)
-- Calcul : 30 ans × 365 valeurs quotidiennes par variable, agrégés en mémoire (moyenne pour la température, somme/30 pour les cumuls)
-- Cache 30 jours par coordonnées arrondies (~11 km, cohérent avec la grille ERA5) — en pratique les normales ne bougent jamais donc le cache n'expire utilement qu'au redémarrage du serveur
-- **Aucun setup requis** : pas d'import, pas de table, pas d'API key — le module appelle Open-Meteo en runtime
+- Pré-import dans PostgreSQL via `scripts/import_climate_stations.py` → table `climate_station_normales` (~600 stations, géométrie PostGIS pour la recherche spatiale)
+- **Composition par métrique** : pour un point donné, on prend la station la plus proche **disposant de chaque indicateur**. Toutes les stations ne mesurent pas tout (l'héliographe n'équipe que ~30 stations en France) → rayon élargi pour l'ensoleillement (100 km) vs température/précipitations (30 km). La station affichée est celle de la température (la plus proche en général).
+- Cache 30 jours par coordonnées arrondies (~11 km) — en pratique les normales ne bougent jamais donc le cache n'expire utilement qu'au redémarrage du serveur
+- **Setup requis** : appliquer la migration `008-climate-station-normales.sql` puis lancer `python scripts/import_climate_stations.py` (téléchargement + agrégation 30 ans, ~10 min)
 
 ### Élections (Présidentielle 2022 T1)
 - **Source** : Ministère de l'Intérieur — [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/)

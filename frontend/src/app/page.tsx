@@ -88,7 +88,7 @@ export default function HomePage() {
           </Link>
           <div className="landing-nav-links">
             <a href="#decouvrez">Comment ça marche</a>
-            <Link href="/commune/paris">Explorer Paris</Link>
+            <a href="#explorer">Explorer par commune</a>
             <a href="#faq">Questions</a>
             <Link href="/a-propos">À propos</Link>
           </div>
@@ -275,7 +275,7 @@ export default function HomePage() {
         </div>
         <span>Données ouvertes françaises · Gratuit, sans inscription</span>
         <div className="landing-footer-links">
-          <Link href="/commune/paris">Explorer Paris</Link>
+          <a href="#explorer">Explorer par commune</a>
           <Link href="/a-propos">À propos</Link>
         </div>
       </footer>

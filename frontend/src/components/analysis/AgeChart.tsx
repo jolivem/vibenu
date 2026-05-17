@@ -11,7 +11,7 @@ interface Props {
 
 /**
  * Affiche la répartition par tranche d'âge sous forme de courbes multi-séries.
- * Réutilisé en mode adresse (zone IRIS vs commune vs France) et en mode commune
+ * Réutilisé en mode adresse (quartier IRIS vs commune vs France) et en mode commune
  * (arrondissement vs France).
  */
 export function AgeChart({
@@ -19,7 +19,7 @@ export function AgeChart({
   commune = null,
   france = null,
   showCommune = false,
-  mainSeriesName = "Zone",
+  mainSeriesName = "Quartier",
 }: Props) {
   const { series, yTicks, x, y } = buildAgeChartModel({
     iris,

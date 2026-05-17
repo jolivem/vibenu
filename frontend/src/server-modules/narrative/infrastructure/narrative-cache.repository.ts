@@ -26,8 +26,9 @@ export class NarrativeCacheRepository {
    */
   private cacheKey(lat: number, lon: number, mode: "address" | "commune"): string {
     // Bump le préfixe quand le prompt change matériellement → invalide les anciennes entrées.
-    // C2 : retrait des distances et clarification de hasNearbyStation pour le mode commune.
-    const prefix = mode === "commune" ? "C2:" : "A:";
+    // C2/A : retrait des distances et clarification de hasNearbyStation pour le mode commune.
+    // C3/A2 : règle de structuration — positifs en tête, points d'attention en une phrase finale.
+    const prefix = mode === "commune" ? "C3:" : "A2:";
     return prefix + buildGeoKey(lat, lon);
   }
 
