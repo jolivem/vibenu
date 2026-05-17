@@ -24,12 +24,20 @@ import { CommuneRelatedLinks } from "@/components/commune/CommuneRelatedLinks";
 import { formatEur, formatInt } from "@/components/commune/format";
 
 export const revalidate = 86400; // 24h ISR
-export const dynamicParams = false; // 404 sur les slugs non listés
+// dynamicParams = true (défaut) : permet la génération à la demande quand la liste
+// retournée par generateStaticParams est vide (cas du build Docker sans DB).
+// Les slugs invalides sont rejetés par le notFound() ci-dessous.
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
 export async function generateStaticParams() {
-  // Le hub Paris est sur /commune (page.tsx parent), pas dans [slug].
+  // Le rendu des pages arrondissement nécessite la DB (stats, narrative, contour).
+  // En build Docker, POSTGRES_URL n'est pas disponible → on retourne [] pour skipper
+  // le prerender ; les pages sont générées au premier accès au runtime puis cachées
+  // 24h via ISR. Quand POSTGRES_URL est présent (build local, Vercel, etc.), on
+  // pré-rend la liste complète pour avoir une perf cold-start optimale.
+  if (!process.env.POSTGRES_URL) return [];
+
   return ALL_COMMUNE_SLUGS
     .filter((c) => !isCityHubSlug(c.slug))
     .map((c) => ({ slug: c.slug }));
