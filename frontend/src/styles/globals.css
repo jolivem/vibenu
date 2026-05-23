@@ -88,22 +88,6 @@ body {
   color: var(--accent);
 }
 
-.landing-login {
-  font-size: 14px;
-  padding: 9px 20px;
-  border-radius: 999px;
-  border: 0.5px solid rgba(0, 0, 0, 0.22);
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  font-family: var(--font-sans);
-}
-
-.landing-login:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-
 /* Hero */
 .landing-hero {
   max-width: 720px;

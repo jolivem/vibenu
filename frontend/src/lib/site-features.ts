@@ -48,12 +48,18 @@ export interface SiteFeatures {
   showCadastre: boolean;
   /** Card "Carte scolaire" — secteur collège (Paris uniquement pour la donnée). */
   showSchoolSector: boolean;
+  /** Card "Localisation" — carte interactive MapLibre + capture dans le PDF. */
+  showLocation: boolean;
 
   // --- Routes & pages ---
   /** Pages SEO /commune/* (hubs + arrondissements). */
   hasSEOPages: boolean;
   /** Section "Explorer par commune" sur la landing page. */
   hasLandingExploreSection: boolean;
+  /** Sections marketing "Ce que vous découvrez" + "Comment ça marche" sur la landing. */
+  hasLandingMarketingSections: boolean;
+  /** Section "Questions fréquentes" (FAQ) sur la landing + JSON-LD FAQPage. */
+  hasLandingFaqSection: boolean;
   /** Page /a-propos (mission + sources). Contenu PUBLIC-specific. */
   hasAboutPage: boolean;
 
@@ -74,8 +80,11 @@ const PUBLIC_FEATURES: SiteFeatures = {
   showElections: true,
   showCadastre: true,
   showSchoolSector: true,
+  showLocation: true,
   hasSEOPages: true,
   hasLandingExploreSection: true,
+  hasLandingMarketingSections: true,
+  hasLandingFaqSection: true,
   hasAboutPage: true,
   hasPdfExport: true,
 };
@@ -92,8 +101,11 @@ const PRO_FEATURES: SiteFeatures = {
   showElections: false,
   showCadastre: false,
   showSchoolSector: false,
+  showLocation: false,
   hasSEOPages: false,
   hasLandingExploreSection: false,
+  hasLandingMarketingSections: false,
+  hasLandingFaqSection: false,
   hasAboutPage: false,
   hasPdfExport: true, // PDF simplifié (Voisinage + Mobilité uniquement)
 };

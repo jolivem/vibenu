@@ -77,10 +77,12 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-      />
+      {FEATURES.hasLandingFaqSection && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
 
       <nav className="landing-nav">
         <div className="landing-nav-inner">
@@ -88,14 +90,11 @@ export default function HomePage() {
             <Brand />
           </Link>
           <div className="landing-nav-links">
-            <a href="#decouvrez">Comment ça marche</a>
+            {FEATURES.hasLandingMarketingSections && <a href="#decouvrez">Comment ça marche</a>}
             {FEATURES.hasLandingExploreSection && <a href="#explorer">Explorer par commune</a>}
-            <a href="#faq">Questions</a>
+            {FEATURES.hasLandingFaqSection && <a href="#faq">Questions</a>}
             {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
           </div>
-          <button type="button" className="landing-login">
-            Se connecter
-          </button>
         </div>
       </nav>
 
@@ -116,6 +115,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      {FEATURES.hasLandingMarketingSections && (
+      <>
       <section className="landing-section" id="decouvrez">
         <div className="section-head">
           <span className="section-num">01</span>
@@ -201,6 +202,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </>
+      )}
 
       {FEATURES.hasLandingExploreSection && (
       <section className="landing-section" id="explorer">
@@ -251,6 +254,7 @@ export default function HomePage() {
       </section>
       )}
 
+      {FEATURES.hasLandingFaqSection && (
       <section className="landing-section landing-section--alt" id="faq">
         <div className="section-head">
           <span className="section-num">04</span>
@@ -268,6 +272,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      )}
 
       <footer className="landing-footer">
         <div className="landing-footer-brand">

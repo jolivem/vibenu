@@ -209,22 +209,23 @@ export function AnalysisPdfDocument({
         </View>
       </Page>
 
-      {/* PAGE 2 — CARTE + MOBILITÉ */}
+      {/* PAGE 2 — CARTE (optionnelle selon variante) + MOBILITÉ */}
       <Page size="A4" style={pdfStyles.page}>
-        <RunningHeader chapter="Carte" />
-        <ChapterTitle
-          italic="Carte"
-          subtitle={data.address.label}
-        />
-
-        {mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} />}
-
-        <View style={{ marginTop: 6 }}>
-          <Text style={pdfStyles.chapterTitle}>
-            <Text style={pdfStyles.chapterTitleItalic}>Mobilité</Text>
-            {" & transports"}
-          </Text>
-        </View>
+        <RunningHeader chapter={FEATURES.showLocation ? "Carte" : "Mobilité"} />
+        {FEATURES.showLocation ? (
+          <>
+            <ChapterTitle italic="Carte" subtitle={data.address.label} />
+            {mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} />}
+            <View style={{ marginTop: 6 }}>
+              <Text style={pdfStyles.chapterTitle}>
+                <Text style={pdfStyles.chapterTitleItalic}>Mobilité</Text>
+                {" & transports"}
+              </Text>
+            </View>
+          </>
+        ) : (
+          <ChapterTitle italic="Mobilité" post=" & transports" subtitle={data.address.label} />
+        )}
         <PdfMobility mobility={data.mobility} mode={data.mode} />
 
         <RunningFooter

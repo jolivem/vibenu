@@ -99,6 +99,7 @@ export function AnalysisScreen() {
 
         {data && (
           <div className="analysis-grid">
+            {FEATURES.showLocation && (
             <section className="card map-section">
               <h2>Localisation</h2>
               <Map
@@ -120,6 +121,7 @@ export function AnalysisScreen() {
                 onReady={handleMapReady}
               />
             </section>
+            )}
             {FEATURES.showNarrative && (
               <NarrativeCard
                 narrative={narrative}
