@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "next dev",
+    "dev:public": "NEXT_PUBLIC_SITE_VARIANT=PUBLIC next dev",
+    "dev:pro": "NEXT_PUBLIC_SITE_VARIANT=PRO next dev",
     "build": "next build",
     "build:public": "NEXT_PUBLIC_SITE_VARIANT=PUBLIC next build",
     "build:pro": "NEXT_PUBLIC_SITE_VARIANT=PRO next build",

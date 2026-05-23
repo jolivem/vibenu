@@ -138,9 +138,9 @@ const PUBLIC_BRANDING: SiteBranding = {
 
 // TODO : remplacer "ProSite" / "Pro" / "Site" par le nom définitif quand il sera arrêté.
 const PRO_BRANDING: SiteBranding = {
-  name: "ProSite",
+  name: "ProClaireAdresse",
   brandFirst: "Pro",
-  brandSecond: "Site",
+  brandSecond: "ClaireAdresse",
   tagline: "Mobilité et voisinage — analyse rapide d'une adresse",
   description:
     "Pour les pros : aperçu rapide des transports et du voisinage d'une adresse française. Données publiques officielles, sans inscription.",

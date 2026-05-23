@@ -37,8 +37,8 @@ caddy_changed() {
   grep -qE '^(Caddyfile|docker-compose\.yml)' <<<"$CHANGED_FILES"
 }
 
-echo "==> pull image app depuis GHCR"
-docker compose pull app
+echo "==> pull images app + app_pro depuis GHCR"
+docker compose pull app app_pro
 
 MIGRATIONS_DIR="frontend/src/server-shared/infrastructure/database/migrations"
 if compgen -G "$MIGRATIONS_DIR/*.sql" > /dev/null; then
@@ -52,8 +52,8 @@ if compgen -G "$MIGRATIONS_DIR/*.sql" > /dev/null; then
   done
 fi
 
-echo "==> restart app"
-docker compose up -d --no-deps app
+echo "==> restart app + app_pro"
+docker compose up -d --no-deps app app_pro
 
 if caddy_changed; then
   echo "==> reload caddy"
