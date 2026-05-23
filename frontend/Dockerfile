@@ -16,6 +16,10 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY frontend ./frontend
 ARG SITE_URL
 ENV SITE_URL=$SITE_URL
+# Variante du site : "PUBLIC" (défaut, complet) ou "PRO" (voisinage + mobilité).
+# Cf. frontend/src/lib/site-features.ts pour la configuration des features.
+ARG SITE_VARIANT=PUBLIC
+ENV NEXT_PUBLIC_SITE_VARIANT=$SITE_VARIANT
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN mkdir -p frontend/public
 RUN pnpm --filter claireadresse-frontend build

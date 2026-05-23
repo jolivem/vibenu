@@ -8,6 +8,8 @@ import {
   isCityHubSlug,
   type CommuneSlugEntry,
 } from "@/lib/commune-slugs";
+import { BRANDING, FEATURES } from "@/lib/site-features";
+import { Brand } from "@/components/Brand";
 import { getCommuneStatsService } from "@/server-modules/commune-stats/application/commune-stats.service";
 import { getCommuneNarrativeService } from "@/server-modules/narrative/application/commune-narrative.service";
 import { CommuneContourProvider } from "@/server-modules/address/infrastructure/commune-contour.provider";
@@ -31,11 +33,13 @@ export const revalidate = 86400; // 24h ISR
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
 export async function generateStaticParams() {
-  // Le rendu des pages arrondissement nécessite la DB (stats, narrative, contour).
-  // En build Docker, POSTGRES_URL n'est pas disponible → on retourne [] pour skipper
-  // le prerender ; les pages sont générées au premier accès au runtime puis cachées
-  // 24h via ISR. Quand POSTGRES_URL est présent (build local, Vercel, etc.), on
-  // pré-rend la liste complète pour avoir une perf cold-start optimale.
+  // En variante PRO, pas de pages SEO du tout (notFound dans la page).
+  // En PUBLIC : le rendu des pages arrondissement nécessite la DB (stats, narrative,
+  // contour). En build Docker, POSTGRES_URL n'est pas disponible → on retourne [] pour
+  // skipper le prerender ; les pages sont générées au premier accès au runtime puis
+  // cachées 24h via ISR. Quand POSTGRES_URL est présent (build local, Vercel, etc.),
+  // on pré-rend la liste complète pour avoir une perf cold-start optimale.
+  if (!FEATURES.hasSEOPages) return [];
   if (!process.env.POSTGRES_URL) return [];
 
   return ALL_COMMUNE_SLUGS
@@ -75,7 +79,7 @@ export async function generateMetadata({
       type: "article",
       locale: "fr_FR",
       url: `${SITE_URL}/commune/${commune.slug}`,
-      title: `${commune.nomAffiche} — ClaireAdresse`,
+      title: `${commune.nomAffiche} — ${BRANDING.name}`,
       description: desc.slice(0, 158),
     },
   };
@@ -86,6 +90,8 @@ export default async function CommunePage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  if (!FEATURES.hasSEOPages) notFound();
+
   const { slug } = await params;
   const commune = getCommuneBySlug(slug);
   if (!commune || isCityHubSlug(commune.slug)) {
@@ -166,14 +172,14 @@ export default async function CommunePage({
       <nav className="landing-nav">
         <div className="landing-nav-inner">
           <Link href="/" className="landing-brand">
-            Claire<span>Adresse</span>
+            <Brand />
           </Link>
           <div className="landing-nav-links">
             <Link href="/">Accueil</Link>
             {commune.parentSlug && (
               <Link href={`/commune/${commune.parentSlug}`}>{commune.parentNom}</Link>
             )}
-            <Link href="/a-propos">À propos</Link>
+            {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
           </div>
         </div>
       </nav>
@@ -191,12 +197,12 @@ export default async function CommunePage({
 
       <footer className="landing-footer">
         <div className="landing-footer-brand">
-          Claire<i>Adresse</i>
+          <Brand variant="footer" />
         </div>
         <span>Données publiques · DVF · INSEE · {CITIES[commune.city].airSourceLabel}</span>
         <div className="landing-footer-links">
           <Link href="/">Analyser une adresse</Link>
-          <Link href="/a-propos">À propos</Link>
+          {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
         </div>
       </footer>
     </main>

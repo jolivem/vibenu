@@ -12,8 +12,24 @@ BUILD IMAGE AND PUSH
 # local
 # SITE_URL est baké dans le build pour les meta OG/Twitter/JSON-LD (gelés au build).
 # robots.txt et sitemap.xml sont force-dynamic et lisent SITE_URL au runtime.
-docker build --build-arg SITE_URL=https://claireadresse.fr -f frontend/Dockerfile -t ghcr.io/jolivem/vibenu:latest .
+# SITE_VARIANT contrôle la variante (PUBLIC = défaut complet, PRO = simplifiée voisinage+mobilité).
+# Voir frontend/src/lib/site-features.ts pour la liste des features par variante.
+
+# Variante PUBLIC (claireadresse.fr — complet, défaut si --build-arg SITE_VARIANT non passé)
+docker build --build-arg SITE_URL=https://claireadresse.fr --build-arg SITE_VARIANT=PUBLIC \
+  -f frontend/Dockerfile -t ghcr.io/jolivem/vibenu:latest .
 docker push ghcr.io/jolivem/vibenu:latest
+
+# Variante PRO (autre domaine — voisinage + mobilité uniquement)
+docker build --build-arg SITE_URL=https://pro.exemple.fr --build-arg SITE_VARIANT=PRO \
+  -f frontend/Dockerfile -t ghcr.io/jolivem/vibenu:pro-latest .
+docker push ghcr.io/jolivem/vibenu:pro-latest
+
+# Tester localement les 2 variantes (build only, sans Docker)
+cd frontend
+pnpm run build:public    # build PUBLIC
+pnpm run build:pro       # build PRO
+pnpm run build:all       # les 2 enchaînés (utile en CI pour détecter les régressions cross-variante)
 
 # Hetzner
 ssh michel@178.104.51.131

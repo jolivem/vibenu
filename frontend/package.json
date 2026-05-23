@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:public": "NEXT_PUBLIC_SITE_VARIANT=PUBLIC next build",
+    "build:pro": "NEXT_PUBLIC_SITE_VARIANT=PRO next build",
+    "build:all": "pnpm run build:public && pnpm run build:pro",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },

@@ -6,6 +6,8 @@ import {
 } from "@/lib/commune-slugs";
 import { getCommuneStatsService } from "@/server-modules/commune-stats/application/commune-stats.service";
 import { formatEur, formatInt } from "@/components/commune/format";
+import { Brand } from "@/components/Brand";
+import { FEATURES } from "@/lib/site-features";
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
@@ -81,11 +83,11 @@ export async function CityHubPage({ city }: Props) {
       <nav className="landing-nav">
         <div className="landing-nav-inner">
           <Link href="/" className="landing-brand">
-            Claire<span>Adresse</span>
+            <Brand />
           </Link>
           <div className="landing-nav-links">
             <Link href="/">Accueil</Link>
-            <Link href="/a-propos">À propos</Link>
+            {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
           </div>
         </div>
       </nav>
@@ -131,12 +133,12 @@ export async function CityHubPage({ city }: Props) {
 
       <footer className="landing-footer">
         <div className="landing-footer-brand">
-          Claire<i>Adresse</i>
+          <Brand variant="footer" />
         </div>
         <span>Données publiques · DVF · INSEE · {cityDef.airSourceLabel}</span>
         <div className="landing-footer-links">
           <Link href="/">Analyser une adresse</Link>
-          <Link href="/a-propos">À propos</Link>
+          {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
         </div>
       </footer>
     </main>

@@ -15,6 +15,7 @@ import { PdfClimate } from "./sections/PdfClimate";
 import { PdfCadastre } from "./sections/PdfCadastre";
 import { PdfSchoolSector } from "./sections/PdfSchoolSector";
 import { PdfMap } from "./sections/PdfMap";
+import { BRANDING, FEATURES } from "@/lib/site-features";
 
 interface Props {
   data: LocationAnalysisDto;
@@ -36,13 +37,13 @@ function splitAddress(label: string, city: string, postcode: string) {
 function Brand({ small = false }: { small?: boolean }) {
   return (
     <Text style={small ? pdfStyles.runningHeaderBrand : pdfStyles.coverBrand}>
-      Claire
+      {BRANDING.brandFirst}
       <Text
         style={
           small ? pdfStyles.runningHeaderBrandItalic : pdfStyles.coverBrandItalic
         }
       >
-        Adresse
+        {BRANDING.brandSecond}
       </Text>
     </Text>
   );
@@ -121,8 +122,27 @@ export function AnalysisPdfDocument({
     data.address.postcode,
   );
 
-  const showNeighborhood = data.mode !== "commune";
-  const totalPages = showNeighborhood ? 5 : 4;
+  // Détermine quelles pages sont rendues (cover + map sont toujours là).
+  const hasRisksAirClimatePage =
+    FEATURES.showRisks ||
+    (FEATURES.showAirQuality && data.airQuality.available) ||
+    (FEATURES.showClimate && Boolean(data.climate));
+
+  const hasNeighborhoodPage = FEATURES.showNeighborhood && data.mode !== "commune";
+
+  const hasDemoCadastrePage =
+    (FEATURES.showDemographics && Boolean(data.demographics)) ||
+    (FEATURES.showElections && Boolean(data.elections)) ||
+    (FEATURES.showRealEstate && Boolean(realEstate)) ||
+    (FEATURES.showCadastre && Boolean(data.cadastre)) ||
+    (FEATURES.showSchoolSector && Boolean(data.schoolSector));
+
+  // Numérotation dynamique : cover=1, map=2, puis les optionnelles dans l'ordre.
+  let nextPageNum = 3;
+  const risksPageNum = hasRisksAirClimatePage ? nextPageNum++ : null;
+  const neighborhoodPageNum = hasNeighborhoodPage ? nextPageNum++ : null;
+  const demoCadastrePageNum = hasDemoCadastrePage ? nextPageNum++ : null;
+  const totalPages = nextPageNum - 1;
 
   const coverMeta: Array<{ label: string; value: string }> = [];
   if (data.cadastre?.parcel) {
@@ -148,7 +168,7 @@ export function AnalysisPdfDocument({
   return (
     <Document
       title={`Analyse · ${data.address.label}`}
-      author="ClaireAdresse"
+      author={BRANDING.name}
       subject="Analyse d'adresse"
     >
       {/* PAGE 1 — COVER */}
@@ -215,35 +235,37 @@ export function AnalysisPdfDocument({
         />
       </Page>
 
-      {/* PAGE 3 — RISQUES + AIR + CLIMAT */}
-      <Page size="A4" style={pdfStyles.page}>
-        <RunningHeader chapter="Risques, air & climat" />
-        <ChapterTitle italic="Risques" />
+      {/* PAGE 3 — RISQUES + AIR + CLIMAT (optionnelle selon variante) */}
+      {hasRisksAirClimatePage && risksPageNum !== null && (
+        <Page size="A4" style={pdfStyles.page}>
+          <RunningHeader chapter="Risques, air & climat" />
+          <ChapterTitle italic="Risques" />
 
-        <PdfRisks risks={data.risks} />
+          {FEATURES.showRisks && <PdfRisks risks={data.risks} />}
 
-        {data.airQuality.available && (
-          <View style={{ marginTop: 36 }} wrap={false}>
-            <Text style={pdfStyles.chapterTitle}>
-              {"Qualité de "}
-              <Text style={pdfStyles.chapterTitleItalic}>l&apos;air</Text>
-            </Text>
-            <PdfAirQuality airQuality={data.airQuality} />
-          </View>
-        )}
+          {FEATURES.showAirQuality && data.airQuality.available && (
+            <View style={{ marginTop: 36 }} wrap={false}>
+              <Text style={pdfStyles.chapterTitle}>
+                {"Qualité de "}
+                <Text style={pdfStyles.chapterTitleItalic}>l&apos;air</Text>
+              </Text>
+              <PdfAirQuality airQuality={data.airQuality} />
+            </View>
+          )}
 
-        {data.climate && <PdfClimate climate={data.climate} />}
+          {FEATURES.showClimate && data.climate && <PdfClimate climate={data.climate} />}
 
-        <RunningFooter
-          date={formattedDate}
-          address={street}
-          pageNumber={3}
-          totalPages={totalPages}
-        />
-      </Page>
+          <RunningFooter
+            date={formattedDate}
+            address={street}
+            pageNumber={risksPageNum}
+            totalPages={totalPages}
+          />
+        </Page>
+      )}
 
-      {/* PAGE 4 — VOISINAGE (masquée en mode commune) */}
-      {showNeighborhood && (
+      {/* PAGE — VOISINAGE (optionnelle selon variante / mode) */}
+      {hasNeighborhoodPage && neighborhoodPageNum !== null && (
         <Page size="A4" style={pdfStyles.page}>
           <RunningHeader chapter="Voisinage" />
           <ChapterTitle
@@ -258,66 +280,68 @@ export function AnalysisPdfDocument({
           <RunningFooter
             date={formattedDate}
             address={street}
-            pageNumber={4}
+            pageNumber={neighborhoodPageNum}
             totalPages={totalPages}
           />
         </Page>
       )}
 
-      {/* PAGE 5 — DÉMO + IMMO + CADASTRE */}
-      <Page size="A4" style={pdfStyles.page}>
-        <RunningHeader chapter="Démographie & cadastre" />
-        <ChapterTitle
-          italic="Démographie"
-          post=" du quartier"
-        />
+      {/* PAGE — DÉMO + IMMO + CADASTRE (optionnelle selon variante) */}
+      {hasDemoCadastrePage && demoCadastrePageNum !== null && (
+        <Page size="A4" style={pdfStyles.page}>
+          <RunningHeader chapter="Démographie & cadastre" />
+          <ChapterTitle
+            italic="Démographie"
+            post=" du quartier"
+          />
 
-        {data.demographics && <PdfDemographics demographics={data.demographics} />}
+          {FEATURES.showDemographics && data.demographics && <PdfDemographics demographics={data.demographics} />}
 
-        {data.elections && <PdfElections elections={data.elections} />}
+          {FEATURES.showElections && data.elections && <PdfElections elections={data.elections} />}
 
-        {realEstate && (
-          <View style={{ marginTop: 36 }} wrap={false}>
-            <Text style={pdfStyles.chapterTitle}>
-              <Text style={pdfStyles.chapterTitleItalic}>Immobilier</Text>
-            </Text>
-            <PdfRealEstate realEstate={realEstate} />
+          {FEATURES.showRealEstate && realEstate && (
+            <View style={{ marginTop: 36 }} wrap={false}>
+              <Text style={pdfStyles.chapterTitle}>
+                <Text style={pdfStyles.chapterTitleItalic}>Immobilier</Text>
+              </Text>
+              <PdfRealEstate realEstate={realEstate} />
+            </View>
+          )}
+
+          {FEATURES.showCadastre && data.cadastre && (
+            <View style={{ marginTop: 36 }} wrap={false}>
+              <Text style={pdfStyles.chapterTitle}>
+                {"Cadastre & "}
+                <Text style={pdfStyles.chapterTitleItalic}>urbanisme</Text>
+              </Text>
+              <PdfCadastre cadastre={data.cadastre} />
+            </View>
+          )}
+
+          {FEATURES.showSchoolSector && data.schoolSector && (
+            <View style={{ marginTop: 36 }} wrap={false}>
+              <Text style={pdfStyles.chapterTitle}>
+                {"Carte "}
+                <Text style={pdfStyles.chapterTitleItalic}>scolaire</Text>
+              </Text>
+              <PdfSchoolSector schoolSector={data.schoolSector} />
+            </View>
+          )}
+
+          <View style={pdfStyles.endMark}>
+            <View style={pdfStyles.endMarkLine} />
+            <Text style={pdfStyles.endMarkText}>Fin du dossier</Text>
+            <View style={pdfStyles.endMarkLine} />
           </View>
-        )}
 
-        {data.cadastre && (
-          <View style={{ marginTop: 36 }} wrap={false}>
-            <Text style={pdfStyles.chapterTitle}>
-              {"Cadastre & "}
-              <Text style={pdfStyles.chapterTitleItalic}>urbanisme</Text>
-            </Text>
-            <PdfCadastre cadastre={data.cadastre} />
-          </View>
-        )}
-
-        {data.schoolSector && (
-          <View style={{ marginTop: 36 }} wrap={false}>
-            <Text style={pdfStyles.chapterTitle}>
-              {"Carte "}
-              <Text style={pdfStyles.chapterTitleItalic}>scolaire</Text>
-            </Text>
-            <PdfSchoolSector schoolSector={data.schoolSector} />
-          </View>
-        )}
-
-        <View style={pdfStyles.endMark}>
-          <View style={pdfStyles.endMarkLine} />
-          <Text style={pdfStyles.endMarkText}>Fin du dossier</Text>
-          <View style={pdfStyles.endMarkLine} />
-        </View>
-
-        <RunningFooter
-          date={formattedDate}
-          address={`Sources : IGN · DVF · Géorisques · INSEE · ATMO`}
-          pageNumber={showNeighborhood ? 5 : 4}
-          totalPages={totalPages}
-        />
-      </Page>
+          <RunningFooter
+            date={formattedDate}
+            address={`Sources : IGN · DVF · Géorisques · INSEE · ATMO`}
+            pageNumber={demoCadastrePageNum}
+            totalPages={totalPages}
+          />
+        </Page>
+      )}
     </Document>
   );
 }

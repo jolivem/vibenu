@@ -1,5 +1,7 @@
 import { CityHubPage } from "@/components/commune/CityHubPage";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { BRANDING, FEATURES } from "@/lib/site-features";
 
 // Rendu serveur à chaque requête : évite la mise en cache de pages prerendues
 // au build Docker (où POSTGRES_URL n'est pas disponible) avec un meta vide.
@@ -18,12 +20,13 @@ export const metadata: Metadata = {
     type: "article",
     locale: "fr_FR",
     url: `${SITE_URL}/commune/paris`,
-    title: "Paris — Les 20 arrondissements analysés · ClaireAdresse",
+    title: `Paris — Les 20 arrondissements analysés · ${BRANDING.name}`,
     description:
       "Comparez prix, démographie et cadre de vie entre les 20 arrondissements parisiens.",
   },
 };
 
 export default async function ParisHubPage() {
+  if (!FEATURES.hasSEOPages) notFound();
   return <CityHubPage city="paris" />;
 }

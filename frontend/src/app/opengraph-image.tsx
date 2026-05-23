@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
+import { BRANDING, isPro } from "@/lib/site-features";
 
-export const alt = "ClaireAdresse · Analysez une adresse avant de louer ou acheter";
+export const alt = `${BRANDING.name} · ${BRANDING.tagline}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -53,7 +54,7 @@ export default function OpenGraphImage() {
               letterSpacing: "-2px",
             }}
           >
-            ClaireAdresse
+            {BRANDING.name}
           </span>
         </div>
         <div
@@ -69,8 +70,8 @@ export default function OpenGraphImage() {
             maxWidth: "900px",
           }}
         >
-          <div>Analysez une adresse</div>
-          <div style={{ color: "#78be20" }}>avant de louer ou acheter</div>
+          <div>{BRANDING.heroTitle}</div>
+          <div style={{ color: "#78be20" }}>{BRANDING.heroEmphasis}</div>
         </div>
         <div
           style={{
@@ -81,7 +82,9 @@ export default function OpenGraphImage() {
             maxWidth: "900px",
           }}
         >
-          Transports · Risques · Cadastre · Prix immobiliers · Urbanisme
+          {isPro
+            ? "Voisinage · Mobilité · Données publiques officielles"
+            : "Transports · Risques · Cadastre · Prix immobiliers · Urbanisme"}
         </div>
       </div>
     ),

@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { FEATURES } from "@/lib/site-features";
+import { Brand } from "@/components/Brand";
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
@@ -64,6 +67,10 @@ const sources = [
 ];
 
 export default function AboutPage() {
+  // En PRO, la page /a-propos n'a pas de contenu adapté (copy spécifique
+  // ClaireAdresse). On 404 jusqu'à ce qu'un contenu PRO soit rédigé.
+  if (!FEATURES.hasAboutPage) notFound();
+
   return (
     <main className="landing">
       <script
@@ -74,7 +81,7 @@ export default function AboutPage() {
       <nav className="landing-nav">
         <div className="landing-nav-inner">
           <Link href="/" className="landing-brand">
-            Claire<span>Adresse</span>
+            <Brand />
           </Link>
           <div className="landing-nav-links">
             <Link href="/#decouvrez">Comment ça marche</Link>
@@ -167,7 +174,7 @@ export default function AboutPage() {
 
       <footer className="landing-footer">
         <div className="landing-footer-brand">
-          Claire<i>Adresse</i>
+          <Brand variant="footer" />
         </div>
         <span>Données ouvertes françaises · Gratuit, sans inscription</span>
         <div className="landing-footer-links">

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Manrope, JetBrains_Mono, Fraunces } from "next/font/google";
 import "../styles/globals.css";
+import { BRANDING } from "@/lib/site-features";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
@@ -14,10 +15,9 @@ const serif = Fraunces({
 });
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
-const SITE_NAME = "ClaireAdresse";
-const SITE_TITLE = "ClaireAdresse · Analysez une adresse avant de louer ou acheter";
-const SITE_DESCRIPTION =
-  "Transports, risques, cadastre, prix immobiliers, urbanisme. Toutes les informations clés sur une adresse en France, en quelques secondes.";
+const SITE_NAME = BRANDING.name;
+const SITE_TITLE = `${BRANDING.name} · ${BRANDING.tagline}`;
+const SITE_DESCRIPTION = BRANDING.description;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

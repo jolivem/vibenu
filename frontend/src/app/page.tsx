@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { SearchPanel } from "@/components/search/SearchPanel";
+import { Brand } from "@/components/Brand";
+import { BRANDING, FEATURES } from "@/lib/site-features";
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
 const faqItems = [
   {
-    question: "ClaireAdresse est-il gratuit ?",
+    question: `${BRANDING.name} est-il gratuit ?`,
     answer:
       "Oui. L'analyse d'une adresse française est entièrement gratuite et sans inscription. Le service s'appuie sur des données publiques ouvertes.",
   },
@@ -22,7 +24,7 @@ const faqItems = [
   {
     question: "Combien de temps prend une analyse ?",
     answer:
-      "Quelques secondes. ClaireAdresse interroge en parallèle les bases publiques et agrège les résultats sur une carte interactive.",
+      `Quelques secondes. ${BRANDING.name} interroge en parallèle les bases publiques et agrège les résultats sur une carte interactive.`,
   },
   {
     question: "Les prix au m² sont-ils fiables ?",
@@ -34,12 +36,11 @@ const faqItems = [
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  name: "ClaireAdresse",
+  name: BRANDING.name,
   url: SITE_URL,
   applicationCategory: "RealEstateApplication",
   operatingSystem: "Web",
-  description:
-    "Analyse d'une adresse en France : transports, risques naturels, cadastre, prix immobiliers DVF, urbanisme et démographie IRIS.",
+  description: BRANDING.description,
   inLanguage: "fr-FR",
   offers: {
     "@type": "Offer",
@@ -84,13 +85,13 @@ export default function HomePage() {
       <nav className="landing-nav">
         <div className="landing-nav-inner">
           <Link href="/" className="landing-brand">
-            Claire<span>Adresse</span>
+            <Brand />
           </Link>
           <div className="landing-nav-links">
             <a href="#decouvrez">Comment ça marche</a>
-            <a href="#explorer">Explorer par commune</a>
+            {FEATURES.hasLandingExploreSection && <a href="#explorer">Explorer par commune</a>}
             <a href="#faq">Questions</a>
-            <Link href="/a-propos">À propos</Link>
+            {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
           </div>
           <button type="button" className="landing-login">
             Se connecter
@@ -101,13 +102,10 @@ export default function HomePage() {
       <section className="landing-hero">
         <span className="landing-eyebrow">Données ouvertes · France</span>
         <h1 className="landing-title">
-          Analysez une adresse<br />
-          <i>avant de louer ou acheter.</i>
+          {BRANDING.heroTitle}<br />
+          <i>{BRANDING.heroEmphasis}</i>
         </h1>
-        <p className="landing-lead">
-          Transports, risques, cadastre, prix immobiliers, urbanisme. Toutes les informations
-          clés sur une adresse française, en quelques secondes.
-        </p>
+        <p className="landing-lead">{BRANDING.description}</p>
         <div className="landing-search">
           <SearchPanel />
         </div>
@@ -204,6 +202,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {FEATURES.hasLandingExploreSection && (
       <section className="landing-section" id="explorer">
         <div className="section-head">
           <span className="section-num">03</span>
@@ -250,6 +249,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       <section className="landing-section landing-section--alt" id="faq">
         <div className="section-head">
@@ -271,12 +271,12 @@ export default function HomePage() {
 
       <footer className="landing-footer">
         <div className="landing-footer-brand">
-          Claire<i>Adresse</i>
+          <Brand variant="footer" />
         </div>
         <span>Données ouvertes françaises · Gratuit, sans inscription</span>
         <div className="landing-footer-links">
-          <a href="#explorer">Explorer par commune</a>
-          <Link href="/a-propos">À propos</Link>
+          {FEATURES.hasLandingExploreSection && <a href="#explorer">Explorer par commune</a>}
+          {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
         </div>
       </footer>
     </main>

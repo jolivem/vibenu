@@ -19,6 +19,8 @@ import { ElectionsCard } from "@/components/analysis/ElectionsCard";
 import { ClimateCard } from "@/components/analysis/ClimateCard";
 import { SchoolSectorCard } from "@/components/analysis/SchoolSectorCard";
 import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
+import { Brand } from "@/components/Brand";
+import { FEATURES } from "@/lib/site-features";
 
 export function AnalysisScreen() {
   const searchParams = useSearchParams();
@@ -45,7 +47,10 @@ export function AnalysisScreen() {
 
   const realEstate = data?.realEstate;
 
-  const { narrative, isLoading: narrativeLoading, error: narrativeError } = useNarrative(data ?? null);
+  // En PRO, on ne fetch pas la narrative (économise des tokens Mistral inutiles
+  // puisque la card ne sera de toute façon pas affichée).
+  const narrativeInput = FEATURES.showNarrative ? data ?? null : null;
+  const { narrative, isLoading: narrativeLoading, error: narrativeError } = useNarrative(narrativeInput);
 
   const mapRef = useRef<MapLibreMap | null>(null);
   const handleMapReady = useCallback((map: MapLibreMap) => {
@@ -60,10 +65,10 @@ export function AnalysisScreen() {
           <Link href="/" className="analysis-back">
             <span aria-hidden>←</span>
             <span className="analysis-brand">
-              Claire<span>Adresse</span>
+              <Brand />
             </span>
           </Link>
-          {data && (
+          {data && FEATURES.hasPdfExport && (
             <DownloadPdfButton
               data={data}
               realEstate={realEstate ?? null}
@@ -115,27 +120,37 @@ export function AnalysisScreen() {
                 onReady={handleMapReady}
               />
             </section>
-            <NarrativeCard
-              narrative={narrative}
-              isLoading={narrativeLoading}
-              error={narrativeError}
-            />
-            {data.mode !== "commune" && <NeighborhoodCard neighborhood={data.neighborhood} />}
+            {FEATURES.showNarrative && (
+              <NarrativeCard
+                narrative={narrative}
+                isLoading={narrativeLoading}
+                error={narrativeError}
+              />
+            )}
+            {FEATURES.showNeighborhood && data.mode !== "commune" && (
+              <NeighborhoodCard neighborhood={data.neighborhood} />
+            )}
             <div className="analysis-pair">
               <div className="analysis-stack">
-                <MobilityCard mobility={data.mobility} mode={data.mode} />
-                {realEstate && <RealEstateCard realEstate={realEstate} />}
+                {FEATURES.showMobility && <MobilityCard mobility={data.mobility} mode={data.mode} />}
+                {FEATURES.showRealEstate && realEstate && <RealEstateCard realEstate={realEstate} />}
               </div>
               <div className="analysis-stack">
-                {data.airQuality.available && <AirQualityCard airQuality={data.airQuality} />}
+                {FEATURES.showAirQuality && data.airQuality.available && (
+                  <AirQualityCard airQuality={data.airQuality} />
+                )}
               </div>
             </div>
-            {data.schoolSector && <SchoolSectorCard schoolSector={data.schoolSector} />}
-            {data.demographics && <DemographicsCard demographics={data.demographics} mode={data.mode} />}
-            {data.climate && <ClimateCard climate={data.climate} />}
-            {data.elections && <ElectionsCard elections={data.elections} />}
-            <RisksCard risks={data.risks} />
-            {data.cadastre && <CadastreCard cadastre={data.cadastre} />}
+            {FEATURES.showSchoolSector && data.schoolSector && (
+              <SchoolSectorCard schoolSector={data.schoolSector} />
+            )}
+            {FEATURES.showDemographics && data.demographics && (
+              <DemographicsCard demographics={data.demographics} mode={data.mode} />
+            )}
+            {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} />}
+            {FEATURES.showElections && data.elections && <ElectionsCard elections={data.elections} />}
+            {FEATURES.showRisks && <RisksCard risks={data.risks} />}
+            {FEATURES.showCadastre && data.cadastre && <CadastreCard cadastre={data.cadastre} />}
           </div>
         )}
       </div>
