@@ -39,6 +39,8 @@ caddy_changed() {
 
 echo "==> pull images app + app_pro depuis GHCR"
 docker compose pull app app_pro
+echo "==> pull image umami"
+docker compose pull umami
 
 MIGRATIONS_DIR="frontend/src/server-shared/infrastructure/database/migrations"
 if compgen -G "$MIGRATIONS_DIR/*.sql" > /dev/null; then
@@ -52,8 +54,18 @@ if compgen -G "$MIGRATIONS_DIR/*.sql" > /dev/null; then
   done
 fi
 
-echo "==> restart app + app_pro"
-docker compose up -d --no-deps app app_pro
+# S'assure que la base Umami existe (idempotent : ne fait rien si déjà présente).
+UMAMI_DB="${UMAMI_DB:-umami}"
+echo "==> s'assurer que la base $UMAMI_DB existe"
+if ! docker compose exec -T postgres psql -U "${POSTGRES_USER:-claireadresse}" -d "${POSTGRES_DB:-claire_adresse}" \
+      -tAc "SELECT 1 FROM pg_database WHERE datname='$UMAMI_DB'" | grep -q 1; then
+  echo "    création de la base $UMAMI_DB"
+  docker compose exec -T postgres psql -U "${POSTGRES_USER:-claireadresse}" -d "${POSTGRES_DB:-claire_adresse}" \
+    -c "CREATE DATABASE $UMAMI_DB"
+fi
+
+echo "==> restart app + app_pro + umami"
+docker compose up -d --no-deps app app_pro umami
 
 if caddy_changed; then
   echo "==> reload caddy"
