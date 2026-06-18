@@ -20,6 +20,11 @@ ENV SITE_URL=$SITE_URL
 # Cf. frontend/src/lib/site-features.ts pour la configuration des features.
 ARG SITE_VARIANT=PUBLIC
 ENV NEXT_PUBLIC_SITE_VARIANT=$SITE_VARIANT
+# Analyse d'audience Umami (inlinée au build, diffère par variante).
+ARG NEXT_PUBLIC_UMAMI_SRC
+ENV NEXT_PUBLIC_UMAMI_SRC=$NEXT_PUBLIC_UMAMI_SRC
+ARG NEXT_PUBLIC_UMAMI_WEBSITE_ID
+ENV NEXT_PUBLIC_UMAMI_WEBSITE_ID=$NEXT_PUBLIC_UMAMI_WEBSITE_ID
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN mkdir -p frontend/public
 RUN pnpm --filter claireadresse-frontend build

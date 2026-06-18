@@ -122,7 +122,11 @@ export function AnalysisPdfDocument({
     data.address.postcode,
   );
 
-  // Détermine quelles pages sont rendues (cover + map sont toujours là).
+  // Détermine quelles pages sont rendues. La cover est toujours là.
+  // Si la carte est désactivée (variante PRO), on consolide la mobilité directement
+  // sur la cover plutôt que de garder une page 2 dédiée — rapport plus compact.
+  const hasMapMobilityPage = FEATURES.showLocation;
+
   const hasRisksAirClimatePage =
     FEATURES.showRisks ||
     (FEATURES.showAirQuality && data.airQuality.available) ||
@@ -137,8 +141,9 @@ export function AnalysisPdfDocument({
     (FEATURES.showCadastre && Boolean(data.cadastre)) ||
     (FEATURES.showSchoolSector && Boolean(data.schoolSector));
 
-  // Numérotation dynamique : cover=1, map=2, puis les optionnelles dans l'ordre.
-  let nextPageNum = 3;
+  // Numérotation dynamique : cover=1, puis map+mobilité=2 si présente, puis les autres.
+  let nextPageNum = 2;
+  const mapMobilityPageNum = hasMapMobilityPage ? nextPageNum++ : null;
   const risksPageNum = hasRisksAirClimatePage ? nextPageNum++ : null;
   const neighborhoodPageNum = hasNeighborhoodPage ? nextPageNum++ : null;
   const demoCadastrePageNum = hasDemoCadastrePage ? nextPageNum++ : null;
@@ -201,7 +206,20 @@ export function AnalysisPdfDocument({
           ))}
         </View>
 
-        <PdfCoverResume narrativeParagraph={narrativeParagraph} />
+        {FEATURES.showNarrative && (
+          <PdfCoverResume narrativeParagraph={narrativeParagraph} />
+        )}
+
+        {/* PRO : pas de page 2 dédiée, on consolide la mobilité directement sur la cover. */}
+        {!hasMapMobilityPage && (
+          <View style={{ marginTop: 24 }} wrap={false}>
+            <Text style={pdfStyles.chapterTitle}>
+              <Text style={pdfStyles.chapterTitleItalic}>Mobilité</Text>
+              {" & transports"}
+            </Text>
+            <PdfMobility mobility={data.mobility} mode={data.mode} />
+          </View>
+        )}
 
         <View style={pdfStyles.coverFooter}>
           <Text style={pdfStyles.runningFooterDate}>{formattedDate}</Text>
@@ -209,32 +227,28 @@ export function AnalysisPdfDocument({
         </View>
       </Page>
 
-      {/* PAGE 2 — CARTE (optionnelle selon variante) + MOBILITÉ */}
+      {/* PAGE 2 — CARTE + MOBILITÉ (PUBLIC seulement ; en PRO la mobilité est sur la cover) */}
+      {hasMapMobilityPage && mapMobilityPageNum !== null && (
       <Page size="A4" style={pdfStyles.page}>
-        <RunningHeader chapter={FEATURES.showLocation ? "Carte" : "Mobilité"} />
-        {FEATURES.showLocation ? (
-          <>
-            <ChapterTitle italic="Carte" subtitle={data.address.label} />
-            {mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} />}
-            <View style={{ marginTop: 6 }}>
-              <Text style={pdfStyles.chapterTitle}>
-                <Text style={pdfStyles.chapterTitleItalic}>Mobilité</Text>
-                {" & transports"}
-              </Text>
-            </View>
-          </>
-        ) : (
-          <ChapterTitle italic="Mobilité" post=" & transports" subtitle={data.address.label} />
-        )}
+        <RunningHeader chapter="Carte" />
+        <ChapterTitle italic="Carte" subtitle={data.address.label} />
+        {mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} />}
+        <View style={{ marginTop: 6 }}>
+          <Text style={pdfStyles.chapterTitle}>
+            <Text style={pdfStyles.chapterTitleItalic}>Mobilité</Text>
+            {" & transports"}
+          </Text>
+        </View>
         <PdfMobility mobility={data.mobility} mode={data.mode} />
 
         <RunningFooter
           date={formattedDate}
           address={street}
-          pageNumber={2}
+          pageNumber={mapMobilityPageNum}
           totalPages={totalPages}
         />
       </Page>
+      )}
 
       {/* PAGE 3 — RISQUES + AIR + CLIMAT (optionnelle selon variante) */}
       {hasRisksAirClimatePage && risksPageNum !== null && (

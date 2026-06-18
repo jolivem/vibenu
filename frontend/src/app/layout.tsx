@@ -15,6 +15,8 @@ const serif = Fraunces({
 });
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
+const UMAMI_SRC = process.env.NEXT_PUBLIC_UMAMI_SRC;
+const UMAMI_WEBSITE_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
 const SITE_NAME = BRANDING.name;
 const SITE_TITLE = `${BRANDING.name} · ${BRANDING.tagline}`;
 const SITE_DESCRIPTION = BRANDING.description;
@@ -105,6 +107,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
+        {UMAMI_SRC && UMAMI_WEBSITE_ID && (
+          <script defer src={UMAMI_SRC} data-website-id={UMAMI_WEBSITE_ID} />
+        )}
         {children}
       </body>
     </html>

@@ -53,6 +53,20 @@ services:
       postgres:
         condition: service_healthy
 
+  # Analyse d'audience — réutilise le PostgreSQL existant (base dédiée `umami`).
+  # La base doit être créée une fois : voir README / commande `CREATE DATABASE umami`.
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    restart: unless-stopped
+    environment:
+      DATABASE_TYPE: postgresql
+      # Mot de passe URL-encodé (le "@" du mot de passe Postgres devient "%40").
+      DATABASE_URL: postgresql://${POSTGRES_USER:-claireadresse}:${UMAMI_DB_PASSWORD_ENC:-claireadresse}@postgres:5432/${UMAMI_DB:-umami}
+      APP_SECRET: ${UMAMI_APP_SECRET:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -62,6 +76,9 @@ services:
       - "443:443/udp"
     environment:
       DOMAIN: ${DOMAIN:-localhost}
+      # Domaine optionnel pour le routing aicorrect.app (containers déployés
+      # depuis le repo aicorrect, joints via le network externe caddy_network).
+      AICORRECT_DOMAIN: ${AICORRECT_DOMAIN:-aicorrect.app}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -69,6 +86,17 @@ services:
     depends_on:
       - app
       - app_pro
+      - umami
+    networks:
+      - default
+      - caddy_network
+
+networks:
+  default:
+  # Network partagé avec les autres stacks déployés sur le VPS (aicorrect, ...).
+  # À créer une fois : `docker network create caddy_network`.
+  caddy_network:
+    external: true
 
 volumes:
   postgres_data:
