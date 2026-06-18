@@ -1,8 +1,8 @@
 # UUID des sites Umami (générés dans l'UI Umami sur stats.claireadresse.fr).
 # À renseigner après le premier déploiement d'Umami, puis rebuilder.
 UMAMI_SRC=https://stats.claireadresse.fr/script.js
-UMAMI_WEBSITE_ID_PUBLIC=REMPLACER_UUID_PUBLIC
-UMAMI_WEBSITE_ID_PRO=REMPLACER_UUID_PRO
+UMAMI_WEBSITE_ID_PUBLIC=cc40ccb5-2cdc-4bec-a8f1-d3a834e53b4f
+UMAMI_WEBSITE_ID_PRO=c2c95f0c-21e6-4a71-83d6-b91326de7838
 
 docker build --build-arg SITE_URL=https://claireadresse.fr --build-arg SITE_VARIANT=PUBLIC \
   --build-arg NEXT_PUBLIC_UMAMI_SRC=$UMAMI_SRC \
