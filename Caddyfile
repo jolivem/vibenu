@@ -20,20 +20,3 @@ stats.{$DOMAIN} {
 	encode zstd gzip
 	reverse_proxy umami:3000
 }
-
-# AiCorrect — site public (containers déployés depuis le repo aicorrect, joints
-# via le network Docker externe `caddy_network`).
-{$AICORRECT_DOMAIN:aicorrect.app} {
-	encode zstd gzip
-	reverse_proxy aicorrect-web:3001
-}
-
-www.{$AICORRECT_DOMAIN:aicorrect.app} {
-	redir https://{$AICORRECT_DOMAIN:aicorrect.app}{uri} permanent
-}
-
-# AiCorrect — API REST (sous-domaine api.)
-api.{$AICORRECT_DOMAIN:aicorrect.app} {
-	encode zstd gzip
-	reverse_proxy aicorrect-backend:3000
-}
