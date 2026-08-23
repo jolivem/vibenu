@@ -1,9 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import maplibregl, { Map as MapLibreMap } from "maplibre-gl";
+import maplibregl, { Map as MapLibreMap, type StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { RISK_LAYERS, buildWmsTileUrl } from "./riskLayers";
+import {
+  IGN_PLAN_RASTER_STYLE,
+  LOCATOR_BASEMAP,
+  loadIgnStyle,
+  type IgnStyleName,
+} from "./basemaps";
 import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
 import type { CadastreParcelDto, DvfTransactionFeatureDto, GeoJsonGeometryDto, RiskAnalysisDto } from "@/types/location-analysis";
@@ -58,9 +64,11 @@ interface MapProps {
   onReady?: (map: MapLibreMap) => void;
   height?: string;
   showLayerToggle?: boolean;
+  /** Fond IGN. `standard` (numéros de rue) pour la localisation, `gris` sous les couches thématiques. */
+  basemap?: IgnStyleName;
 }
 
-export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true }: MapProps) {
+export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, basemap = LOCATOR_BASEMAP }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -103,9 +111,34 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
     return layers;
   }, [dvfTransactions, irisGeojson, schoolSector]);
 
+  // Le style IGN est chargé à part : c'est un fetch (~288 Ko), mutualisé entre les cartes
+  // de la page par le cache de `loadIgnStyle`. Tant qu'il n'est pas là, la carte n'est pas
+  // construite — d'où le garde dans l'effet d'init ci-dessous.
+  const [baseStyle, setBaseStyle] = useState<StyleSpecification | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadIgnStyle(basemap)
+      .then((style) => {
+        if (!cancelled) setBaseStyle(style);
+      })
+      .catch((error) => {
+        // Repli sur le Plan IGN en raster : même cartographie, aucun fetch de style.
+        // On ne retombe volontairement pas sur OSM, dont l'usage en production est
+        // contraire à la tile usage policy de l'OSMF.
+        console.error("[Map] style IGN indisponible, repli sur le raster:", error);
+        if (!cancelled) setBaseStyle(IGN_PLAN_RASTER_STYLE);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [basemap]);
+
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || !baseStyle) return;
 
     // Build WMS sources and layers
     const wmsSources: Record<string, maplibregl.SourceSpecification> = {};
@@ -193,7 +226,19 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           source: "cadastre-parcel",
           paint: {
             "fill-color": "#0066cc",
-            "fill-opacity": 0.12,
+            "fill-opacity": 0.15,
+          },
+        },
+        {
+          // Liseré blanc sous le contour : sur le Plan IGN, un trait bleu seul se confond avec
+          // les bordures de bâti et les filets de voirie. Le halo détache la parcelle du fond.
+          id: "cadastre-parcel-casing",
+          type: "line",
+          source: "cadastre-parcel",
+          paint: {
+            "line-color": "#ffffff",
+            "line-width": 6,
+            "line-opacity": 0.9,
           },
         },
         {
@@ -202,7 +247,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           source: "cadastre-parcel",
           paint: {
             "line-color": "#0066cc",
-            "line-width": 2.5,
+            "line-width": 3,
           },
         },
       );
@@ -323,18 +368,40 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
       }
     }
 
+    // Nos couches se posent **au-dessus de toute la géométrie du fond** (voirie, bâti, hydro)
+    // mais **sous les libellés**, pour que toponymes et numéros de rue restent lisibles.
+    //
+    // On ne peut pas viser le *premier* calque symbol : dans `PLAN.IGN/standard` il arrive dès
+    // l'index 51 sur 425 (une cote de courbe de niveau), ce qui enterrait la parcelle sous le
+    // bâti (index ~122) et la voirie. On vise donc la fin de la géométrie : le dernier calque
+    // non-symbol. Seuls 15 libellés mineurs passent alors dessous, contre 374 calques avant.
+    // (`sans_toponymes` n'a aucun symbol : l'insertion tombe naturellement à la fin.)
+    const overlaySpecs: maplibregl.LayerSpecification[] = [
+      ...wmsLayers,
+      ...dvfLayers,
+      ...irisLayers,
+      ...schoolSectorLayers,
+      ...communeLayers,
+      ...cadastreLayers, // cadastre on top of DVF
+    ];
+
+    const layers = [...baseStyle.layers];
+    let lastGeometryIndex = -1;
+    for (let i = layers.length - 1; i >= 0; i--) {
+      if (layers[i].type !== "symbol") {
+        lastGeometryIndex = i;
+        break;
+      }
+    }
+    layers.splice(lastGeometryIndex + 1, 0, ...overlaySpecs);
+
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       preserveDrawingBuffer: true,
       style: {
-        version: 8,
+        ...baseStyle,
         sources: {
-          osm: {
-            type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-            tileSize: 256,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          },
+          ...baseStyle.sources,
           ...wmsSources,
           ...dvfSources,
           ...irisSources,
@@ -342,15 +409,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
           ...communeSources,
           ...cadastreSources,
         },
-        layers: [
-          { id: "osm", type: "raster", source: "osm" },
-          ...wmsLayers,
-          ...dvfLayers,
-          ...irisLayers,
-          ...schoolSectorLayers,
-          ...communeLayers,
-          ...cadastreLayers, // cadastre on top of DVF
-        ],
+        layers,
       },
       center: [lon, lat],
       zoom: communeContour ? 10 : cadastreParcel ? 17 : 14,
@@ -417,7 +476,7 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         map.current.remove();
       }
     };
-  }, [lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector]);
+  }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector]);
 
   // Sync layer visibility
   useEffect(() => {
