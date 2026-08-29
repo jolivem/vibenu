@@ -143,6 +143,16 @@ export interface ElectionsCandidateDto {
   pctNational: number;
 }
 
+/** Profil sur 12 mois d'une série. Index 0 = janvier ; `null` = mesure absente. */
+export interface ClimateMonthlySeriesDto {
+  name: string;
+  climateType?: string;
+  stationName?: string;
+  temperatureC: (number | null)[];
+  precipitationMm: (number | null)[];
+  sunshineHours: (number | null)[];
+}
+
 export interface ClimateAnalysisDto {
   periodStart: number;
   periodEnd: number;
@@ -152,6 +162,7 @@ export interface ClimateAnalysisDto {
   precipitationMm: number | null;
   /** Cumul annuel moyen d'ensoleillement (h). Souvent null (stations héliographes rares). */
   sunshineHours: number | null;
+  /** Moyennes France. Plus affichées par la card ; toujours reprises dans le PDF. */
   national: {
     temperatureC: number;
     precipitationMm: number;
@@ -162,6 +173,17 @@ export interface ClimateAnalysisDto {
     name: string;
     distanceKm: number;
   };
+  /** Station retenue par mesure — rayons différents, donc stations parfois différentes. */
+  stationsByMetric?: {
+    temperature?: { name: string; distanceKm: number };
+    precipitation?: { name: string; distanceKm: number };
+    sunshine?: { name: string; distanceKm: number };
+  };
+  /** Profil mensuel local, comparé à trois villes de climats types. */
+  monthly?: {
+    local: ClimateMonthlySeriesDto;
+    references: ClimateMonthlySeriesDto[];
+  } | null;
 }
 
 export interface ElectionsAnalysisDto {

@@ -43,10 +43,14 @@ __pycache__/
 venv/
 scripts/france-latest.osm.pbf
 
+# Dumps de base : frontend/data.sql pèse 1,5 Go, aucun dump n'a sa place dans le dépôt.
+# Les migrations applicatives, elles, DOIVENT être versionnées — update.sh les rejoue à
+# chaque déploiement, et un clone qui ne les aurait pas ne saurait pas créer ses tables.
 *.sql
-
-# Database dumps
+!frontend/src/server-shared/infrastructure/database/migrations/*.sql
 *.dump
 
-data/
-climate/
+# Données brutes téléchargées par les scripts d'import (~320 Mo de CSV Météo-France).
+# Chemin ancré : sans le « / » initial, la règle emporterait aussi tout dossier « data »
+# ou « climate » du code source — c'est ce qui a rendu invisible le module climat entier.
+/scripts/data/

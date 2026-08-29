@@ -31,17 +31,17 @@ export function AgeChart({
   const { W, H, padL, padR, padB } = AGE_CHART_DIMENSIONS;
 
   return (
-    <div className="age-chart">
+    <div className="line-chart">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
         aria-label="Répartition par âge — comparaison multi-séries"
-        className="age-chart-svg"
+        className="line-chart-svg"
       >
         {yTicks.map((t) => (
           <g key={t}>
-            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="age-chart-grid" />
-            <text x={padL - 4} y={y(t)} className="age-chart-axis age-chart-axis--y">
+            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="line-chart-grid" />
+            <text x={padL - 4} y={y(t)} className="line-chart-axis line-chart-axis--y">
               {t}%
             </text>
           </g>
@@ -51,7 +51,7 @@ export function AgeChart({
             key={b.label}
             x={x(i)}
             y={H - padB + 14}
-            className="age-chart-axis age-chart-axis--x"
+            className="line-chart-axis line-chart-axis--x"
           >
             {b.label}
           </text>
@@ -65,7 +65,7 @@ export function AgeChart({
                 stroke={s.color}
                 strokeWidth={s.strokeWidth}
                 fill="none"
-                className="age-chart-line"
+                className="line-chart-line"
               />
               {AGE_BUCKETS.map((b, i) => (
                 <circle
@@ -82,10 +82,10 @@ export function AgeChart({
           );
         })}
       </svg>
-      <ul className="age-chart-legend">
+      <ul className="line-chart-legend">
         {series.map((s) => (
           <li key={s.name}>
-            <span className="age-chart-legend-dot" style={{ background: s.color }} />
+            <span className="line-chart-legend-dot" style={{ background: s.color }} />
             {s.name}
           </li>
         ))}

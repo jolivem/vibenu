@@ -1,132 +1,97 @@
 import type { ClimateAnalysisDto } from "@/types/location-analysis";
+import { ClimateChart } from "./ClimateChart";
+import { CLIMATE_METRICS, LOCAL_SERIES_COLOR, REFERENCE_COLORS } from "./climateChart";
 
-interface IndicatorRow {
-  label: string;
-  unit: string;
-  format: (n: number) => string;
-  color: string;
-  commune: number | null;
-  national: number;
-}
+const FALLBACK_REFERENCE_COLOR = "#9ca3af";
 
-function fmtTemp(n: number) {
-  return `${n.toFixed(1).replace(".", ",")} °C`;
-}
-function fmtMm(n: number) {
-  return `${Math.round(n).toLocaleString("fr-FR")} mm`;
-}
-function fmtHours(n: number) {
-  return `${Math.round(n).toLocaleString("fr-FR")} h`;
+function stationLine(
+  label: string,
+  station?: { name: string; distanceKm: number },
+): string | null {
+  if (!station) return null;
+  const km = station.distanceKm.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+  return `${label} : ${station.name} (${km} km)`;
 }
 
-function deltaLabel(delta: number, unit: string): string {
-  const r = Math.round(delta * 10) / 10;
-  if (r === 0) return "= France";
-  const sign = r > 0 ? "+" : "−";
-  return `${sign}${Math.abs(r).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} ${unit}`;
-}
-
+/**
+ * Climat de l'adresse, mois par mois, comparé à trois villes de climats types.
+ *
+ * Pas de comparaison à une moyenne France : un chiffre national moyen ne correspond
+ * à aucun climat réel, alors que « plus proche de Strasbourg que de Marseille » se
+ * comprend d'emblée.
+ */
 export function ClimateCard({ climate }: { climate: ClimateAnalysisDto }) {
-  const rows: IndicatorRow[] = [
-    {
-      label: "Température moyenne",
-      unit: "°C",
-      format: fmtTemp,
-      color: "#dc2626",
-      commune: climate.temperatureC,
-      national: climate.national.temperatureC,
-    },
-    {
-      label: "Précipitations annuelles",
-      unit: "mm",
-      format: fmtMm,
-      color: "#2563eb",
-      commune: climate.precipitationMm,
-      national: climate.national.precipitationMm,
-    },
-    {
-      label: "Ensoleillement annuel",
-      unit: "h",
-      format: fmtHours,
-      color: "#f59e0b",
-      commune: climate.sunshineHours,
-      national: climate.national.sunshineHours,
-    },
-  ];
+  const monthly = climate.monthly;
+  if (!monthly) return null;
 
-  // Toutes valeurs locales nulles → la section n'a rien à montrer
-  const hasAnyValue = rows.some((r) => r.commune !== null);
-  if (!hasAnyValue) return null;
+  // Chaque graphe décide seul de s'afficher : `ClimateChart` rend null quand la série
+  // locale est vide. Si aucune mesure n'est disponible, la card entière n'a rien à dire.
+  const hasAnyMetric = CLIMATE_METRICS.some((m) =>
+    monthly.local[m.key].some((v) => v !== null),
+  );
+  if (!hasAnyMetric) return null;
+
+  const byMetric = climate.stationsByMetric;
+  const stationLines = [
+    stationLine("Température", byMetric?.temperature),
+    stationLine("Précipitations", byMetric?.precipitation),
+    stationLine("Ensoleillement", byMetric?.sunshine),
+  ].filter((l): l is string => l !== null);
 
   return (
     <section className="card climate-card">
       <h2>Climat (normales {climate.periodStart}–{climate.periodEnd})</h2>
       <p className="muted">
-        Comparaison avec les moyennes France métropolitaine.
-        {climate.station && (
-          <>
-            {" "}Station de référence : <strong>{climate.station.name}</strong>
-            {" "}({climate.station.distanceKm.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km).
-          </>
-        )}
+        Profil mois par mois, comparé à trois villes représentatives des grands climats
+        français.
       </p>
 
-      <ul className="elections-list">
-        {rows.filter((r) => r.commune !== null).map((r) => {
-          const communeValue = r.commune as number;
-          const max = Math.max(communeValue, r.national, 1);
-          const wCommune = (communeValue / max) * 100;
-          const wNational = (r.national / max) * 100;
-          const delta = communeValue - r.national;
-          return (
-            <li key={r.label} className="elections-row">
-              <div className="elections-row-head">
-                <span className="elections-name">{r.label}</span>
-                <span
-                  className={
-                    delta > 0
-                      ? "elections-delta-pill elections-delta-up"
-                      : delta < 0
-                        ? "elections-delta-pill elections-delta-down"
-                        : "elections-delta-pill"
-                  }
-                >
-                  {deltaLabel(delta, r.unit)}
-                </span>
-              </div>
-
-              <div className="elections-bar-row">
-                <span className="elections-bar-label">Commune</span>
-                <div className="elections-bar">
-                  <div
-                    className="elections-bar-fill"
-                    style={{ width: `${wCommune}%`, background: r.color }}
-                  />
-                </div>
-                <span className="elections-bar-pct climate-value">
-                  {r.format(communeValue)}
-                </span>
-              </div>
-
-              <div className="elections-bar-row">
-                <span className="elections-bar-label">France</span>
-                <div className="elections-bar">
-                  <div
-                    className="elections-bar-fill elections-bar-fill--national"
-                    style={{ width: `${wNational}%`, background: r.color }}
-                  />
-                </div>
-                <span className="elections-bar-pct climate-value elections-bar-pct--national">
-                  {r.format(r.national)}
-                </span>
-              </div>
-            </li>
-          );
-        })}
+      <ul className="line-chart-legend climate-legend">
+        <li>
+          <span className="line-chart-legend-dot" style={{ background: LOCAL_SERIES_COLOR }} />
+          {monthly.local.name}
+        </li>
+        {monthly.references.map((ref) => (
+          <li key={ref.name}>
+            <span
+              className="line-chart-legend-dot"
+              style={{ background: REFERENCE_COLORS[ref.name] ?? FALLBACK_REFERENCE_COLOR }}
+            />
+            {ref.name}
+            {ref.climateType && <span className="climate-legend-type"> · {ref.climateType}</span>}
+          </li>
+        ))}
       </ul>
 
+      {CLIMATE_METRICS.map((metric) => (
+        <ClimateChart
+          key={metric.key}
+          metric={metric.key}
+          label={metric.label}
+          unit={metric.unit}
+          format={metric.format}
+          local={monthly.local}
+          references={monthly.references}
+        />
+      ))}
+
+      {stationLines.length > 0 && (
+        <p className="elections-footnote">
+          Stations Météo-France les plus proches — {stationLines.join(" · ")}.
+        </p>
+      )}
       <p className="elections-footnote">
         Source : Météo-France · Normales 1991-2020 par station (licence Etalab 2.0).
+        {monthly.references.some((r) => r.stationName) && (
+          <>
+            {" "}Villes de référence mesurées à{" "}
+            {monthly.references
+              .filter((r) => r.stationName)
+              .map((r) => `${r.stationName} pour ${r.name}`)
+              .join(", ")}
+            .
+          </>
+        )}
       </p>
     </section>
   );

@@ -14,6 +14,16 @@
   --font-sans-fallback: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono-fallback: "SF Mono", Menlo, monospace;
   --font-serif-fallback: "Iowan Old Style", "Apple Garamond", Georgia, "Times New Roman", serif;
+  /*
+   * Largeur maximale des graphes en courbes (âge, climat).
+   *
+   * Détermine leur taille APPARENTE, pas seulement leur encombrement : le SVG est posé
+   * en `viewBox` avec `width: 100%`, donc tout — libellés d'axes compris — est mis à
+   * l'échelle par `largeur_rendue / 400`. Deux graphes de même viewBox mais de largeurs
+   * rendues différentes affichent des axes de tailles différentes. D'où cette valeur
+   * unique, partagée : c'est elle qui les aligne réellement.
+   */
+  --line-chart-max: 520px;
 }
 
 * {
@@ -2127,7 +2137,7 @@ html {
 }
 
 .demographics-age {
-  max-width: 520px;
+  max-width: var(--line-chart-max);
   margin: 16px auto 0;
 }
 
@@ -2138,43 +2148,45 @@ html {
   text-align: center;
 }
 
-.age-chart {
+/* Graphe multi-séries en courbes, partagé par la répartition par âge et le profil
+   climatique mensuel. Neutre par nature : rien ici ne connaît les tranches d'âge. */
+.line-chart {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.age-chart-svg {
+.line-chart-svg {
   width: 100%;
   height: auto;
 }
 
-.age-chart-grid {
+.line-chart-grid {
   stroke: var(--border);
   stroke-width: 1;
 }
 
-.age-chart-axis {
+.line-chart-axis {
   font-size: 10px;
   fill: var(--muted);
 }
 
-.age-chart-axis--y {
+.line-chart-axis--y {
   dominant-baseline: middle;
   text-anchor: end;
 }
 
-.age-chart-axis--x {
+.line-chart-axis--x {
   text-anchor: middle;
 }
 
-.age-chart-line {
+.line-chart-line {
   fill: none;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
-.age-chart-legend {
+.line-chart-legend {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -2185,13 +2197,13 @@ html {
   color: var(--muted);
 }
 
-.age-chart-legend li {
+.line-chart-legend li {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.age-chart-legend-dot {
+.line-chart-legend-dot {
   display: inline-block;
   width: 10px;
   height: 10px;
@@ -2375,9 +2387,43 @@ html {
   font-style: italic;
 }
 
-/* Climate card — réutilise les styles .elections-* */
+/* Climate card — profil mensuel en courbes (.line-chart*) + notes en .elections-footnote */
 .climate-card .muted {
   margin: 4px 0 14px;
+  font-size: 0.85rem;
+}
+
+/* Légende commune aux trois graphes : posée une fois en haut, elle vaut pour tous —
+   les couleurs des villes ne changent pas d'une mesure à l'autre. */
+.climate-legend {
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 0.5px solid var(--hairline);
+}
+
+.climate-legend-type {
+  color: var(--muted-soft);
+}
+
+/* Même bride que la répartition par âge : sans elle le graphe climatique s'étirerait sur
+   toute la largeur de la card et rendrait ses axes plus gros que ceux de la démographie,
+   à viewBox pourtant identique. */
+.climate-metric {
+  max-width: var(--line-chart-max);
+  margin-inline: auto;
+}
+
+.climate-metric + .climate-metric {
+  margin-top: 22px;
+}
+
+.climate-metric h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.climate-metric-unit {
+  color: var(--muted-soft);
   font-size: 0.85rem;
 }
 

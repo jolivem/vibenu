@@ -1,18 +1,7 @@
 import type { ClimateService } from "./climate.service";
 import type { ClimateAnalysis } from "../domain/climate.types";
 import type { ClimateProvider } from "../infrastructure/climate.provider";
-
-/**
- * Normales France métropolitaine 1991-2020 — valeurs officielles Météo-France.
- * Source : https://meteofrance.com/climat — moyennes spatiales homogénéisées
- * sur tout le territoire (référence WMO). Utilisées comme référence nationale
- * absolue, et comme fallback si le provider runtime est indisponible.
- */
-const FRANCE_NORMALES_OFFICIAL = {
-  temperatureC: 13.0,
-  precipitationMm: 935,
-  sunshineHours: 1969,
-} as const;
+import { FRANCE_NORMALES } from "../domain/reference-climates";
 
 const PERIOD_START = 1991;
 const PERIOD_END = 2020;
@@ -36,12 +25,16 @@ export class ClimateServiceImpl implements ClimateService {
       temperatureC: local.temperatureC,
       precipitationMm: local.precipitationMm,
       sunshineHours: local.sunshineHours,
+      // Plus affiché par la card, qui compare désormais à 3 climats types. Conservé
+      // pour le PDF, qui garde ses barres annuelles face à la moyenne France.
       national: {
-        temperatureC: national?.temperatureC ?? FRANCE_NORMALES_OFFICIAL.temperatureC,
-        precipitationMm: national?.precipitationMm ?? FRANCE_NORMALES_OFFICIAL.precipitationMm,
-        sunshineHours: national?.sunshineHours ?? FRANCE_NORMALES_OFFICIAL.sunshineHours,
+        temperatureC: national?.temperatureC ?? FRANCE_NORMALES.temperatureC,
+        precipitationMm: national?.precipitationMm ?? FRANCE_NORMALES.precipitationMm,
+        sunshineHours: national?.sunshineHours ?? FRANCE_NORMALES.sunshineHours,
       },
       station: local.station,
+      stationsByMetric: local.stationsByMetric,
+      monthly: local.monthly ?? null,
     };
   }
 }

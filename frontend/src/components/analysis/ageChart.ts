@@ -1,4 +1,5 @@
 import type { AgeDistributionDto } from "@/types/location-analysis";
+import { LINE_CHART_DIMENSIONS } from "./lineChart";
 
 export const AGE_BUCKETS: ReadonlyArray<{ label: string; key: keyof AgeDistributionDto }> = [
   { label: "0-14", key: "pct0_14" },
@@ -9,14 +10,8 @@ export const AGE_BUCKETS: ReadonlyArray<{ label: string; key: keyof AgeDistribut
   { label: "75+", key: "pct75Plus" },
 ];
 
-export const AGE_CHART_DIMENSIONS = {
-  W: 400,
-  H: 220,
-  padL: 36,
-  padR: 12,
-  padT: 10,
-  padB: 38,
-} as const;
+/** Géométrie partagée avec le graphe climatique — voir lineChart.ts. */
+export const AGE_CHART_DIMENSIONS = LINE_CHART_DIMENSIONS;
 
 export interface AgeChartSeries {
   name: string;

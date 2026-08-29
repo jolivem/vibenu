@@ -1,3 +1,5 @@
+import type { ClimateMonthlySeries } from "../domain/climate.types";
+
 export interface ClimateNormales {
   temperatureC: number | null;
   precipitationMm: number | null;
@@ -7,6 +9,17 @@ export interface ClimateNormales {
     name: string;
     distanceKm: number;
   };
+  /** Station retenue pour chaque mesure — elles peuvent différer (rayons distincts). */
+  stationsByMetric?: {
+    temperature?: { name: string; distanceKm: number };
+    precipitation?: { name: string; distanceKm: number };
+    sunshine?: { name: string; distanceKm: number };
+  };
+  /** Profil sur 12 mois : la série locale et les villes de référence. */
+  monthly?: {
+    local: ClimateMonthlySeries;
+    references: ClimateMonthlySeries[];
+  } | null;
 }
 
 export interface ClimateProvider {

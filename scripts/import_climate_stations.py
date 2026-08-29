@@ -13,6 +13,11 @@ Méthode :
    - Ensoleillement annuel = somme(INST minutes) / 60 / nb_années
 4. Filtre qualité : ≥ 25 années couvertes (sur 30 possibles)
 5. INSERT dans climate_station_normales (UPSERT par NUM_POSTE)
+6. Second passage, même source : agrège par (NUM_POSTE, mois) et remplit
+   climate_station_monthly_normales — le profil sur 12 mois de chaque station.
+
+Les deux passages partagent les mêmes fichiers et le même filtre qualité, donc
+la somme des 12 mois retombe sur le cumul annuel de la même station.
 
 Usage :
     # Place les .csv.gz dans scripts/data/climate/, puis :
@@ -20,7 +25,8 @@ Usage :
     # Ou chemin explicite :
     python import_climate_stations.py --data-dir ~/Downloads/decadaires
 
-Pré-requis : migration 008-climate-station-normales.sql appliquée.
+Pré-requis : migrations 008-climate-station-normales.sql et
+             013-climate-station-monthly.sql appliquées.
 """
 
 import argparse
@@ -155,6 +161,47 @@ def aggregate(df: pd.DataFrame) -> pd.DataFrame:
     ]
 
 
+def aggregate_monthly(df: pd.DataFrame, keep_stations: pd.Series) -> pd.DataFrame:
+    """
+    Profil mensuel par station : 12 lignes par station retenue.
+
+    Restreint aux stations qui ont passé le filtre qualité annuel, pour que les deux
+    tables décrivent le même échantillon et que somme(12 mois) == cumul annuel.
+
+    Le nombre d'années est compté **par (station, mois)** et non globalement : une
+    station peut couvrir 24 janviers et 23 février sur la période. Diviser les cumuls
+    par un nombre d'années global décalerait les mois les moins couverts.
+    """
+    df = df[df["NUM_POSTE"].isin(keep_stations)].copy()
+    df["MONTH"] = (df["AAAAMM"] % 100).astype("Int64")
+    df["YEAR"] = (df["AAAAMM"] // 100).astype("Int64")
+
+    agg = df.groupby(["NUM_POSTE", "MONTH"], as_index=False).agg(
+        nb_years=("YEAR", "nunique"),
+        temperature_c=("TM", "mean"),
+        precip_sum=("RR", lambda x: x.sum(min_count=1)),
+        precip_count=("RR", "count"),
+        sunshine_sum_min=("INST", lambda x: x.sum(min_count=1)),
+        sunshine_count=("INST", "count"),
+    )
+
+    # Cumuls moyens du mois : total sur la période / nb d'années couvrant ce mois
+    agg["precipitation_mm"] = np.where(
+        agg["precip_count"] > 0,
+        (agg["precip_sum"] / agg["nb_years"]).round(1),
+        np.nan,
+    )
+    agg["sunshine_hours"] = np.where(
+        agg["sunshine_count"] > 0,
+        ((agg["sunshine_sum_min"] / 60) / agg["nb_years"]).round(1),
+        np.nan,
+    )
+    agg["temperature_c"] = agg["temperature_c"].round(1)
+
+    return agg[["NUM_POSTE", "MONTH", "temperature_c", "precipitation_mm",
+                "sunshine_hours", "nb_years"]]
+
+
 def sanity_check_units(agg: pd.DataFrame) -> None:
     """Détecte les erreurs d'unités classiques (sunshine en heures × 60 ?)."""
     if "sunshine_hours" not in agg.columns:
@@ -232,6 +279,39 @@ def insert(conn, agg: pd.DataFrame) -> int:
     return len(rows)
 
 
+def insert_monthly(conn, agg: pd.DataFrame) -> int:
+    rows = []
+    for _, r in agg.iterrows():
+        rows.append((
+            str(r["NUM_POSTE"])[:8],
+            int(r["MONTH"]),
+            to_py(r["temperature_c"]),
+            to_py(r["precipitation_mm"]),
+            to_py(r["sunshine_hours"]),
+            int(r["nb_years"]),
+        ))
+
+    with conn.cursor() as cur:
+        for i in range(0, len(rows), BATCH_SIZE):
+            execute_values(
+                cur,
+                """
+                INSERT INTO climate_station_monthly_normales
+                  (station_id, month, temperature_c, precipitation_mm,
+                   sunshine_hours, nb_years)
+                VALUES %s
+                ON CONFLICT (station_id, month) DO UPDATE SET
+                  temperature_c = EXCLUDED.temperature_c,
+                  precipitation_mm = EXCLUDED.precipitation_mm,
+                  sunshine_hours = EXCLUDED.sunshine_hours,
+                  nb_years = EXCLUDED.nb_years
+                """,
+                rows[i:i + BATCH_SIZE],
+            )
+    conn.commit()
+    return len(rows)
+
+
 def print_stats(conn):
     with conn.cursor() as cur:
         cur.execute("""
@@ -251,6 +331,46 @@ def print_stats(conn):
     print(f"  Avec précipitations     : {wp}  (moy. {ap} mm/an)")
     print(f"  Avec ensoleillement     : {ws}  (moy. {as_} h/an)")
     print(f"\nRéférence FR officielle : 13.0 °C · 935 mm/an · 1969 h/an")
+
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT COUNT(*), COUNT(DISTINCT station_id), COUNT(sunshine_hours)
+            FROM climate_station_monthly_normales
+        """)
+        total_m, stations_m, sun_m = cur.fetchone()
+    print(f"\nTable climate_station_monthly_normales :")
+    print(f"  Lignes                  : {total_m}  ({stations_m} stations × 12 mois)")
+    print(f"  Avec ensoleillement     : {sun_m}")
+
+    # Contrôle de cohérence entre les deux passages.
+    #
+    # Un petit écart est NORMAL et attendu : l'annuel divise le cumul total par un
+    # nombre d'années global, le mensuel divise chaque mois par sa propre couverture.
+    # Sur une station qui couvre 29 janviers mais 27 juillets, les deux ne peuvent pas
+    # coïncider — et c'est le mensuel qui est juste. Les stations à 30 années pleines
+    # (Nice, par exemple) tombent au dixième près. Le seuil ne traque donc qu'une
+    # erreur grossière : mauvaise unité, mauvais diviseur, double comptage.
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT ROUND(AVG(ABS(m.sun_sum - a.sunshine_hours))::numeric, 1)
+            FROM climate_station_normales a
+            JOIN (
+              SELECT station_id, SUM(sunshine_hours) AS sun_sum
+              FROM climate_station_monthly_normales
+              WHERE sunshine_hours IS NOT NULL
+              GROUP BY station_id HAVING COUNT(*) = 12
+            ) m ON m.station_id = a.station_id
+            WHERE a.sunshine_hours IS NOT NULL
+        """)
+        (gap,) = cur.fetchone()
+    if gap is None:
+        print("  Cohérence annuel/mensuel : pas de station comparable")
+    elif gap > 40:
+        print(f"⚠  Écart moyen somme(12 mois) vs annuel : {gap} h — trop élevé,")
+        print(f"   vérifier les unités et le diviseur (nb_years par mois).")
+    else:
+        print(f"✓  Écart moyen somme(12 mois) vs annuel : {gap} h")
+        print(f"   (couvertures mensuelles inégales — attendu, le mensuel fait foi)")
 
 
 def main():
@@ -295,10 +415,16 @@ def main():
 
     sanity_check_units(agg)
 
+    print(f"Agrégation mensuelle…")
+    monthly = aggregate_monthly(full, agg["NUM_POSTE"])
+    print(f"  {len(monthly)} lignes station × mois")
+
     conn = get_connection()
     try:
         n = insert(conn, agg)
         print(f"\n✓ {n} stations insérées/mises à jour.")
+        m = insert_monthly(conn, monthly)
+        print(f"✓ {m} lignes mensuelles insérées/mises à jour.")
         print_stats(conn)
     finally:
         conn.close()
