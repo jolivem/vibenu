@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { SchoolSectorDto } from "@/types/location-analysis";
 
 const NIVEAU_LABEL: Record<SchoolSectorDto["niveau"], string> = {
@@ -5,7 +6,14 @@ const NIVEAU_LABEL: Record<SchoolSectorDto["niveau"], string> = {
   lycee: "Lycée de secteur",
 };
 
-export function SchoolSectorCard({ schoolSector }: { schoolSector: SchoolSectorDto }) {
+export function SchoolSectorCard({
+  schoolSector,
+  children,
+}: {
+  schoolSector: SchoolSectorDto;
+  /** Carte thématique, rendue en fin de card et débordant jusqu'à ses bords. */
+  children?: ReactNode;
+}) {
   return (
     <section className="card">
       <h2>Carte scolaire</h2>
@@ -31,10 +39,10 @@ export function SchoolSectorCard({ schoolSector }: { schoolSector: SchoolSectorD
           )}
         </div>
         <p className="cadastre-note">
-          Sectorisation publique officielle. Le secteur est affiché sur la carte
-          (voir calques).
+          Sectorisation publique officielle. Le secteur est tracé sur la carte ci-dessous.
         </p>
       </div>
+      {children ? <div className="card-map">{children}</div> : null}
     </section>
   );
 }

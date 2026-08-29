@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { DemographicsAnalysisDto } from "@/types/location-analysis";
 import type { AnalysisMode } from "@/server-shared/types/location-analysis.dto";
 import { AgeChart } from "./AgeChart";
@@ -6,9 +7,11 @@ import { formatDensity, formatPct, formatPopulation, formatRevenu } from "./demo
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  /** Carte IRIS, rendue en fin de card. Absente en mode commune, où l'IRIS n'a pas de sens. */
+  children?: ReactNode;
 }
 
-export function DemographicsCard({ demographics, mode }: Props) {
+export function DemographicsCard({ demographics, mode, children }: Props) {
   const { communeStats, nationalStats, communeIrisCount } = demographics;
   const france = nationalStats;
   const isCommuneMode = mode === "commune";
@@ -138,6 +141,8 @@ export function DemographicsCard({ demographics, mode }: Props) {
       <p className="demographics-footnote">
         Commune et France : moyennes pondérées par population calculées à partir des quartiers (chiffres indicatifs).
       </p>
+
+      {children ? <div className="card-map">{children}</div> : null}
     </section>
   );
 }

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { RiskAnalysisDto, RiskCategoryDto } from "@/types/location-analysis";
 
 function levelBadge(level: RiskCategoryDto["level"]) {
@@ -11,7 +12,14 @@ function levelBadge(level: RiskCategoryDto["level"]) {
   return <span className={c.className}>{c.label}</span>;
 }
 
-export function RisksCard({ risks }: { risks: RiskAnalysisDto }) {
+export function RisksCard({
+  risks,
+  children,
+}: {
+  risks: RiskAnalysisDto;
+  /** Carte thématique, rendue en fin de card et débordant jusqu'à ses bords. */
+  children?: ReactNode;
+}) {
   const highlighted = risks.categories.filter((r) => r.level === "élevé" || r.level === "modéré");
   const minor = risks.categories.filter((r) => r.level === "faible" || r.level === "absent");
 
@@ -46,6 +54,15 @@ export function RisksCard({ risks }: { risks: RiskAnalysisDto }) {
           ))}
         </div>
       )}
+
+      {children ? (
+        <div className="card-map">
+          <p className="card-map-hint">
+            Cochez les cases sous la carte pour afficher les zones de risque.
+          </p>
+          {children}
+        </div>
+      ) : null}
     </section>
   );
 }

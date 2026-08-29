@@ -278,23 +278,24 @@ export function AnalysisScreen() {
                 {hasContent.immobilier && (
                   <AnalysisSection id="immobilier">
                     {FEATURES.showRealEstate && realEstate && (
-                      <RealEstateCard realEstate={realEstate} />
+                      <RealEstateCard realEstate={realEstate}>
+                        {realEstate.transactionFeatures?.length ? (
+                          <LazyMap height={THEMATIC_MAP_HEIGHT}>
+                            <Map
+                              lat={data.map.center.lat}
+                              lon={data.map.center.lon}
+                              label={data.address.label}
+                              dvfTransactions={realEstate.transactionFeatures}
+                              communeContour={data.map.communeContour}
+                              basemap={THEMATIC_BASEMAP}
+                              initialLayers={[DVF_LAYER_ID]}
+                              showLayerToggle={false}
+                              height={THEMATIC_MAP_HEIGHT}
+                            />
+                          </LazyMap>
+                        ) : null}
+                      </RealEstateCard>
                     )}
-                    {realEstate?.transactionFeatures?.length ? (
-                      <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                        <Map
-                          lat={data.map.center.lat}
-                          lon={data.map.center.lon}
-                          label={data.address.label}
-                          dvfTransactions={realEstate.transactionFeatures}
-                          communeContour={data.map.communeContour}
-                          basemap={THEMATIC_BASEMAP}
-                          initialLayers={[DVF_LAYER_ID]}
-                          showLayerToggle={false}
-                          height={THEMATIC_MAP_HEIGHT}
-                        />
-                      </LazyMap>
-                    ) : null}
                     {FEATURES.showCadastre && data.cadastre && (
                       <CadastreCard cadastre={data.cadastre} />
                     )}
@@ -307,22 +308,23 @@ export function AnalysisScreen() {
                       <NeighborhoodCard neighborhood={data.neighborhood} />
                     )}
                     {FEATURES.showSchoolSector && data.schoolSector && (
-                      <SchoolSectorCard schoolSector={data.schoolSector} />
+                      <SchoolSectorCard schoolSector={data.schoolSector}>
+                        {data.schoolSector.geometry ? (
+                          <LazyMap height={THEMATIC_MAP_HEIGHT}>
+                            <Map
+                              lat={data.map.center.lat}
+                              lon={data.map.center.lon}
+                              label={data.address.label}
+                              schoolSector={data.schoolSector.geometry}
+                              basemap={THEMATIC_BASEMAP}
+                              initialLayers={[SCHOOL_SECTOR_LAYER_ID]}
+                              showLayerToggle={false}
+                              height={THEMATIC_MAP_HEIGHT}
+                            />
+                          </LazyMap>
+                        ) : null}
+                      </SchoolSectorCard>
                     )}
-                    {FEATURES.showSchoolSector && data.schoolSector?.geometry ? (
-                      <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                        <Map
-                          lat={data.map.center.lat}
-                          lon={data.map.center.lon}
-                          label={data.address.label}
-                          schoolSector={data.schoolSector.geometry}
-                          basemap={THEMATIC_BASEMAP}
-                          initialLayers={[SCHOOL_SECTOR_LAYER_ID]}
-                          showLayerToggle={false}
-                          height={THEMATIC_MAP_HEIGHT}
-                        />
-                      </LazyMap>
-                    ) : null}
                   </AnalysisSection>
                 )}
 
@@ -343,41 +345,43 @@ export function AnalysisScreen() {
 
                 {hasContent.risques && (
                   <AnalysisSection id="risques">
-                    <RisksCard risks={data.risks} />
-                    <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                      <Map
-                        lat={data.map.center.lat}
-                        lon={data.map.center.lon}
-                        label={data.address.label}
-                        risks={data.risks}
-                        communeContour={data.map.communeContour}
-                        basemap={THEMATIC_BASEMAP}
-                        initialLayers={[DEFAULT_RISK_LAYER]}
-                        height={THEMATIC_MAP_HEIGHT}
-                      />
-                    </LazyMap>
+                    <RisksCard risks={data.risks}>
+                      <LazyMap height={THEMATIC_MAP_HEIGHT}>
+                        <Map
+                          lat={data.map.center.lat}
+                          lon={data.map.center.lon}
+                          label={data.address.label}
+                          risks={data.risks}
+                          communeContour={data.map.communeContour}
+                          basemap={THEMATIC_BASEMAP}
+                          initialLayers={[DEFAULT_RISK_LAYER]}
+                          height={THEMATIC_MAP_HEIGHT}
+                        />
+                      </LazyMap>
+                    </RisksCard>
                   </AnalysisSection>
                 )}
 
                 {hasContent.population && (
                   <AnalysisSection id="population">
                     {FEATURES.showDemographics && data.demographics && (
-                      <DemographicsCard demographics={data.demographics} mode={data.mode} />
+                      <DemographicsCard demographics={data.demographics} mode={data.mode}>
+                        {!isCommune && data.demographics.irisGeojson ? (
+                          <LazyMap height={THEMATIC_MAP_HEIGHT}>
+                            <Map
+                              lat={data.map.center.lat}
+                              lon={data.map.center.lon}
+                              label={data.address.label}
+                              irisGeojson={data.demographics.irisGeojson}
+                              basemap={THEMATIC_BASEMAP}
+                              initialLayers={[IRIS_LAYER_ID]}
+                              showLayerToggle={false}
+                              height={THEMATIC_MAP_HEIGHT}
+                            />
+                          </LazyMap>
+                        ) : null}
+                      </DemographicsCard>
                     )}
-                    {!isCommune && data.demographics?.irisGeojson ? (
-                      <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                        <Map
-                          lat={data.map.center.lat}
-                          lon={data.map.center.lon}
-                          label={data.address.label}
-                          irisGeojson={data.demographics.irisGeojson}
-                          basemap={THEMATIC_BASEMAP}
-                          initialLayers={[IRIS_LAYER_ID]}
-                          showLayerToggle={false}
-                          height={THEMATIC_MAP_HEIGHT}
-                        />
-                      </LazyMap>
-                    ) : null}
                     {FEATURES.showElections && data.elections && (
                       <ElectionsCard elections={data.elections} />
                     )}

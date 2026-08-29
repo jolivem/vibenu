@@ -1298,10 +1298,16 @@ html {
 
 /* Shared */
 .card {
+  /* Exposé en variables pour que `.card-map` puisse annuler ce padding sans le recopier. */
+  --card-pad-x: 24px;
+  --card-pad-y: 22px;
+  /* Respiration autour d'une carte intégrée — volontairement plus serrée que le padding
+     du texte, pour que la carte reste l'élément le plus large de la card. */
+  --card-map-pad: 14px;
   background: var(--card);
   border: 0.5px solid var(--hairline-strong);
   border-radius: 14px;
-  padding: 22px 24px;
+  padding: var(--card-pad-y) var(--card-pad-x);
 }
 
 .card h2 {
@@ -1927,6 +1933,51 @@ html {
   border-radius: 16px;
   background: var(--card);
   border: 0.5px solid var(--hairline-strong);
+}
+
+/*
+ * Carte intégrée à une card.
+ *
+ * Elle annule le padding de la card puis en reprend une part plus étroite : la carte se
+ * détache donc des bords sans se réduire à la largeur du texte. Son décor propre
+ * (`.map-wrapper` porte fond, bordure et rayon) est neutralisé, c'est la card qui le porte
+ * — exactement ce que `.map-section` fait pour la localisation.
+ *
+ * Pas de fond ni de bordure basse ici : seul le filet du haut est visible, donc aucun
+ * arrondi n'est nécessaire pour épouser les coins de la card.
+ */
+.card-map {
+  margin: 20px calc(-1 * var(--card-pad-x)) calc(-1 * var(--card-pad-y));
+  padding: var(--card-map-pad);
+  border-top: 0.5px solid var(--hairline);
+}
+
+/* Consigne d'usage, posée juste au-dessus de la carte qu'elle décrit. Discrète : elle
+   s'adresse à qui hésite, sans concurrencer le contenu de la card. */
+.card-map-hint {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.card-map .map-wrapper {
+  border: none;
+  padding: 0;
+}
+
+/* Le squelette remplace la carte le temps du montage différé : mêmes coins arrondis
+   qu'elle (8px, posés en style inline sur `.map-container`), sans le décor de card. */
+.card-map .lazy-map-skeleton {
+  border: none;
+  border-radius: 8px;
+  background: var(--bg-alt);
+}
+
+/* Seule la carte des risques garde son panneau de calques. Il se cale sur les bords de la
+   carte, à laquelle il appartient, et non sur ceux du texte. */
+.card-map .layer-toggle-panel {
+  border-top: 0.5px solid var(--hairline);
+  padding: 12px 0 0;
 }
 
 /* Voisinage — 4 familles, chacune regroupant ses catégories */
