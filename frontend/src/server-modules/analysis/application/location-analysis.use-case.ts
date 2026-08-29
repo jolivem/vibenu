@@ -11,6 +11,7 @@ import type { DemographicsService } from "../../demographics/application/demogra
 import type { ElectionsService } from "../../elections/application/elections.service";
 import type { ClimateService } from "../../climate/application/climate.service";
 import type { SchoolSectorService } from "../../school-sector/application/school-sector.service";
+import type { SecurityService } from "../../security/application/security.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
 import type { AnalysisMode, LocationAnalysisDto } from "../../../server-shared/types/location-analysis.dto";
 
@@ -28,6 +29,7 @@ interface Dependencies {
   electionsService: ElectionsService;
   climateService: ClimateService;
   schoolSectorService: SchoolSectorService;
+  securityService: SecurityService;
 }
 
 export class LocationAnalysisUseCase implements LocationAnalysisService {
@@ -73,7 +75,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         ? Promise.resolve(null)
         : this.dependencies.schoolSectorService.getCollegeSector(input.lat, input.lon);
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector] =
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
@@ -86,6 +88,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         this.dependencies.electionsService.getElectionsData(codeInsee),
         this.dependencies.climateService.getClimateData(input.lat, input.lon),
         schoolSectorPromise,
+        this.dependencies.securityService.getSecurityData(codeInsee),
       ]);
 
     const address = {
@@ -122,6 +125,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       elections,
       climate,
       schoolSector,
+      security,
     };
   }
 }

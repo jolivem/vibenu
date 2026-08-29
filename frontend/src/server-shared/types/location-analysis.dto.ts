@@ -186,6 +186,29 @@ export interface ClimateAnalysisDto {
   } | null;
 }
 
+/** Une mesure de délinquance suivie sur 10 ans, avec ses repères département et France. */
+export interface SecurityIndicatorDto {
+  indicateur: string;
+  /** Dénominateur du taux : cambriolages par logement, le reste par habitant. */
+  base: "habitants" | "logements";
+  /**
+   * Taux communal par année, index 0 = première année. `null` = valeur masquée par le
+   * secret statistique, ce qui signifie 1 à 4 faits — l'encadrement est alors donné par
+   * `borneBasse` / `borneHaute`, et l'écran le rend en bande d'incertitude.
+   */
+  commune: (number | null)[];
+  borneBasse: (number | null)[];
+  borneHaute: (number | null)[];
+  departement: (number | null)[];
+  france: (number | null)[];
+}
+
+export interface SecurityAnalysisDto {
+  annees: number[];
+  codeDepartement: string;
+  indicateurs: SecurityIndicatorDto[];
+}
+
 export interface ElectionsAnalysisDto {
   scrutin: "presidentielle-2022-t1";
   inscrits: number;
@@ -301,4 +324,5 @@ export interface LocationAnalysisDto {
   elections?: ElectionsAnalysisDto | null;
   climate?: ClimateAnalysisDto | null;
   schoolSector?: SchoolSectorDto | null;
+  security?: SecurityAnalysisDto | null;
 }

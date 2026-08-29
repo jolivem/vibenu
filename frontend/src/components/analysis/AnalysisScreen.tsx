@@ -20,6 +20,7 @@ import { DemographicsCard } from "@/components/analysis/DemographicsCard";
 import { ElectionsCard } from "@/components/analysis/ElectionsCard";
 import { ClimateCard } from "@/components/analysis/ClimateCard";
 import { SchoolSectorCard } from "@/components/analysis/SchoolSectorCard";
+import { SecurityCard } from "@/components/analysis/SecurityCard";
 import { KeyFigures, type KeyFigure } from "@/components/analysis/KeyFigures";
 import { SectionNav } from "@/components/analysis/SectionNav";
 import { ShareLinks } from "@/components/analysis/ShareLinks";
@@ -110,6 +111,7 @@ export function AnalysisScreen() {
         deplacer: false,
         proximite: false,
         environnement: false,
+        securite: false,
         risques: false,
         population: false,
       };
@@ -124,6 +126,7 @@ export function AnalysisScreen() {
       environnement:
         (FEATURES.showAirQuality && data.airQuality.available) ||
         (FEATURES.showClimate && !!data.climate),
+      securite: FEATURES.showSecurity && !!data.security,
       risques: FEATURES.showRisks,
       population:
         (FEATURES.showDemographics && !!data.demographics) ||
@@ -340,6 +343,16 @@ export function AnalysisScreen() {
                     {FEATURES.showAirQuality && data.airQuality.available && (
                       <AirQualityCard airQuality={data.airQuality} />
                     )}
+                  </AnalysisSection>
+                )}
+
+                {hasContent.securite && data.security && (
+                  <AnalysisSection id="securite">
+                    <SecurityCard
+                      security={data.security}
+                      codeInsee={citycode}
+                      ville={data.address.city}
+                    />
                   </AnalysisSection>
                 )}
 

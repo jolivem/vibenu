@@ -11,6 +11,7 @@ export const SECTION_ORDER = [
   "proximite",
   "deplacer",
   "environnement",
+  "securite",
   "risques",
   "population",
 ] as const;
@@ -22,6 +23,7 @@ export const SECTION_TITLES: Record<SectionId, string> = {
   deplacer: "Se déplacer",
   proximite: "À proximité",
   environnement: "Environnement",
+  securite: "Sécurité",
   risques: "Risques",
   population: "Population",
 };

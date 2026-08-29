@@ -30,6 +30,8 @@ export interface SiteFeatures {
   showNarrative: boolean;
   /** Card "Voisinage" — POIs autour de l'adresse. */
   showNeighborhood: boolean;
+  /** Card "Sécurité" — délinquance enregistrée SSMSI, maille communale. */
+  showSecurity: boolean;
   /** Card "Transports en commun" — gares, bus, métros à proximité. */
   showMobility: boolean;
   /** Card "Marché immobilier" — DVF. */
@@ -77,6 +79,7 @@ const PUBLIC_FEATURES: SiteFeatures = {
   showNarrative: true,
   showNeighborhood: true,
   showMobility: true,
+  showSecurity: true,
   showRealEstate: true,
   showRisks: true,
   showAirQuality: true,
@@ -99,6 +102,7 @@ const PRO_FEATURES: SiteFeatures = {
   showNarrative: false,
   showNeighborhood: true,
   showMobility: true,
+  showSecurity: false, // usage professionnel : hors périmètre
   showRealEstate: false,
   showRisks: false,
   showAirQuality: false,

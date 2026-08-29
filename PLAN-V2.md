@@ -77,8 +77,9 @@ cohérence avec le PDF qui reprend déjà toutes les sections.
 | 2 | **À proximité** | Voisinage, Carte scolaire | IPS des collèges |
 | 3 | **Se déplacer** | Mobilité | vélo, temps vers pôles d'emploi |
 | 4 | **Environnement** | Qualité de l'air, Climat | bruit |
-| 5 | **Risques** | Géorisques | sites pollués (CASIAS) |
-| 6 | **Population** | Démographie, Élections | délinquance SSMSI, municipales 2026 |
+| 5 | **Sécurité** | Délinquance SSMSI | — |
+| 6 | **Risques** | Géorisques | sites pollués (CASIAS) |
+| 7 | **Population** | Démographie, Élections | municipales 2026 |
 
 Ordre arbitré : la question financière d'abord, le contexte territorial en dernier.
 « Se déplacer » était initialement en 2, par hypothèse ; elle est passée **après** « À proximité »
@@ -159,6 +160,10 @@ Décision : on restructure d'abord, on branche les données ensuite. Seul arbitr
 la **délinquance SSMSI ira en section Population**, pas dans Risques (ne pas mélanger aléa naturel et
 fait social).
 
+**Révisé à l'implémentation** : elle a sa **propre section « Sécurité »**, placée après
+« Environnement ». Le motif d'origine tient toujours — ce n'est pas une sous-partie de Risques —
+mais elle n'avait pas davantage sa place en annexe de la démographie. Fait, voir ci-dessous.
+
 Candidats évalués, par rapport valeur/effort décroissant :
 
 | Source | Section | Effort | Note |
@@ -166,7 +171,7 @@ Candidats évalués, par rapport valeur/effort décroissant :
 | **DPE ADEME** | Immobilier | moyen | Étiquette énergie **à l'adresse**. La donnée qui manque le plus à un produit « avant de louer ou acheter ». Repli utile : distribution des étiquettes du quartier. |
 | **Sites pollués (CASIAS/BASOL)** | Risques | **faible** | L'API Géorisques est déjà branchée dans [brgm-risk.provider.ts](frontend/src/server-modules/risks/infrastructure/brgm-risk.provider.ts) — ce sont des endpoints supplémentaires du même service. |
 | **IPS des collèges** | À proximité | faible | Jointure directe : `SchoolSectorDto` porte déjà `codeUai` ([dto:210](frontend/src/server-shared/types/location-analysis.dto.ts#L210)). |
-| **Délinquance SSMSI** | Population | moyen | Import CSV sur le modèle d'`import_elections.py`. Donnée sensible : maille communale, à présenter avec précaution. |
+| ~~**Délinquance SSMSI**~~ | Sécurité | — | **Fait.** Section propre, 5 indicateurs sur 10 ans en courbes, comparés au département et à la France. Maille communale — aucune donnée publique n'existe sous ce niveau, l'infra-communal (IRIS, QPV) restant réservé aux chercheurs. Le secret statistique masque les effectifs de 1 à 4 : rendus en bande d'incertitude plutôt qu'en trou, le zéro étant lui publié. |
 | **Municipales 2026** | Population | **élevé** | Bien plus pertinent qu'une présidentielle 2022 sur une fiche commune, mais l'import n'est pas une simple adaptation du script existant : listes et nuances au lieu de 12 candidats fixes, 2 tours, scrutin plurinominal pour les communes < 1 000 hab. |
 | **Fibre / débit ARCEP** | Immobilier | ? | Mode d'accès à vérifier. |
 

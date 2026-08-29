@@ -2211,6 +2211,26 @@ html {
   flex-shrink: 0;
 }
 
+/*
+ * Bande d'incertitude : la valeur exacte est masquée mais encadrée. Volontairement pâle
+ * et sans bordure — c'est un « quelque part là-dedans », pas une mesure, et elle ne doit
+ * jamais peser autant à l'œil qu'un point réellement publié.
+ */
+.line-chart-band {
+  fill: var(--muted-soft);
+  opacity: 0.18;
+}
+
+.line-chart-legend-band {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  background: var(--muted-soft);
+  opacity: 0.35;
+}
+
 .demographics-table {
   width: 100%;
   border-collapse: collapse;
@@ -2425,6 +2445,54 @@ html {
 .climate-metric-unit {
   color: var(--muted-soft);
   font-size: 0.85rem;
+}
+
+/* Sécurité — cinq courbes sur 10 ans, mêmes conventions que le climat */
+.security-card .muted {
+  margin: 4px 0 14px;
+  font-size: 0.85rem;
+}
+
+.security-legend {
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 0.5px solid var(--hairline);
+}
+
+.security-metric {
+  max-width: var(--line-chart-max);
+  margin-inline: auto;
+}
+
+.security-metric + .security-metric {
+  margin-top: 22px;
+}
+
+.security-metric h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.security-metric-unit {
+  color: var(--muted-soft);
+  font-size: 0.85rem;
+}
+
+/* Traduit la bande d'incertitude — exprimée en faits — dans l'unité de l'axe, qui est
+   en ‰. Sans elle, une bande de 4 à 18 sur l'axe se lit à tort « 4 à 18 faits ». */
+.security-conversion {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Cas de la commune dont aucun indicateur ne dépasse 4 faits : le message porte
+   l'information, il ne signale pas une panne. */
+.security-note {
+  margin: 0 0 18px;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 
 /* Distance discrète à côté du temps de marche dans Voisinage et Mobilité */
