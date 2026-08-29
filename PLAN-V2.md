@@ -7,13 +7,36 @@ périmètre V2** — statu quo tant que la décision de le supprimer n'est pas p
 
 Trois axes :
 
-1. Restructuration de la page d'analyse — **arbitré**
+1. Restructuration de la page d'analyse — **implémentée** (ossature seule, sans changement de données)
 2. Nouvelles données — **reporté après la restructuration**
-3. Remplacement d'OpenStreetMap — **comparaison en cours**
+3. Remplacement d'OpenStreetMap — **fait** : fonds IGN en production, fond mixte appliqué
 
 ---
 
 ## Point 1 — Restructuration de la page d'analyse ✅
+
+### Ce qui a été implémenté
+
+Ossature complète : bandeau de chiffres clés, synthèse pleine largeur, carte de localisation,
+sommaire collant, 6 sections dépliées, 4 cartes, voisinage regroupé en 4 familles.
+Aucun changement côté données — mêmes DTO, mêmes providers, mêmes cards.
+
+**Écarts assumés par rapport au plan ci-dessous, à reprendre plus tard :**
+
+- **Le composant `Map` n'a pas été découpé.** Les 4 cartes sont 4 instances du composant
+  existant avec des sous-ensembles de props. Deux ajouts seulement : `basemap` et
+  `initialLayers` (couches allumées au montage). Le fourre-tout à 10 props reste entier.
+- **Le PDF ne capture toujours qu'une carte**, celle de localisation — la seule montée
+  d'emblée. Sortie inchangée par rapport à la V1. Le registre de refs et les 4 captures
+  placées dans leurs sections restent à faire.
+- **Montage différé** (`IntersectionObserver`) sur les 3 cartes thématiques seulement, via
+  `LazyMap`. La carte de localisation est exclue, précisément parce que le PDF la capture.
+- **Mode commune** : une section sans contenu disparaît de la page, du sommaire et du bandeau,
+  plutôt que d'afficher un message. Même mécanique pour la variante PRO.
+- **Marqueurs transport retirés** de la carte de localisation : `TransportStopDto` ne porte
+  aucune coordonnée, ils étaient tous empilés sur le marqueur d'adresse.
+- **Niveaux de titre** : la section porte un `h2` et les cards gardent le leur. Hiérarchie
+  plate ; la descendre en `h3` demanderait de toucher les 11 cards et leur CSS.
 
 ### Constat
 
@@ -51,16 +74,19 @@ cohérence avec le PDF qui reprend déjà toutes les sections.
 | # | Section | Cards actuelles | Accueillera (point 2) |
 |---|---|---|---|
 | 1 | **Immobilier & urbanisme** | Marché DVF, Cadastre & PLU | DPE ADEME, fibre ARCEP |
-| 2 | **Se déplacer** | Mobilité | vélo, temps vers pôles d'emploi |
-| 3 | **À proximité** | Voisinage, Carte scolaire | IPS des collèges |
+| 2 | **À proximité** | Voisinage, Carte scolaire | IPS des collèges |
+| 3 | **Se déplacer** | Mobilité | vélo, temps vers pôles d'emploi |
 | 4 | **Environnement** | Qualité de l'air, Climat | bruit |
 | 5 | **Risques** | Géorisques | sites pollués (CASIAS) |
 | 6 | **Population** | Démographie, Élections | délinquance SSMSI, municipales 2026 |
 
 Ordre arbitré : la question financière d'abord, le contexte territorial en dernier.
-« Se déplacer » placée en 2 — hypothèse à confirmer : elle a été tranchée comme section autonome
-*après* le choix de l'ordre, et se trouve juste avant « À proximité » parce que les deux répondent à
-« qu'y a-t-il autour de l'adresse ».
+« Se déplacer » était initialement en 2, par hypothèse ; elle est passée **après** « À proximité »
+à l'implémentation. Les deux répondent à « qu'y a-t-il autour de l'adresse », mais les services du
+quotidien pèsent plus, et plus tôt, que les transports dans le choix d'un logement.
+
+L'ordre a une source unique, [sections.ts](frontend/src/components/analysis/sections.ts) : il pilote
+à la fois le sommaire, le bandeau de chiffres clés et le corps de la page.
 
 ### Découpage de « À proximité »
 
@@ -167,15 +193,15 @@ Deux périmètres distincts :
   catégorie là où OSM est faible (écoles → Annuaire de l'éducation, qui apporte le code UAI et branche
   l'IPS ; santé → FINESS), pas en bloc. Commerces et loisirs : OSM reste imbattable.
 
-### Comparateur — `/map-lab` (page interne, `noindex`)
+### Comparateur — `/map-lab` (supprimé)
 
-Bac à sable ajouté sur `dev/v2` : [basemaps.ts](frontend/src/components/map/basemaps.ts) (catalogue,
-réutilisable en production), [BasemapLab.tsx](frontend/src/components/map/BasemapLab.tsx),
-[app/map-lab/](frontend/src/app/map-lab/).
+Bac à sable qui a servi à l'arbitrage : 13 fonds cochables, cartes synchronisées, vraies couches WMS
+risques par-dessus, DVF et parcelle simulés, 6 lieux de test, curseurs d'opacité.
 
-13 fonds cochables, cartes synchronisées, vraies couches WMS risques par-dessus, DVF et parcelle
-simulés (échelle de couleurs identique à la production : 2 000 → vert, 5 000 → jaune, 10 000 → rouge),
-6 lieux de test, curseurs d'opacité et de hauteur.
+**Supprimé une fois le choix fait**, avec les entrées de catalogue qui n'existaient que pour lui
+(OSM raster, ortho, parcellaire, cartes historiques). Les identifiants WMTS restent documentés
+dans le tableau ci-dessous : c'est ce qui a coûté à obtenir, pas le composant.
+[basemaps.ts](frontend/src/components/map/basemaps.ts) ne garde que ce que la production utilise.
 
 ### Ce qui a été vérifié
 
@@ -244,4 +270,13 @@ style `sans_toponymes`.
 | Localisation (haut) | IGN standard, ortho en option | Les numéros de rue confirment l'adresse exacte |
 | DVF, Risques, IRIS | IGN gris ou sans toponymes | Le fond doit s'effacer sous les aplats colorés |
 
-**En attente** : verdict visuel sur `/map-lab`.
+**Appliqué** : `LOCATOR_BASEMAP = "standard"`, `THEMATIC_BASEMAP = "gris"`. L'ortho en option sur la
+carte de localisation n'a pas été faite — elle demande un sélecteur de fond, hors périmètre du point 1.
+
+### Piège rencontré à l'intégration
+
+Un fond vectoriel n'a pas un calque mais 425, et nos surfaces s'inséraient **avant le premier calque
+`symbol`**. Dans `standard`, celui-ci arrive à l'index 51 : une cote de courbe de niveau, pas un
+toponyme. La parcelle et les DVF se retrouvaient donc enterrées sous le bâti (index ~122) et toute la
+voirie. Avec un fond raster à un seul calque, le bug n'existait pas. Corrigé en visant la fin de la
+géométrie — le dernier calque non-`symbol` — au lieu du début des libellés.

@@ -15,12 +15,48 @@ import type { OverlayLayerConfig } from "./RiskLayerToggle";
 import type { CadastreParcelDto, DvfTransactionFeatureDto, GeoJsonGeometryDto, RiskAnalysisDto } from "@/types/location-analysis";
 import { formatFr } from "@/lib/format";
 
-const DVF_LAYER_ID = "dvf-transactions";
-const IRIS_LAYER_ID = "iris-boundary";
+/** Exportés pour que les cartes thématiques puissent les passer en `initialLayers`. */
+export const DVF_LAYER_ID = "dvf-transactions";
+export const IRIS_LAYER_ID = "iris-boundary";
+export const SCHOOL_SECTOR_LAYER_ID = "school-sector";
 const COMMUNE_LAYER_ID = "commune-contour";
-const SCHOOL_SECTOR_LAYER_ID = "school-sector";
 
 type LngLatBounds = [[number, number], [number, number]];
+
+/**
+ * Défaut stable pour `transports`.
+ *
+ * Un `= []` en valeur par défaut fabrique un tableau neuf à chaque rendu. Comme `transports`
+ * est dans les dépendances de l'effet d'initialisation, la carte serait détruite et
+ * reconstruite à chaque rendu du parent — et `map.remove()` annulant les requêtes de tuiles
+ * en vol, la console se remplirait d'`AbortError`.
+ */
+const NO_TRANSPORTS: NonNullable<MapProps["transports"]> = [];
+
+/**
+ * Applique l'état des cases à cocher aux calques de la carte.
+ *
+ * Hors composant, pour être appelée aussi bien à l'initialisation (les couches passées en
+ * `initialLayers` doivent être allumées dès la construction) qu'au fil des clics.
+ */
+function applyLayerVisibility(m: MapLibreMap, visibleLayers: Set<string>): void {
+  for (const layer of RISK_LAYERS) {
+    m.setLayoutProperty(layer.id, "visibility", visibleLayers.has(layer.id) ? "visible" : "none");
+  }
+
+  const pairs: Array<[string, string]> = [
+    [DVF_LAYER_ID, DVF_LAYER_ID],
+    [IRIS_LAYER_ID, IRIS_LAYER_ID],
+    [SCHOOL_SECTOR_LAYER_ID, SCHOOL_SECTOR_LAYER_ID],
+  ];
+
+  for (const [toggleId, layerPrefix] of pairs) {
+    if (!m.getLayer(`${layerPrefix}-fill`)) continue;
+    const visibility = visibleLayers.has(toggleId) ? "visible" : "none";
+    m.setLayoutProperty(`${layerPrefix}-fill`, "visibility", visibility);
+    m.setLayoutProperty(`${layerPrefix}-outline`, "visibility", visibility);
+  }
+}
 
 function computeBbox(geometry: GeoJsonGeometryDto): LngLatBounds | null {
   let minLon = Infinity;
@@ -66,14 +102,25 @@ interface MapProps {
   showLayerToggle?: boolean;
   /** Fond IGN. `standard` (numéros de rue) pour la localisation, `gris` sous les couches thématiques. */
   basemap?: IgnStyleName;
+  /**
+   * Couches allumées au montage (`dvf-transactions`, `iris-boundary`, ids de `RISK_LAYERS`…).
+   * Les cartes thématiques de l'écran d'analyse illustrent une donnée précise : leur couche
+   * doit être visible d'emblée, pas derrière une case à cocher.
+   */
+  initialLayers?: string[];
 }
 
-export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, basemap = LOCATOR_BASEMAP }: MapProps) {
+export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, basemap = LOCATOR_BASEMAP, initialLayers }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
-  const [visibleLayers, setVisibleLayers] = useState<Set<string>>(new Set());
+  // `initialLayers` n'est lu qu'à l'initialisation : ensuite l'utilisateur est maître des cases.
+  const [visibleLayers, setVisibleLayers] = useState<Set<string>>(() => new Set(initialLayers));
+  // Lu par l'effet d'init, qui doit appliquer l'état courant sans en dépendre — en dépendre
+  // reconstruirait la carte à chaque case cochée.
+  const visibleLayersRef = useRef(visibleLayers);
+  visibleLayersRef.current = visibleLayers;
 
   const handleToggle = useCallback((layerId: string) => {
     setVisibleLayers((prev) => {
@@ -415,6 +462,14 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
       zoom: communeContour ? 10 : cadastreParcel ? 17 : 14,
     });
 
+    // Les calques naissent en `visibility: none` : c'est ici qu'`initialLayers` prend effet.
+    // Le faire depuis l'effet de synchronisation ne marcherait pas — ses dépendances n'ont
+    // pas bougé entre le rendu sans carte et celui où elle existe, il ne se relancerait pas.
+    {
+      const m = map.current;
+      m.once("style.load", () => applyLayerVisibility(m, visibleLayersRef.current));
+    }
+
     // Add navigation controls
     map.current.addControl(new maplibregl.NavigationControl(), "top-right");
 
@@ -431,6 +486,15 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
         .setLngLat([lon, lat])
         .setPopup(new maplibregl.Popup().setText(label))
         .addTo(map.current);
+
+      // Le secteur est le sujet de sa carte, pas une surcouche : il doit tenir dans le cadre.
+      // Le zoom 14 par défaut couvre ~3 km, ce qui suffit en ville mais coupe un secteur rural.
+      if (schoolSector) {
+        const bbox = computeBbox(schoolSector);
+        if (bbox) {
+          map.current.fitBounds(bbox, { padding: 24, duration: 0 });
+        }
+      }
     }
 
     // Pas de markers transport en mode commune
@@ -474,44 +538,26 @@ export function Map({ lat, lon, label, transports = [], cadastreParcel, dvfTrans
     return () => {
       if (map.current) {
         map.current.remove();
+        map.current = null;
       }
     };
   }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector]);
 
-  // Sync layer visibility
+  // Répercute les clics sur les cases. Le cas « la carte n'existe pas encore » est traité par
+  // l'effet d'init lui-même, pas ici : cet effet ne se relancerait pas, ses dépendances ne
+  // bougeant pas entre le rendu sans carte et celui où elle apparaît.
   useEffect(() => {
-    if (!map.current) return;
-
     const m = map.current;
-    const applyVisibility = () => {
-      for (const layer of RISK_LAYERS) {
-        const visibility = visibleLayers.has(layer.id) ? "visible" : "none";
-        m.setLayoutProperty(layer.id, "visibility", visibility);
-      }
-      // DVF layers
-      if (m.getLayer(`${DVF_LAYER_ID}-fill`)) {
-        const dvfVisibility = visibleLayers.has(DVF_LAYER_ID) ? "visible" : "none";
-        m.setLayoutProperty(`${DVF_LAYER_ID}-fill`, "visibility", dvfVisibility);
-        m.setLayoutProperty(`${DVF_LAYER_ID}-outline`, "visibility", dvfVisibility);
-      }
-      // IRIS layers
-      if (m.getLayer(`${IRIS_LAYER_ID}-fill`)) {
-        const irisVisibility = visibleLayers.has(IRIS_LAYER_ID) ? "visible" : "none";
-        m.setLayoutProperty(`${IRIS_LAYER_ID}-fill`, "visibility", irisVisibility);
-        m.setLayoutProperty(`${IRIS_LAYER_ID}-outline`, "visibility", irisVisibility);
-      }
-      // School sector layers
-      if (m.getLayer(`${SCHOOL_SECTOR_LAYER_ID}-fill`)) {
-        const v = visibleLayers.has(SCHOOL_SECTOR_LAYER_ID) ? "visible" : "none";
-        m.setLayoutProperty(`${SCHOOL_SECTOR_LAYER_ID}-fill`, "visibility", v);
-        m.setLayoutProperty(`${SCHOOL_SECTOR_LAYER_ID}-outline`, "visibility", v);
-      }
-    };
+    if (!m) return;
 
     if (m.isStyleLoaded()) {
-      applyVisibility();
+      applyLayerVisibility(m, visibleLayers);
     } else {
-      m.once("style.load", applyVisibility);
+      const handler = () => applyLayerVisibility(m, visibleLayers);
+      m.once("style.load", handler);
+      return () => {
+        m.off("style.load", handler);
+      };
     }
   }, [visibleLayers]);
 

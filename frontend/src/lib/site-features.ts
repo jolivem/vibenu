@@ -30,7 +30,7 @@ export interface SiteFeatures {
   showNarrative: boolean;
   /** Card "Voisinage" — POIs autour de l'adresse. */
   showNeighborhood: boolean;
-  /** Card "Mobilité" — gares, bus, métros à proximité. */
+  /** Card "Transports en commun" — gares, bus, métros à proximité. */
   showMobility: boolean;
   /** Card "Marché immobilier" — DVF. */
   showRealEstate: boolean;
@@ -66,6 +66,11 @@ export interface SiteFeatures {
   // --- Export PDF ---
   /** Bouton "Télécharger PDF" + génération du PDF. */
   hasPdfExport: boolean;
+
+  // --- Partage ---
+  /** Bouton "Partager" sur l'écran d'analyse (lien, e-mail, WhatsApp, partage natif).
+   *  Destiné au grand public qui fait circuler une adresse à ses proches. */
+  hasShareLinks: boolean;
 }
 
 const PUBLIC_FEATURES: SiteFeatures = {
@@ -87,6 +92,7 @@ const PUBLIC_FEATURES: SiteFeatures = {
   hasLandingFaqSection: true,
   hasAboutPage: true,
   hasPdfExport: true,
+  hasShareLinks: true,
 };
 
 const PRO_FEATURES: SiteFeatures = {
@@ -108,6 +114,7 @@ const PRO_FEATURES: SiteFeatures = {
   hasLandingFaqSection: false,
   hasAboutPage: false,
   hasPdfExport: true, // PDF simplifié (Voisinage + Mobilité uniquement)
+  hasShareLinks: false, // usage professionnel : pas de partage « à des proches »
 };
 
 export const FEATURES: SiteFeatures = SITE_VARIANT === "PRO" ? PRO_FEATURES : PUBLIC_FEATURES;

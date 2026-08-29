@@ -14,6 +14,21 @@ const CATEGORY_LABELS: Record<string, string> = {
   library: "Bibliothèque",
 };
 
+/**
+ * Les 11 catégories de POI se lisaient en liste plate, sans hiérarchie. Elles se regroupent
+ * en 4 familles, qui sont la façon dont on cherche réellement : « y a-t-il une école ? »,
+ * « un médecin ? », plutôt que de parcourir onze rubriques de même niveau.
+ *
+ * L'ordre à l'intérieur d'une famille est celui de ce tableau, pas celui du DTO — le plus
+ * structurant d'abord (l'école avant la bibliothèque, la pharmacie avant le médecin).
+ */
+const FAMILIES: Array<{ title: string; categories: string[] }> = [
+  { title: "Enseignement", categories: ["school"] },
+  { title: "Soins", categories: ["pharmacy", "doctor"] },
+  { title: "Commerces & services", categories: ["supermarket", "bakery", "post_office", "bank"] },
+  { title: "Culture & loisirs", categories: ["library", "park", "sport", "restaurant"] },
+];
+
 const DEFAULT_PER_CATEGORY_LIMIT = 3;
 const PER_CATEGORY_LIMIT: Record<string, number> = {
   school: 6,
@@ -50,28 +65,44 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodA
     return pois.length > limit;
   });
 
+  // Une catégorie absente du tableau des familles resterait invisible : on la rattache à
+  // « Autres » plutôt que de la perdre silencieusement si le back en ajoute une.
+  const known = new Set(FAMILIES.flatMap((family) => family.categories));
+  const others = Object.keys(groups).filter((category) => !known.has(category));
+  const families = others.length
+    ? [...FAMILIES, { title: "Autres", categories: others }]
+    : FAMILIES;
+
   return (
     <section className="card">
       <h2>Voisinage</h2>
       <p>Niveau : {neighborhood.label}</p>
 
-      {Object.entries(groups)
-        .sort(([a], [b]) => (a === "school" ? -1 : b === "school" ? 1 : 0))
-        .map(([category, pois]) => {
-        const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
+      {families.map((family) => {
+        const present = family.categories.filter((category) => groups[category]?.length);
+        if (present.length === 0) return null;
+
         return (
-          <div key={category}>
-            <h3>{CATEGORY_LABELS[category] ?? category}</h3>
-            <ul>
-              {pois.slice(0, limit).map((poi, i) => (
-                <li key={i}>
-                  {poi.name}{" "}
-                  <span className="poi-distance">
-                    — {formatWalkingTime(poi.distanceMeters)} ({formatDistance(poi.distanceMeters)})
-                  </span>
-                </li>
-              ))}
-            </ul>
+          <div className="poi-family" key={family.title}>
+            <h3>{family.title}</h3>
+            {present.map((category) => {
+              const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
+              return (
+                <div className="poi-group" key={category}>
+                  <p className="poi-group-label">{CATEGORY_LABELS[category] ?? category}</p>
+                  <ul>
+                    {groups[category].slice(0, limit).map((poi, i) => (
+                      <li key={i}>
+                        {poi.name}{" "}
+                        <span className="poi-distance">
+                          — {formatWalkingTime(poi.distanceMeters)} ({formatDistance(poi.distanceMeters)})
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
         );
       })}

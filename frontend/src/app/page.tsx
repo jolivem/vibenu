@@ -133,7 +133,7 @@ export default function HomePage() {
               <circle cx="8" cy="14" r="0.8" fill="currentColor" />
               <circle cx="16" cy="14" r="0.8" fill="currentColor" />
             </svg>
-            <h3>Mobilité</h3>
+            <h3>Transports</h3>
             <p>Bus, métro, RER, gare. Les transports les plus proches et leur distance.</p>
           </article>
           <article className="feature-card">

@@ -2,7 +2,9 @@ import type { AirQualityAnalysisDto, AirQualityLevel } from "@/types/location-an
 
 const LEVEL_ORDER: AirQualityLevel[] = ["bon", "moyen", "dégradé", "mauvais", "très_mauvais"];
 
-const LEVEL_CONFIG: Record<
+/** Exporté pour le bandeau de chiffres clés : le DTO porte `très_mauvais` avec un
+ *  underscore, qu'on ne peut pas afficher tel quel. */
+export const LEVEL_CONFIG: Record<
   AirQualityLevel,
   { label: string; className: string; color: string }
 > = {

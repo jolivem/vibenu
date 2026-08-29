@@ -38,7 +38,7 @@ export function MobilityCard({ mobility, mode }: Props) {
 
   return (
     <section className="card">
-      <h2>Mobilité</h2>
+      <h2>Transports en commun</h2>
       {(mobility.label === "bon" || mobility.label === "très bon" || mobility.label === "excellent") && (
         <p>Niveau : {mobility.label}</p>
       )}

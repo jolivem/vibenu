@@ -214,8 +214,8 @@ export function AnalysisPdfDocument({
         {!hasMapMobilityPage && (
           <View style={{ marginTop: 24 }} wrap={false}>
             <Text style={pdfStyles.chapterTitle}>
-              <Text style={pdfStyles.chapterTitleItalic}>Mobilité</Text>
-              {" & transports"}
+              {"Transports en "}
+              <Text style={pdfStyles.chapterTitleItalic}>commun</Text>
             </Text>
             <PdfMobility mobility={data.mobility} mode={data.mode} />
           </View>
@@ -235,8 +235,8 @@ export function AnalysisPdfDocument({
         {mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} />}
         <View style={{ marginTop: 6 }}>
           <Text style={pdfStyles.chapterTitle}>
-            <Text style={pdfStyles.chapterTitleItalic}>Mobilité</Text>
-            {" & transports"}
+            {"Transports en "}
+            <Text style={pdfStyles.chapterTitleItalic}>commun</Text>
           </Text>
         </View>
         <PdfMobility mobility={data.mobility} mode={data.mode} />

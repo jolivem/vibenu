@@ -35,6 +35,17 @@ body {
   min-height: 100vh;
 }
 
+/* Défilement doux pour les ancres du sommaire et du bandeau de chiffres clés. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 /* Landing — Editorial design */
 .landing {
   min-height: 100vh;
@@ -1387,10 +1398,163 @@ body {
   cursor: progress;
 }
 
+/* Actions de la barre du haut — partage + PDF */
+.analysis-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.share-menu {
+  position: relative;
+}
+
+.share-trigger {
+  background: transparent;
+  color: var(--accent);
+  border: 0.5px solid var(--accent);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-family: var(--font-serif), var(--font-serif-fallback);
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+/* Masque le triangle par défaut du <summary>, sur les moteurs WebKit comme sur les autres. */
+.share-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.share-trigger:hover,
+.share-menu[open] .share-trigger {
+  background: var(--accent-light);
+}
+
+.share-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  background: var(--card);
+  border: 0.5px solid var(--hairline-strong);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+}
+
+.share-panel-title {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.share-copy {
+  display: flex;
+  gap: 6px;
+}
+
+.share-copy input {
+  flex: 1;
+  min-width: 0;
+  border: 0.5px solid var(--hairline-strong);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font-size: 12.5px;
+  color: var(--muted);
+  background: var(--bg);
+}
+
+.share-copy button {
+  flex-shrink: 0;
+  border: 0.5px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.share-copy button:hover {
+  background: var(--accent-light);
+}
+
+.share-targets {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 10px 0 0;
+  border-top: 0.5px solid var(--hairline);
+}
+
+/*
+ * Les icônes portent leur couleur de marque, seul signal qui les rend reconnaissables d'un
+ * coup d'œil. Le libellé n'est pas affiché : il est dans `aria-label` pour les lecteurs
+ * d'écran et dans `title` pour l'infobulle.
+ */
+.share-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 0.5px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.share-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.share-icon:hover {
+  background: var(--bg-alt);
+  border-color: currentColor;
+}
+
+.share-icon-whatsapp {
+  color: #25d366;
+}
+
+.share-icon-facebook {
+  color: #1877f2;
+}
+
+.share-icon-x {
+  color: #000000;
+}
+
+.share-icon-email,
+.share-icon-native {
+  color: var(--muted);
+}
+
+.share-icon-email:hover,
+.share-icon-native:hover {
+  color: var(--accent);
+}
+
 /* Narrative card — editorial lede */
 .narrative-card {
   background: var(--card);
   border-color: var(--hairline-strong);
+  /* Elle n'est plus dans une grille qui espaçait ses enfants : elle porte sa marge. */
+  margin-bottom: 20px;
 }
 
 .narrative-text {
@@ -1627,33 +1791,195 @@ body {
   color: var(--muted);
 }
 
-/* Layout type masonry : colonnes verticales sans gaps liés aux hauteurs */
-.analysis-grid {
-  column-count: 2;
-  column-gap: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
+/* ====== Ossature de l'écran d'analyse (V2) ======
+ *
+ * Le masonry en colonnes a été retiré : il mettait la synthèse IA — le seul contenu qui
+ * conclut — au même niveau visuel que la carte scolaire, et son ordre de lecture était
+ * imprévisible. À la place : un scroll continu, 6 sections, un sommaire collant.
+ */
 
-.analysis-grid > *,
-.analysis-grid .card {
-  break-inside: avoid;
-  page-break-inside: avoid;
+/* Bandeau de chiffres clés — une tuile par section, chacune ancrant vers la sienne */
+.key-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--hairline-strong);
+  border: 0.5px solid var(--hairline-strong);
+  border-radius: 14px;
+  overflow: hidden;
   margin-bottom: 20px;
+}
+
+.key-figure {
+  background: var(--card);
+  padding: 16px 18px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background 0.15s;
+}
+
+.key-figure:hover {
+  background: var(--accent-light);
+}
+
+.key-figure-label {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.key-figure-value {
+  font-family: var(--font-serif), var(--font-serif-fallback);
+  font-size: 1.35rem;
+  line-height: 1.15;
+  color: var(--accent);
+}
+
+/* Carte de localisation, pleine largeur sous la synthèse */
+.analysis-locator {
+  margin-bottom: 20px;
+}
+
+/* Corps : sommaire collant à gauche, sections à droite */
+.analysis-body {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.analysis-sidebar {
+  position: sticky;
+  /* Sous la barre du haut, qui ne défile pas. */
+  top: 24px;
+}
+
+.section-nav-title {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+
+.section-nav ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 0.5px solid var(--hairline-strong);
+}
+
+.section-nav a {
   display: block;
+  padding: 7px 0 7px 14px;
+  margin-left: -0.5px;
+  border-left: 2px solid transparent;
+  font-size: 0.92rem;
+  line-height: 1.3;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
 }
 
-/* Carte plein écran (carte maplibre + carte de synthèse) — span sur les 2 colonnes */
-.analysis-grid > .map-section,
-.analysis-grid > .narrative-card {
-  column-span: all;
+.section-nav a:hover {
+  color: var(--text);
 }
 
-.analysis-pair,
-.analysis-stack,
-.analysis-main,
-.analysis-side {
-  display: contents;
+.section-nav a.is-active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.analysis-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.analysis-section {
+  /* Décale l'ancre pour que le titre ne se colle pas au bord haut du viewport. */
+  scroll-margin-top: 24px;
+}
+
+.analysis-section-title {
+  font-family: var(--font-serif), var(--font-serif-fallback);
+  font-size: 1.05rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--hairline-strong);
+}
+
+.analysis-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Cartes thématiques en montage différé */
+.lazy-map-skeleton {
+  border-radius: 16px;
+  background: var(--card);
+  border: 0.5px solid var(--hairline-strong);
+}
+
+/* Voisinage — 4 familles, chacune regroupant ses catégories */
+.poi-family + .poi-family {
+  margin-top: 18px;
+}
+
+.poi-group + .poi-group {
+  margin-top: 10px;
+}
+
+.poi-group-label {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin: 0 0 2px;
+}
+
+@media (max-width: 900px) {
+  /* Le sommaire collant n'a pas de place à côté : il passe au-dessus, en défilement
+     horizontal, et cesse de coller pour ne pas manger la hauteur d'écran. */
+  .analysis-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .analysis-sidebar {
+    position: static;
+  }
+
+  .section-nav ol {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    border-left: none;
+    border-bottom: 0.5px solid var(--hairline-strong);
+    padding-bottom: 2px;
+  }
+
+  .section-nav a {
+    padding: 6px 10px;
+    white-space: nowrap;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    margin-left: 0;
+    margin-bottom: -2px;
+  }
+
+  .section-nav a.is-active {
+    border-left-color: transparent;
+    border-bottom-color: var(--accent);
+  }
 }
 
 .summary-grid {
@@ -2004,15 +2330,6 @@ body {
   font-size: 0.85rem;
 }
 
-.realestate-hint {
-  margin-top: 12px;
-  padding: 8px 12px;
-  background: var(--accent-light);
-  border-radius: 6px;
-  font-size: 0.8rem;
-  color: #2a2a2a;
-}
-
 /* Distance discrète à côté du temps de marche dans Voisinage et Mobilité */
 .poi-distance {
   color: var(--muted-soft);
@@ -2355,11 +2672,6 @@ body {
 }
 
 @media (max-width: 900px) {
-  .analysis-grid {
-    column-count: 1;
-  }
-
-  .analysis-pair,
   .summary-grid {
     grid-template-columns: 1fr;
   }
