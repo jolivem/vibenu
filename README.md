@@ -186,8 +186,14 @@ python import_bpe.py
 # Importer DVF (prix immobiliers) — ~15-30 min
 python import_dvf.py
 
-# Importer IRIS (démographie) — ~5 min
+# Importer IRIS (contours, démographie, revenus) — ~5 min
+# À jouer AVANT import_insee_iris.py : les contours définissent quels IRIS existent.
 python import_iris.py
+
+# Enrichir les IRIS : logement, emploi & qualifications, ménages — ~30 s
+# (~105 Mo de ZIP INSEE, mis en cache dans scripts/data/insee/)
+python import_insee_iris.py
+python import_insee_iris.py --only logement   # ou un seul axe
 
 # Importer Présidentielle 2022 T1 — ~1 min
 # Télécharger d'abord resultats-par-niveau-burvot-t1-france-entiere.xlsx (31,9 Mo)
@@ -208,8 +214,23 @@ done
 Migrations actuelles :
 - `002-narrative-cache.sql` — table `narrative_cache` (cache des synthèses IA, TTL 30j)
 - `003-elections.sql` — tables `elections_pres_2022_t1_commune` + `elections_pres_2022_t1_results`
+- `005-commune-narrative-cache.sql` — cache des synthèses des pages `/commune/*`
+- `008-climate-station-normales.sql` / `013-climate-station-monthly.sql` — normales Météo-France
+- `009` / `011-air-quality-atmo*.sql` — indices Atmo multi-villes
+- `010-commune-contour-cache.sql` — contours communaux
+- `012-school-sectors.sql` — secteurs de collège
+- `014-drop-climate-national-tables.sql` — nettoyage de deux tables climat obsolètes
+- `015-crime-ssmsi.sql` — délinquance SSMSI (`crime_commune`, `crime_reference`, `crime_indicateur`)
+- `016-municipales-2026.sql` — municipales 2026
+- `017-insee-iris.sql` — `iris_demographics` (jusque-là créée par le script d'import),
+  ses trois tables sœurs `iris_logement` / `iris_emploi` / `iris_menages`, et la vue
+  matérialisée `insee_aggregate` (repères commune et France pré-calculés)
 
-Le script `update.sh` exécute automatiquement toutes les migrations à chaque déploiement (idempotent grâce à `CREATE TABLE IF NOT EXISTS`).
+Le script `update.sh` exécute automatiquement toutes les migrations à chaque déploiement.
+Elles sont idempotentes grâce à `CREATE TABLE IF NOT EXISTS` — avec une réserve :
+`CREATE MATERIALIZED VIEW IF NOT EXISTS` ne met **pas** à jour une vue existante.
+Changer la définition d'`insee_aggregate` demande une nouvelle migration `DROP + CREATE`.
+Son contenu, lui, se rafraîchit avec les imports (`python import_insee_iris.py`).
 
 ### 3. Lancer l'application
 
@@ -267,8 +288,16 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - **Contours** : [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/contours-iris/)
 - **Population / âge** : [Recensement RP 2021](https://www.insee.fr/fr/statistiques/7632867)
 - **Revenus** : [Filosofi 2021](https://www.insee.fr/fr/statistiques/7233950)
-- Données importées dans PostgreSQL/PostGIS via `scripts/import_iris.py`
-- Variables : population, densité, tranches d'âge, revenu médian, taux de pauvreté
+- **Logement / emploi / ménages** : bases infracommunales RP 2021
+  ([logement](https://www.insee.fr/fr/statistiques/8268838),
+  [activité](https://www.insee.fr/fr/statistiques/8268843),
+  [diplômes](https://www.insee.fr/fr/statistiques/8268840),
+  [ménages](https://www.insee.fr/fr/statistiques/8268828))
+- Données importées dans PostgreSQL/PostGIS via `scripts/import_iris.py`, puis
+  `scripts/import_insee_iris.py`
+- Variables : population, densité, tranches d'âge, revenu médian, taux de pauvreté,
+  statut d'occupation, vacance, pièces, époque de construction, chômage, CSP, diplômes,
+  composition des ménages
 - Licence : Licence Ouverte Etalab 2.0
 - Mise à jour : annuelle
 
@@ -299,7 +328,8 @@ claireadresse/
 │   ├── import_osm.py        # Import OpenStreetMap POIs → PostgreSQL
 │   ├── import_bpe.py        # Import BPE INSEE → PostgreSQL
 │   ├── import_dvf.py        # Import DVF géolocalisé → PostgreSQL
-│   ├── import_iris.py       # Import INSEE IRIS (démographie) → PostgreSQL
+│   ├── import_iris.py       # Import INSEE IRIS (contours, démographie, revenus)
+│   ├── import_insee_iris.py # Enrichissement IRIS : logement, emploi, ménages
 │   ├── import_elections.py  # Import Présidentielle 2022 T1 (agrégation par commune)
 │   ├── requirements.txt     # Dépendances Python
 │   └── .env                 # Config PostgreSQL locale (non versionné)

@@ -1,5 +1,6 @@
 import type { AgeDistributionDto } from "@/types/location-analysis";
 import { AGE_BUCKETS, AGE_CHART_DIMENSIONS, buildAgeChartModel } from "./ageChart";
+import { ChartLegend } from "./ChartLegend";
 
 interface Props {
   iris: AgeDistributionDto;
@@ -82,14 +83,7 @@ export function AgeChart({
           );
         })}
       </svg>
-      <ul className="line-chart-legend">
-        {series.map((s) => (
-          <li key={s.name}>
-            <span className="line-chart-legend-dot" style={{ background: s.color }} />
-            {s.name}
-          </li>
-        ))}
-      </ul>
+      <ChartLegend items={series.map((s) => ({ name: s.name, color: s.color }))} />
     </div>
   );
 }

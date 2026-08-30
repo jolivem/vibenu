@@ -12,6 +12,15 @@
  * leurs libellés à la même taille apparente — c'est ce qui les aligne réellement, pas
  * la valeur en pixels de `font-size`.
  */
+/**
+ * Demi-largeur d'une bande d'incertitude, en fraction du demi-pas entre deux abscisses.
+ *
+ * Partagé entre le rendu (`LineChart`) et les modèles qui construisent l'échelle des
+ * abscisses : un modèle qui pose des bandes doit réserver cette marge aux deux
+ * extrémités, sinon la première déborde sur les graduations de l'ordonnée.
+ */
+export const BAND_HALF_WIDTH_RATIO = 0.6;
+
 export const LINE_CHART_DIMENSIONS = {
   W: 400,
   H: 220,

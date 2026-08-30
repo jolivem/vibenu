@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SearchPanel } from "@/components/search/SearchPanel";
 import { Brand } from "@/components/Brand";
 import { BRANDING, FEATURES } from "@/lib/site-features";
+import { FEATURES_COUNT_LABEL, LANDING_FEATURES } from "@/components/landing/features";
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
@@ -14,7 +15,7 @@ const faqItems = [
   {
     question: "D'où viennent les données affichées ?",
     answer:
-      "Toutes les informations proviennent de sources officielles françaises : DVF pour les prix immobiliers, Géorisques pour les risques naturels et technologiques, cadastre et GPU pour l'urbanisme, INSEE pour la démographie IRIS, et les bases de transports publics.",
+      "Toutes les informations proviennent de sources publiques officielles : DVF (DGFiP) pour les prix immobiliers, Géorisques pour les risques, le cadastre et le Géoportail de l'Urbanisme pour les parcelles et le PLU, l'INSEE pour la population et les logements, transport.data.gouv.fr pour les transports, Météo-France pour le climat, Atmo pour la qualité de l'air, le SSMSI pour la délinquance, le ministère de l'Intérieur pour les élections et l'IGN pour les cartes anciennes. Chaque chiffre reste rattaché à sa source et à sa date de publication.",
   },
   {
     question: "Quelles adresses puis-je analyser ?",
@@ -47,14 +48,9 @@ const jsonLd = {
     price: "0",
     priceCurrency: "EUR",
   },
-  featureList: [
-    "Analyse de mobilité et transports",
-    "Risques naturels et technologiques",
-    "Cadastre et zones d'urbanisme",
-    "Prix immobiliers DVF",
-    "Démographie INSEE IRIS",
-    "Qualité de l'air",
-  ],
+  // Dérivé des cards visibles : les deux listes décrivaient les mêmes rubriques sans
+  // lien entre elles, et avaient fini par diverger.
+  featureList: LANDING_FEATURES.map((f) => f.schemaLabel),
 };
 
 const faqJsonLd = {
@@ -123,56 +119,30 @@ export default function HomePage() {
           <h2 className="section-title">
             Ce que vous <i>découvrez</i>
           </h2>
-          <span className="section-meta">Six dimensions</span>
+          <span className="section-meta">{FEATURES_COUNT_LABEL}</span>
         </div>
         <div className="features-grid">
-          <article className="feature-card">
-            <svg className="feature-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3">
-              <rect x="4" y="4" width="16" height="13" rx="2" />
-              <path d="M4 11h16M8 17v2M16 17v2" />
-              <circle cx="8" cy="14" r="0.8" fill="currentColor" />
-              <circle cx="16" cy="14" r="0.8" fill="currentColor" />
-            </svg>
-            <h3>Transports</h3>
-            <p>Bus, métro, RER, gare. Les transports les plus proches et leur distance.</p>
-          </article>
-          <article className="feature-card">
-            <svg className="feature-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
-              <path d="M12 3 2 20h20L12 3z" />
-              <path d="M12 10v5M12 17.5v0.5" />
-            </svg>
-            <h3>Risques</h3>
-            <p>Inondation, argile, séisme, radon. Risques naturels et technologiques du secteur.</p>
-          </article>
-          <article className="feature-card">
-            <svg className="feature-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
-              <path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
-            </svg>
-            <h3>Cadastre &amp; urbanisme</h3>
-            <p>Parcelle, zone PLU, prescriptions d&apos;urbanisme. Les règles qui s&apos;appliquent.</p>
-          </article>
-          <article className="feature-card">
-            <svg className="feature-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
-              <path d="M18 7H8a4 4 0 0 0 0 8h10M18 12H6" />
-            </svg>
-            <h3>Prix immobiliers</h3>
-            <p>Transactions récentes à proximité, prix au m², visualisés sur la carte.</p>
-          </article>
-          <article className="feature-card">
-            <svg className="feature-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
-              <path d="M12 21c-4-4-7-7-7-12a7 7 0 0 1 14 0c0 5-3 8-7 12z" />
-              <path d="M9 9c0 3 1 5 3 7M15 9c0 3-1 5-3 7" />
-            </svg>
-            <h3>Environnement</h3>
-            <p>Qualité de l&apos;air, espaces verts, commerces et services du quotidien.</p>
-          </article>
-          <article className="feature-card">
-            <svg className="feature-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
-              <path d="M3 6 9 4l6 2 6-2v14l-6 2-6-2-6 2zM9 4v16M15 6v16" />
-            </svg>
-            <h3>Carte interactive</h3>
-            <p>Couches de risques, parcelle cadastrale et prix superposés sur la carte.</p>
-          </article>
+          {LANDING_FEATURES.map((feature) => (
+            <article className="feature-card" key={feature.id}>
+              <svg
+                className="feature-ico"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                {feature.icon}
+              </svg>
+              <h3>{feature.title}</h3>
+              <p>{feature.blurb}</p>
+            </article>
+          ))}
         </div>
       </section>
 

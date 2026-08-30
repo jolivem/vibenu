@@ -32,6 +32,8 @@ export interface SiteFeatures {
   showNeighborhood: boolean;
   /** Card "Sécurité" — délinquance enregistrée SSMSI, maille communale. */
   showSecurity: boolean;
+  /** Card "Municipales 2026" — résultats du scrutin local. */
+  showMunicipales: boolean;
   /** Card "Transports en commun" — gares, bus, métros à proximité. */
   showMobility: boolean;
   /** Card "Marché immobilier" — DVF. */
@@ -44,6 +46,14 @@ export interface SiteFeatures {
   showClimate: boolean;
   /** Card "Démographie" — INSEE IRIS. */
   showDemographics: boolean;
+  /** Card "Logement" — parc et statut d'occupation, INSEE RP 2021 à l'IRIS. */
+  showHousing: boolean;
+  /** Card "Emploi et qualifications" — activité, CSP, diplômes, INSEE RP 2021 à l'IRIS. */
+  showEmployment: boolean;
+  /** Card "Ménages et familles" — composition des foyers, INSEE RP 2021 à l'IRIS. */
+  showHouseholds: boolean;
+  /** Card "Le lieu autrefois" — cartes et photos aériennes anciennes, IGN Géoplateforme. */
+  showHistory: boolean;
   /** Card "Élections" — Présidentielle 2022 T1. */
   showElections: boolean;
   /** Card "Cadastre & urbanisme" — APICarto. */
@@ -85,7 +95,12 @@ const PUBLIC_FEATURES: SiteFeatures = {
   showAirQuality: true,
   showClimate: true,
   showDemographics: true,
+  showHousing: true,
+  showEmployment: true,
+  showHouseholds: true,
+  showHistory: true,
   showElections: true,
+  showMunicipales: true,
   showCadastre: true,
   showSchoolSector: true,
   showLocation: true,
@@ -108,7 +123,12 @@ const PRO_FEATURES: SiteFeatures = {
   showAirQuality: false,
   showClimate: false,
   showDemographics: false,
+  showHousing: false,
+  showEmployment: false,
+  showHouseholds: false,
+  showHistory: false,
   showElections: false,
+  showMunicipales: false,
   showCadastre: false,
   showSchoolSector: false,
   showLocation: false,
@@ -153,8 +173,10 @@ const PUBLIC_BRANDING: SiteBranding = {
   brandFirst: "Claire",
   brandSecond: "Adresse",
   tagline: "Analysez une adresse avant de louer ou acheter",
+  // Sert de meta description, de description OG/Twitter ET de lead du hero, lue juste
+  // sous le <h1> : elle doit rester une phrase, pas une énumération de douze sources.
   description:
-    "Transports, risques, cadastre, prix immobiliers, urbanisme. Toutes les informations clés sur une adresse en France, en quelques secondes.",
+    "Prix, urbanisme, risques, transports, voisinage, climat : ce que les données publiques officielles disent d'une adresse française, en quelques secondes.",
   heroTitle: "Analysez une adresse",
   heroEmphasis: "avant de louer ou acheter.",
 };

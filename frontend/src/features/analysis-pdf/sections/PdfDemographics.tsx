@@ -25,8 +25,8 @@ export function PdfDemographics({ demographics }: { demographics: DemographicsAn
     {
       label: "Densité",
       iris: formatDensity(demographics.density),
-      commune: "—",
-      france: "—",
+      commune: formatDensity(commune?.density ?? null),
+      france: formatDensity(france?.density ?? null),
     },
     {
       label: "Revenu médian",

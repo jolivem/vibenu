@@ -1,47 +1,30 @@
 import type { DemographicsProvider } from "./demographics.provider";
 import type { AgeDistribution, AggregateStats, DemographicsAnalysis } from "../domain/demographics.types";
+import type { ScopedStats } from "../domain/insee-profile.types";
+import {
+  blockNumber as num,
+  buildEmploymentStats,
+  buildHouseholdsStats,
+  buildHousingStats,
+  type InseeBlock,
+} from "./insee-blocks";
 import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
-const ONE_DAY = 24 * 60 * 60 * 1000;
 
 interface RawRow {
   code_iris: string;
   nom_iris: string | null;
   nom_commune: string | null;
-  population: number | null;
-  pop_0_14: number | null;
-  pop_15_29: number | null;
-  pop_30_44: number | null;
-  pop_45_59: number | null;
-  pop_60_74: number | null;
-  pop_75_plus: number | null;
-  revenu_median: number | null;
-  taux_pauvrete: number | null;
-  area_km2: number | null;
+  area_km2: string | number | null;
   iris_geojson: string | null;
-
   commune_iris_count: number | null;
-  commune_population: number | null;
-  commune_pop_0_14: number | null;
-  commune_pop_15_29: number | null;
-  commune_pop_30_44: number | null;
-  commune_pop_45_59: number | null;
-  commune_pop_60_74: number | null;
-  commune_pop_75_plus: number | null;
-  commune_revenu_median: number | null;
-  commune_taux_pauvrete: number | null;
-
-  france_population: number | null;
-  france_pop_0_14: number | null;
-  france_pop_15_29: number | null;
-  france_pop_30_44: number | null;
-  france_pop_45_59: number | null;
-  france_pop_60_74: number | null;
-  france_pop_75_plus: number | null;
-  france_revenu_median: number | null;
-  france_taux_pauvrete: number | null;
+  /** Les quatre tables IRIS du point, fusionnées. */
+  iris: InseeBlock;
+  /** Lignes pré-agrégées de `insee_aggregate`. `null` si le scope n'existe pas. */
+  commune: InseeBlock;
+  france: InseeBlock;
 }
 
 function toNum(value: number | string | null | undefined): number | null {
@@ -50,29 +33,98 @@ function toNum(value: number | string | null | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function buildAgeDistribution(
-  pop: number | null,
-  p0: number | null,
-  p15: number | null,
-  p30: number | null,
-  p45: number | null,
-  p60: number | null,
-  p75: number | null,
-): AgeDistribution | null {
+/** Effectifs par tranche d'âge → parts entières. Même calcul aux trois échelles. */
+function buildAgeDistribution(block: InseeBlock): AgeDistribution | null {
+  const pop = num(block, "population");
   if (!pop || pop <= 0) return null;
+  const share = (key: string) => Math.round(((num(block, key) ?? 0) / pop) * 100);
   return {
-    pct0_14: Math.round(((p0 ?? 0) / pop) * 100),
-    pct15_29: Math.round(((p15 ?? 0) / pop) * 100),
-    pct30_44: Math.round(((p30 ?? 0) / pop) * 100),
-    pct45_59: Math.round(((p45 ?? 0) / pop) * 100),
-    pct60_74: Math.round(((p60 ?? 0) / pop) * 100),
-    pct75Plus: Math.round(((p75 ?? 0) / pop) * 100),
+    pct0_14: share("pop_0_14"),
+    pct15_29: share("pop_15_29"),
+    pct30_44: share("pop_30_44"),
+    pct45_59: share("pop_45_59"),
+    pct60_74: share("pop_60_74"),
+    pct75Plus: share("pop_75_plus"),
   };
 }
 
+function density(pop: number | null, areaKm2: number | null): number | null {
+  return pop && areaKm2 && areaKm2 > 0 ? Math.round(pop / areaKm2) : null;
+}
+
+/** Un scope de `insee_aggregate` → les repères de la card Démographie. */
+function buildAggregateStats(block: InseeBlock): AggregateStats | null {
+  if (!block) return null;
+  const population = num(block, "population");
+  return {
+    population,
+    density: density(population, num(block, "area_km2")),
+    ageDistribution: buildAgeDistribution(block),
+    revenuMedian: num(block, "revenu_median"),
+    tauxPauvrete: num(block, "taux_pauvrete"),
+  };
+}
+
+/** Applique un même constructeur d'indicateurs aux trois échelles. */
+function scoped<T>(
+  build: (block: InseeBlock) => T | null,
+  row: RawRow,
+): ScopedStats<T> | null {
+  const iris = build(row.iris);
+  const commune = build(row.commune);
+  const france = build(row.france);
+  if (!iris && !commune && !france) return null;
+  return { iris, commune, france };
+}
+
+/**
+ * Une requête, sept lectures indexées : le contour qui contient le point (index GIST),
+ * les trois tables INSEE du quartier et les deux lignes d'agrégat, toutes par clé
+ * primaire.
+ *
+ * Les blocs partent en `to_jsonb` plutôt qu'en une centaine d'alias plats. Deux
+ * précautions, sans lesquelles le résultat est faux plutôt qu'absent :
+ *   - `to_jsonb` d'une jointure non appariée rend `{"code_iris": null, …}`, un objet
+ *     bien non nul : le `CASE WHEN … IS NULL` est ce qui permet de masquer une card
+ *     plutôt que d'en afficher une vide ;
+ *   - on ne sérialise jamais une table portant `geom` — le WKB hexadécimal du contour
+ *     partirait dans le JSON, soit des dizaines de Ko par requête. D'où le CTE, qui ne
+ *     projette que les colonnes utiles.
+ *
+ * Un bénéfice de bord du `jsonb` : les `NUMERIC` en ressortent en nombres JSON, là où
+ * le driver `pg` les rend en `string` au premier niveau.
+ */
+const SQL = `
+  WITH iris AS (
+    SELECT d.code_iris, d.nom_iris, d.nom_commune,
+           d.population, d.pop_0_14, d.pop_15_29, d.pop_30_44,
+           d.pop_45_59, d.pop_60_74, d.pop_75_plus,
+           d.revenu_median, d.taux_pauvrete,
+           ST_Area(d.geom::geography) / 1000000.0 AS area_km2,
+           ST_AsGeoJSON(d.geom) AS iris_geojson
+    FROM iris_demographics d
+    WHERE ST_Contains(d.geom, ST_SetSRID(ST_MakePoint($1, $2), 4326))
+    LIMIT 1
+  )
+  SELECT
+    i.code_iris, i.nom_iris, i.nom_commune, i.area_km2, i.iris_geojson,
+    ac.iris_count AS commune_iris_count,
+    to_jsonb(i) - 'iris_geojson'
+      || CASE WHEN l.code_iris IS NULL THEN '{}'::jsonb ELSE to_jsonb(l) - 'code_iris' END
+      || CASE WHEN e.code_iris IS NULL THEN '{}'::jsonb ELSE to_jsonb(e) - 'code_iris' END
+      || CASE WHEN m.code_iris IS NULL THEN '{}'::jsonb ELSE to_jsonb(m) - 'code_iris' END AS iris,
+    CASE WHEN ac.scope_code IS NULL THEN NULL ELSE to_jsonb(ac) END AS commune,
+    CASE WHEN af.scope_code IS NULL THEN NULL ELSE to_jsonb(af) END AS france
+  FROM iris i
+  LEFT JOIN iris_logement    l ON l.code_iris = i.code_iris
+  LEFT JOIN iris_emploi      e ON e.code_iris = i.code_iris
+  LEFT JOIN iris_menages     m ON m.code_iris = i.code_iris
+  LEFT JOIN insee_aggregate ac ON ac.scope_code = LEFT(i.code_iris, 5)
+  LEFT JOIN insee_aggregate af ON af.scope_code = 'FRANCE'
+`;
+
 export class IrisDemographicsProvider implements DemographicsProvider {
   private static cache = new InMemoryCache<DemographicsAnalysis | null>(SEVEN_DAYS);
-  private static nationalCache = new InMemoryCache<AggregateStats>(ONE_DAY);
 
   async getDemographics(lat: number, lon: number): Promise<DemographicsAnalysis | null> {
     const cacheKey = buildGeoKey(lat, lon);
@@ -80,81 +132,7 @@ export class IrisDemographicsProvider implements DemographicsProvider {
     if (cached !== undefined) return cached;
 
     try {
-      const rows = await query<RawRow>(
-        `WITH iris AS (
-           SELECT code_iris, nom_iris, nom_commune,
-                  population, pop_0_14, pop_15_29, pop_30_44, pop_45_59, pop_60_74, pop_75_plus,
-                  revenu_median, taux_pauvrete,
-                  ST_Area(geom::geography) / 1000000.0 AS area_km2,
-                  ST_AsGeoJSON(geom) AS iris_geojson
-           FROM iris_demographics
-           WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326))
-           LIMIT 1
-         ),
-         commune AS (
-           SELECT
-             COUNT(*)::int AS iris_count,
-             SUM(i.population)::bigint AS population,
-             SUM(i.pop_0_14)::bigint AS pop_0_14,
-             SUM(i.pop_15_29)::bigint AS pop_15_29,
-             SUM(i.pop_30_44)::bigint AS pop_30_44,
-             SUM(i.pop_45_59)::bigint AS pop_45_59,
-             SUM(i.pop_60_74)::bigint AS pop_60_74,
-             SUM(i.pop_75_plus)::bigint AS pop_75_plus,
-             SUM(i.revenu_median * i.population)
-               / NULLIF(SUM(CASE WHEN i.revenu_median IS NOT NULL THEN i.population ELSE 0 END), 0)
-               AS revenu_median,
-             SUM(i.taux_pauvrete * i.population)
-               / NULLIF(SUM(CASE WHEN i.taux_pauvrete IS NOT NULL THEN i.population ELSE 0 END), 0)
-               AS taux_pauvrete
-           FROM iris_demographics i
-           WHERE LEFT(i.code_iris, 5) = (SELECT LEFT(code_iris, 5) FROM iris)
-         ),
-         france AS (
-           SELECT
-             SUM(i.population)::bigint AS population,
-             SUM(i.pop_0_14)::bigint AS pop_0_14,
-             SUM(i.pop_15_29)::bigint AS pop_15_29,
-             SUM(i.pop_30_44)::bigint AS pop_30_44,
-             SUM(i.pop_45_59)::bigint AS pop_45_59,
-             SUM(i.pop_60_74)::bigint AS pop_60_74,
-             SUM(i.pop_75_plus)::bigint AS pop_75_plus,
-             SUM(i.revenu_median * i.population)
-               / NULLIF(SUM(CASE WHEN i.revenu_median IS NOT NULL THEN i.population ELSE 0 END), 0)
-               AS revenu_median,
-             SUM(i.taux_pauvrete * i.population)
-               / NULLIF(SUM(CASE WHEN i.taux_pauvrete IS NOT NULL THEN i.population ELSE 0 END), 0)
-               AS taux_pauvrete
-           FROM iris_demographics i
-         )
-         SELECT
-           iris.code_iris, iris.nom_iris, iris.nom_commune,
-           iris.population, iris.pop_0_14, iris.pop_15_29, iris.pop_30_44,
-           iris.pop_45_59, iris.pop_60_74, iris.pop_75_plus,
-           iris.revenu_median, iris.taux_pauvrete,
-           iris.area_km2, iris.iris_geojson,
-           commune.iris_count AS commune_iris_count,
-           commune.population AS commune_population,
-           commune.pop_0_14 AS commune_pop_0_14,
-           commune.pop_15_29 AS commune_pop_15_29,
-           commune.pop_30_44 AS commune_pop_30_44,
-           commune.pop_45_59 AS commune_pop_45_59,
-           commune.pop_60_74 AS commune_pop_60_74,
-           commune.pop_75_plus AS commune_pop_75_plus,
-           commune.revenu_median AS commune_revenu_median,
-           commune.taux_pauvrete AS commune_taux_pauvrete,
-           france.population AS france_population,
-           france.pop_0_14 AS france_pop_0_14,
-           france.pop_15_29 AS france_pop_15_29,
-           france.pop_30_44 AS france_pop_30_44,
-           france.pop_45_59 AS france_pop_45_59,
-           france.pop_60_74 AS france_pop_60_74,
-           france.pop_75_plus AS france_pop_75_plus,
-           france.revenu_median AS france_revenu_median,
-           france.taux_pauvrete AS france_taux_pauvrete
-         FROM iris, commune, france`,
-        [lon, lat],
-      );
+      const rows = await query<RawRow>(SQL, [lon, lat]);
 
       if (rows.length === 0) {
         IrisDemographicsProvider.cache.set(cacheKey, null);
@@ -162,65 +140,24 @@ export class IrisDemographicsProvider implements DemographicsProvider {
       }
 
       const row = rows[0];
-      const pop = toNum(row.population);
-      const areaKm2 = toNum(row.area_km2);
-
-      const irisAge = buildAgeDistribution(
-        pop,
-        toNum(row.pop_0_14),
-        toNum(row.pop_15_29),
-        toNum(row.pop_30_44),
-        toNum(row.pop_45_59),
-        toNum(row.pop_60_74),
-        toNum(row.pop_75_plus),
-      );
-
-      const communePop = toNum(row.commune_population);
-      const communeStats: AggregateStats = {
-        population: communePop,
-        ageDistribution: buildAgeDistribution(
-          communePop,
-          toNum(row.commune_pop_0_14),
-          toNum(row.commune_pop_15_29),
-          toNum(row.commune_pop_30_44),
-          toNum(row.commune_pop_45_59),
-          toNum(row.commune_pop_60_74),
-          toNum(row.commune_pop_75_plus),
-        ),
-        revenuMedian: toNum(row.commune_revenu_median),
-        tauxPauvrete: toNum(row.commune_taux_pauvrete),
-      };
-
-      const francePop = toNum(row.france_population);
-      const nationalStats: AggregateStats = {
-        population: francePop,
-        ageDistribution: buildAgeDistribution(
-          francePop,
-          toNum(row.france_pop_0_14),
-          toNum(row.france_pop_15_29),
-          toNum(row.france_pop_30_44),
-          toNum(row.france_pop_45_59),
-          toNum(row.france_pop_60_74),
-          toNum(row.france_pop_75_plus),
-        ),
-        revenuMedian: toNum(row.france_revenu_median),
-        tauxPauvrete: toNum(row.france_taux_pauvrete),
-      };
-      IrisDemographicsProvider.nationalCache.set("france", nationalStats);
+      const pop = num(row.iris, "population");
 
       const result: DemographicsAnalysis = {
         codeIris: row.code_iris,
         nomIris: row.nom_iris || "",
         nomCommune: row.nom_commune || "",
         population: pop,
-        density: pop && areaKm2 && areaKm2 > 0 ? Math.round(pop / areaKm2) : null,
-        ageDistribution: irisAge,
-        revenuMedian: toNum(row.revenu_median),
-        tauxPauvrete: toNum(row.taux_pauvrete),
+        density: density(pop, toNum(row.area_km2)),
+        ageDistribution: buildAgeDistribution(row.iris),
+        revenuMedian: num(row.iris, "revenu_median"),
+        tauxPauvrete: num(row.iris, "taux_pauvrete"),
         irisGeojson: row.iris_geojson || null,
-        communeStats,
-        nationalStats,
+        communeStats: buildAggregateStats(row.commune),
+        nationalStats: buildAggregateStats(row.france),
         communeIrisCount: toNum(row.commune_iris_count) ?? 1,
+        housing: scoped(buildHousingStats, row),
+        employment: scoped(buildEmploymentStats, row),
+        households: scoped(buildHouseholdsStats, row),
       };
 
       IrisDemographicsProvider.cache.set(cacheKey, result);

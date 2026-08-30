@@ -58,6 +58,52 @@ export interface NarrativeInput {
       } | null;
     } | null;
   } | null;
+  /**
+   * Profil INSEE du quartier, chaque indicateur accompagné de sa référence nationale.
+   *
+   * Volontairement court : douze nombres, pas les distributions complètes. Un modèle
+   * à qui l'on donne trente pourcentages en récite la liste, alors que le paragraphe
+   * attendu est qualitatif — « parc surtout locatif, plus récent que la moyenne ». Les
+   * ventilations restent lisibles dans les graphes de la page.
+   */
+  inseeProfile: {
+    housing: {
+      pctProprietaires: number | null;
+      pctHlm: number | null;
+      pctVacants: number | null;
+      pctResidencesSecondaires: number | null;
+      pctMaisons: number | null;
+      national: {
+        pctProprietaires: number | null;
+        pctHlm: number | null;
+        pctVacants: number | null;
+        pctResidencesSecondaires: number | null;
+        pctMaisons: number | null;
+      } | null;
+    } | null;
+    employment: {
+      tauxChomage: number | null;
+      pctCadres: number | null;
+      pctOuvriers: number | null;
+      pctDiplomesSuperieur: number | null;
+      national: {
+        tauxChomage: number | null;
+        pctCadres: number | null;
+        pctOuvriers: number | null;
+        pctDiplomesSuperieur: number | null;
+      } | null;
+    } | null;
+    households: {
+      tailleMoyenne: number | null;
+      pctPersonnesSeules: number | null;
+      pctFamillesMonoparentales: number | null;
+      national: {
+        tailleMoyenne: number | null;
+        pctPersonnesSeules: number | null;
+        pctFamillesMonoparentales: number | null;
+      } | null;
+    } | null;
+  } | null;
   cadastre: {
     urbanZoneType: string | null;
     urbanZoneLabel: string | null;

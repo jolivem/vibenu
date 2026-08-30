@@ -1,4 +1,5 @@
 import type { SecurityAnalysisDto, SecurityIndicatorDto } from "@/types/location-analysis";
+import { ChartLegend } from "./ChartLegend";
 import { LineChart } from "./LineChart";
 import { baseLabel, buildSecurityChartModel, formatRate, LOCAL_SERIES_COLOR } from "./securityChart";
 
@@ -55,7 +56,7 @@ function SecurityIndicatorChart({
       />
       {conversion && (
         <p className="security-conversion">
-          Zone grisée : {conversion.annees === annees.length ? "toutes les années" : `${conversion.annees} année${conversion.annees > 1 ? "s" : ""}`}{" "}
+          Bande violette : {conversion.annees === annees.length ? "toutes les années" : `${conversion.annees} année${conversion.annees > 1 ? "s" : ""}`}{" "}
           où le chiffre exact n&apos;est pas publié. Il s&apos;agit d&apos;<strong>1 à 4 faits</strong>{" "}
           dans l&apos;année, ce qui représente ici {formatRate(conversion.lo)} à{" "}
           {formatRate(conversion.hi)} — l&apos;échelle du graphe étant en ‰, pas en nombre de faits.
@@ -103,27 +104,18 @@ export function SecurityCard({
         . Il n&apos;existe pas de donnée publique à l&apos;échelle du quartier.
       </p>
 
-      <ul className="line-chart-legend security-legend">
-        <li>
-          <span className="line-chart-legend-dot" style={{ background: LOCAL_SERIES_COLOR }} />
-          Cette {maille}
-        </li>
-        <li>
-          <span className="line-chart-legend-dot" style={{ background: "#7c8ba1" }} />
-          Département
-        </li>
-        <li>
-          <span className="line-chart-legend-dot" style={{ background: "#b08968" }} />
-          France
-        </li>
-        <li>
-          {/* Surtout pas « entre 1 et 4 » ici : l'axe est gradué en ‰, pas en nombre de
-              faits. Annoncer des faits à côté d'un axe de taux invite à lire la borne sur
-              l'axe. La conversion est donnée sous chaque graphe et dans les infobulles. */}
-          <span className="line-chart-legend-band" />
-          Fourchette (valeur non publiée)
-        </li>
-      </ul>
+      <ChartLegend
+        className="security-legend"
+        items={[
+          { name: `Cette ${maille}`, color: LOCAL_SERIES_COLOR },
+          { name: "Département", color: "#7c8ba1" },
+          { name: "France", color: "#b08968" },
+          // Surtout pas « entre 1 et 4 » ici : l'axe est gradué en ‰, pas en nombre de
+          // faits. Annoncer des faits à côté d'un axe de taux invite à lire la borne sur
+          // l'axe. La conversion est donnée sous chaque graphe et dans les infobulles.
+          { name: "Fourchette (valeur non publiée)", swatch: "band" },
+        ]}
+      />
 
       {aucunePublication && (
         <p className="security-note">

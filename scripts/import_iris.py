@@ -52,12 +52,20 @@ def get_connection():
 
 
 def setup_database(conn):
-    """Create tables for IRIS data."""
+    """
+    Filet de sécurité pour une base neuve : la table est normalement créée par la
+    migration 017-insee-iris.sql, qui la décrit à l'identique.
+
+    Le DROP TABLE d'origine a été retiré : iris_demographics est désormais jointe par
+    iris_logement / iris_emploi / iris_menages et agrégée par la vue matérialisée
+    insee_aggregate. La recréer à chaque import ferait tomber tout cet échafaudage.
+    Le ménage que faisait le DROP — supprimer les IRIS disparus du millésime — est
+    repris explicitement en fin d'import_contours().
+    """
     with conn.cursor() as cur:
         cur.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
-        cur.execute("DROP TABLE IF EXISTS iris_demographics;")
         cur.execute("""
-            CREATE TABLE iris_demographics (
+            CREATE TABLE IF NOT EXISTS iris_demographics (
                 id SERIAL PRIMARY KEY,
                 code_iris VARCHAR(9) NOT NULL UNIQUE,
                 nom_iris TEXT,
@@ -75,7 +83,7 @@ def setup_database(conn):
             );
         """)
     conn.commit()
-    print("Table iris_demographics created.")
+    print("Table iris_demographics prête.")
 
 
 def download_iris_contours():
@@ -167,6 +175,36 @@ def import_contours(conn, geojson):
 
     conn.commit()
     print(f"  Imported {len(rows)} contours.")
+    purge_obsolete(conn, [r[0] for r in rows])
+
+
+def purge_obsolete(conn, codes):
+    """
+    Supprime les IRIS absents du millésime qu'on vient d'importer.
+
+    Le DROP TABLE d'autrefois faisait ce ménage sans le dire. Sans lui, un IRIS
+    redécoupé ou fusionné resterait indéfiniment en base avec son ancienne géométrie
+    et son ancienne population — et serait compté dans l'agrégat France, qui est
+    précisément le repère auquel tous les quartiers sont comparés.
+
+    Garde-fou : on ne purge rien sur un import manifestement tronqué, sinon un
+    téléchargement partiel viderait la base.
+    """
+    if len(codes) < 40000:
+        print(f"  ⚠ purge ignorée : seulement {len(codes):,} contours reçus (import tronqué ?)")
+        return
+
+    with conn.cursor() as cur:
+        cur.execute("CREATE TEMP TABLE vus (code_iris VARCHAR(9) PRIMARY KEY) ON COMMIT DROP;")
+        execute_values(cur, "INSERT INTO vus VALUES %s ON CONFLICT DO NOTHING",
+                       [(c,) for c in codes])
+        cur.execute("""
+            DELETE FROM iris_demographics d
+            WHERE NOT EXISTS (SELECT 1 FROM vus v WHERE v.code_iris = d.code_iris)
+        """)
+        removed = cur.rowcount
+    conn.commit()
+    print(f"  {removed} IRIS obsolètes supprimés.")
 
 
 def download_and_parse_csv(url, label):
@@ -199,142 +237,122 @@ def download_and_parse_csv(url, label):
     return None
 
 
-def update_population(conn, df):
-    """Update IRIS demographics with population data from RP."""
+# Une liste de colonnes candidates par colonne de destination, du millésime le plus
+# récent au plus ancien. Résoudre variable par variable plutôt que par préfixe global :
+# les fichiers INSEE mélangent les préfixes (P pour l'exploitation principale, C pour la
+# complémentaire), et l'ancien repli par `.replace("P21_", …)` ne pouvait de toute façon
+# jamais dépasser son premier candidat.
+POP_COLUMNS = {
+    "population": ["P21_POP", "P20_POP", "P19_POP"],
+    "pop_0_14": ["P21_POP0014", "P20_POP0014", "P19_POP0014"],
+    "pop_15_29": ["P21_POP1529", "P20_POP1529", "P19_POP1529"],
+    "pop_30_44": ["P21_POP3044", "P20_POP3044", "P19_POP3044"],
+    "pop_45_59": ["P21_POP4559", "P20_POP4559", "P19_POP4559"],
+    "pop_60_74": ["P21_POP6074", "P20_POP6074", "P19_POP6074"],
+    "pop_75_plus": ["P21_POP75P", "P20_POP75P", "P19_POP75P"],
+}
+
+REVENU_COLUMNS = {
+    "revenu_median": ["MED21", "Q221", "DISP_MED21", "MED20", "MED19", "Q2"],
+    "taux_pauvrete": ["TP6021", "TP6020", "TP6019", "TP60"],
+}
+
+
+def resolve_columns(available, wanted):
+    """
+    Associe chaque colonne de destination à la première colonne source présente.
+
+    Journalise ce qui manque : un repli silencieux produirait une base à moitié vide
+    qu'on ne découvrirait qu'à l'écran, plusieurs jours plus tard.
+    """
+    resolved = {}
+    missing = []
+    for dest, candidates in wanted.items():
+        src = next((c for c in candidates if c in available), None)
+        if src:
+            resolved[dest] = src
+        else:
+            missing.append(dest)
+    if missing:
+        print(f"  ⚠ colonnes introuvables, laissées à NULL : {', '.join(missing)}")
+    if resolved:
+        print(f"  colonnes retenues : {', '.join(sorted(resolved.values()))}")
+    return resolved
+
+
+def find_iris_column(columns):
+    return next((c for c in ["IRIS", "CODE_IRIS", "DCOMIRIS"] if c in columns), None)
+
+
+def flush_updates(cur, batch, dest_cols, cast):
+    """
+    Un seul UPDATE par lot, joint sur une liste de VALUES.
+
+    L'ancienne boucle envoyait une requête par IRIS, soit ~50 000 allers-retours par
+    passe. Le cast explicite est obligatoire : les colonnes d'un VALUES sont typées
+    `text` par défaut, et la jointure comme l'affectation échoueraient.
+    """
+    sets = ", ".join(f"{c} = v.{c}" for c in dest_cols)
+    cols = ", ".join(dest_cols)
+    template = "(%s::varchar, " + ", ".join(f"%s::{cast}" for _ in dest_cols) + ")"
+    execute_values(
+        cur,
+        f"""
+        UPDATE iris_demographics d SET {sets}
+        FROM (VALUES %s) AS v(code_iris, {cols})
+        WHERE d.code_iris = v.code_iris
+        """,
+        batch,
+        template=template,
+    )
+    return len(batch)
+
+
+def update_from_csv(conn, df, wanted, cast, label):
+    """Applique un fichier INSEE sur iris_demographics, par lots."""
     df.columns = df.columns.str.upper().str.strip()
-    print(f"  Population columns: {list(df.columns[:20])}...")
 
-    # Find IRIS code column
-    iris_col = None
-    for candidate in ["IRIS", "CODE_IRIS", "DCOMIRIS"]:
-        if candidate in df.columns:
-            iris_col = candidate
-            break
-
+    iris_col = find_iris_column(df.columns)
     if not iris_col:
-        print("  Warning: no IRIS column found in population data")
+        print(f"  Warning: no IRIS column found in {label} data")
         return
 
-    # Map population columns (RP 2021 naming convention)
-    pop_mapping = {
-        "P21_POP": "population",
-        "P21_POP0014": "pop_0_14",
-        "P21_POP1529": "pop_15_29",
-        "P21_POP3044": "pop_30_44",
-        "P21_POP4559": "pop_45_59",
-        "P21_POP6074": "pop_60_74",
-        "P21_POP75P": "pop_75_plus",
-    }
+    resolved = resolve_columns(set(df.columns), wanted)
+    if not resolved:
+        return
 
-    # Also try without year prefix
-    for alt_prefix in ["P20_", "P19_", "P_"]:
-        if not any(c in df.columns for c in pop_mapping.keys()):
-            pop_mapping = {
-                k.replace("P21_", alt_prefix): v
-                for k, v in pop_mapping.items()
-            }
-
+    dest_cols = list(resolved)
     updated = 0
+    batch = []
     with conn.cursor() as cur:
         for _, row in df.iterrows():
             code_iris = str(row[iris_col]).strip()
             if len(code_iris) < 5:
                 continue
 
-            values = {}
-            for src_col, dest_col in pop_mapping.items():
-                if src_col in df.columns:
-                    try:
-                        val = pd.to_numeric(row[src_col], errors="coerce")
-                        if pd.notna(val):
-                            values[dest_col] = int(val)
-                    except Exception:
-                        pass
-
-            if not values:
+            values = [pd.to_numeric(row[resolved[d]], errors="coerce") for d in dest_cols]
+            if all(pd.isna(v) for v in values):
                 continue
 
-            set_clause = ", ".join(f"{k} = %s" for k in values.keys())
-            params = list(values.values()) + [code_iris]
-            cur.execute(
-                f"UPDATE iris_demographics SET {set_clause} WHERE code_iris = %s",
-                params,
-            )
-            updated += cur.rowcount
+            batch.append((code_iris, *[None if pd.isna(v) else float(v) for v in values]))
+            if len(batch) >= BATCH_SIZE:
+                updated += flush_updates(cur, batch, dest_cols, cast)
+                batch.clear()
+        if batch:
+            updated += flush_updates(cur, batch, dest_cols, cast)
 
     conn.commit()
-    print(f"  Updated {updated} IRIS with population data.")
+    print(f"  Updated {updated} IRIS with {label} data.")
+
+
+def update_population(conn, df):
+    """Update IRIS demographics with population data from RP."""
+    update_from_csv(conn, df, POP_COLUMNS, "int", "population")
 
 
 def update_revenus(conn, df):
     """Update IRIS demographics with revenue data from Filosofi."""
-    df.columns = df.columns.str.upper().str.strip()
-    print(f"  Revenue columns: {list(df.columns[:20])}...")
-
-    # Find IRIS code column
-    iris_col = None
-    for candidate in ["IRIS", "CODE_IRIS", "DCOMIRIS"]:
-        if candidate in df.columns:
-            iris_col = candidate
-            break
-
-    if not iris_col:
-        print("  Warning: no IRIS column found in revenue data")
-        return
-
-    # Find revenue columns
-    median_col = None
-    for candidate in ["MED21", "Q221", "DISP_MED21", "MED20", "MED19", "Q2"]:
-        if candidate in df.columns:
-            median_col = candidate
-            break
-
-    poverty_col = None
-    for candidate in ["TP6021", "TP6020", "TP6019", "TP60"]:
-        if candidate in df.columns:
-            poverty_col = candidate
-            break
-
-    updated = 0
-    with conn.cursor() as cur:
-        for _, row in df.iterrows():
-            code_iris = str(row[iris_col]).strip()
-            if len(code_iris) < 5:
-                continue
-
-            sets = []
-            params = []
-
-            if median_col:
-                try:
-                    val = pd.to_numeric(row[median_col], errors="coerce")
-                    if pd.notna(val):
-                        sets.append("revenu_median = %s")
-                        params.append(float(val))
-                except Exception:
-                    pass
-
-            if poverty_col:
-                try:
-                    val = pd.to_numeric(row[poverty_col], errors="coerce")
-                    if pd.notna(val):
-                        sets.append("taux_pauvrete = %s")
-                        params.append(float(val))
-                except Exception:
-                    pass
-
-            if not sets:
-                continue
-
-            params.append(code_iris)
-            cur.execute(
-                f"UPDATE iris_demographics SET {', '.join(sets)} WHERE code_iris = %s",
-                params,
-            )
-            updated += cur.rowcount
-
-    conn.commit()
-    print(f"  Updated {updated} IRIS with revenue data.")
+    update_from_csv(conn, df, REVENU_COLUMNS, "numeric", "revenue")
 
 
 def create_indexes(conn):

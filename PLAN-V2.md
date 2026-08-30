@@ -79,7 +79,8 @@ cohérence avec le PDF qui reprend déjà toutes les sections.
 | 4 | **Environnement** | Qualité de l'air, Climat | bruit |
 | 5 | **Sécurité** | Délinquance SSMSI | — |
 | 6 | **Risques** | Géorisques | sites pollués (CASIAS) |
-| 7 | **Population** | Démographie, Élections | municipales 2026 |
+| 7 | **Population** | Démographie | délinquance par âge ? |
+| 8 | **Élections** | Municipales 2026, Présidentielle 2022 | — |
 
 Ordre arbitré : la question financière d'abord, le contexte territorial en dernier.
 « Se déplacer » était initialement en 2, par hypothèse ; elle est passée **après** « À proximité »
@@ -172,7 +173,7 @@ Candidats évalués, par rapport valeur/effort décroissant :
 | **Sites pollués (CASIAS/BASOL)** | Risques | **faible** | L'API Géorisques est déjà branchée dans [brgm-risk.provider.ts](frontend/src/server-modules/risks/infrastructure/brgm-risk.provider.ts) — ce sont des endpoints supplémentaires du même service. |
 | **IPS des collèges** | À proximité | faible | Jointure directe : `SchoolSectorDto` porte déjà `codeUai` ([dto:210](frontend/src/server-shared/types/location-analysis.dto.ts#L210)). |
 | ~~**Délinquance SSMSI**~~ | Sécurité | — | **Fait.** Section propre, 5 indicateurs sur 10 ans en courbes, comparés au département et à la France. Maille communale — aucune donnée publique n'existe sous ce niveau, l'infra-communal (IRIS, QPV) restant réservé aux chercheurs. Le secret statistique masque les effectifs de 1 à 4 : rendus en bande d'incertitude plutôt qu'en trou, le zéro étant lui publié. |
-| **Municipales 2026** | Population | **élevé** | Bien plus pertinent qu'une présidentielle 2022 sur une fiche commune, mais l'import n'est pas une simple adaptation du script existant : listes et nuances au lieu de 12 candidats fixes, 2 tours, scrutin plurinominal pour les communes < 1 000 hab. |
+| ~~**Municipales 2026**~~ | Élections | — | **Fait.** Les résultats ont leur propre section, avec la présidentielle. L'obstacle anticipé n'était pas le bon : le format large (13 blocs de colonnes répétés) se dépivote sans peine, mais **l'État ne publie de nuance politique que pour 3 282 communes sur 34 836** — 9 % des communes, tout de même 65 % du corps électoral. D'où deux modes d'affichage : barres colorées comparées au national là où la nuance existe, listes nues avec voix et sièges ailleurs. 23 681 communes n'avaient qu'une seule liste : aucune barre n'y est dessinée, une barre pleine à 100 % se lirait comme un plébiscite. |
 | **Fibre / débit ARCEP** | Immobilier | ? | Mode d'accès à vérifier. |
 
 **Écartés pour la V2** : le **bruit** (pas de couverture nationale homogène — Bruitparif couvre l'IDF,

@@ -106,13 +106,13 @@ export function CommuneFaqSection({ stats, nomCourt }: Props) {
   };
 
   return (
-    <section className="commune-section commune-section--alt" id="faq">
+    <section className="commune-section" id="faq">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="commune-section-head">
-        <span className="section-num">06</span>
+        <span className="section-num">07</span>
         <h2 className="commune-section-title">
           Questions <i>fréquentes</i>
         </h2>

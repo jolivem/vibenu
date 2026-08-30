@@ -11,9 +11,9 @@ export function CommuneRelatedLinks({ commune }: Props) {
     .filter((c): c is CommuneSlugEntry => c !== undefined);
 
   return (
-    <section className="commune-section commune-related" id="autour">
+    <section className="commune-section commune-section--alt commune-related" id="autour">
       <div className="commune-section-head">
-        <span className="section-num">07</span>
+        <span className="section-num">08</span>
         <h2 className="commune-section-title">
           À <i>proximité</i>
         </h2>

@@ -84,7 +84,7 @@ export default function OpenGraphImage() {
         >
           {isPro
             ? "Voisinage · Mobilité · Données publiques officielles"
-            : "Transports · Risques · Cadastre · Prix immobiliers · Urbanisme"}
+            : "Prix · Urbanisme · Risques · Transports · Climat · Sécurité"}
         </div>
       </div>
     ),

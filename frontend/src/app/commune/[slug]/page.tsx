@@ -21,6 +21,7 @@ import { CommuneEquipmentsSection } from "@/components/commune/CommuneEquipments
 import { CommuneAirQualitySection } from "@/components/commune/CommuneAirQualitySection";
 import { CommuneElectionsSection } from "@/components/commune/CommuneElectionsSection";
 import { CommuneNarrativeSection } from "@/components/commune/CommuneNarrativeSection";
+import { CommuneHistorySection } from "@/components/commune/CommuneHistorySection";
 import { CommuneFaqSection } from "@/components/commune/CommuneFaqSection";
 import { CommuneRelatedLinks } from "@/components/commune/CommuneRelatedLinks";
 import { formatEur, formatInt } from "@/components/commune/format";
@@ -192,6 +193,7 @@ export default async function CommunePage({
       <CommuneEquipmentsSection stats={stats} />
       <CommuneAirQualitySection stats={stats} />
       <CommuneElectionsSection stats={stats} />
+      <CommuneHistorySection commune={commune} contour={contour} />
       <CommuneFaqSection stats={stats} nomCourt={commune.nomCourt} />
       <CommuneRelatedLinks commune={commune} />
 

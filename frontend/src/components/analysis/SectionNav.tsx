@@ -6,7 +6,7 @@ import { SECTION_TITLES, type SectionId } from "./sections";
 /**
  * Sommaire collant, en regard du corps de la page.
  *
- * Pas d'onglets ni d'accordéons : les 6 sections restent toutes dans le DOM. C'est ce qui
+ * Pas d'onglets ni d'accordéons : toutes les sections restent dans le DOM. C'est ce qui
  * préserve le Ctrl+F, le SEO si la page passe un jour en SSR, et la cohérence avec le PDF
  * qui reprend déjà toutes les sections.
  */

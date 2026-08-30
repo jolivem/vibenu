@@ -1,4 +1,4 @@
-import { LINE_CHART_DIMENSIONS } from "./lineChart";
+import { BAND_HALF_WIDTH_RATIO, LINE_CHART_DIMENSIONS } from "./lineChart";
 
 export interface LineChartSeries {
   name: string;
@@ -66,26 +66,48 @@ export function LineChart({
     <div className="line-chart">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={ariaLabel} className="line-chart-svg">
         {yTicks.map((t) => (
-          <g key={t}>
-            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="line-chart-grid" />
-            <text x={padL - 4} y={y(t)} className="line-chart-axis line-chart-axis--y">
-              {t.toLocaleString("fr-FR")}
-            </text>
-          </g>
+          <line
+            key={t}
+            x1={padL}
+            x2={W - padR}
+            y1={y(t)}
+            y2={y(t)}
+            className="line-chart-grid"
+          />
         ))}
 
-        {/* Sous les courbes : une bande ne doit jamais masquer une valeur connue. */}
+        {/*
+          Après la grille et avant les courbes : une bande peut couvrir un trait de
+          grille, jamais une valeur connue.
+
+          Toutes les bandes ont la même largeur, y compris aux extrémités : c'est au
+          modèle de réserver `BAND_HALF_WIDTH_RATIO` de marge de chaque côté de l'aire
+          de tracé (voir `buildSecurityChartModel`). Rogner les bandes de bord serait
+          visuellement faux — elles couvrent la même année que les autres.
+        */}
         {bands.map((b) => (
           <rect
             key={b.index}
-            x={x(b.index) - halfStep * 0.6}
-            width={halfStep * 1.2}
+            x={x(b.index) - halfStep * BAND_HALF_WIDTH_RATIO}
+            width={halfStep * BAND_HALF_WIDTH_RATIO * 2}
             y={y(b.high)}
             height={Math.max(y(b.low) - y(b.high), 1)}
             className="line-chart-band"
           >
             {bandTitle && <title>{bandTitle(b.index, b.low, b.high)}</title>}
           </rect>
+        ))}
+
+        {/* Après les bandes : les graduations restent lisibles quoi qu'il arrive. */}
+        {yTicks.map((t) => (
+          <text
+            key={t}
+            x={padL - 4}
+            y={y(t)}
+            className="line-chart-axis line-chart-axis--y"
+          >
+            {t.toLocaleString("fr-FR")}
+          </text>
         ))}
 
         {xLabels.map((label, i) => (

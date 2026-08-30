@@ -17,8 +17,9 @@ import { NeighborhoodServiceImpl } from "@/server-modules/neighborhood/applicati
 import { ApiCartoCadastreProvider } from "@/server-modules/cadastre/infrastructure/apicarto-cadastre.provider";
 import { CadastreServiceImpl } from "@/server-modules/cadastre/application/cadastre.service.impl";
 import { IrisDemographicsProvider } from "@/server-modules/demographics/infrastructure/iris-demographics.provider";
-import { DemographicsServiceImpl } from "@/server-modules/demographics/application/demographics.service";
+import { DemographicsServiceImpl } from "@/server-modules/demographics/application/demographics.service.impl";
 import { ElectionsDatabaseProvider } from "@/server-modules/elections/infrastructure/elections-database.provider";
+import { MunicipalesDatabaseProvider } from "@/server-modules/elections/infrastructure/municipales-database.provider";
 import { ElectionsServiceImpl } from "@/server-modules/elections/application/elections.service.impl";
 import { SecurityDatabaseProvider } from "@/server-modules/security/infrastructure/security-database.provider";
 import { SecurityServiceImpl } from "@/server-modules/security/application/security.service.impl";
@@ -48,7 +49,7 @@ const useCase = new LocationAnalysisUseCase({
   summaryService: new SummaryBuilderService(),
   cadastreService: new CadastreServiceImpl(new ApiCartoCadastreProvider()),
   demographicsService: new DemographicsServiceImpl(new IrisDemographicsProvider()),
-  electionsService: new ElectionsServiceImpl(new ElectionsDatabaseProvider()),
+  electionsService: new ElectionsServiceImpl(new ElectionsDatabaseProvider(), new MunicipalesDatabaseProvider()),
   securityService: new SecurityServiceImpl(new SecurityDatabaseProvider()),
   climateService: new ClimateServiceImpl(new MeteoFranceStationsProvider()),
   schoolSectorService: new SchoolSectorServiceImpl(new PostgisSchoolSectorProvider()),

@@ -10,6 +10,7 @@ import { PdfAirQuality } from "./sections/PdfAirQuality";
 import { PdfRealEstate } from "./sections/PdfRealEstate";
 import { PdfNeighborhood } from "./sections/PdfNeighborhood";
 import { PdfDemographics } from "./sections/PdfDemographics";
+import { PdfInseeProfile } from "./sections/PdfInseeProfile";
 import { PdfElections } from "./sections/PdfElections";
 import { PdfClimate } from "./sections/PdfClimate";
 import { PdfCadastre } from "./sections/PdfCadastre";
@@ -134,18 +135,26 @@ export function AnalysisPdfDocument({
 
   const hasNeighborhoodPage = FEATURES.showNeighborhood && data.mode !== "commune";
 
-  const hasDemoCadastrePage =
+  // La démographie et les trois axes INSEE ont leur propre page : à quatre tableaux,
+  // ils ne tiennent plus à côté de l'immobilier et du cadastre.
+  const hasPopulationPage =
     (FEATURES.showDemographics && Boolean(data.demographics)) ||
+    ((FEATURES.showHousing || FEATURES.showEmployment || FEATURES.showHouseholds) &&
+      Boolean(data.demographics));
+
+  const hasDemoCadastrePage =
     (FEATURES.showElections && Boolean(data.elections)) ||
     (FEATURES.showRealEstate && Boolean(realEstate)) ||
     (FEATURES.showCadastre && Boolean(data.cadastre)) ||
     (FEATURES.showSchoolSector && Boolean(data.schoolSector));
 
   // Numérotation dynamique : cover=1, puis map+mobilité=2 si présente, puis les autres.
+  // L'ordre des déclarations EST l'ordre des pages — déplacer une ligne renumérote.
   let nextPageNum = 2;
   const mapMobilityPageNum = hasMapMobilityPage ? nextPageNum++ : null;
   const risksPageNum = hasRisksAirClimatePage ? nextPageNum++ : null;
   const neighborhoodPageNum = hasNeighborhoodPage ? nextPageNum++ : null;
+  const populationPageNum = hasPopulationPage ? nextPageNum++ : null;
   const demoCadastrePageNum = hasDemoCadastrePage ? nextPageNum++ : null;
   const totalPages = nextPageNum - 1;
 
@@ -301,16 +310,30 @@ export function AnalysisPdfDocument({
         </Page>
       )}
 
-      {/* PAGE — DÉMO + IMMO + CADASTRE (optionnelle selon variante) */}
+      {/* PAGE — POPULATION (démographie + profil INSEE du quartier) */}
+      {hasPopulationPage && populationPageNum !== null && data.demographics && (
+        <Page size="A4" style={pdfStyles.page}>
+          <RunningHeader chapter="Population" />
+          <ChapterTitle italic="Population" post=" du quartier" />
+
+          {FEATURES.showDemographics && <PdfDemographics demographics={data.demographics} />}
+
+          <PdfInseeProfile demographics={data.demographics} mode={data.mode} />
+
+          <RunningFooter
+            date={formattedDate}
+            address="Source : INSEE · Recensement de la population 2021 · Filosofi"
+            pageNumber={populationPageNum}
+            totalPages={totalPages}
+          />
+        </Page>
+      )}
+
+      {/* PAGE — ÉLECTIONS + IMMO + CADASTRE (optionnelle selon variante) */}
       {hasDemoCadastrePage && demoCadastrePageNum !== null && (
         <Page size="A4" style={pdfStyles.page}>
-          <RunningHeader chapter="Démographie & cadastre" />
-          <ChapterTitle
-            italic="Démographie"
-            post=" du quartier"
-          />
-
-          {FEATURES.showDemographics && data.demographics && <PdfDemographics demographics={data.demographics} />}
+          <RunningHeader chapter="Élections & cadastre" />
+          <ChapterTitle italic="Élections" post=" & cadastre" />
 
           {FEATURES.showElections && data.elections && <PdfElections elections={data.elections} />}
 

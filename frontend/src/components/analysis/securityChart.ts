@@ -1,5 +1,5 @@
 import type { SecurityIndicatorDto } from "@/types/location-analysis";
-import { LINE_CHART_DIMENSIONS } from "./lineChart";
+import { BAND_HALF_WIDTH_RATIO, LINE_CHART_DIMENSIONS } from "./lineChart";
 import type { LineChartBand, LineChartSeries } from "./LineChart";
 
 /**
@@ -91,9 +91,23 @@ export function buildSecurityChartModel(
   const plotW = W - padL - padR;
   const plotH = H - padT - padB;
 
+  /*
+   * Les bandes sont centrées sur leur année et débordent de part et d'autre. On réserve
+   * donc une demi-bande à chaque extrémité, plutôt que de coller la première année sur
+   * l'axe : sans cette marge, sa bande recouvre les graduations de l'ordonnée, et la
+   * rogner la rendrait plus étroite que les autres.
+   *
+   * Le pas se déduit de la marge, et la marge du pas — d'où la résolution en une fois :
+   * pas × (intervalles + 2 × ratio_de_marge) = largeur disponible.
+   */
+  const intervals = Math.max(annees.length - 1, 1);
+  const insetRatio = BAND_HALF_WIDTH_RATIO / 2;
+  const xStep = plotW / (intervals + 2 * insetRatio);
+  const inset = xStep * insetRatio;
+
   // Les taux sont toujours positifs : l'axe part de zéro, seule origine honnête pour
   // comparer des ordres de grandeur.
-  const x = (i: number) => padL + (i * plotW) / Math.max(annees.length - 1, 1);
+  const x = (i: number) => padL + inset + i * xStep;
   const y = (v: number) => padT + plotH - (v / (maxY || 1)) * plotH;
 
   const yTicks = Array.from({ length: 5 }, (_, i) => Math.round(((maxY * i) / 4) * 100) / 100);

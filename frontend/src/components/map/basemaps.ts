@@ -1,4 +1,4 @@
-import type { StyleSpecification } from "maplibre-gl";
+import type { RasterSourceSpecification, StyleSpecification } from "maplibre-gl";
 
 /**
  * Fonds de carte de l'application.
@@ -86,33 +86,53 @@ export function loadIgnStyle(name: IgnStyleName): Promise<StyleSpecification> {
   return pending.then((style) => structuredClone(style));
 }
 
+export interface IgnRasterOptions {
+  format?: string;
+  style?: string;
+  maxzoom?: number;
+  minzoom?: number;
+  /** Remplace la mention IGN, pour une couche co-produite (Cassini est BnF/IGN). */
+  attribution?: string;
+}
+
 /**
- * Construit un style ne contenant qu'une couche WMTS raster de la Géoplateforme.
+ * Décrit une couche WMTS raster de la Géoplateforme comme source MapLibre.
  *
  * Les paramètres (format, style, plage de zoom) diffèrent d'une couche à l'autre et
  * ne sont pas devinables : ils viennent du GetCapabilities
- * (`https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetCapabilities`, 686 couches).
- * Se tromper de format renvoie un 400 avec une exception XML, pas une tuile vide.
+ * (`https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetCapabilities`, 2 222 couches).
+ * Se tromper de format ou de style renvoie un 400 avec une exception XML, pas une
+ * tuile vide — `ORTHOIMAGERY.ORTHOPHOTOS.1965-1980` n'accepte ainsi que le style
+ * `BDORTHOHISTORIQUE`, jamais `normal`.
+ *
+ * Passer par cette fonction plutôt que de recopier le gabarit d'URL est ce qui
+ * garantit que toutes les sources IGN de la carte portent la mention d'attribution
+ * **strictement identique** : MapLibre déduplique les attributions par sous-chaîne,
+ * et deux libellés qui divergeraient d'un caractère s'afficheraient côte à côte.
  */
-function ignRasterStyle(
+export function ignRasterSource(
   layer: string,
-  { format = "image/png", style = "normal", maxzoom = 19 } = {},
-): StyleSpecification {
+  { format = "image/png", style = "normal", maxzoom = 19, minzoom, attribution }: IgnRasterOptions = {},
+): RasterSourceSpecification {
+  return {
+    type: "raster",
+    tiles: [
+      "https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile" +
+        `&LAYER=${layer}&STYLE=${encodeURIComponent(style)}&TILEMATRIXSET=PM` +
+        `&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=${encodeURIComponent(format)}`,
+    ],
+    tileSize: 256,
+    maxzoom,
+    ...(minzoom === undefined ? {} : { minzoom }),
+    attribution: attribution ?? IGN_ATTRIBUTION,
+  };
+}
+
+/** Un style ne contenant que cette seule couche raster — pour l'utiliser comme fond. */
+export function ignRasterStyle(layer: string, options?: IgnRasterOptions): StyleSpecification {
   return {
     version: 8,
-    sources: {
-      src: {
-        type: "raster",
-        tiles: [
-          "https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile" +
-            `&LAYER=${layer}&STYLE=${encodeURIComponent(style)}&TILEMATRIXSET=PM` +
-            `&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=${encodeURIComponent(format)}`,
-        ],
-        tileSize: 256,
-        maxzoom,
-        attribution: IGN_ATTRIBUTION,
-      },
-    },
+    sources: { src: ignRasterSource(layer, options) },
     layers: [{ id: "src", type: "raster", source: "src" }],
   };
 }
@@ -120,3 +140,16 @@ function ignRasterStyle(
 /** Plan IGN en raster (WMTS) — repli si le style vectoriel ne se charge pas : même
  *  cartographie, aucun fetch de style, une seule couche à rendre. */
 export const IGN_PLAN_RASTER_STYLE = ignRasterStyle("GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2");
+
+/**
+ * Photographies aériennes actuelles — le fond des cartes historiques.
+ *
+ * Trois des six époques disponibles sont elles-mêmes des photographies aériennes :
+ * les fondre sur un plan de rues vectoriel opposerait deux langages graphiques au
+ * lieu de comparer deux états du même lieu. Et pour les cartes dessinées (Cassini,
+ * état-major), le tracé ancien posé sur le terrain d'aujourd'hui est l'usage
+ * classique de ces couches.
+ */
+export const IGN_ORTHO_RASTER_STYLE = ignRasterStyle("ORTHOIMAGERY.ORTHOPHOTOS", {
+  format: "image/jpeg",
+});

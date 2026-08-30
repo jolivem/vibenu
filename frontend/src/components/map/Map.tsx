@@ -21,6 +21,18 @@ export const IRIS_LAYER_ID = "iris-boundary";
 export const SCHOOL_SECTOR_LAYER_ID = "school-sector";
 const COMMUNE_LAYER_ID = "commune-contour";
 
+/**
+ * Premier calque applicatif de la pile, quelle que soit la configuration : les quatre
+ * couches de `RISK_LAYERS` sont ajoutées inconditionnellement, et en tête du bloc de
+ * surcouches.
+ *
+ * Point d'insertion pour toute couche ajoutée après coup qui doit masquer le fond mais
+ * rester **sous** nos surcouches — un fond historique opaque doit couvrir l'ortho, mais
+ * surtout pas le contour de parcelle : « où était ma parcelle en 1750 » n'a de sens que
+ * si le liseré reste visible par-dessus.
+ */
+export const FIRST_OVERLAY_LAYER_ID = RISK_LAYERS[0].id;
+
 type LngLatBounds = [[number, number], [number, number]];
 
 /**
@@ -100,17 +112,33 @@ interface MapProps {
   onReady?: (map: MapLibreMap) => void;
   height?: string;
   showLayerToggle?: boolean;
-  /** Fond IGN. `standard` (numéros de rue) pour la localisation, `gris` sous les couches thématiques. */
-  basemap?: IgnStyleName;
+  /**
+   * Fond de carte. `standard` (numéros de rue) pour la localisation, `gris` sous les
+   * couches thématiques, ou un style complet pour un fond raster — `IGN_ORTHO_RASTER_STYLE`
+   * sous les cartes historiques.
+   *
+   * ⚠️ Un style passé en objet doit être une **constante de module**. Un littéral inline
+   * fabriquerait un objet neuf à chaque rendu, donc un `baseStyle` d'identité neuve, donc
+   * une carte détruite et reconstruite à chaque rendu du parent — le même piège que celui
+   * documenté pour `transports` sur `NO_TRANSPORTS`.
+   */
+  basemap?: IgnStyleName | StyleSpecification;
   /**
    * Couches allumées au montage (`dvf-transactions`, `iris-boundary`, ids de `RISK_LAYERS`…).
    * Les cartes thématiques de l'écran d'analyse illustrent une donnée précise : leur couche
    * doit être visible d'emblée, pas derrière une case à cocher.
    */
   initialLayers?: string[];
+  /**
+   * Zoom d'arrivée, quand le défaut déduit du contenu ne convient pas.
+   *
+   * Sans contour communal ni parcelle, le défaut vaut 14 ; une parcelle le pousse à 17,
+   * ce qui est trop serré pour une couche qui s'arrête au zoom 14 (Cassini).
+   */
+  zoom?: number;
 }
 
-export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, basemap = LOCATOR_BASEMAP, initialLayers }: MapProps) {
+export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -164,6 +192,14 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
   const [baseStyle, setBaseStyle] = useState<StyleSpecification | null>(null);
 
   useEffect(() => {
+    // Style déjà constitué (fond raster) : rien à charger. Le clone est celui que fait
+    // `loadIgnStyle` sur sa branche : l'init étale `baseStyle.sources`, et sans lui les
+    // objets de source seraient partagés par référence entre toutes les cartes de la page.
+    if (typeof basemap !== "string") {
+      setBaseStyle(structuredClone(basemap));
+      return;
+    }
+
     let cancelled = false;
 
     loadIgnStyle(basemap)
@@ -459,7 +495,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         layers,
       },
       center: [lon, lat],
-      zoom: communeContour ? 10 : cadastreParcel ? 17 : 14,
+      zoom: zoom ?? (communeContour ? 10 : cadastreParcel ? 17 : 14),
     });
 
     // Les calques naissent en `visibility: none` : c'est ici qu'`initialLayers` prend effet.
@@ -541,7 +577,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         map.current = null;
       }
     };
-  }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector]);
+  }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, zoom]);
 
   // Répercute les clics sur les cases. Le cas « la carte n'existe pas encore » est traité par
   // l'effet d'init lui-même, pas ici : cet effet ne se relancerait pas, ses dépendances ne

@@ -35,16 +35,24 @@ interface DvfEvolutionRow {
   nb_transactions: number;
 }
 
+/** Le driver `pg` rend les NUMERIC et les bigint en `string` : à convertir sans perdre le null. */
+function num(value: number | string | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Une ligne de `insee_aggregate` : des effectifs, dont les parts sont dérivées ici. */
 interface DemoRow {
-  population_totale: number | null;
-  part_0_14: number | null;
-  part_15_29: number | null;
-  part_30_44: number | null;
-  part_45_59: number | null;
-  part_60_74: number | null;
-  part_75_plus: number | null;
-  revenu_median_pondere: number | null;
-  taux_pauvrete_pondere: number | null;
+  population: number | string | null;
+  pop_0_14: number | string | null;
+  pop_15_29: number | string | null;
+  pop_30_44: number | string | null;
+  pop_45_59: number | string | null;
+  pop_60_74: number | string | null;
+  pop_75_plus: number | string | null;
+  revenu_median: number | string | null;
+  taux_pauvrete: number | string | null;
 }
 
 interface BpeCategoryRow {
@@ -207,46 +215,67 @@ export class PostgisCommuneStatsProvider {
     };
   }
 
-  private async queryDemographics(codeCommune: string): Promise<DemographicsStats> {
+  /**
+   * Agrégat démographique d'un périmètre, lu dans `insee_aggregate`.
+   *
+   * La vue matérialisée porte déjà les sommes par commune et pour la France, calculées
+   * à l'import : ce qui était deux agrégations à la volée — dont un balayage complet
+   * des ~50 000 IRIS pour la France — devient un lookup par clé primaire. Surtout, il
+   * n'existe plus qu'une seule définition de « l'agrégat commune » dans le code.
+   *
+   * Nuance héritée du passage à la vue : le revenu et le taux de pauvreté y sont
+   * pondérés par la population des seuls IRIS renseignés, et non par la population
+   * totale. C'est la bonne pondération — Filosofi masque les IRIS trop peu peuplés, et
+   * les compter au dénominateur tirait la moyenne vers le bas.
+   */
+  private async queryDemographicsScope(scopeCode: string): Promise<DemographicsStats | null> {
     const rows = await query<DemoRow>(
-      `SELECT
-         SUM(population) AS population_totale,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_0_14)::float/SUM(population) END     AS part_0_14,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_15_29)::float/SUM(population) END    AS part_15_29,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_30_44)::float/SUM(population) END    AS part_30_44,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_45_59)::float/SUM(population) END    AS part_45_59,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_60_74)::float/SUM(population) END    AS part_60_74,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_75_plus)::float/SUM(population) END  AS part_75_plus,
-         CASE WHEN SUM(population) > 0
-              THEN SUM(revenu_median * population) / SUM(population) END AS revenu_median_pondere,
-         CASE WHEN SUM(population) > 0
-              THEN SUM(taux_pauvrete * population) / SUM(population) END AS taux_pauvrete_pondere
-       FROM iris_demographics
-       WHERE LEFT(code_iris, 5) = $1`,
-      [codeCommune],
+      `SELECT population, pop_0_14, pop_15_29, pop_30_44, pop_45_59, pop_60_74,
+              pop_75_plus, revenu_median, taux_pauvrete
+       FROM insee_aggregate WHERE scope_code = $1`,
+      [scopeCode],
     );
 
-    const row = rows[0] ?? null;
-    const populationTotale = row?.population_totale ? Number(row.population_totale) : 0;
+    const row = rows[0];
+    if (!row) return null;
+
+    const population = num(row.population) ?? 0;
+    const share = (v: number | string | null) =>
+      population > 0 ? (num(v) ?? 0) / population : 0;
 
     return {
-      populationTotale: Math.round(populationTotale),
+      populationTotale: Math.round(population),
       partAges: {
-        part_0_14: Number(row?.part_0_14 ?? 0),
-        part_15_29: Number(row?.part_15_29 ?? 0),
-        part_30_44: Number(row?.part_30_44 ?? 0),
-        part_45_59: Number(row?.part_45_59 ?? 0),
-        part_60_74: Number(row?.part_60_74 ?? 0),
-        part_75_plus: Number(row?.part_75_plus ?? 0),
+        part_0_14: share(row.pop_0_14),
+        part_15_29: share(row.pop_15_29),
+        part_30_44: share(row.pop_30_44),
+        part_45_59: share(row.pop_45_59),
+        part_60_74: share(row.pop_60_74),
+        part_75_plus: share(row.pop_75_plus),
       },
-      revenuMedianPondere: row?.revenu_median_pondere !== null && row?.revenu_median_pondere !== undefined
-        ? Math.round(Number(row.revenu_median_pondere))
-        : null,
-      tauxPauvretePondere: row?.taux_pauvrete_pondere !== null && row?.taux_pauvrete_pondere !== undefined
-        ? Number(row.taux_pauvrete_pondere)
-        : null,
+      revenuMedianPondere: num(row.revenu_median) !== null ? Math.round(num(row.revenu_median)!) : null,
+      tauxPauvretePondere: num(row.taux_pauvrete),
     };
   }
+
+  private async queryDemographics(codeCommune: string): Promise<DemographicsStats> {
+    return (
+      (await this.queryDemographicsScope(codeCommune)) ?? {
+        populationTotale: 0,
+        partAges: {
+          part_0_14: 0,
+          part_15_29: 0,
+          part_30_44: 0,
+          part_45_59: 0,
+          part_60_74: 0,
+          part_75_plus: 0,
+        },
+        revenuMedianPondere: null,
+        tauxPauvretePondere: null,
+      }
+    );
+  }
+
 
   private async queryBpeCounts(codeCommune: string): Promise<BpeCategoryRow[]> {
     return await query<BpeCategoryRow>(
@@ -317,44 +346,9 @@ export class PostgisCommuneStatsProvider {
     const cached = PostgisCommuneStatsProvider.franceDemoCache.get("FRANCE");
     if (cached) return cached;
 
-    // Agrégat France entière (toutes les IRIS).
-    const rows = await query<DemoRow>(
-      `SELECT
-         SUM(population) AS population_totale,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_0_14)::float/SUM(population) END     AS part_0_14,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_15_29)::float/SUM(population) END    AS part_15_29,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_30_44)::float/SUM(population) END    AS part_30_44,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_45_59)::float/SUM(population) END    AS part_45_59,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_60_74)::float/SUM(population) END    AS part_60_74,
-         CASE WHEN SUM(population) > 0 THEN SUM(pop_75_plus)::float/SUM(population) END  AS part_75_plus,
-         CASE WHEN SUM(population) > 0
-              THEN SUM(revenu_median * population) / SUM(population) END AS revenu_median_pondere,
-         CASE WHEN SUM(population) > 0
-              THEN SUM(taux_pauvrete * population) / SUM(population) END AS taux_pauvrete_pondere
-       FROM iris_demographics`,
-    );
-    const row = rows[0] ?? null;
-    if (!row || !row.population_totale) return null;
+    const stats = await this.queryDemographicsScope("FRANCE");
+    if (!stats || !stats.populationTotale) return null;
 
-    const stats: DemographicsStats = {
-      populationTotale: Math.round(Number(row.population_totale)),
-      partAges: {
-        part_0_14: Number(row.part_0_14 ?? 0),
-        part_15_29: Number(row.part_15_29 ?? 0),
-        part_30_44: Number(row.part_30_44 ?? 0),
-        part_45_59: Number(row.part_45_59 ?? 0),
-        part_60_74: Number(row.part_60_74 ?? 0),
-        part_75_plus: Number(row.part_75_plus ?? 0),
-      },
-      revenuMedianPondere:
-        row.revenu_median_pondere !== null && row.revenu_median_pondere !== undefined
-          ? Math.round(Number(row.revenu_median_pondere))
-          : null,
-      tauxPauvretePondere:
-        row.taux_pauvrete_pondere !== null && row.taux_pauvrete_pondere !== undefined
-          ? Number(row.taux_pauvrete_pondere)
-          : null,
-    };
     PostgisCommuneStatsProvider.franceDemoCache.set("FRANCE", stats);
     return stats;
   }

@@ -29,7 +29,8 @@ export class NarrativeCacheRepository {
     // C2/A : retrait des distances et clarification de hasNearbyStation pour le mode commune.
     // C3/A2 : règle de structuration — positifs en tête, points d'attention en une phrase finale.
     // C4/A3 : hasNearbyStation strict (1500 m) + anti-hallucination transport.
-    const prefix = mode === "commune" ? "C4:" : "A3:";
+    // C5/A4 : profil INSEE du quartier (logement, emploi, ménages) ajouté à l'entrée.
+    const prefix = mode === "commune" ? "C5:" : "A4:";
     return prefix + buildGeoKey(lat, lon);
   }
 

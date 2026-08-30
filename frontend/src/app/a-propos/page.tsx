@@ -50,9 +50,14 @@ const sources = [
     desc: "Parcelles cadastrales et zonages d'urbanisme (PLU, PLUi, cartes communales) consultables sur le Géoportail de l'Urbanisme.",
   },
   {
-    name: "INSEE IRIS",
-    issuer: "INSEE",
-    desc: "Données démographiques et socio-économiques au niveau des îlots regroupés pour l'information statistique.",
+    name: "Recensement & revenus",
+    issuer: "INSEE — RP 2021, Filosofi",
+    desc: "Population, logement, emploi, diplômes et revenus au niveau de l'IRIS, l'îlot statistique qui découpe les communes en quartiers.",
+  },
+  {
+    name: "Commerces & équipements",
+    issuer: "INSEE (BPE) · OpenStreetMap",
+    desc: "Écoles, pharmacies, médecins, commerces, parcs et équipements sportifs autour de l'adresse, avec leur distance.",
   },
   {
     name: "Transports",
@@ -60,9 +65,34 @@ const sources = [
     desc: "Arrêts de bus, métro, tramway, RER et gares ferroviaires issus des bases GTFS des autorités organisatrices.",
   },
   {
+    name: "Normales climatiques",
+    issuer: "Météo-France · meteo.data.gouv.fr",
+    desc: "Températures, précipitations et ensoleillement mois par mois sur la période de référence 1991-2020, par station.",
+  },
+  {
     name: "Qualité de l'air",
     issuer: "Atmo France · LCSQA",
-    desc: "Indicateurs de qualité de l'air et stations de mesure les plus proches.",
+    desc: "Indice quotidien de qualité de l'air et stations de mesure les plus proches.",
+  },
+  {
+    name: "Délinquance enregistrée",
+    issuer: "SSMSI · Ministère de l'Intérieur",
+    desc: "Faits enregistrés par la police et la gendarmerie sur dix ans, à la maille communale — la plus fine qui soit publiée.",
+  },
+  {
+    name: "Résultats électoraux",
+    issuer: "Ministère de l'Intérieur / data.gouv.fr",
+    desc: "Municipales 2026 et présidentielle 2022, agrégés à la commune et à l'arrondissement.",
+  },
+  {
+    name: "Cartes anciennes",
+    issuer: "IGN · Géoplateforme",
+    desc: "Carte de Cassini, carte de l'état-major et photographies aériennes depuis les années 1950.",
+  },
+  {
+    name: "Carte scolaire",
+    issuer: "Ville de Paris — opendata.paris.fr",
+    desc: "Secteurs de collège, disponibles pour Paris uniquement.",
   },
 ];
 
@@ -118,7 +148,8 @@ export default function AboutPage() {
             L&apos;information sur les logements existe — elle est même publique. Mais elle reste
             fragmentée entre Géorisques pour les risques naturels, DVF pour les prix, le Géoportail
             de l&apos;Urbanisme pour le PLU, l&apos;INSEE pour la démographie, transport.data.gouv.fr
-            pour la mobilité. Croiser tout cela avant une visite ou une signature prend des heures.
+            pour la mobilité, Météo-France pour le climat, le ministère de l&apos;Intérieur pour les
+            scrutins. Croiser tout cela avant une visite ou une signature prend des heures.
           </p>
           <p>
             ClaireAdresse fait ce travail à votre place. Vous saisissez une adresse, nous interrogeons
@@ -161,7 +192,9 @@ export default function AboutPage() {
             à une source officielle vérifiable. Les prix au m² proviennent uniquement de
             transactions réelles enregistrées chez les notaires (DVF). Les risques sont ceux
             publiés par les services de l&apos;État. Les zonages d&apos;urbanisme correspondent à
-            ceux téléversés par les communes sur le Géoportail de l&apos;Urbanisme.
+            ceux téléversés par les communes sur le Géoportail de l&apos;Urbanisme. La synthèse
+            en tête d&apos;analyse est rédigée automatiquement à partir de ces mêmes chiffres : elle
+            les reformule, elle n&apos;en ajoute aucun.
           </p>
           <p>
             Nous indiquons systématiquement la date de mise à jour de chaque source. Lorsque la

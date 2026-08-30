@@ -17,10 +17,15 @@ import { RealEstateCard } from "@/components/analysis/RealEstateCard";
 import { CadastreCard } from "@/components/analysis/CadastreCard";
 import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
 import { DemographicsCard } from "@/components/analysis/DemographicsCard";
+import { HistoryCard } from "@/components/analysis/HistoryCard";
+import { HousingCard } from "@/components/analysis/HousingCard";
+import { EmploymentCard } from "@/components/analysis/EmploymentCard";
+import { HouseholdsCard } from "@/components/analysis/HouseholdsCard";
 import { ElectionsCard } from "@/components/analysis/ElectionsCard";
 import { ClimateCard } from "@/components/analysis/ClimateCard";
 import { SchoolSectorCard } from "@/components/analysis/SchoolSectorCard";
 import { SecurityCard } from "@/components/analysis/SecurityCard";
+import { MunicipalesCard } from "@/components/analysis/MunicipalesCard";
 import { KeyFigures, type KeyFigure } from "@/components/analysis/KeyFigures";
 import { SectionNav } from "@/components/analysis/SectionNav";
 import { ShareLinks } from "@/components/analysis/ShareLinks";
@@ -41,6 +46,8 @@ const TEN_MINUTES_WALK_METERS = 750;
 
 const LOCATOR_MAP_HEIGHT = "420px";
 const THEMATIC_MAP_HEIGHT = "340px";
+/** Plus haute que les cartes thématiques : c'est une carte qu'on regarde, pas qu'on lit. */
+const HISTORY_MAP_HEIGHT = "420px";
 
 /** Les niveaux du DTO sont en minuscules (« très bon », « modéré ») : ils se lisent au fil
  *  d'une phrase dans les cards, mais isolés dans une tuile ils veulent une capitale. */
@@ -114,6 +121,8 @@ export function AnalysisScreen() {
         securite: false,
         risques: false,
         population: false,
+        elections: false,
+        histoire: false,
       };
     }
     return {
@@ -130,7 +139,15 @@ export function AnalysisScreen() {
       risques: FEATURES.showRisks,
       population:
         (FEATURES.showDemographics && !!data.demographics) ||
-        (FEATURES.showElections && !!data.elections),
+        (FEATURES.showHousing && !!data.demographics?.housing) ||
+        (FEATURES.showEmployment && !!data.demographics?.employment) ||
+        (FEATURES.showHouseholds && !!data.demographics?.households),
+      elections:
+        (FEATURES.showElections && !!data.elections) ||
+        (FEATURES.showMunicipales && !!data.municipales),
+      // Seule section sans condition sur la donnée : elle ne consomme rien du serveur,
+      // les cartes anciennes viennent directement de la Géoplateforme IGN.
+      histoire: FEATURES.showHistory,
     };
   }, [data]);
 
@@ -395,9 +412,40 @@ export function AnalysisScreen() {
                         ) : null}
                       </DemographicsCard>
                     )}
+                    {FEATURES.showHousing && data.demographics && (
+                      <HousingCard demographics={data.demographics} mode={data.mode} />
+                    )}
+                    {FEATURES.showEmployment && data.demographics && (
+                      <EmploymentCard demographics={data.demographics} mode={data.mode} />
+                    )}
+                    {FEATURES.showHouseholds && data.demographics && (
+                      <HouseholdsCard demographics={data.demographics} mode={data.mode} />
+                    )}
+                  </AnalysisSection>
+                )}
+
+                {hasContent.elections && (
+                  <AnalysisSection id="elections">
+                    {FEATURES.showMunicipales && data.municipales && (
+                      <MunicipalesCard municipales={data.municipales} />
+                    )}
                     {FEATURES.showElections && data.elections && (
                       <ElectionsCard elections={data.elections} />
                     )}
+                  </AnalysisSection>
+                )}
+
+                {hasContent.histoire && (
+                  <AnalysisSection id="histoire">
+                    <HistoryCard
+                      lat={data.map.center.lat}
+                      lon={data.map.center.lon}
+                      label={data.address.label}
+                      mode={data.mode}
+                      cadastreParcel={data.cadastre?.parcel ?? null}
+                      communeContour={data.map.communeContour ?? null}
+                      height={HISTORY_MAP_HEIGHT}
+                    />
                   </AnalysisSection>
                 )}
               </div>

@@ -75,7 +75,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         ? Promise.resolve(null)
         : this.dependencies.schoolSectorService.getCollegeSector(input.lat, input.lon);
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security] =
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
@@ -89,6 +89,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         this.dependencies.climateService.getClimateData(input.lat, input.lon),
         schoolSectorPromise,
         this.dependencies.securityService.getSecurityData(codeInsee),
+        this.dependencies.electionsService.getMunicipalesData(codeInsee),
       ]);
 
     const address = {
@@ -126,6 +127,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       climate,
       schoolSector,
       security,
+      municipales,
     };
   }
 }

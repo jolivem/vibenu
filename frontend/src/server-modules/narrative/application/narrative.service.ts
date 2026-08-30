@@ -42,6 +42,85 @@ export class NarrativeService {
   }
 }
 
+/**
+ * Le profil INSEE du quartier, réduit aux indicateurs qui portent un jugement.
+ *
+ * En mode commune, l'échelle pertinente est la commune : l'IRIS renvoyé est celui du
+ * centroïde, et le donner au modèle comme « le quartier » d'une recherche portant sur
+ * une ville entière lui ferait écrire une phrase fausse.
+ */
+function buildInseeProfileInput(data: LocationAnalysisDto): NarrativeInput["inseeProfile"] {
+  const demographics = data.demographics;
+  if (!demographics) return null;
+
+  const local = <T>(scoped: { iris: T | null; commune: T | null } | null | undefined) =>
+    (data.mode === "commune" ? scoped?.commune : scoped?.iris) ?? null;
+
+  const housing = local(demographics.housing);
+  const employment = local(demographics.employment);
+  const households = local(demographics.households);
+  const housingFr = demographics.housing?.france ?? null;
+  const employmentFr = demographics.employment?.france ?? null;
+  const householdsFr = demographics.households?.france ?? null;
+
+  // CS3 = cadres, CS6 = ouvriers dans la nomenclature INSEE.
+  const cadres = (csp: (number | null)[] | null | undefined) => csp?.[2] ?? null;
+  const ouvriers = (csp: (number | null)[] | null | undefined) => csp?.[5] ?? null;
+
+  if (!housing && !employment && !households) return null;
+
+  return {
+    housing: housing
+      ? {
+          pctProprietaires: housing.pctProprietaires,
+          pctHlm: housing.pctHlm,
+          pctVacants: housing.pctVacants,
+          pctResidencesSecondaires: housing.pctResidencesSecondaires,
+          pctMaisons: housing.pctMaisons,
+          national: housingFr
+            ? {
+                pctProprietaires: housingFr.pctProprietaires,
+                pctHlm: housingFr.pctHlm,
+                pctVacants: housingFr.pctVacants,
+                pctResidencesSecondaires: housingFr.pctResidencesSecondaires,
+                pctMaisons: housingFr.pctMaisons,
+              }
+            : null,
+        }
+      : null,
+    employment: employment
+      ? {
+          tauxChomage: employment.tauxChomage,
+          pctCadres: cadres(employment.csp),
+          pctOuvriers: ouvriers(employment.csp),
+          pctDiplomesSuperieur: employment.pctDiplomesSuperieur,
+          national: employmentFr
+            ? {
+                tauxChomage: employmentFr.tauxChomage,
+                pctCadres: cadres(employmentFr.csp),
+                pctOuvriers: ouvriers(employmentFr.csp),
+                pctDiplomesSuperieur: employmentFr.pctDiplomesSuperieur,
+              }
+            : null,
+        }
+      : null,
+    households: households
+      ? {
+          tailleMoyenne: households.tailleMoyenne,
+          pctPersonnesSeules: households.pctPersonnesSeules,
+          pctFamillesMonoparentales: households.pctFamillesMonoparentales,
+          national: householdsFr
+            ? {
+                tailleMoyenne: householdsFr.tailleMoyenne,
+                pctPersonnesSeules: householdsFr.pctPersonnesSeules,
+                pctFamillesMonoparentales: householdsFr.pctFamillesMonoparentales,
+              }
+            : null,
+        }
+      : null,
+  };
+}
+
 function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
   const highlighted = data.risks.categories
     .filter((r) => r.level === "élevé" || r.level === "modéré")
@@ -125,6 +204,7 @@ function buildNarrativeInput(data: LocationAnalysisDto): NarrativeInput {
             : null,
         }
       : null,
+    inseeProfile: buildInseeProfileInput(data),
     cadastre: data.cadastre
       ? {
           urbanZoneType: data.cadastre.urbanZone?.type ?? null,
