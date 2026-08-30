@@ -12,6 +12,7 @@ Downloads IRIS contours (IGN) and demographic data (INSEE RP + Filosofi),
 joins them, and imports into PostgreSQL for neighborhood demographic analysis.
 """
 
+import argparse
 import os
 import sys
 import io
@@ -252,9 +253,16 @@ POP_COLUMNS = {
     "pop_75_plus": ["P21_POP75P", "P20_POP75P", "P19_POP75P"],
 }
 
+# Filosofi préfixe ses variables par la déclinaison de revenu : `DISP_` pour le revenu
+# disponible, qui est celle qu'on importe (fichier BASE_TD_FILO_IRIS_..._DISP). Les noms
+# nus (`TP6021`, `MED21`) sont ceux des fichiers communaux, pas des fichiers IRIS —
+# aucun candidat du taux de pauvreté ne correspondait, et la colonne est restée vide
+# pour les 49 420 IRIS sans que rien ne le signale.
+#
+# Le taux est publié en pourcentage (3 à 81 %), pas en fraction : il s'affiche tel quel.
 REVENU_COLUMNS = {
-    "revenu_median": ["MED21", "Q221", "DISP_MED21", "MED20", "MED19", "Q2"],
-    "taux_pauvrete": ["TP6021", "TP6020", "TP6019", "TP60"],
+    "revenu_median": ["DISP_MED21", "DISP_MED20", "DISP_MED19", "MED21", "Q221", "MED20", "MED19", "Q2"],
+    "taux_pauvrete": ["DISP_TP6021", "DISP_TP6020", "DISP_TP6019", "TP6021", "TP6020", "TP6019", "TP60"],
 }
 
 
@@ -308,6 +316,21 @@ def flush_updates(cur, batch, dest_cols, cast):
     return len(batch)
 
 
+def to_number(value):
+    """
+    Convertit une valeur INSEE en nombre, virgule décimale comprise.
+
+    L'INSEE mélange les deux notations dans un même fichier : Filosofi publie le revenu
+    médian en entier (`20350`) et le taux de pauvreté en décimal français (`19,0`).
+    `pd.to_numeric` rend NaN sur le second — la colonne `taux_pauvrete` est restée vide
+    pour les 49 420 IRIS sans que rien ne le signale. Les valeurs `ns` (non significatif)
+    et `nd` (non disponible) sont, elles, des absences légitimes.
+    """
+    if isinstance(value, str):
+        value = value.replace(",", ".")
+    return pd.to_numeric(value, errors="coerce")
+
+
 def update_from_csv(conn, df, wanted, cast, label):
     """Applique un fichier INSEE sur iris_demographics, par lots."""
     df.columns = df.columns.str.upper().str.strip()
@@ -330,7 +353,7 @@ def update_from_csv(conn, df, wanted, cast, label):
             if len(code_iris) < 5:
                 continue
 
-            values = [pd.to_numeric(row[resolved[d]], errors="coerce") for d in dest_cols]
+            values = [to_number(row[resolved[d]]) for d in dest_cols]
             if all(pd.isna(v) for v in values):
                 continue
 
@@ -366,49 +389,95 @@ def create_indexes(conn):
 
 
 def print_stats(conn):
-    """Print summary stats."""
-    with conn.cursor() as cur:
-        cur.execute("SELECT COUNT(*) FROM iris_demographics WHERE geom IS NOT NULL;")
-        with_geom = cur.fetchone()[0]
-        cur.execute("SELECT COUNT(*) FROM iris_demographics WHERE population IS NOT NULL;")
-        with_pop = cur.fetchone()[0]
-        cur.execute("SELECT COUNT(*) FROM iris_demographics WHERE revenu_median IS NOT NULL;")
-        with_rev = cur.fetchone()[0]
-        cur.execute("SELECT COUNT(*) FROM iris_demographics;")
-        total = cur.fetchone()[0]
+    """
+    Couverture de chaque colonne.
 
-    print(f"\nIRIS statistics:")
+    Une colonne entièrement vide est signalée : c'est le symptôme d'un nom de variable
+    INSEE qui a changé, et il est passé inaperçu pendant des mois sur `taux_pauvrete`.
+    Filosofi ne publie que ~16 000 IRIS sur 49 000 (secret statistique) et marque `ns`
+    ou `nd` un millier de plus : une couverture d'environ 29 % y est normale, zéro ne
+    l'est jamais.
+    """
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT COUNT(*),
+                   COUNT(geom), COUNT(population), COUNT(revenu_median), COUNT(taux_pauvrete)
+            FROM iris_demographics
+        """)
+        total, with_geom, with_pop, with_rev, with_pov = cur.fetchone()
+
+    print("\nIRIS statistics:")
     print(f"  Total IRIS: {total:,}")
-    print(f"  With geometry: {with_geom:,}")
-    print(f"  With population: {with_pop:,}")
-    print(f"  With revenue: {with_rev:,}")
+    for label, n in (
+        ("With geometry", with_geom),
+        ("With population", with_pop),
+        ("With revenue", with_rev),
+        ("With poverty rate", with_pov),
+    ):
+        flag = " ⚠ COLONNE VIDE — nom de variable INSEE à vérifier" if total and not n else ""
+        print(f"  {label}: {n:,}{flag}")
+
+
+def refresh_aggregate(conn):
+    """
+    Recalcule les repères commune et France.
+
+    Obligatoire après toute écriture dans iris_demographics : la vue matérialisée
+    `insee_aggregate` en dérive, et sans rafraîchissement l'écran continuerait à
+    comparer le quartier à des repères périmés — ou vides.
+    """
+    with conn.cursor() as cur:
+        cur.execute("SELECT ispopulated FROM pg_matviews WHERE matviewname = 'insee_aggregate'")
+        row = cur.fetchone()
+        if row is None:
+            print("\n⚠ Vue insee_aggregate absente : appliquer la migration 017.")
+            return
+        concurrently = "CONCURRENTLY " if row[0] else ""
+        print(f"\nREFRESH MATERIALIZED VIEW {concurrently}insee_aggregate…")
+        cur.execute(f"REFRESH MATERIALIZED VIEW {concurrently}insee_aggregate")
+    conn.commit()
+
+
+PHASES = ("contours", "population", "revenus")
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--only",
+        choices=PHASES,
+        action="append",
+        help="ne jouer que cette phase (répétable ; défaut : les trois). Rejouer les "
+             "seuls revenus évite de re-télécharger 1,2 Go de contours.",
+    )
+    args = parser.parse_args()
+    phases = args.only or list(PHASES)
+
     conn = get_connection()
     try:
         setup_database(conn)
 
-        # Phase 1: Import contours
-        print("=== Phase 1: IRIS contours ===")
-        geojson = download_iris_contours()
-        import_contours(conn, geojson)
+        if "contours" in phases:
+            print("=== Phase 1: IRIS contours ===")
+            geojson = download_iris_contours()
+            import_contours(conn, geojson)
 
-        # Phase 2: Population data
-        print("\n=== Phase 2: Population (RP) ===")
-        df_pop = download_and_parse_csv(RP_POP_URL, "Recensement population")
-        if df_pop is not None:
-            update_population(conn, df_pop)
+        if "population" in phases:
+            print("\n=== Phase 2: Population (RP) ===")
+            df_pop = download_and_parse_csv(RP_POP_URL, "Recensement population")
+            if df_pop is not None:
+                update_population(conn, df_pop)
 
-        # Phase 3: Revenue data
-        print("\n=== Phase 3: Revenus (Filosofi) ===")
-        df_rev = download_and_parse_csv(FILOSOFI_URL, "Filosofi revenus")
-        if df_rev is not None:
-            update_revenus(conn, df_rev)
+        if "revenus" in phases:
+            print("\n=== Phase 3: Revenus (Filosofi) ===")
+            df_rev = download_and_parse_csv(FILOSOFI_URL, "Filosofi revenus")
+            if df_rev is not None:
+                update_revenus(conn, df_rev)
 
-        # Phase 4: Indexes and stats
         create_indexes(conn)
         print_stats(conn)
+
+        refresh_aggregate(conn)
 
         print("\nIRIS import completed successfully.")
     finally:

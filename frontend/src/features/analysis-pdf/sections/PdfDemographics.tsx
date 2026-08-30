@@ -84,8 +84,10 @@ export function PdfDemographics({ demographics }: { demographics: DemographicsAn
             showCommune={showCommune}
           />
           <Text style={pdfStyles.chartNote}>
-            Commune et France : moyennes pondérées par population calculées à partir des
-            quartiers (chiffres indicatifs).
+            Commune et France : moyennes pondérées par population, calculées à partir des
+            quartiers. Le revenu médian et le taux de pauvreté ne sont publiés que pour les
+            quartiers assez peuplés, plutôt urbains : ils manquent souvent à l'échelle du
+            quartier, et le repère France s'en trouve un peu plus élevé que le taux national.
           </Text>
         </View>
       )}

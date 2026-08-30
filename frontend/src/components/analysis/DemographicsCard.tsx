@@ -66,7 +66,8 @@ export function DemographicsCard({ demographics, mode, children }: Props) {
         )}
 
         <p className="demographics-footnote">
-          Moyennes pondérées par population, agrégées à partir des quartiers IRIS de la commune.
+          Moyennes pondérées par population, agrégées à partir des quartiers IRIS de la
+          commune. Le revenu médian et le taux de pauvreté ne sont publiés que pour les quartiers assez peuplés, plutôt urbains : ils manquent souvent à l'échelle du quartier, et le repère France s'en trouve un peu plus élevé que le taux national.
         </p>
       </section>
     );
@@ -139,7 +140,8 @@ export function DemographicsCard({ demographics, mode, children }: Props) {
       )}
 
       <p className="demographics-footnote">
-        Commune et France : moyennes pondérées par population calculées à partir des quartiers (chiffres indicatifs).
+        Commune et France : moyennes pondérées par population, calculées à partir des
+        quartiers. Le revenu médian et le taux de pauvreté ne sont publiés que pour les quartiers assez peuplés, plutôt urbains : ils manquent souvent à l'échelle du quartier, et le repère France s'en trouve un peu plus élevé que le taux national.
       </p>
 
       {children ? <div className="card-map">{children}</div> : null}
