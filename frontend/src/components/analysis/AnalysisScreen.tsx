@@ -354,15 +354,6 @@ export function AnalysisScreen() {
                   </AnalysisSection>
                 )}
 
-                {hasContent.environnement && (
-                  <AnalysisSection id="environnement">
-                    {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} />}
-                    {FEATURES.showAirQuality && data.airQuality.available && (
-                      <AirQualityCard airQuality={data.airQuality} />
-                    )}
-                  </AnalysisSection>
-                )}
-
                 {hasContent.securite && data.security && (
                   <AnalysisSection id="securite">
                     <SecurityCard
@@ -370,25 +361,6 @@ export function AnalysisScreen() {
                       codeInsee={citycode}
                       ville={data.address.city}
                     />
-                  </AnalysisSection>
-                )}
-
-                {hasContent.risques && (
-                  <AnalysisSection id="risques">
-                    <RisksCard risks={data.risks}>
-                      <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                        <Map
-                          lat={data.map.center.lat}
-                          lon={data.map.center.lon}
-                          label={data.address.label}
-                          risks={data.risks}
-                          communeContour={data.map.communeContour}
-                          basemap={THEMATIC_BASEMAP}
-                          initialLayers={[DEFAULT_RISK_LAYER]}
-                          height={THEMATIC_MAP_HEIGHT}
-                        />
-                      </LazyMap>
-                    </RisksCard>
                   </AnalysisSection>
                 )}
 
@@ -432,6 +404,34 @@ export function AnalysisScreen() {
                     {FEATURES.showElections && data.elections && (
                       <ElectionsCard elections={data.elections} />
                     )}
+                  </AnalysisSection>
+                )}
+
+                {hasContent.environnement && (
+                  <AnalysisSection id="environnement">
+                    {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} />}
+                    {FEATURES.showAirQuality && data.airQuality.available && (
+                      <AirQualityCard airQuality={data.airQuality} />
+                    )}
+                  </AnalysisSection>
+                )}
+
+                {hasContent.risques && (
+                  <AnalysisSection id="risques">
+                    <RisksCard risks={data.risks}>
+                      <LazyMap height={THEMATIC_MAP_HEIGHT}>
+                        <Map
+                          lat={data.map.center.lat}
+                          lon={data.map.center.lon}
+                          label={data.address.label}
+                          risks={data.risks}
+                          communeContour={data.map.communeContour}
+                          basemap={THEMATIC_BASEMAP}
+                          initialLayers={[DEFAULT_RISK_LAYER]}
+                          height={THEMATIC_MAP_HEIGHT}
+                        />
+                      </LazyMap>
+                    </RisksCard>
                   </AnalysisSection>
                 )}
 

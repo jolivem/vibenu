@@ -11,14 +11,17 @@
  */
 
 export const SECTION_ORDER = [
+  // Le logement et ce qu'on en atteint.
   "immobilier",
   "proximite",
   "deplacer",
-  "environnement",
+  // Puis les gens : qui vit là, et comment.
   "securite",
-  "risques",
   "population",
   "elections",
+  // Puis le cadre physique, qu'on ne choisit pas.
+  "environnement",
+  "risques",
   // Le contexte le moins décisionnel, donc en dernier — et la section la plus lourde
   // (fond ortho + rasters historiques), donc la dernière que LazyMap monte.
   "histoire",
@@ -34,7 +37,7 @@ export const SECTION_TITLES: Record<SectionId, string> = {
   // couvrait toutes deux sans en nommer aucune.
   environnement: "Climat & qualité de l'air",
   securite: "Sécurité",
-  // « Risques » seul devenait ambigu depuis l'arrivée de « Sécurité » juste au-dessus :
+  // « Risques » seul serait ambigu depuis l'arrivée de « Sécurité » dans la page :
   // l'adjectif tranche entre aléa naturel et fait social.
   risques: "Risques naturels",
   population: "Population",
