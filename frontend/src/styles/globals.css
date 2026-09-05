@@ -1938,6 +1938,79 @@ html {
   gap: 20px;
 }
 
+/*
+ * En-tête de zone d'une section — le périmètre que ses cards décrivent, nommé une fois.
+ *
+ * Ni card ni encadré : le texte se lit à la suite du titre de section. Lui donner un
+ * fond et une bordure en ferait une cinquième card, en concurrence avec les quatre
+ * qu'il chapeaute. Seule la carte porte un cadre : c'est elle qui a besoin d'être
+ * délimitée, pas la phrase.
+ *
+ * Aucune marge de séparation à écrire : le bandeau est le premier enfant de
+ * `.analysis-section-body`, il hérite donc du `gap` ci-dessus.
+ */
+.section-scope-zone {
+  /* Marges posées à la main : le bandeau n'est pas un conteneur flex, les marges par
+     défaut du navigateur sur les <p> casseraient le rythme. */
+  margin: 0 0 4px;
+  font-family: var(--font-serif), var(--font-serif-fallback);
+  font-weight: 400;
+  font-size: 1.15rem;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+
+/* « Quartier : » et le nom de commune situent, ils ne nomment pas : ils s'effacent
+   derrière le nom du quartier, seul mot que l'œil doit accrocher. */
+.section-scope-kicker {
+  color: var(--muted);
+}
+
+.section-scope-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+.section-scope .demographics-note {
+  margin: 4px 0 0;
+}
+
+/*
+ * Hors d'une card, la carte porte son propre cadre — même filet et même rayon que
+ * `.card`, pour qu'elle appartienne visiblement à la même famille. Décalque de
+ * `.commune-map-wrap`, y compris la neutralisation du décor propre de `.map-wrapper`.
+ */
+.section-scope-map {
+  margin-top: 16px;
+  border-radius: 14px;
+  /* C'est lui qui rogne le canvas MapLibre et l'attribution sur les coins arrondis,
+     une fois le rayon de la tuile mis à zéro ci-dessous. */
+  overflow: hidden;
+  border: 0.5px solid var(--hairline-strong);
+}
+
+.section-scope-map .map-wrapper {
+  border: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Annule les 8px posés en style inline par `Map` : c'est le cadre qui porte le rayon,
+   et deux arrondis concentriques laisseraient voir un liseré de fond aux quatre coins. */
+.section-scope-map .map-container {
+  border-radius: 0 !important;
+}
+
+/* Le squelette du montage différé occupe la place de la carte dans un cadre déjà posé :
+   ni bordure ni rayon propres, seulement une valeur de fond. */
+.section-scope-map .lazy-map-skeleton {
+  border: none;
+  border-radius: 0;
+  background: var(--bg-alt);
+}
+
 /* Cartes thématiques en montage différé */
 .lazy-map-skeleton {
   border-radius: 16px;
@@ -2270,12 +2343,6 @@ html {
 }
 
 /* Demographics card */
-.demographics-iris {
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
 .demographics-age {
   max-width: var(--line-chart-max);
   margin: 16px auto 0;

@@ -17,6 +17,7 @@ import { RealEstateCard } from "@/components/analysis/RealEstateCard";
 import { CadastreCard } from "@/components/analysis/CadastreCard";
 import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
 import { DemographicsCard } from "@/components/analysis/DemographicsCard";
+import { PopulationScope } from "@/components/analysis/PopulationScope";
 import { HistoryCard } from "@/components/analysis/HistoryCard";
 import { HousingCard } from "@/components/analysis/HousingCard";
 import { EmploymentCard } from "@/components/analysis/EmploymentCard";
@@ -55,11 +56,30 @@ function capitalizeFirst(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function AnalysisSection({ id, children }: { id: SectionId; children: ReactNode }) {
+function AnalysisSection({
+  id,
+  lead,
+  children,
+}: {
+  id: SectionId;
+  /**
+   * En-tête de zone : le périmètre que les cards de la section décrivent, nommé une
+   * seule fois au-dessus d'elles.
+   *
+   * Rendu comme premier élément du corps, et non entre le titre et lui : le corps est
+   * un `flex column` à `gap: 20px`, donc l'en-tête est séparé de la première card par
+   * exactement le même écart que deux cards entre elles, sans une ligne de CSS.
+   */
+  lead?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section id={id} className="analysis-section">
       <h2 className="analysis-section-title">{SECTION_TITLES[id]}</h2>
-      <div className="analysis-section-body">{children}</div>
+      <div className="analysis-section-body">
+        {lead}
+        {children}
+      </div>
     </section>
   );
 }
@@ -365,24 +385,34 @@ export function AnalysisScreen() {
                 )}
 
                 {hasContent.population && (
-                  <AnalysisSection id="population">
+                  <AnalysisSection
+                    id="population"
+                    // Gardé sur la donnée et non sur `showDemographics` : si un jour
+                    // seule la card Logement était activée, c'est encore ce bandeau qui
+                    // nommerait la zone qu'elle décrit.
+                    lead={
+                      data.demographics ? (
+                        <PopulationScope demographics={data.demographics} mode={data.mode}>
+                          {!isCommune && data.demographics.irisGeojson ? (
+                            <LazyMap height={THEMATIC_MAP_HEIGHT}>
+                              <Map
+                                lat={data.map.center.lat}
+                                lon={data.map.center.lon}
+                                label={data.address.label}
+                                irisGeojson={data.demographics.irisGeojson}
+                                basemap={THEMATIC_BASEMAP}
+                                initialLayers={[IRIS_LAYER_ID]}
+                                showLayerToggle={false}
+                                height={THEMATIC_MAP_HEIGHT}
+                              />
+                            </LazyMap>
+                          ) : null}
+                        </PopulationScope>
+                      ) : null
+                    }
+                  >
                     {FEATURES.showDemographics && data.demographics && (
-                      <DemographicsCard demographics={data.demographics} mode={data.mode}>
-                        {!isCommune && data.demographics.irisGeojson ? (
-                          <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                            <Map
-                              lat={data.map.center.lat}
-                              lon={data.map.center.lon}
-                              label={data.address.label}
-                              irisGeojson={data.demographics.irisGeojson}
-                              basemap={THEMATIC_BASEMAP}
-                              initialLayers={[IRIS_LAYER_ID]}
-                              showLayerToggle={false}
-                              height={THEMATIC_MAP_HEIGHT}
-                            />
-                          </LazyMap>
-                        ) : null}
-                      </DemographicsCard>
+                      <DemographicsCard demographics={data.demographics} mode={data.mode} />
                     )}
                     {FEATURES.showHousing && data.demographics && (
                       <HousingCard demographics={data.demographics} mode={data.mode} />

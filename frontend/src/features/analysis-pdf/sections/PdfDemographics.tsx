@@ -44,11 +44,6 @@ export function PdfDemographics({ demographics }: { demographics: DemographicsAn
 
   return (
     <View>
-      <Text style={pdfStyles.demoIris}>
-        Quartier · {demographics.nomIris || demographics.codeIris}
-        {demographics.nomCommune && ` — ${demographics.nomCommune}`}
-      </Text>
-
       <View style={pdfStyles.demoTable}>
         <View style={pdfStyles.demoTableHead}>
           <Text style={pdfStyles.demoTableHeadCellFirst}>Indicateur</Text>

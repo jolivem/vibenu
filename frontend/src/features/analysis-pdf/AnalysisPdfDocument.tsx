@@ -314,7 +314,20 @@ export function AnalysisPdfDocument({
       {hasPopulationPage && populationPageNum !== null && data.demographics && (
         <Page size="A4" style={pdfStyles.page}>
           <RunningHeader chapter="Population" />
-          <ChapterTitle italic="Population" post=" du quartier" />
+          {/* Le sous-titre porte la zone, comme le bandeau la porte à l'écran : elle vaut
+              pour les deux blocs de la page, pas seulement pour le premier tableau.
+              Le suffixe était en dur et donc faux pour une recherche communale. */}
+          <ChapterTitle
+            italic="Population"
+            post={data.mode === "commune" ? " de la commune" : " du quartier"}
+            subtitle={
+              data.mode === "commune"
+                ? `Commune · ${data.demographics.nomCommune || data.demographics.codeIris}`
+                : `Quartier · ${data.demographics.nomIris || data.demographics.codeIris}${
+                    data.demographics.nomCommune ? ` — ${data.demographics.nomCommune}` : ""
+                  }`
+            }
+          />
 
           {FEATURES.showDemographics && <PdfDemographics demographics={data.demographics} />}
 

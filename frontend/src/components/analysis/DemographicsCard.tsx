@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import type { DemographicsAnalysisDto } from "@/types/location-analysis";
 import type { AnalysisMode } from "@/server-shared/types/location-analysis.dto";
 import { AgeChart } from "./AgeChart";
@@ -7,11 +6,15 @@ import { formatDensity, formatPct, formatPopulation, formatRevenu } from "./demo
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
-  /** Carte IRIS, rendue en fin de card. Absente en mode commune, où l'IRIS n'a pas de sens. */
-  children?: ReactNode;
 }
 
-export function DemographicsCard({ demographics, mode, children }: Props) {
+/**
+ * Chiffres démographiques du périmètre analysé.
+ *
+ * La zone n'est plus nommée ici ni montrée sur une carte : `PopulationScope` s'en charge
+ * en tête de section, pour les quatre cards à la fois.
+ */
+export function DemographicsCard({ demographics, mode }: Props) {
   const { communeStats, nationalStats, communeIrisCount } = demographics;
   const france = nationalStats;
   const isCommuneMode = mode === "commune";
@@ -22,10 +25,6 @@ export function DemographicsCard({ demographics, mode, children }: Props) {
     return (
       <section className="card">
         <h2>Démographie</h2>
-        <p className="demographics-iris">
-          Commune : {demographics.nomCommune || demographics.codeIris}
-        </p>
-
         <table className="demographics-table">
           <thead>
             <tr>
@@ -80,16 +79,6 @@ export function DemographicsCard({ demographics, mode, children }: Props) {
   return (
     <section className="card">
       <h2>Démographie</h2>
-      <p className="demographics-iris">
-        Quartier : {demographics.nomIris || demographics.codeIris}
-        {demographics.nomCommune && ` — ${demographics.nomCommune}`}
-      </p>
-      {!showCommune && demographics.nomCommune && (
-        <p className="demographics-note">
-          Quartier unique pour cette commune — les chiffres du quartier et de la commune sont identiques.
-        </p>
-      )}
-
       <table className="demographics-table">
         <thead>
           <tr>
@@ -143,8 +132,6 @@ export function DemographicsCard({ demographics, mode, children }: Props) {
         Commune et France : moyennes pondérées par population, calculées à partir des
         quartiers. Le revenu médian et le taux de pauvreté ne sont publiés que pour les quartiers assez peuplés, plutôt urbains : ils manquent souvent à l'échelle du quartier, et le repère France s'en trouve un peu plus élevé que le taux national.
       </p>
-
-      {children ? <div className="card-map">{children}</div> : null}
     </section>
   );
 }
