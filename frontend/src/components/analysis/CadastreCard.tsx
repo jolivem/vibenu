@@ -1,5 +1,6 @@
 import type { CadastreAnalysisDto } from "@/types/location-analysis";
 import { formatFr } from "@/lib/format";
+import { pluZoneLongLabel, pluZoneType } from "./pluZone";
 
 function formatSurface(m2: number): string {
   if (m2 >= 10_000) {
@@ -8,15 +9,35 @@ function formatSurface(m2: number): string {
   return `${formatFr(m2)} m²`;
 }
 
-function zoneTypeBadge(type: string) {
-  const config: Record<string, { label: string; className: string }> = {
-    U: { label: "Urbain", className: "zone-badge zone-badge--u" },
-    AU: { label: "À urbaniser", className: "zone-badge zone-badge--au" },
-    A: { label: "Agricole", className: "zone-badge zone-badge--a" },
-    N: { label: "Naturel", className: "zone-badge zone-badge--n" },
-  };
-  const c = config[type] ?? { label: type, className: "zone-badge" };
-  return <span className={c.className}>{c.label}</span>;
+/**
+ * Le zonage, en séparant ce qui est national de ce qui ne l'est pas.
+ *
+ * La pastille et sa glose viennent du code de l'urbanisme et valent partout ; le code de
+ * secteur, lui, est propre au PLU de la commune. La dernière phrase existe pour que le
+ * lecteur ne prenne pas « Urbain » pour la définition de « UA » : c'est exactement la
+ * confusion que la ligne entretenait quand elle se terminait sur un libellé vide.
+ */
+function UrbanZoneSection({ zone }: { zone: NonNullable<CadastreAnalysisDto["urbanZone"]> }) {
+  const type = pluZoneType(zone.type);
+  const longLabel = pluZoneLongLabel(zone.label);
+
+  return (
+    <div className="cadastre-section">
+      <h3>Zone PLU</h3>
+      <div className="cadastre-zone">
+        <span className={type.className}>{type.label}</span>
+        <span className="cadastre-zone-code">{zone.code}</span>
+        {longLabel && <span className="cadastre-zone-label">{longLabel}</span>}
+      </div>
+      {type.gloss && (
+        <p className="cadastre-zone-gloss">
+          <strong>{type.label}</strong> : {type.gloss}. Seule cette catégorie est
+          nationale — le détail du secteur «&nbsp;{zone.code}&nbsp;» est fixé par le
+          règlement du PLU de la commune.
+        </p>
+      )}
+    </div>
+  );
 }
 
 export function CadastreCard({ cadastre }: { cadastre: CadastreAnalysisDto }) {
@@ -50,16 +71,7 @@ export function CadastreCard({ cadastre }: { cadastre: CadastreAnalysisDto }) {
         </div>
       )}
 
-      {cadastre.urbanZone && (
-        <div className="cadastre-section">
-          <h3>Zone PLU</h3>
-          <div className="cadastre-zone">
-            {zoneTypeBadge(cadastre.urbanZone.type)}
-            <span className="cadastre-zone-code">{cadastre.urbanZone.code}</span>
-            <span className="cadastre-zone-label">{cadastre.urbanZone.label}</span>
-          </div>
-        </div>
-      )}
+      {cadastre.urbanZone && <UrbanZoneSection zone={cadastre.urbanZone} />}
 
       {cadastre.prescriptions.length > 0 && (
         <div className="cadastre-section">

@@ -126,6 +126,11 @@ out center;
       post_office: "Bureau de poste",
       bank: "Banque",
       library: "Bibliothèque",
+      // Overpass ne demande pas ces amenities : les soins viennent de la BPE. Les
+      // libellés sont là parce que le type couvre toutes les catégories, pas parce
+      // que ce provider peut en produire.
+      hospital: "Hôpital",
+      emergency: "Service d'urgences",
     };
     return names[category];
   }

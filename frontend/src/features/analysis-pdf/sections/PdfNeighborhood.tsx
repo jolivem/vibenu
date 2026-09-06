@@ -14,12 +14,19 @@ const CATEGORY_LABELS: Record<string, string> = {
   post_office: "Poste",
   bank: "Banque",
   library: "Bibliothèque",
+  hospital: "Hôpital ou clinique",
+  emergency: "Urgences",
 };
 
 const DEFAULT_PER_CATEGORY_LIMIT = 3;
 const PER_CATEGORY_LIMIT: Record<string, number> = {
   school: 6,
+  hospital: 2,
+  emergency: 1,
 };
+
+/** Cf. `NeighborhoodCard` : pas de temps de marche pour un équipement qu'on rejoint en voiture. */
+const WALKABLE_LIMIT_METERS = 2000;
 
 function groupByCategory(pois: NeighborhoodAnalysisDto["pois"]) {
   const groups: Record<string, typeof pois> = {};
@@ -84,7 +91,9 @@ export function PdfNeighborhood({ neighborhood }: { neighborhood: NeighborhoodAn
                   <Text style={pdfStyles.voisItemName}>{poi.name}</Text>
                   <Text style={pdfStyles.voisItemDist}>
                     {" — "}
-                    {formatWalkingTime(poi.distanceMeters)} ({formatDistance(poi.distanceMeters)})
+                    {poi.distanceMeters <= WALKABLE_LIMIT_METERS
+                      ? `${formatWalkingTime(poi.distanceMeters)} (${formatDistance(poi.distanceMeters)})`
+                      : formatDistance(poi.distanceMeters)}
                   </Text>
                 </Text>
               ))}

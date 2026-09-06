@@ -3013,6 +3013,20 @@ html {
   color: var(--muted);
 }
 
+/* Ce que le code de l'urbanisme dit du type de zone. Sous la ligne du zonage et non
+   dedans : c'est une explication, pas une donnée de plus à aligner avec la pastille. */
+.cadastre-zone-gloss {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.cadastre-zone-gloss strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .zone-badge {
   display: inline-block;
   font-size: 0.7rem;

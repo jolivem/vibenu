@@ -25,79 +25,123 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# INSEE BPE download URL (géolocalisé, 2024)
-BPE_URL = "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE24.zip"
+# INSEE BPE download URL (géolocalisé, millésime 2025)
+BPE_URL = "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE25.zip"
 
-# BPE TYPEQU codes → our PoiCategory (2024 nomenclature)
-# Étendu phase 0 SEO communes : ajout restauration, culture, plus de santé/commerce/éducation.
+# BPE TYPEQU → catégorie applicative.
+#
+# ⚠️ Les codes ne sont PAS devinables, et une erreur ici est silencieuse : la table se
+# remplit, les cards s'affichent, et elles montrent autre chose que ce qu'annonce leur
+# libellé. La version précédente de cette table était fausse sur une quinzaine de codes —
+# les hôpitaux comptés comme « médecins », les gendarmeries comme « banques », les
+# cinémas comme « bibliothèques », les aéroports comme « gares » — parce qu'elle avait
+# été écrite contre une nomenclature qui n'était pas celle du fichier téléchargé.
+#
+# Les commentaires ci-dessous sont les libellés officiels, recopiés depuis
+# https://www.insee.fr/fr/metadonnees/source/fichier/TYPEQU_2025.csv (235 types).
+# La nomenclature est révisée chaque année : à chaque changement de millésime, rejouer
+# la vérification plutôt que de supposer la stabilité des codes.
+#
+# Deux catégories n'ont volontairement aucun code : `park` et `metro_station`. La BPE
+# 2025 ne recense ni espaces verts ni stations de métro — les premiers viennent d'OSM
+# (`osm_pois`), les secondes du module mobilité (GTFS). Mieux vaut l'absence assumée
+# qu'un code approchant qui remplirait la catégorie avec autre chose.
+#
 # Re-lancer `python import_bpe.py` après modification pour recharger la table.
+
 TYPEQU_MAPPING = {
-    # education
-    "C101": "preschool",     # Crèche / Halte-garderie
-    "C104": "preschool",     # Garde d'enfants d'âge préscolaire
-    "C107": "school",        # École maternelle
-    "C108": "school",        # École élémentaire
-    "C109": "school",        # Collège
-    "C201": "school",        # Lycée général ou technologique
-    "C301": "school",        # Lycée professionnel
-    "C501": "higher_ed",     # Enseignement supérieur (université, IUT)
-    "C502": "higher_ed",     # STS-CPGE
-    # food retail
-    "B104": "supermarket",   # Hypermarché
-    "B105": "supermarket",   # Supermarché
-    "B106": "supermarket",   # Supérette
-    "B201": "bakery",
-    "B202": "butcher",       # Boucherie / Charcuterie
-    "B203": "frozen_food",   # Produits surgelés
-    "B204": "grocery",       # Épicerie
-    "B205": "fish_shop",     # Poissonnerie
-    # restauration
-    "A504": "restaurant",    # Restaurant
-    # general commerce (a subset, broad signal)
-    "B206": "bookstore",     # Librairie-papeterie-journaux
-    "B301": "clothing",      # Magasin de vêtements
-    "B302": "home_goods",    # Magasin d'équipement du foyer
-    "B303": "shoes",         # Chaussures
-    "B312": "florist",       # Fleurs
-    "B315": "gas_station",   # Station-service
-    # health
-    "D101": "doctor",        # Médecin omnipraticien
-    "D102": "specialist",    # Spécialiste (cardio/derma/…)
-    "D201": "dentist",       # Chirurgien-dentiste
-    "D202": "nurse",         # Infirmier
-    "D203": "physio",        # Masseur-kinésithérapeute
-    "D206": "speech_therapist",  # Orthophoniste
-    "D207": "podiatrist",    # Pédicure-podologue
-    "D208": "optician",      # Audioprothésiste / Opticien
-    "D211": "psychologist",  # Psychologue
-    "D232": "lab",           # Laboratoire d'analyses médicales
-    "D301": "hospital",      # Établissement de santé (court séjour)
-    "D302": "clinic",        # Établissement psychiatrique
-    "D304": "emergency",     # Urgences
-    "D307": "pharmacy",
-    # public services
-    "A101": "police",        # Police / Gendarmerie
-    "A104": "bank",
-    "A105": "atm",           # DAB
-    "A203": "post_office",   # Bureau de poste
-    "A206": "town_hall",     # Mairie / Préfecture
-    # culture
-    "F303": "library",       # Bibliothèque
-    "F305": "cinema",        # Cinéma
-    "F309": "museum",        # Musée
-    "F311": "theatre",       # Théâtre / Salle de spectacle
-    "F312": "concert_hall",  # Conservatoire / Salle de musique
-    # sport / leisure
-    "F101": "sport",         # Bassin de natation
-    "F102": "sport",         # Boulodrome
-    "F103": "sport",         # Tennis
-    "F106": "sport",         # Terrain de grands jeux
-    "F109": "sport",         # Salle non spécialisée
-    "F113": "sport",         # Athlétisme
-    "F121": "park",          # Espace vert / parc
-    # transports
-    "E102": "rail_station",  # Gare ferroviaire
-    "E107": "metro_station", # Métro / Tramway / RER
+    # --- éducation & petite enfance ---
+    "D502": "preschool",         # ÉTABLISSEMENT D’ACCUEIL DU JEUNE ENFANT
+    "D509": "preschool",         # MICRO-CRECHE
+    "C107": "school",            # ÉCOLE MATERNELLE
+    "C108": "school",            # ÉCOLE PRIMAIRE
+    "C109": "school",            # ÉCOLE ÉLÉMENTAIRE
+    "C201": "school",            # COLLÈGE
+    "C301": "school",            # LYCÉE D’ENSEIGNEMENT GÉNÉRAL ET/OU TECHNOLOGIQUE
+    "C302": "school",            # LYCÉE D’ENSEIGNEMENT PROFESSIONNEL
+    "C303": "school",            # LYCÉE D’ENSEIGNEMENT TECHNIQUE ET/OU PROFESSIONNEL AGRICOLE
+    "C401": "higher_ed",         # STS SECTION TECHNICIEN SUPÉRIEUR, CPGE CLASSE PRÉPARATOIRE AUX GRANDES ÉCOLES
+    "C501": "higher_ed",         # UFR
+    "C502": "higher_ed",         # INSTITUT UNIVERSITAIRE
+    "C503": "higher_ed",         # ÉCOLE D’INGÉNIEURS
+    "C504": "higher_ed",         # ENSEIGNEMENT GÉNÉRAL SUPÉRIEUR PRIVÉ
+    "C509": "higher_ed",         # AUTRE ENSEIGNEMENT SUPÉRIEUR
+    # --- alimentaire ---
+    "B104": "supermarket",       # HYPERMARCHÉ ET GRAND MAGASIN
+    "B105": "supermarket",       # SUPERMARCHÉ ET MAGASIN MULTI-COMMERCE
+    "B201": "supermarket",       # SUPÉRETTE
+    "B202": "grocery",           # ÉPICERIE
+    "B208": "grocery",           # COMMERCE SPÉCIALISÉ EN FRUITS ET LÉGUMES
+    "B204": "butcher",           # BOUCHERIE CHARCUTERIE
+    "B205": "frozen_food",       # PRODUITS SURGELÉS
+    "B206": "fish_shop",         # POISSONNERIE
+    "B207": "bakery",            # BOULANGERIE-PÂTISSERIE
+    # --- restauration ---
+    "A504": "restaurant",        # RESTAURANT- RESTAURATION RAPIDE
+    # --- commerce non alimentaire ---
+    "B302": "clothing",          # MAGASIN DE VÊTEMENTS
+    "B303": "home_goods",        # MAGASIN D’ÉQUIPEMENTS DU FOYER
+    "B304": "shoes",             # MAGASIN DE CHAUSSURES
+    "B312": "florist",           # FLEURISTE-JARDINERIE-ANIMALERIE
+    "B316": "gas_station",       # STATION-SERVICE
+    "B324": "bookstore",         # LIBRAIRIE
+    # --- santé — établissements ---
+    "D101": "hospital",          # ÉTABLISSEMENT DE SOINS DE COURTE DURÉE
+    "D106": "emergency",         # URGENCES
+    "D108": "clinic",            # CENTRE DE SANTÉ
+    "D113": "clinic",            # MAISON DE SANTÉ PLURIDISCIPLINAIRE
+    "D302": "lab",               # LABORATOIRE D ANALYSES ET DE BIOLOGIE MÉDICALE
+    "D307": "pharmacy",          # PHARMACIE
+    # --- santé — professionnels libéraux ---
+    "D265": "doctor",            # MÉDECIN GÉNÉRALISTE
+    "D266": "specialist",        # SPÉCIALISTE EN CARDIOLOGIE
+    "D267": "specialist",        # SPÉCIALISTE EN DERMATOLOGIE VÉNÉRÉOLOGIE
+    "D268": "specialist",        # SPÉCIALISTE EN GASTRO-ENTÉROLOGIE HÉPATOLOGIE
+    "D269": "specialist",        # SPÉCIALISTE EN PSYCHIATRIE
+    "D270": "specialist",        # SPÉCIALISTE EN OPHTALMOLOGIE
+    "D271": "specialist",        # SPÉCIALISTE EN OTO-RHINO-LARYNGOLOGIE
+    "D272": "specialist",        # SPÉCIALISTE EN PÉDIATRIE
+    "D273": "specialist",        # SPÉCIALISTE EN PNEUMOLOGIE
+    "D274": "specialist",        # SPÉCIALISTE EN RADIODIAGNOSTIC ET IMAGERIE MÉDICALE
+    "D276": "specialist",        # SPÉCIALISTE EN GYNÉCOLOGIE MÉDICALE ET/OU OBSTÉTRIQUE
+    "D277": "dentist",           # CHIRURGIEN DENTISTE
+    "D281": "nurse",             # INFIRMIER
+    "D279": "physio",            # MASSEUR KINÉSITHÉRAPEUTE
+    "D282": "speech_therapist",  # ORTHOPHONISTE
+    "D280": "podiatrist",        # PÉDICURE-PODOLOGUE
+    "B313": "optician",          # MAGASIN D’OPTIQUE
+    "D250": "psychologist",      # PSYCHOLOGUE
+    # --- services publics ---
+    "A140": "police",            # POLICE
+    "A104": "police",            # GENDARMERIE
+    "A203": "bank",              # BANQUE, CAISSE D’ÉPARGNE
+    "A206": "post_office",       # BUREAU DE POSTE
+    "A207": "post_office",       # RELAIS POSTE
+    "A208": "post_office",       # AGENCE POSTALE
+    "A129": "town_hall",         # MAIRIE
+    # --- culture ---
+    "F307": "library",           # BIBLIOTHÈQUE
+    "F303": "cinema",            # CINÉMA
+    "F312": "museum",            # EXPOSITION ET MÉDIATION CULTURELLE
+    "F315": "theatre",           # ARTS DU SPECTACLE
+    "F305": "concert_hall",      # CONSERVATOIRE
+    # --- sport ---
+    "F101": "sport",             # BASSIN DE NATATION
+    "F102": "sport",             # BOULODROME
+    "F103": "sport",             # TENNIS
+    "F106": "sport",             # CENTRE ÉQUESTRE
+    "F107": "sport",             # ATHLÉTISME
+    "F108": "sport",             # TERRAIN DE GOLF
+    "F109": "sport",             # PARCOURS SPORTIF/SANTÉ
+    "F111": "sport",             # PLATEAUX ET TERRAINS DE JEUX EXTÉRIEURS
+    "F113": "sport",             # TERRAINS DE GRANDS JEUX
+    "F116": "sport",             # SALLES NON SPÉCIALISÉES
+    "F120": "sport",             # SALLES DE REMISE EN FORME
+    "F121": "sport",             # SALLES MULTISPORTS, GYMNASES
+    # --- transports ---
+    "E107": "rail_station",      # GARE DE VOYAGEURS D’INTÉRÊT NATIONAL
+    "E108": "rail_station",      # GARE DE VOYAGEURS D’INTÉRÊT RÉGIONAL
+    "E109": "rail_station",      # GARE DE VOYAGEURS D’INTÉRÊT LOCAL
 }
 
 BATCH_SIZE = 1000

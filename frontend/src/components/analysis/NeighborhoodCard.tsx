@@ -12,6 +12,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   post_office: "Poste",
   bank: "Banque",
   library: "Bibliothèque",
+  hospital: "Hôpital ou clinique",
+  emergency: "Urgences",
 };
 
 /**
@@ -24,7 +26,7 @@ const CATEGORY_LABELS: Record<string, string> = {
  */
 const FAMILIES: Array<{ title: string; categories: string[] }> = [
   { title: "Enseignement", categories: ["school"] },
-  { title: "Soins", categories: ["pharmacy", "doctor"] },
+  { title: "Soins", categories: ["pharmacy", "doctor", "hospital", "emergency"] },
   { title: "Commerces & services", categories: ["supermarket", "bakery", "post_office", "bank"] },
   { title: "Culture & loisirs", categories: ["library", "park", "sport", "restaurant"] },
 ];
@@ -32,7 +34,18 @@ const FAMILIES: Array<{ title: string; categories: string[] }> = [
 const DEFAULT_PER_CATEGORY_LIMIT = 3;
 const PER_CATEGORY_LIMIT: Record<string, number> = {
   school: 6,
+  hospital: 2,
+  emergency: 1,
 };
+
+/**
+ * Au-delà de cette distance, on ne propose plus de temps de marche.
+ *
+ * « 172 min à pied » pour un hôpital à 13 km est une réponse absurde à une question
+ * qu'on ne se pose pas : personne ne va aux urgences à pied. Le kilométrage seul est
+ * l'unité juste pour ces équipements-là.
+ */
+const WALKABLE_LIMIT_METERS = 2000;
 
 function groupByCategory(pois: NeighborhoodAnalysisDto["pois"]) {
   const groups: Record<string, typeof pois> = {};
@@ -95,7 +108,10 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodA
                       <li key={i}>
                         {poi.name}{" "}
                         <span className="poi-distance">
-                          — {formatWalkingTime(poi.distanceMeters)} ({formatDistance(poi.distanceMeters)})
+                          —{" "}
+                          {poi.distanceMeters <= WALKABLE_LIMIT_METERS
+                            ? `${formatWalkingTime(poi.distanceMeters)} (${formatDistance(poi.distanceMeters)})`
+                            : formatDistance(poi.distanceMeters)}
                         </span>
                       </li>
                     ))}

@@ -1,6 +1,7 @@
 import { Text, View } from "@react-pdf/renderer";
 import type { CadastreAnalysisDto } from "@/types/location-analysis";
 import { formatFr } from "@/lib/format";
+import { pluZoneType } from "@/components/analysis/pluZone";
 import { pdfStyles } from "../pdfStyles";
 
 function formatSurface(m2: number): string {
@@ -9,13 +10,6 @@ function formatSurface(m2: number): string {
   }
   return `${formatFr(m2)} m²`;
 }
-
-const ZONE_LABEL: Record<string, string> = {
-  U: "Urbain",
-  AU: "À urbaniser",
-  A: "Agricole",
-  N: "Naturel",
-};
 
 export function PdfCadastre({ cadastre }: { cadastre: CadastreAnalysisDto }) {
   if (!cadastre.parcel && !cadastre.urbanZone) return null;
@@ -48,7 +42,7 @@ export function PdfCadastre({ cadastre }: { cadastre: CadastreAnalysisDto }) {
             <View style={pdfStyles.cadRow}>
               <Text style={pdfStyles.cadRowKey}>Zone PLU</Text>
               <Text style={pdfStyles.zonePill}>
-                {cadastre.urbanZone.code} · {ZONE_LABEL[cadastre.urbanZone.type] ?? cadastre.urbanZone.type}
+                {cadastre.urbanZone.code} · {pluZoneType(cadastre.urbanZone.type).label}
               </Text>
             </View>
           )}

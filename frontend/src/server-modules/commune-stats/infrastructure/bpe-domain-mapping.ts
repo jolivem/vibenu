@@ -2,6 +2,12 @@
  * Mapping BPE category (stockée dans bpe_equipment.category) → domaine d'affichage.
  * Les catégories proviennent de scripts/import_bpe.py TYPEQU_MAPPING.
  * Si une catégorie n'est pas listée ici, elle est ignorée à l'affichage.
+ *
+ * ⚠️ L'inverse est vrai aussi, et sans bruit : une catégorie listée ici que le script
+ * ne produit pas donne un domaine silencieusement sous-compté. C'est ce qui arrivait à
+ * « Santé », dont neuf des quatorze catégories n'étaient jamais alimentées — `hospital`
+ * en tête, alors que les hôpitaux étaient bien en base, rangés sous `doctor`.
+ * Toute entrée ajoutée ici doit exister dans TYPEQU_MAPPING, et réciproquement.
  */
 
 import type { EquipmentDomain } from "../domain/commune-stats.types";
@@ -57,17 +63,22 @@ export const DOMAIN_CONFIG: DomainConfig[] = [
   {
     domain: "sport_loisirs",
     label: "Sports & loisirs",
-    categories: ["sport", "park"],
+    // `park` n'a pas d'équivalent dans la BPE 2025 (aucun type « espace vert ») : les
+    // parcs viennent d'OSM, qui n'alimente pas cette table.
+    categories: ["sport"],
   },
   {
     domain: "services_publics",
     label: "Services publics",
-    categories: ["police", "bank", "atm", "post_office", "town_hall"],
+    // Pas de `atm` : la BPE 2025 ne recense pas les distributeurs de billets.
+    categories: ["police", "bank", "post_office", "town_hall"],
   },
   {
     domain: "transports",
     label: "Transports",
-    categories: ["rail_station", "metro_station"],
+    // Pas de `metro_station` : la BPE ne recense que les gares de voyageurs
+    // (E107 à E109). Métro, tram et bus viennent du module mobilité (GTFS).
+    categories: ["rail_station"],
   },
 ];
 
