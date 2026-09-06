@@ -1,6 +1,10 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
+import { CardInsight } from "@/components/CardInsight";
+import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
 
 interface Props {
+  /** Légende IA de la section, rendue côté serveur. */
+  legendes?: CommuneLegendes;
   stats: CommuneStats;
 }
 
@@ -30,7 +34,7 @@ function deltaLabel(delta: number): string {
   return `${sign}${Math.abs(rounded).toFixed(1).replace(".", ",")} pts`;
 }
 
-export function CommuneElectionsSection({ stats }: Props) {
+export function CommuneElectionsSection({ stats, legendes }: Props) {
   if (!stats.elections) return null;
   const { elections } = stats;
 
@@ -61,6 +65,8 @@ export function CommuneElectionsSection({ stats }: Props) {
           {elections.scrutin} · Ministère de l&apos;Intérieur
         </span>
       </div>
+
+      <CardInsight text={legendes?.legende_elections} animate={false} className="commune-legend" />
 
       <div className="commune-elections-wrap">
         <p className="commune-elections-participation">

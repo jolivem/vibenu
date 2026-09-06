@@ -31,6 +31,9 @@ services:
       ATMO_PASSWORD: ${ATMO_PASSWORD:-}
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
       MISTRAL_MODEL: ${MISTRAL_MODEL:-}
+      # Bascule vers un autre fournisseur compatible OpenAI, sans rebuild d'image.
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,6 +52,9 @@ services:
       ATMO_PASSWORD: ${ATMO_PASSWORD:-}
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
       MISTRAL_MODEL: ${MISTRAL_MODEL:-}
+      # Bascule vers un autre fournisseur compatible OpenAI, sans rebuild d'image.
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

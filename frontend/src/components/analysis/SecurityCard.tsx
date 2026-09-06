@@ -1,17 +1,14 @@
 import type { SecurityAnalysisDto, SecurityIndicatorDto } from "@/types/location-analysis";
 import { ChartLegend } from "./ChartLegend";
 import { LineChart } from "./LineChart";
-import { baseLabel, buildSecurityChartModel, formatRate, LOCAL_SERIES_COLOR } from "./securityChart";
-
-/**
- * Arrondissements de Paris, Lyon et Marseille : la commune INSEE y est l'arrondissement,
- * donc la maille affichée est bien celle d'un quartier — ce qui mérite d'être dit, à
- * l'inverse du reste du territoire.
- */
-function isArrondissement(codeInsee: string | undefined): boolean {
-  if (!codeInsee) return false;
-  return /^(751\d\d|132\d\d|6938\d)$/.test(codeInsee);
-}
+import {
+  baseLabel,
+  buildSecurityChartModel,
+  formatRate,
+  isArrondissement,
+  LOCAL_SERIES_COLOR,
+} from "./securityChart";
+import { CardInsight } from "@/components/CardInsight";
 
 function SecurityIndicatorChart({
   indicator,
@@ -81,10 +78,13 @@ export function SecurityCard({
   security,
   codeInsee,
   ville,
+  insight,
 }: {
   security: SecurityAnalysisDto;
   codeInsee?: string;
   ville?: string;
+  /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
+  insight?: string | null;
 }) {
   const { annees, indicateurs } = security;
   if (indicateurs.length === 0) return null;
@@ -103,6 +103,8 @@ export function SecurityCard({
           : `la commune${ville ? ` de ${ville}` : ""}`}
         . Il n&apos;existe pas de donnée publique à l&apos;échelle du quartier.
       </p>
+
+      <CardInsight text={insight} />
 
       <ChartLegend
         className="security-legend"

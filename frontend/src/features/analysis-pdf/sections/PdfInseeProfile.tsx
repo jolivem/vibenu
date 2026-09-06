@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import { Text, View } from "@react-pdf/renderer";
-import type { AnalysisMode, DemographicsAnalysisDto } from "@/types/location-analysis";
+import type { AnalysisMode, CardInsights, DemographicsAnalysisDto } from "@/types/location-analysis";
 import { formatPct } from "@/components/analysis/demographicsFormat";
 import { formatFr } from "@/lib/format";
 import { viewForMode, type InseeView } from "@/components/analysis/inseeChart";
 import { pdfStyles } from "../pdfStyles";
+import { PdfInsight } from "./PdfInsight";
 
 /**
  * Les trois axes INSEE du quartier, en tableaux.
@@ -93,9 +94,12 @@ const HOUSEHOLDS_LABELS = [
 export function PdfInseeProfile({
   demographics,
   mode,
+  insights,
 }: {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  /** Mini-synthèses IA : les trois axes sont ici des blocs titrés distincts. */
+  insights?: CardInsights;
 }) {
   const housing = viewForMode(demographics.housing, mode, demographics);
   const employment = viewForMode(demographics.employment, mode, demographics);
@@ -106,6 +110,7 @@ export function PdfInseeProfile({
     <>
       {housing && (
         <Block title="Logement">
+          <PdfInsight text={insights?.logement} />
           <ScaleTable
             labels={HOUSING_LABELS}
             view={housing}
@@ -124,6 +129,7 @@ export function PdfInseeProfile({
 
       {employment && (
         <Block title="Emploi et qualifications">
+          <PdfInsight text={insights?.emploi} />
           <ScaleTable
             labels={EMPLOYMENT_LABELS}
             view={employment}
@@ -144,6 +150,7 @@ export function PdfInseeProfile({
 
       {households && (
         <Block title="Ménages et familles">
+          <PdfInsight text={insights?.menages} />
           <ScaleTable
             labels={HOUSEHOLDS_LABELS}
             view={households}

@@ -5,11 +5,10 @@ import { useCallback, useMemo, useRef, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
-import { useNarrative } from "@/features/location-analysis/useNarrative";
+import { useCardInsights } from "@/features/location-analysis/useCardInsights";
 import { DVF_LAYER_ID, IRIS_LAYER_ID, SCHOOL_SECTOR_LAYER_ID, Map } from "@/components/map/Map";
 import { LazyMap } from "@/components/map/LazyMap";
 import { THEMATIC_BASEMAP } from "@/components/map/basemaps";
-import { NarrativeCard } from "@/components/analysis/NarrativeCard";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
 import { RisksCard } from "@/components/analysis/RisksCard";
 import { AirQualityCard, LEVEL_CONFIG as AIR_QUALITY_LEVELS } from "@/components/analysis/AirQualityCard";
@@ -109,10 +108,10 @@ export function AnalysisScreen() {
 
   const realEstate = data?.realEstate;
 
-  // En PRO, on ne fetch pas la narrative (économise des tokens Mistral inutiles
-  // puisque la card ne sera de toute façon pas affichée).
-  const narrativeInput = FEATURES.showNarrative ? data ?? null : null;
-  const { narrative, isLoading: narrativeLoading, error: narrativeError } = useNarrative(narrativeInput);
+  // En PRO, on ne demande aucune synthèse : les sept cards concernées y sont toutes
+  // désactivées, l'appel au modèle serait payé pour rien.
+  const insightsInput = FEATURES.showCardInsights ? data ?? null : null;
+  const { insights, debugInput: insightsDebug } = useCardInsights(insightsInput, citycode);
 
   // Le PDF ne capture qu'une carte : celle de localisation, la seule montée d'emblée.
   // Les trois cartes thématiques sont en montage différé — leur canvas peut ne pas exister.
@@ -254,7 +253,7 @@ export function AnalysisScreen() {
                 <DownloadPdfButton
                   data={data}
                   realEstate={realEstate ?? null}
-                  narrativeParagraph={narrative?.paragraph ?? null}
+                  insights={insights}
                   getMap={getMap}
                 />
               )}
@@ -284,14 +283,6 @@ export function AnalysisScreen() {
         {data && (
           <>
             <KeyFigures figures={keyFigures} />
-
-            {FEATURES.showNarrative && (
-              <NarrativeCard
-                narrative={narrative}
-                isLoading={narrativeLoading}
-                error={narrativeError}
-              />
-            )}
 
             {FEATURES.showLocation && (
               <section className="card map-section analysis-locator">
@@ -380,6 +371,7 @@ export function AnalysisScreen() {
                       security={data.security}
                       codeInsee={citycode}
                       ville={data.address.city}
+                      insight={insights.securite}
                     />
                   </AnalysisSection>
                 )}
@@ -412,16 +404,16 @@ export function AnalysisScreen() {
                     }
                   >
                     {FEATURES.showDemographics && data.demographics && (
-                      <DemographicsCard demographics={data.demographics} mode={data.mode} />
+                      <DemographicsCard demographics={data.demographics} mode={data.mode} insight={insights.demographie} />
                     )}
                     {FEATURES.showHousing && data.demographics && (
-                      <HousingCard demographics={data.demographics} mode={data.mode} />
+                      <HousingCard demographics={data.demographics} mode={data.mode} insight={insights.logement} />
                     )}
                     {FEATURES.showEmployment && data.demographics && (
-                      <EmploymentCard demographics={data.demographics} mode={data.mode} />
+                      <EmploymentCard demographics={data.demographics} mode={data.mode} insight={insights.emploi} />
                     )}
                     {FEATURES.showHouseholds && data.demographics && (
-                      <HouseholdsCard demographics={data.demographics} mode={data.mode} />
+                      <HouseholdsCard demographics={data.demographics} mode={data.mode} insight={insights.menages} />
                     )}
                   </AnalysisSection>
                 )}
@@ -432,14 +424,14 @@ export function AnalysisScreen() {
                       <MunicipalesCard municipales={data.municipales} />
                     )}
                     {FEATURES.showElections && data.elections && (
-                      <ElectionsCard elections={data.elections} />
+                      <ElectionsCard elections={data.elections} insight={insights.elections} />
                     )}
                   </AnalysisSection>
                 )}
 
                 {hasContent.environnement && (
                   <AnalysisSection id="environnement">
-                    {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} />}
+                    {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} insight={insights.climat} />}
                     {FEATURES.showAirQuality && data.airQuality.available && (
                       <AirQualityCard airQuality={data.airQuality} />
                     )}
@@ -477,6 +469,25 @@ export function AnalysisScreen() {
                       height={HISTORY_MAP_HEIGHT}
                     />
                   </AnalysisSection>
+                )}
+
+                {FEATURES.showCardInsights && (
+                  <p className="analysis-ai-notice">
+                    Les synthèses «&nbsp;En bref&nbsp;» sont rédigées par une intelligence
+                    artificielle à partir des seules données affichées sur cette page. Les
+                    chiffres et les sources qui les entourent, eux, proviennent directement
+                    des fichiers publics cités.
+                  </p>
+                )}
+
+                {insightsDebug !== undefined && (
+                  <details className="card-insight-debug">
+                    <summary>
+                      Données envoyées au modèle (debug) — ~
+                      {Math.round(JSON.stringify(insightsDebug).length / 4)} tokens
+                    </summary>
+                    <pre>{JSON.stringify(insightsDebug, null, 2)}</pre>
+                  </details>
                 )}
               </div>
             </div>

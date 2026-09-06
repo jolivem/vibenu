@@ -1,13 +1,17 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
 import { formatEur, formatInt, formatDelta, pctDelta } from "./format";
+import { CardInsight } from "@/components/CardInsight";
+import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
 
 interface Props {
+  /** Légende IA de la section, rendue côté serveur. */
+  legendes?: CommuneLegendes;
   stats: CommuneStats;
   nomCourt: string;
 }
 
-export function CommunePriceSection({ stats, nomCourt }: Props) {
+export function CommunePriceSection({ stats, nomCourt, legendes }: Props) {
   const { prix, prixBenchmarkVille } = stats;
   const deltaPrix = pctDelta(prix.prixM2Median, prixBenchmarkVille.prixM2Median);
   const adjectif = CITIES[stats.city].adjectif;
@@ -28,6 +32,8 @@ export function CommunePriceSection({ stats, nomCourt }: Props) {
         </h2>
         <span className="section-meta">DVF · 24 mois · appartements</span>
       </div>
+
+      <CardInsight text={legendes?.legende_prix} animate={false} className="commune-legend" />
 
       <div className="commune-price-grid">
         <div className="commune-price-main">

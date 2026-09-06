@@ -1,9 +1,9 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import type { LocationAnalysisDto, RealEstateAnalysisDto } from "@/types/location-analysis";
+import type { CardInsights, LocationAnalysisDto, RealEstateAnalysisDto } from "@/types/location-analysis";
 import { formatFr } from "@/lib/format";
 import "./registerFonts";
 import { pdfStyles } from "./pdfStyles";
-import { PdfCoverResume } from "./sections/PdfSummary";
+import { PdfInsight } from "./sections/PdfInsight";
 import { PdfMobility } from "./sections/PdfMobility";
 import { PdfRisks } from "./sections/PdfRisks";
 import { PdfAirQuality } from "./sections/PdfAirQuality";
@@ -22,7 +22,7 @@ interface Props {
   data: LocationAnalysisDto;
   realEstate: RealEstateAnalysisDto | null;
   mapDataUrl: string | null;
-  narrativeParagraph: string | null;
+  insights: CardInsights;
   generatedAt: Date;
 }
 
@@ -108,7 +108,7 @@ export function AnalysisPdfDocument({
   data,
   realEstate,
   mapDataUrl,
-  narrativeParagraph,
+  insights,
   generatedAt,
 }: Props) {
   const formattedDate = generatedAt.toLocaleDateString("fr-FR", {
@@ -215,10 +215,6 @@ export function AnalysisPdfDocument({
           ))}
         </View>
 
-        {FEATURES.showNarrative && (
-          <PdfCoverResume narrativeParagraph={narrativeParagraph} />
-        )}
-
         {/* PRO : pas de page 2 dédiée, on consolide la mobilité directement sur la cover. */}
         {!hasMapMobilityPage && (
           <View style={{ marginTop: 24 }} wrap={false}>
@@ -277,7 +273,23 @@ export function AnalysisPdfDocument({
             </View>
           )}
 
-          {FEATURES.showClimate && data.climate && <PdfClimate climate={data.climate} />}
+          {FEATURES.showSecurity && insights.securite && (
+            <View style={{ marginTop: 36 }} wrap={false}>
+              <Text style={pdfStyles.chapterTitle}>
+                <Text style={pdfStyles.chapterTitleItalic}>Sécurité</Text>
+              </Text>
+              <PdfInsight text={insights.securite} />
+              <Text style={pdfStyles.chartNote}>
+                Source : Ministère de l&apos;Intérieur (SSMSI) · faits enregistrés par la
+                police et la gendarmerie, à l&apos;échelle de la commune. Le détail par
+                indicateur et par année figure sur la page d&apos;analyse en ligne.
+              </Text>
+            </View>
+          )}
+
+          {FEATURES.showClimate && data.climate && (
+            <PdfClimate climate={data.climate} insight={insights.climat} />
+          )}
 
           <RunningFooter
             date={formattedDate}
@@ -329,9 +341,15 @@ export function AnalysisPdfDocument({
             }
           />
 
+          <PdfInsight text={insights.demographie} />
+
           {FEATURES.showDemographics && <PdfDemographics demographics={data.demographics} />}
 
-          <PdfInseeProfile demographics={data.demographics} mode={data.mode} />
+          <PdfInseeProfile
+            demographics={data.demographics}
+            mode={data.mode}
+            insights={insights}
+          />
 
           <RunningFooter
             date={formattedDate}
@@ -347,6 +365,8 @@ export function AnalysisPdfDocument({
         <Page size="A4" style={pdfStyles.page}>
           <RunningHeader chapter="Élections & cadastre" />
           <ChapterTitle italic="Élections" post=" & cadastre" />
+
+          <PdfInsight text={insights.elections} />
 
           {FEATURES.showElections && data.elections && <PdfElections elections={data.elections} />}
 

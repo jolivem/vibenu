@@ -116,16 +116,31 @@ export function ignRasterSource(
 ): RasterSourceSpecification {
   return {
     type: "raster",
-    tiles: [
-      "https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile" +
-        `&LAYER=${layer}&STYLE=${encodeURIComponent(style)}&TILEMATRIXSET=PM` +
-        `&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=${encodeURIComponent(format)}`,
-    ],
+    tiles: [ignTileUrlTemplate(layer, { format, style })],
     tileSize: 256,
     maxzoom,
     ...(minzoom === undefined ? {} : { minzoom }),
     attribution: attribution ?? IGN_ATTRIBUTION,
   };
+}
+
+/**
+ * Le gabarit d'URL WMTS, avec les `{z}` `{x}` `{y}` que MapLibre substitue.
+ *
+ * Exposé à part pour que la sonde de couverture (`historicalCoverage.ts`) interroge
+ * **exactement** la tuile que la carte demandera. Une sonde qui reconstruirait l'URL
+ * de son côté testerait une autre couche au premier paramètre qui divergerait, et
+ * conclurait « couvert » sur une époque qui ne s'affiche pas.
+ */
+export function ignTileUrlTemplate(
+  layer: string,
+  { format = "image/png", style = "normal" }: Pick<IgnRasterOptions, "format" | "style"> = {},
+): string {
+  return (
+    "https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile" +
+    `&LAYER=${layer}&STYLE=${encodeURIComponent(style)}&TILEMATRIXSET=PM` +
+    `&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=${encodeURIComponent(format)}`
+  );
 }
 
 /** Un style ne contenant que cette seule couche raster — pour l'utiliser comme fond. */

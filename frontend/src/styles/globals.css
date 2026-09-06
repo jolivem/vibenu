@@ -1565,68 +1565,74 @@ html {
   color: var(--accent);
 }
 
-/* Narrative card — editorial lede */
-.narrative-card {
-  background: var(--card);
-  border-color: var(--hairline-strong);
-  /* Elle n'est plus dans une grille qui espaçait ses enfants : elle porte sa marge. */
-  margin-bottom: 20px;
-}
-
-.narrative-text {
+/* Mini-synthèse IA — ce que disent les courbes, sous le titre de la card */
+.card-insight {
+  margin: 2px 0 18px;
   font-family: var(--font-sans);
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.55;
   color: #2A2A2A;
-  font-weight: 400;
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
 }
 
-.narrative-text p {
-  margin: 0 0 6px;
+/* Le sous-titre qui précède porte déjà `margin: 4px 0 14px` : on resserre l'écart. */
+.muted + .card-insight {
+  margin-top: -6px;
 }
 
-.narrative-text p:last-child {
-  margin-bottom: 0;
+/*
+ * Le libellé distingue le commentaire généré de la donnée sourcée qui l'entoure.
+ * Discret mais présent : le lecteur doit pouvoir reconnaître une interprétation.
+ */
+.card-insight-tag {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 0.5em;
 }
 
-.narrative-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/*
+ * Apparition en fondu, SANS réservation de place : la card est complète dès le premier
+ * paint, la phrase s'insère ensuite et pousse le contenu. Seule l'opacité est animée —
+ * un translate ajouterait un second mouvement au décalage déjà assumé.
+ */
+.card-insight--enter {
+  animation: card-insight-in 420ms ease-out both;
 }
 
-.narrative-skeleton span {
-  display: block;
-  height: 12px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
-  background-size: 200% 100%;
-  animation: narrative-shimmer 1.4s infinite;
+@keyframes card-insight-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.narrative-skeleton--short {
-  width: 60%;
+@media (prefers-reduced-motion: reduce) {
+  .card-insight--enter {
+    animation: none;
+  }
 }
 
-@keyframes narrative-shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+/* Sur les pages commune, la phrase se pose sur les fonds alternés des sections. */
+.commune-legend {
+  max-width: 68ch;
 }
 
-.narrative-debug {
-  margin-top: 12px;
+.card-insight-debug {
+  margin: 24px 0 0;
   font-size: 0.8rem;
   color: var(--muted);
   border-top: 1px dashed var(--border);
   padding-top: 8px;
 }
 
-.narrative-debug summary {
+.card-insight-debug summary {
   cursor: pointer;
   user-select: none;
 }
 
-.narrative-debug pre {
+.card-insight-debug pre {
   margin: 8px 0 0;
   padding: 10px 12px;
   background: #0f172a;
@@ -1637,6 +1643,15 @@ html {
   overflow-x: auto;
   max-height: 360px;
   overflow-y: auto;
+}
+
+/* Mention de transparence, en pied de l'écran d'analyse. */
+.analysis-ai-notice {
+  margin: 28px 0 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--muted);
+  max-width: 68ch;
 }
 
 .analysis-back {
@@ -2297,6 +2312,16 @@ html {
 .era-context strong {
   color: var(--text);
   font-weight: 600;
+}
+
+/* Les époques écartées par la sonde de couverture. Plus discret que `.era-context` :
+   c'est une note de bas de frise, pas le texte de l'époque affichée. */
+.era-coverage-note {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+  opacity: 0.8;
 }
 
 .opacity-slider {

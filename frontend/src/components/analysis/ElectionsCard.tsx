@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ElectionsAnalysisDto } from "@/types/location-analysis";
+import { CardInsight } from "@/components/CardInsight";
 
 const PARTI_COLOR: Record<string, string> = {
   LO: "#bf3f3f",
@@ -29,7 +30,14 @@ function deltaLabel(delta: number): string {
   return `${sign}${Math.abs(rounded).toFixed(1).replace(".", ",")} pts`;
 }
 
-export function ElectionsCard({ elections }: { elections: ElectionsAnalysisDto }) {
+export function ElectionsCard({
+  elections,
+  insight,
+}: {
+  elections: ElectionsAnalysisDto;
+  /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
+  insight?: string | null;
+}) {
   const [expanded, setExpanded] = useState(false);
 
   // Tri par score communal décroissant
@@ -53,6 +61,8 @@ export function ElectionsCard({ elections }: { elections: ElectionsAnalysisDto }
         Participation : {formatPct(elections.participationPct)} ·{" "}
         France : {formatPct(elections.nationalParticipationPct)}
       </p>
+
+      <CardInsight text={insight} />
 
       <ul className="elections-list">
         {visible.map((c) => {

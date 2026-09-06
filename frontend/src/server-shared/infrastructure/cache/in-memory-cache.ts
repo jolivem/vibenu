@@ -3,7 +3,13 @@ interface CacheEntry<T> {
   expiresAt: number;
 }
 
-function isCacheDisabled(): boolean {
+/**
+ * Interrupteur global des caches serveur (DISABLE_CACHE=1 en dev).
+ *
+ * Exporté : les caches Postgres l'honorent aussi, sans quoi déboguer un prompt revient
+ * à relire indéfiniment la ligne écrite au premier essai.
+ */
+export function isCacheDisabled(): boolean {
   const flag = process.env.DISABLE_CACHE;
   if (!flag) return false;
   const v = flag.toLowerCase();

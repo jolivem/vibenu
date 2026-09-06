@@ -1,6 +1,7 @@
 import type { ClimateAnalysisDto } from "@/types/location-analysis";
 import { ClimateChart } from "./ClimateChart";
 import { CLIMATE_METRICS, LOCAL_SERIES_COLOR, REFERENCE_COLORS } from "./climateChart";
+import { CardInsight } from "@/components/CardInsight";
 
 const FALLBACK_REFERENCE_COLOR = "#9ca3af";
 
@@ -20,7 +21,14 @@ function stationLine(
  * à aucun climat réel, alors que « plus proche de Strasbourg que de Marseille » se
  * comprend d'emblée.
  */
-export function ClimateCard({ climate }: { climate: ClimateAnalysisDto }) {
+export function ClimateCard({
+  climate,
+  insight,
+}: {
+  climate: ClimateAnalysisDto;
+  /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
+  insight?: string | null;
+}) {
   const monthly = climate.monthly;
   if (!monthly) return null;
 
@@ -45,6 +53,8 @@ export function ClimateCard({ climate }: { climate: ClimateAnalysisDto }) {
         Profil mois par mois, comparé à trois villes représentatives des grands climats
         français.
       </p>
+
+      <CardInsight text={insight} />
 
       <ul className="line-chart-legend climate-legend">
         <li>

@@ -1,5 +1,12 @@
 import type { ConfidenceLevel, MobilityLabel, PriceLevel, RiskCategoryLevel, RiskLevel } from "../domain/common.types";
 
+/**
+ * Les mini-synthèses des cards voyagent sur la même frontière client/serveur que
+ * l'analyse : le ré-export les rend disponibles via `@/types/location-analysis`,
+ * comme le reste du contrat, sans nouvel import dans les composants.
+ */
+export * from "./card-insights";
+
 export type AddressSuggestionTypeDto =
   | "housenumber"
   | "street"
@@ -127,21 +134,6 @@ export interface NeighborhoodPoiDto {
 export interface NeighborhoodAnalysisDto {
   pois: NeighborhoodPoiDto[];
   label: string;
-}
-
-/**
- * Paragraphe de synthèse rédigé par le LLM.
- *
- * `debugInput` est volontairement `unknown` ici : le contrat public n'a pas à
- * exposer la forme de `NarrativeInput`, qui est un détail du module narrative.
- * La version typée vit dans `narrative/domain/narrative.types.ts`.
- */
-export interface NarrativeDto {
-  paragraph: string;
-  generatedAt: string;
-  cached: boolean;
-  /** Présent uniquement quand NEXT_PUBLIC_DEBUG=true côté serveur. */
-  debugInput?: unknown;
 }
 
 export interface SummaryDto {

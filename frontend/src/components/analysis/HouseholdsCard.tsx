@@ -5,6 +5,7 @@ import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { formatPct } from "./demographicsFormat";
 import { STACK_COLORS, viewForMode } from "./inseeChart";
 import { formatFr } from "@/lib/format";
+import { CardInsight } from "@/components/CardInsight";
 
 const CHILDREN_LABELS = ["Aucun", "1", "2", "3", "4 et +"] as const;
 
@@ -37,6 +38,8 @@ function compositionSegments(s: HouseholdsStatsDto) {
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
+  insight?: string | null;
 }
 
 /**
@@ -45,7 +48,7 @@ interface Props {
  * C'est ce qui distingue le mieux un quartier de familles d'un quartier de jeunes
  * actifs — deux profils qu'un revenu médian identique masquerait entièrement.
  */
-export function HouseholdsCard({ demographics, mode }: Props) {
+export function HouseholdsCard({ demographics, mode, insight }: Props) {
   const view = viewForMode(demographics.households, mode, demographics);
   if (!view) return null;
 
@@ -55,6 +58,8 @@ export function HouseholdsCard({ demographics, mode }: Props) {
       <p className="muted">
         La composition des foyers, recensée par l&apos;INSEE en 2021.
       </p>
+
+      <CardInsight text={insight} />
 
       <ScopedStatsTable view={view} rows={ROWS} />
 

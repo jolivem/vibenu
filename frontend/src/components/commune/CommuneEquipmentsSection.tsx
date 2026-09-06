@@ -1,12 +1,16 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
 import { formatInt, formatDecimal, formatDelta } from "./format";
+import { CardInsight } from "@/components/CardInsight";
+import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
 
 interface Props {
+  /** Légende IA de la section, rendue côté serveur. */
+  legendes?: CommuneLegendes;
   stats: CommuneStats;
 }
 
-export function CommuneEquipmentsSection({ stats }: Props) {
+export function CommuneEquipmentsSection({ stats, legendes }: Props) {
   const equipements = stats.equipements.filter((e) => e.nb > 0);
   const cityDef = CITIES[stats.city];
 
@@ -23,6 +27,8 @@ export function CommuneEquipmentsSection({ stats }: Props) {
         </h2>
         <span className="section-meta">INSEE BPE · densité pour 1 000 hab.</span>
       </div>
+
+      <CardInsight text={legendes?.legende_equipements} animate={false} className="commune-legend" />
 
       <div className="commune-equip-grid">
         {equipements.map((eq) => {

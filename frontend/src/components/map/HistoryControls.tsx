@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { HISTORICAL_ERAS } from "./historicalLayers";
+import type { HistoricalEra } from "./historicalLayers";
 
 /** La pastille « Aujourd'hui » : pas une époque, l'absence de surcouche. */
 const TODAY_VALUE = "";
@@ -10,6 +10,12 @@ interface TimelineProps {
   /** `null` = aujourd'hui. */
   value: string | null;
   onChange: (eraId: string | null) => void;
+  /**
+   * Les époques à proposer — celles que la sonde de couverture a retenues, et non la
+   * liste complète : une pastille qui découvre le fond actuel au lieu de la vue
+   * ancienne ne se distingue pas d'une pastille qui marche.
+   */
+  eras: readonly HistoricalEra[];
 }
 
 /**
@@ -20,13 +26,13 @@ interface TimelineProps {
  * « je remonte le temps » —, le focus roving et l'annonce « 1 sur 7 » aux lecteurs
  * d'écran. Les réimplémenter en JavaScript serait plus de code pour moins bien.
  */
-export function EraTimeline({ value, onChange }: TimelineProps) {
+export function EraTimeline({ value, onChange, eras }: TimelineProps) {
   // Deux frises sur une même page se piloteraient l'une l'autre sans nom distinct.
   const name = useId();
   const selected = value ?? TODAY_VALUE;
 
   const chips = [
-    ...HISTORICAL_ERAS.map((era) => ({
+    ...eras.map((era) => ({
       value: era.id,
       year: era.shortLabel,
       label: era.label,

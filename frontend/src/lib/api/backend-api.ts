@@ -1,4 +1,4 @@
-import type { AddressSuggestionDto, LocationAnalysisDto, NarrativeDto } from "@/types/location-analysis";
+import type { AddressSuggestionDto, CardInsightsDto, LocationAnalysisDto } from "@/types/location-analysis";
 
 export const backendApi = {
   async searchAddress(query: string): Promise<AddressSuggestionDto[]> {
@@ -44,17 +44,25 @@ export const backendApi = {
     return (await response.json()) as LocationAnalysisDto;
   },
 
-  async generateNarrative(data: LocationAnalysisDto): Promise<NarrativeDto> {
-    const response = await fetch(`/api/location/narrative`, {
+  /**
+   * Mini-synthèses des cards. Second aller-retour, lancé une fois l'analyse affichée :
+   * l'écran ne l'attend pas, les phrases s'y insèrent à leur arrivée.
+   */
+  async generateCardInsights(
+    data: LocationAnalysisDto,
+    citycode?: string,
+  ): Promise<CardInsightsDto> {
+    const suffix = citycode ? `?citycode=${encodeURIComponent(citycode)}` : "";
+    const response = await fetch(`/api/location/card-insights${suffix}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      throw new Error("Impossible de générer la synthèse.");
+      throw new Error("Impossible de générer les synthèses.");
     }
 
-    return (await response.json()) as NarrativeDto;
+    return (await response.json()) as CardInsightsDto;
   },
 };

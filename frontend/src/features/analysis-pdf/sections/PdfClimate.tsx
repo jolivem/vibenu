@@ -1,6 +1,7 @@
 import { Text, View } from "@react-pdf/renderer";
 import type { ClimateAnalysisDto } from "@/types/location-analysis";
 import { pdfStyles } from "../pdfStyles";
+import { PdfInsight } from "./PdfInsight";
 
 const COLOR_TEMP = "#dc2626";
 const COLOR_RAIN = "#2563eb";
@@ -26,7 +27,14 @@ function fmtDelta(delta: number, unit: string): string {
   return `${sign}${Math.abs(r).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} ${unit}`;
 }
 
-export function PdfClimate({ climate }: { climate: ClimateAnalysisDto }) {
+export function PdfClimate({
+  climate,
+  insight,
+}: {
+  climate: ClimateAnalysisDto;
+  /** Mini-synthèse IA. Le bloc n'a pas de ChapterTitle : elle se pose sous son en-tête. */
+  insight?: string | null;
+}) {
   const rows: Row[] = [
     { label: "Température moyenne", unit: "°C", format: fmtTemp, color: COLOR_TEMP, commune: climate.temperatureC, national: climate.national.temperatureC },
     { label: "Précipitations annuelles", unit: "mm", format: fmtMm, color: COLOR_RAIN, commune: climate.precipitationMm, national: climate.national.precipitationMm },
@@ -45,6 +53,8 @@ export function PdfClimate({ climate }: { climate: ClimateAnalysisDto }) {
       <Text style={pdfStyles.elecSub}>
         Source : Météo-France · Normales 1991-2020{stationLine}
       </Text>
+
+      <PdfInsight text={insight} />
 
       <View style={pdfStyles.elecList}>
         {visibleRows.map((r) => {

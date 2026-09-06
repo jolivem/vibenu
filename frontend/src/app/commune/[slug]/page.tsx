@@ -113,6 +113,10 @@ export default async function CommunePage({
     contourProvider.getContour(commune.codeCommune),
   ]);
 
+  // Les légendes voyagent avec la narrative : même appel au modèle, même cache. Une
+  // page sans narrative se rend simplement sans légende, comme avant.
+  const legendes = narrative?.content.legendes;
+
   const placeJsonLd = {
     "@context": "https://schema.org",
     "@type": "Place",
@@ -188,11 +192,11 @@ export default async function CommunePage({
       <CommuneHero commune={commune} stats={stats} />
       <CommuneMapSection commune={commune} contour={contour} />
       {narrative && <CommuneNarrativeSection content={narrative.content} nomCourt={commune.nomCourt} />}
-      <CommunePriceSection stats={stats} nomCourt={commune.nomCourt} />
-      <CommuneDemographicsSection stats={stats} nomCourt={commune.nomCourt} />
-      <CommuneEquipmentsSection stats={stats} />
-      <CommuneAirQualitySection stats={stats} />
-      <CommuneElectionsSection stats={stats} />
+      <CommunePriceSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
+      <CommuneDemographicsSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
+      <CommuneEquipmentsSection stats={stats} legendes={legendes} />
+      <CommuneAirQualitySection stats={stats} legendes={legendes} />
+      <CommuneElectionsSection stats={stats} legendes={legendes} />
       <CommuneHistorySection commune={commune} contour={contour} />
       <CommuneFaqSection stats={stats} nomCourt={commune.nomCourt} />
       <CommuneRelatedLinks commune={commune} />

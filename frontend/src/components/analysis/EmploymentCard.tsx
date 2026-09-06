@@ -3,6 +3,7 @@ import { DistributionChart } from "./DistributionChart";
 import { ScopedStatsTable, type ScopedRow } from "./ScopedStatsTable";
 import { formatPct } from "./demographicsFormat";
 import { viewForMode } from "./inseeChart";
+import { CardInsight } from "@/components/CardInsight";
 
 const CSP_LABELS = ["Agri.", "Artis.", "Cadres", "Interm.", "Employés", "Ouvriers"] as const;
 const CSP_TITLES = [
@@ -34,6 +35,8 @@ const ROWS: ScopedRow<EmploymentStatsDto>[] = [
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
+  insight?: string | null;
 }
 
 /**
@@ -44,7 +47,7 @@ interface Props {
  * ayant fini leurs études. Même exigence que le « faits enregistrés » de la card
  * Sécurité — un chiffre présenté sans sa définition se compare de travers.
  */
-export function EmploymentCard({ demographics, mode }: Props) {
+export function EmploymentCard({ demographics, mode, insight }: Props) {
   const view = viewForMode(demographics.employment, mode, demographics);
   if (!view) return null;
 
@@ -55,6 +58,8 @@ export function EmploymentCard({ demographics, mode }: Props) {
         Ce que font et ce qu&apos;ont étudié les habitants, recensés par l&apos;INSEE en
         2021.
       </p>
+
+      <CardInsight text={insight} />
 
       <ScopedStatsTable view={view} rows={ROWS} />
       <p className="demographics-note">

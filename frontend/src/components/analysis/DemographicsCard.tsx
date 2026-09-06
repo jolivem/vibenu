@@ -1,11 +1,14 @@
 import type { DemographicsAnalysisDto } from "@/types/location-analysis";
 import type { AnalysisMode } from "@/server-shared/types/location-analysis.dto";
+import { CardInsight } from "@/components/CardInsight";
 import { AgeChart } from "./AgeChart";
 import { formatDensity, formatPct, formatPopulation, formatRevenu } from "./demographicsFormat";
 
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
+  insight?: string | null;
 }
 
 /**
@@ -14,7 +17,7 @@ interface Props {
  * La zone n'est plus nommée ici ni montrée sur une carte : `PopulationScope` s'en charge
  * en tête de section, pour les quatre cards à la fois.
  */
-export function DemographicsCard({ demographics, mode }: Props) {
+export function DemographicsCard({ demographics, mode, insight }: Props) {
   const { communeStats, nationalStats, communeIrisCount } = demographics;
   const france = nationalStats;
   const isCommuneMode = mode === "commune";
@@ -25,6 +28,9 @@ export function DemographicsCard({ demographics, mode }: Props) {
     return (
       <section className="card">
         <h2>Démographie</h2>
+
+        <CardInsight text={insight} />
+
         <table className="demographics-table">
           <thead>
             <tr>
@@ -79,6 +85,9 @@ export function DemographicsCard({ demographics, mode }: Props) {
   return (
     <section className="card">
       <h2>Démographie</h2>
+
+      <CardInsight text={insight} />
+
       <table className="demographics-table">
         <thead>
           <tr>

@@ -22,6 +22,19 @@ export function baseLabel(base: SecurityIndicatorDto["base"]): string {
   return base === "logements" ? "pour 1 000 logements" : "pour 1 000 habitants";
 }
 
+/**
+ * Arrondissements de Paris, Lyon et Marseille : la commune INSEE y est l'arrondissement,
+ * donc la maille de la donnée est bien celle d'un quartier — ce qui mérite d'être dit, à
+ * l'inverse du reste du territoire.
+ *
+ * Vit ici plutôt que dans la card : la mini-synthèse IA a besoin de la même distinction
+ * pour ne pas parler de « la commune » à propos d'un arrondissement.
+ */
+export function isArrondissement(codeInsee: string | undefined): boolean {
+  if (!codeInsee) return false;
+  return /^(751\d\d|132\d\d|6938\d)$/.test(codeInsee);
+}
+
 export interface SecurityChartModel {
   series: LineChartSeries[];
   bands: LineChartBand[];

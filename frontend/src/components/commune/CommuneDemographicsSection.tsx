@@ -2,8 +2,12 @@ import type { CommuneStats, DemographicsStats } from "@/server-modules/commune-s
 import type { AgeDistributionDto } from "@/types/location-analysis";
 import { AgeChart } from "@/components/analysis/AgeChart";
 import { formatEur, formatInt, formatPct } from "./format";
+import { CardInsight } from "@/components/CardInsight";
+import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
 
 interface Props {
+  /** Légende IA de la section, rendue côté serveur. */
+  legendes?: CommuneLegendes;
   stats: CommuneStats;
   nomCourt: string;
 }
@@ -22,7 +26,7 @@ function toAgeDistribution(demo: DemographicsStats): AgeDistributionDto {
   };
 }
 
-export function CommuneDemographicsSection({ stats, nomCourt }: Props) {
+export function CommuneDemographicsSection({ stats, nomCourt, legendes }: Props) {
   const { demo, demoFrance } = stats;
   const ageCommune = toAgeDistribution(demo);
   const ageFrance = demoFrance ? toAgeDistribution(demoFrance) : null;
@@ -36,6 +40,8 @@ export function CommuneDemographicsSection({ stats, nomCourt }: Props) {
         </h2>
         <span className="section-meta">INSEE IRIS · agrégé arrondissement</span>
       </div>
+
+      <CardInsight text={legendes?.legende_demographie} animate={false} className="commune-legend" />
 
       <div className="commune-demo-grid">
         <div className="commune-demo-stats">

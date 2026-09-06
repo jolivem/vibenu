@@ -137,6 +137,22 @@ export const pdfStyles = StyleSheet.create({
     color: COLORS.muted,
     marginBottom: 16,
   },
+  /**
+   * Mini-synthèse IA, pendant PDF de `.card-insight`. Le liseré d'accent joue le même
+   * rôle qu'à l'écran : séparer le commentaire généré de la donnée sourcée.
+   * react-pdf n'accepte pas le raccourci `borderLeft` — d'où les deux propriétés.
+   */
+  insight: {
+    fontFamily: FONTS.sans,
+    fontSize: 8.5,
+    lineHeight: 1.45,
+    color: COLORS.textSoft,
+    marginTop: 4,
+    marginBottom: 10,
+    borderLeftWidth: 1.5,
+    borderLeftColor: COLORS.accent,
+    paddingLeft: 7,
+  },
 
   // === Cover page ===
   coverTop: {
@@ -222,32 +238,12 @@ export const pdfStyles = StyleSheet.create({
     color: COLORS.text,
   },
 
-  // Resume block on cover — green outline, light background
-  resumeBlock: {
-    backgroundColor: COLORS.cream,
-    borderWidth: 2.5,
-    borderColor: COLORS.accent,
-    padding: 22,
-    marginBottom: 8,
-  },
-  resumeEyebrow: {
-    fontFamily: FONTS.serif,
-    fontSize: 28,
-    color: COLORS.accent,
-    lineHeight: 1.05,
-    marginBottom: 10,
-  },
   resumeTitle: {
     fontFamily: FONTS.serif,
     fontSize: 19,
     color: COLORS.text,
     marginBottom: 10,
     lineHeight: 1.2,
-  },
-  resumeLede: {
-    fontSize: 10.5,
-    color: COLORS.text,
-    lineHeight: 1.6,
   },
   resumeColsWrap: {
     flexDirection: "row",

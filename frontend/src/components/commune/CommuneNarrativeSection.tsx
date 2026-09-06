@@ -5,8 +5,14 @@ interface Props {
   nomCourt: string;
 }
 
+/**
+ * Les quatre clés éditoriales, à l'exclusion de `legendes` qui n'est pas du texte et
+ * vit sous les sections chiffrées de la page, pas ici.
+ */
+type EditorialKey = Exclude<keyof CommuneNarrativeContent, "legendes">;
+
 const SECTIONS: Array<{
-  key: keyof CommuneNarrativeContent;
+  key: EditorialKey;
   title: string;
   num: string;
   id: string;

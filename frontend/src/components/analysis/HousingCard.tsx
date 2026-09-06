@@ -5,6 +5,7 @@ import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { formatPct } from "./demographicsFormat";
 import { STACK_COLORS, viewForMode } from "./inseeChart";
 import { formatFr } from "@/lib/format";
+import { CardInsight } from "@/components/CardInsight";
 
 const ROOM_LABELS = ["1 p.", "2 p.", "3 p.", "4 p.", "5 p. et +"] as const;
 
@@ -50,6 +51,8 @@ function dwellingSegments(s: HousingStatsDto) {
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
+  insight?: string | null;
 }
 
 /**
@@ -58,7 +61,7 @@ interface Props {
  * Complément direct de la card Marché immobilier — celle-ci dit à quel prix on achète,
  * celle-là ce qui se loue, ce qui reste vide et ce qui a été bâti quand.
  */
-export function HousingCard({ demographics, mode }: Props) {
+export function HousingCard({ demographics, mode, insight }: Props) {
   const view = viewForMode(demographics.housing, mode, demographics);
   if (!view) return null;
 
@@ -66,6 +69,8 @@ export function HousingCard({ demographics, mode }: Props) {
     <section className="card">
       <h2>Logement</h2>
       <p className="muted">Le parc de logements, recensé par l&apos;INSEE en 2021.</p>
+
+      <CardInsight text={insight} />
 
       <ScopedStatsTable view={view} rows={ROWS} />
 

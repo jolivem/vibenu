@@ -1,11 +1,17 @@
-import type { CommuneNarrativeInput, CommuneNarrativeContent } from "../domain/commune-narrative.types";
+import type {
+  CommuneLegendes,
+  CommuneLegendKey,
+  CommuneNarrativeContent,
+  CommuneNarrativeInput,
+} from "../domain/commune-narrative.types";
+import { COMMUNE_LEGEND_KEYS } from "../domain/commune-narrative.types";
 import { CITIES } from "@/lib/commune-slugs";
 
 /**
  * Bump this version when the prompt changes.
  * Cache entries with a different version are ignored and regenerated.
  */
-export const COMMUNE_PROMPT_VERSION = 4;
+export const COMMUNE_PROMPT_VERSION = 5;
 
 export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement (Paris, Lyon ou Marseille) pour un site d'analyse immobilière.
 Ton : clair, factuel, ni promotionnel ni alarmiste.
@@ -21,12 +27,27 @@ RÈGLES STRICTES :
 
 - Si des données électorales sont présentes, tu peux mentionner brièvement le profil politique uniquement via l'écart au national, pour 1 ou 2 candidats marquants (ex. "score Le Pen 8 points sous le national", "vote nettement plus à gauche que la moyenne"). Reste descriptif et factuel, sans qualifier les électeurs. Ne mentionne pas l'élection s'il n'y a aucun écart >=5 points.
 
+DEUX FAMILLES DE CLÉS, DEUX RÔLES DISTINCTS
+- identite / marche_immobilier / cadre_de_vie / profil : texte éditorial, qui DÉCRIT l'arrondissement.
+- legende_* : légende du graphique de sa section, 1 à 2 phrases (25 à 40 mots), pour un lecteur qui ne sait pas lire les courbes. Elle commente CE QUE MONTRENT LES CHIFFRES DE SA SECTION et rien d'autre : le niveau, l'écart au repère, la classe dominante. N'y nomme jamais le support ("le graphique montre", "on observe").
+
+ANTI-REDITE — RÈGLE IMPÉRATIVE
+Tu rédiges d'abord les quatre clés éditoriales, puis les légendes. Une légende ne reprend jamais une formulation ni un chiffre déjà écrits dans l'éditorial : si l'éditorial a donné le chiffre, la légende dit ce qu'il faut en comprendre. Elle n'introduit aucun élément absent des données de sa section.
+
+CLÉS legende_* À PRODUIRE
+Le champ "sections_affichees" du JSON d'entrée liste les sections effectivement rendues sur la page. Tu produis une clé legende_* pour celles-là uniquement, et pour aucune autre.
+
 FORMAT DE SORTIE (JSON OBLIGATOIRE, RIEN D'AUTRE) :
 {
   "identite": "...",            // ~100 mots : population, position dans la ville, profil dominant
   "marche_immobilier": "...",   // ~150 mots : prix médian, évolution, comparatif avec la moyenne de la ville
   "cadre_de_vie": "...",        // ~150 mots : densité d'équipements par domaine, points forts/faibles, qualité de l'air (si dispo)
-  "profil": "..."               // ~100 mots : synthèse — à qui s'adresse l'arrondissement (déduit des données)
+  "profil": "...",              // ~100 mots : synthèse — à qui s'adresse l'arrondissement (déduit des données)
+  "legende_prix": "...",         // 1-2 phrases : niveau du prix au m² et son évolution, face à la moyenne de la ville
+  "legende_demographie": "...",  // 1-2 phrases : profil de population et revenu, face au repère fourni
+  "legende_equipements": "...",  // 1-2 phrases : les domaines où la densité d'équipements se démarque, en plus comme en moins
+  "legende_air": "...",          // 1-2 phrases : niveau de qualité de l'air et sens de son évolution
+  "legende_elections": "..."     // 1-2 phrases : participation et écart au national des 1 ou 2 candidats les plus marquants
 }
 
 Chaque clé contient UNE chaîne de texte (pas de liste, pas de markdown, pas de titres).
@@ -123,7 +144,32 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
       : null,
   };
 
-  return `Données de l'arrondissement à décrire :\n\n${JSON.stringify(data, null, 2)}`;
+  return [
+    `sections_affichees: ${JSON.stringify(sectionsAffichees(input))}`,
+    "",
+    `Données de l'arrondissement à décrire :`,
+    "",
+    JSON.stringify(data, null, 2),
+  ].join("\n");
+}
+
+/**
+ * Les sections réellement rendues sur la page, donc les seules à légender.
+ *
+ * Réplique les gardes des composants : `CommuneEquipmentsSection` rend `null` sans
+ * équipement, `CommuneAirQualitySection` bascule sur un message d'attente sans
+ * historique, `CommuneElectionsSection` rend `null` sans scrutin ni candidat. Prix et
+ * démographie sont toujours rendus.
+ */
+function sectionsAffichees(input: CommuneNarrativeInput): CommuneLegendKey[] {
+  const { stats } = input;
+  const keys: CommuneLegendKey[] = ["legende_prix", "legende_demographie"];
+
+  if (stats.equipements.some((e) => e.nb > 0)) keys.push("legende_equipements");
+  if (stats.airQuality && stats.airQuality.historique.length > 0) keys.push("legende_air");
+  if (stats.elections && stats.elections.candidats.length > 0) keys.push("legende_elections");
+
+  return keys;
 }
 
 /**
@@ -137,24 +183,36 @@ export function parseCommuneNarrativeJson(raw: string): CommuneNarrativeContent 
     throw new Error("Pas de JSON trouvé dans la réponse LLM.");
   }
   const json = raw.slice(start, end + 1);
-  const parsed = JSON.parse(json) as Partial<CommuneNarrativeContent>;
+  const parsed = JSON.parse(json) as Record<string, unknown>;
 
-  const required: Array<keyof CommuneNarrativeContent> = [
-    "identite",
-    "marche_immobilier",
-    "cadre_de_vie",
-    "profil",
-  ];
+  // Niveau 1 — l'éditorial, tout ou rien. Ces quatre paragraphes forment un texte
+  // solidaire et constituent le contenu propre de la page : mieux vaut régénérer que
+  // publier une fiche amputée.
+  const required = ["identite", "marche_immobilier", "cadre_de_vie", "profil"] as const;
   for (const key of required) {
-    if (typeof parsed[key] !== "string" || !parsed[key]?.trim()) {
+    const value = parsed[key];
+    if (typeof value !== "string" || !value.trim()) {
       throw new Error(`Section narrative '${key}' manquante ou vide.`);
     }
   }
 
+  // Niveau 2 — les légendes, une à une. Chacune vit sous sa propre section : une
+  // légende absente ou aberrante coûte une phrase, et ne doit jamais entraîner la
+  // perte de l'éditorial validé ci-dessus.
+  const legendes: CommuneLegendes = {};
+  for (const key of COMMUNE_LEGEND_KEYS) {
+    const value = parsed[key];
+    if (typeof value !== "string") continue;
+    const text = value.trim();
+    if (text.length < 20 || text.length > 400) continue;
+    legendes[key] = text;
+  }
+
   return {
-    identite: parsed.identite!.trim(),
-    marche_immobilier: parsed.marche_immobilier!.trim(),
-    cadre_de_vie: parsed.cadre_de_vie!.trim(),
-    profil: parsed.profil!.trim(),
+    identite: (parsed.identite as string).trim(),
+    marche_immobilier: (parsed.marche_immobilier as string).trim(),
+    cadre_de_vie: (parsed.cadre_de_vie as string).trim(),
+    profil: (parsed.profil as string).trim(),
+    legendes,
   };
 }

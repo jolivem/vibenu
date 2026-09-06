@@ -3,9 +3,13 @@ import type {
   AirQualityAtmoYear,
 } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
+import { CardInsight } from "@/components/CardInsight";
+import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
 
 interface Props {
   stats: CommuneStats;
+  /** Légende IA de la section, rendue côté serveur. */
+  legendes?: CommuneLegendes;
 }
 
 type CategoryKey =
@@ -52,7 +56,7 @@ function StackedBar({ year, height }: { year: AirQualityAtmoYear; height: number
   );
 }
 
-export function CommuneAirQualitySection({ stats }: Props) {
+export function CommuneAirQualitySection({ stats, legendes }: Props) {
   const cityDef = CITIES[stats.city];
 
   if (!stats.airQuality || stats.airQuality.historique.length === 0) {
@@ -86,6 +90,8 @@ export function CommuneAirQualitySection({ stats }: Props) {
           {cityDef.airSourceLabel} · indice ATMO {cityDef.nomAffiche} · {latest.annee}
         </span>
       </div>
+
+      <CardInsight text={legendes?.legende_air} animate={false} className="commune-legend" />
 
       <div className="commune-air-wrap">
         <div className="commune-air-latest">

@@ -26,8 +26,8 @@ export const isPublic = SITE_VARIANT === "PUBLIC";
  */
 export interface SiteFeatures {
   // --- Cards de l'écran d'analyse (mode adresse + commune) ---
-  /** Card "Synthèse" (narratif rédigé par Mistral). */
-  showNarrative: boolean;
+  /** Mini-synthèses IA sous le titre des cards à graphiques (« En bref »). */
+  showCardInsights: boolean;
   /** Card "Voisinage" — POIs autour de l'adresse. */
   showNeighborhood: boolean;
   /** Card "Sécurité" — délinquance enregistrée SSMSI, maille communale. */
@@ -86,7 +86,7 @@ export interface SiteFeatures {
 }
 
 const PUBLIC_FEATURES: SiteFeatures = {
-  showNarrative: true,
+  showCardInsights: true,
   showNeighborhood: true,
   showMobility: true,
   showSecurity: true,
@@ -114,7 +114,7 @@ const PUBLIC_FEATURES: SiteFeatures = {
 };
 
 const PRO_FEATURES: SiteFeatures = {
-  showNarrative: false,
+  showCardInsights: false,
   showNeighborhood: true,
   showMobility: true,
   showSecurity: false, // usage professionnel : hors périmètre

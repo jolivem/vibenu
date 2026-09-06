@@ -155,6 +155,17 @@ En complément du résumé déterministe (points forts / points à vérifier), u
 - **Dégradation gracieuse** : la route retourne 502 si Mistral est indisponible ; la page affiche alors silencieusement seulement le résumé déterministe.
 - **Obtenir une clé** : [console.mistral.ai/api-keys](https://console.mistral.ai/api-keys/).
 
+- ** status ** : optenir un status admin
+curl -i https://api.mistral.ai/v1/chat/completions \
+  -H "Authorization: Bearer $MISTRAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "mistral-small-latest",
+    "messages": [
+      {"role": "user", "content": "Bonjour"}
+    ]
+  }'
+
 ## Export PDF
 
 Un bouton **« Télécharger PDF »** dans la barre supérieure de l'écran d'analyse génère un PDF vectoriel du rapport complet, texte sélectionnable, directement dans le navigateur.
