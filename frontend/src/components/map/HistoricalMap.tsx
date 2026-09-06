@@ -5,7 +5,7 @@ import type { CadastreParcelDto, GeoJsonGeometryDto } from "@/types/location-ana
 import { Map } from "./Map";
 import { LazyMap } from "./LazyMap";
 import { IGN_ORTHO_RASTER_STYLE } from "./basemaps";
-import { EraTimeline, OpacitySlider } from "./HistoryControls";
+import { EraBlendSlider, EraTimeline } from "./HistoryControls";
 import { HISTORICAL_ERAS_BY_ID } from "./historicalLayers";
 import { coveredEras, missingEras, nearestCoveredEraId } from "./historicalCoverage";
 import { useHistoricalCoverage } from "./useHistoricalCoverage";
@@ -67,9 +67,13 @@ export function HistoricalMap({
   defaultEraId = null,
 }: Props) {
   const [eraId, setEraId] = useState<string | null>(defaultEraId);
-  // L'opacité ne se réinitialise pas au changement d'époque : la frise est une
+  // Le dosage ne se réinitialise pas au changement d'époque : la frise est une
   // sélection, le curseur un réglage. Qui a dosé 50 % pour lire un tracé ancien sur le
   // bâti actuel veut la même lecture à l'époque suivante, pas un retour au plein écran.
+  //
+  // Reste nommé `opacity` ici, et pas `blend` : c'est la valeur brute passée à
+  // `raster-opacity`. Le mot juste à l'écran n'est pas le mot juste à la frontière de
+  // MapLibre — c'est précisément la confusion que le libellé « Opacité » entretenait.
   const [opacity, setOpacity] = useState(100);
 
   const coverage = useHistoricalCoverage(lon, lat, communeContour ? COMMUNE_PROBE_ZOOM : ADDRESS_ZOOM);
@@ -108,7 +112,7 @@ export function HistoricalMap({
 
       <div className="history-controls">
         <EraTimeline value={eraId} onChange={setEraId} eras={available} />
-        <OpacitySlider value={opacity} onChange={setOpacity} disabled={era === null} />
+        <EraBlendSlider value={opacity} onChange={setOpacity} era={era ?? null} />
         <p className="era-context">
           {era ? (
             <>
@@ -120,8 +124,8 @@ export function HistoricalMap({
           ) : (
             <>
               <strong>Vue actuelle.</strong> Photographies aériennes les plus récentes de
-              l&apos;IGN. Choisissez une époque dans la frise pour la superposer, et
-              réglez l&apos;opacité pour comparer.
+              l&apos;IGN. Choisissez une époque dans la frise pour la superposer, puis
+              faites glisser le curseur pour passer de l&apos;une à l&apos;autre.
             </>
           )}
         </p>

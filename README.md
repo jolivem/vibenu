@@ -14,23 +14,25 @@ L'utilisateur saisit une adresse en France et obtient :
 - les prix immobiliers du secteur avec visualisation cartographique ;
 - la qualité de l'air ;
 - les commerces et services de proximité ;
-- les données socio-démographiques (population, âge, revenus, pauvreté) ;
+- les données socio-démographiques (population, âge, revenus, pauvreté), le parc de logements, l'emploi et les qualifications, la composition des ménages ;
+- la **délinquance enregistrée** (SSMSI) sur dix ans, comparée au département et à la France ;
 - les **normales climatiques 1991-2020** (température, pluviométrie, ensoleillement) avec comparaison commune / France ;
 - les **résultats de la dernière élection présidentielle** (1er tour 2022) avec comparaison commune / national ;
-- un résumé en langage simple ;
-- une **synthèse rédigée par IA** en langage courant (Mistral) ;
+- le **lieu autrefois** : cartes et photographies aériennes anciennes de l'IGN, fondues sur la vue actuelle ;
+- une **mini-synthèse « En bref » rédigée par IA** sous le titre de chaque card à graphiques, qui dit ce qu'il faut comprendre des courbes ;
 - un **export PDF** du rapport complet, téléchargeable en un clic.
 
 ## Architecture
 
 - **Next.js** / React / TypeScript (frontend + API routes serveur)
 - **MapLibre GL** pour la carte interactive (avec contour de commune en mode recherche par nom)
-- **PostgreSQL / PostGIS** (auto-hébergé via Docker) pour les données OSM, DVF, IRIS, élections, normales climatiques par station et le cache des synthèses IA
+- **PostgreSQL / PostGIS** (auto-hébergé via Docker) pour les données OSM, DVF, IRIS, élections, délinquance SSMSI, normales climatiques par station et les caches des textes LLM
 - **Météo-France** (normales 1991-2020 par station) pré-importées dans PostgreSQL — composition par métrique (la station la plus proche disposant de chaque indicateur)
-- **Mistral AI** pour la synthèse en langage courant (pattern port/adapter → fournisseur LLM interchangeable)
+- **Mistral AI** pour les mini-synthèses des cards et la narrative des pages `/commune/*` — l'API visée est un `/chat/completions` compatible OpenAI, donc changer de fournisseur ne demande que `LLM_BASE_URL` + `LLM_API_KEY`
 - **@react-pdf/renderer** pour l'export PDF vectoriel côté client
 - Architecture modulaire (DDD) dans `frontend/src/server-modules/`
-- Cache en mémoire (TTL par source de données) + cache Postgres pour les synthèses LLM
+- Cache en mémoire (TTL par source de données) + cache Postgres pour les textes LLM
+- Deux variantes du site (`PUBLIC` / `PRO`) pilotées par drapeaux de features — cf. `frontend/src/lib/site-features.ts`
 - Couches cartographiques WMS (risques) et GeoJSON (cadastre, prix DVF, contour commune)
 
 ## Modules
@@ -48,8 +50,11 @@ L'utilisateur saisit une adresse en France et obtient :
 | `demographics` | Données socio-démographiques (population, revenus, âge) | INSEE IRIS (PostgreSQL/PostGIS) |
 | `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
 | `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Météo-France — normales par station pré-importées (PostgreSQL/PostGIS) ; moyenne nationale hardcodée |
-| `summary` | Construction du résumé textuel (règles déterministes) | - |
-| `narrative` | Synthèse en langage courant générée par LLM + cache Postgres | Mistral AI (api.mistral.ai) |
+| `security` | Délinquance enregistrée, 10 ans, maille communale + repères département/France | SSMSI via data.gouv.fr (PostgreSQL) |
+| `school-sector` | Secteur de collège (donnée disponible pour Paris) | Ville de Paris (PostgreSQL/PostGIS) |
+| `commune-stats` | Agrégats des pages SEO `/commune/*` (prix, démographie, équipements, air, élections) | PostgreSQL/PostGIS |
+| `summary` | Construction du résumé textuel (règles déterministes) — toujours produit dans le DTO, **plus affiché** depuis le passage aux mini-synthèses | - |
+| `narrative` | Mini-synthèses « En bref » des cards + narrative des pages `/commune/*`, avec cache Postgres | Mistral AI (api.mistral.ai) |
 
 ## Carte interactive
 
@@ -65,6 +70,26 @@ L'utilisateur saisit une adresse en France et obtient :
 | Potentiel radon | WMS raster | Géorisques | oui |
 | Zone démographique (IRIS) | GeoJSON (polygone) | INSEE IRIS (PostgreSQL) | oui |
 | Contour de commune | GeoJSON (polygone) | API Découpage administratif IGN (geo.api.gouv.fr) | auto si recherche par nom de commune |
+| Époques anciennes (Cassini, état-major, carte de 1950, photos aériennes 1950-65 / 1965-80 / 2000-05) | WMTS raster | Géoplateforme IGN (data.geopf.fr) | frise d'époques, card « Le lieu autrefois » |
+
+### Card « Le lieu autrefois » — sonde de couverture
+
+La couche historique est posée **par-dessus** l'ortho-photographie actuelle, qui reste le
+fond : c'est elle le terme de comparaison. Conséquence, là où une couche n'a pas de
+donnée, MapLibre ne dessine rien et le fond transparaît — l'utilisateur verrait la photo
+d'aujourd'hui sous une pastille annonçant « 1965-80 ».
+
+`historicalCoverage.ts` sonde donc une tuile par époque, au point demandé, avant de
+dresser la frise : les époques sans donnée ne sont pas proposées, et une ligne sous la
+frise les nomme. L'absence de donnée prend **deux formes** sur la Géoplateforme, et il
+faut traiter les deux :
+
+- un `HTTP 404` portant `<Exception>No data found</Exception>` ;
+- un `HTTP 200` avec une PNG palettisée entièrement transparente (1 595 octets).
+
+Les deux s'observent sur la même couche selon le zoom. Exemple vérifiable :
+`ORTHOIMAGERY.ORTHOPHOTOS.1965-1980` renvoie un 404 à Saint-Cyr-l'École et une tuile vide
+à Versailles, tandis que Paris, Lyon, Marseille, Toulouse et Rennes sont couverts.
 
 ## Cache
 
@@ -82,9 +107,14 @@ Le serveur utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés 
 | Climat (Météo-France stations, normales 1991-2020) | 30 jours | in-memory (clé arrondie ~11 km) | données figées (passé) |
 | Élections (Postgres local) | — | — | données figées (scrutin clos) |
 | Contour commune (geo.api.gouv.fr) | 30 jours | in-memory | quasi-statique |
-| Synthèse IA (Mistral) | 30 jours | **PostgreSQL** (`narrative_cache`) | stable tant que les données sources ne changent pas |
+| Mini-synthèses « En bref » (Mistral) | 90 jours | **PostgreSQL** (`card_insights_cache`) | sources annuelles (recensement, SSMSI, normales, présidentielle) |
+| Narrative des pages `/commune/*` (Mistral) | version de prompt | **PostgreSQL** (`commune_narrative_cache`) | stable tant que les données sources ne changent pas |
 
-La clé de cache est basée sur les coordonnées arrondies (~10m de précision). Le cache in-memory est limité à 500 entrées par source ; le cache Postgres des synthèses persiste entre redéploiements.
+La clé de cache est basée sur les coordonnées arrondies (~10m de précision). Le cache in-memory est limité à 500 entrées par source ; les caches Postgres des textes LLM persistent entre redéploiements.
+
+La clé de `card_insights_cache` est `(geo_key, mode, model, version)` : le modèle et la version de prompt sont **dans** la clé primaire, si bien que changer de modèle ou incrémenter `CARD_INSIGHTS_PROMPT_VERSION` cesse de servir les anciennes lignes sans qu'il y ait rien à supprimer.
+
+⚠️ `NEXT_PUBLIC_DEBUG=true` court-circuite ce cache **en lecture et en écriture** : chaque affichage rappelle alors le modèle. À laisser à `false` dès qu'on ne débogue pas le prompt, sous peine d'épuiser le quota.
 
 ## Mode d'analyse : `address` vs `commune`
 
@@ -118,13 +148,21 @@ Le mode est **calculé une seule fois** dans `LocationAnalysisUseCase` et **expo
 
 ## Layout d'analyse
 
-L'écran d'analyse utilise un layout **2 colonnes en mode masonry** (CSS multi-colonnes `column-count: 2`) en desktop pour éviter les vides verticaux entre cards de hauteurs inégales. La carte interactive et la card « Synthèse » (IA) sont en pleine largeur (`column-span: all`). En mobile (≤ 900 px), tout repasse en colonne unique.
+L'écran d'analyse est organisé en **sections thématiques** empilées (`.analysis-sections`,
+flex colonne), chacune introduite par un titre et contenant une ou plusieurs cards en
+pleine largeur (`.analysis-section-body`). L'ordre et les libellés sont centralisés dans
+`frontend/src/components/analysis/sections.ts`, et `SectionNav` en dérive le sommaire
+latéral qui suit le défilement.
+
+Chaque card à graphiques porte sa **mini-synthèse « En bref »** sous le titre — un
+`<p class="card-insight">` avec un liseré d'accent, dont le tag sépare visuellement
+l'interprétation du modèle de la donnée sourcée qui l'entoure.
 
 ## Approche d'évaluation
 
 L'application présente les données **factuelles** sans jugement synthétique chiffré : pas de score global ni de score par module. Chaque indicateur est exposé avec ses propres unités (niveau de mobilité, niveau de risque, prix médian €/m², qualité de l'air, etc.) et — quand c'est pertinent — comparé à une référence (commune, France).
 
-L'interprétation finale est laissée à l'utilisateur, complétée optionnellement par la **synthèse IA en langage courant** qui transforme les indicateurs en paragraphe narratif.
+L'interprétation finale est laissée à l'utilisateur, complétée optionnellement par les **mini-synthèses « En bref »** : une à deux phrases sous le titre de chaque card à graphiques, qui disent ce qu'il faut comprendre des courbes plutôt que de résumer le thème. Une mention sous les cards rappelle qu'elles sont rédigées par une IA à partir des seules données affichées.
 
 ## API Routes (Next.js)
 
@@ -132,7 +170,9 @@ L'interprétation finale est laissée à l'utilisateur, complétée optionnellem
 |-------|-------------|
 | `GET /api/address/search?q=...` | Recherche d'adresse (autocomplétion) |
 | `GET /api/location/analyze?lat=...&lon=...` | Analyse complète d'une adresse |
-| `POST /api/location/narrative` | Synthèse rédigée par IA (corps = `LocationAnalysisDto`, réponse = `{ paragraph, generatedAt, cached }`) |
+| `POST /api/location/card-insights` | Mini-synthèses des cards (corps = `LocationAnalysisDto`, réponse = `{ insights, generatedAt, cached }`). Répond **toujours** 200 ou 400 : toute défaillance LLM donne `insights: {}` |
+| `GET /api/health` | Sonde de vivacité |
+| `GET /api/debug/pois` | Inspection des POIs voisins (debug) |
 
 ## Élections (Présidentielle 2022, 1er tour)
 
@@ -142,42 +182,71 @@ L'écran d'analyse expose le **profil électoral** de la commune sous forme de b
 - **Granularité** : agrégation côté Python au niveau **commune** par sommation des bureaux de vote, puis recalcul des pourcentages
 - **Tables Postgres** : `elections_pres_2022_t1_commune` (inscrits/votants/exprimés) + `elections_pres_2022_t1_results` (1 ligne par candidat × commune). L'agrégat France est stocké sous le pseudo-code `'FRANCE'` calculé à l'import
 - **Affichage** : la card « Présidentielle 2022 — 1er tour » apparaît si la commune est trouvée. Si la table est vide ou le code INSEE inconnu, la card est silencieusement masquée
-- **PDF + IA** : la section est aussi incluse dans le PDF, et le top 3 des candidats (avec écart au national) est passé au prompt Mistral pour enrichir la synthèse narrative
+- **PDF + IA** : la section est aussi incluse dans le PDF, et le top 3 des candidats (avec écart au national) est passé au prompt Mistral, qui en tire la mini-synthèse « En bref » de la card
 - **Licence** : Licence Ouverte Etalab 2.0
 
-## Synthèse IA (Mistral)
+## Mini-synthèses IA « En bref » (Mistral)
 
-En complément du résumé déterministe (points forts / points à vérifier), une **synthèse rédigée en langage courant** est générée par un LLM à partir des données d'analyse. Elle s'affiche au-dessus du résumé dans l'écran d'analyse et est incluse dans l'export PDF.
+Sous le titre de chaque card à graphiques, une à deux phrases rédigées par un LLM disent
+**ce qu'il faut comprendre des courbes** — pour le lecteur qui n'a ni le temps ni les
+repères pour les lire. Elles s'affichent dans l'écran d'analyse et dans l'export PDF.
 
-- **Fournisseur par défaut** : Mistral AI (`mistral-small-latest`). Le module suit un pattern port/adapter ([`NarrativeProvider`](frontend/src/server-modules/narrative/infrastructure/narrative.provider.ts)), ce qui permet de basculer vers un autre LLM (Claude, OpenAI, Gemini…) en implémentant une nouvelle classe.
-- **Prompt** : système strict (3–4 phrases max, ton neutre, interdiction d'inventer des données, pas de jargon).
-- **Cache** : table `narrative_cache` en PostgreSQL avec TTL de 30 jours, clé = coordonnées arrondies. Évite de repayer l'API à chaque chargement et survit aux redéploiements.
-- **Dégradation gracieuse** : la route retourne 502 si Mistral est indisponible ; la page affiche alors silencieusement seulement le résumé déterministe.
+- **Sept clés, un seul appel** : `securite`, `demographie`, `logement`, `emploi`,
+  `menages`, `elections`, `climat`. La liste est la source unique
+  (`server-shared/types/card-insights.ts`) : le type, le format de sortie du prompt, le
+  parseur et le cache en dérivent tous.
+- **Une clé est produite si et seulement si sa card est rendue.** `card-insights.input.ts`
+  réplique la garde de chaque card ; le champ `cles_attendues` du prompt liste les
+  sections effectivement affichées, et le parseur ignore tout ce qui déborde.
+- **On calcule, le modèle verbalise.** Tendances, écarts au national, extrema et classes
+  dominantes sont tranchés en TypeScript sur des seuils explicites. Le modèle reçoit
+  « en baisse de 31 % », pas dix nombres à comparer — c'est ce qui rend la lecture
+  reproductible.
+- **Prompt** : système strict — 25 à 45 mots, aucun chiffre sans repère, aucune
+  explication causale, seuil de saillance à 2 points (ou 5 % en relatif), pas de jargon,
+  jamais « le graphique montre ». Sortie en JSON (`response_format: json_object`).
+- **Cache** : table `card_insights_cache`, TTL 90 jours, clé
+  `(geo_key, mode, model, version)`.
+- **Dégradation silencieuse** : le service ne lève **jamais**. Clé absente, quota épuisé,
+  JSON illisible ou base indisponible donnent `insights: {}` et la route répond 200 — les
+  cards s'affichent alors sans phrase, exactement comme avant la fonctionnalité.
+- **Développer sans clé** : `CARD_INSIGHTS_FIXTURE=1` (ou `=slow`, qui ajoute 1,2 s de
+  latence pour juger le fondu à l'apparition) sert des phrases factices sans aucun appel
+  au LLM.
+
+Les pages SEO `/commune/*` ont leur propre pipeline (`commune-narrative.*`) : quatre
+paragraphes éditoriaux **plus** une légende par section affichée, en un appel, avec une
+règle anti-redite entre les deux familles de clés. Cache : `commune_narrative_cache`.
+
+- **Fournisseur** : Mistral AI (`mistral-small-latest`) par défaut. L'API visée est un
+  `/chat/completions` compatible OpenAI : pointer un autre fournisseur ou un modèle local
+  ne demande que `LLM_BASE_URL` et `LLM_API_KEY` (qui retombe sur `MISTRAL_API_KEY`).
 - **Obtenir une clé** : [console.mistral.ai/api-keys](https://console.mistral.ai/api-keys/).
+- **Vérifier une clé** (un 429 `Rate limit exceeded` signifie quota épuisé, pas clé
+  invalide — et se traduit à l'écran par des cards sans phrase, sans message d'erreur) :
 
-- ** status ** : optenir un status admin
+```bash
 curl -i https://api.mistral.ai/v1/chat/completions \
   -H "Authorization: Bearer $MISTRAL_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{
-    "model": "mistral-small-latest",
-    "messages": [
-      {"role": "user", "content": "Bonjour"}
-    ]
-  }'
+  -d '{"model":"mistral-small-latest","messages":[{"role":"user","content":"Bonjour"}]}'
+```
 
 ## Export PDF
 
 Un bouton **« Télécharger PDF »** dans la barre supérieure de l'écran d'analyse génère un PDF vectoriel du rapport complet, texte sélectionnable, directement dans le navigateur.
 
 - **Technologie** : [`@react-pdf/renderer`](https://react-pdf.org) chargé dynamiquement à la demande (pas d'impact sur le bundle initial).
-- **Contenu** : toutes les cards (résumé, synthèse IA, mobilité, risques, qualité de l'air, immobilier, voisinage, démographie avec graphique d'âge en SVG, cadastre).
+- **Contenu** : mobilité, sécurité, qualité de l'air, climat, voisinage, secteur de collège, démographie (avec graphique d'âge en SVG) et profil INSEE, élections, immobilier, cadastre — chaque chapitre concerné reprenant sa mini-synthèse « En bref » (`PdfInsight`).
 - **Carte** : capturée comme PNG depuis la toile MapLibre (`getCanvas().toDataURL()`), avec `preserveDrawingBuffer: true` activé sur la carte.
 - **Mise en cache** : aucune — le PDF est toujours généré à la volée côté client.
 
 ## Démarrage
 
 ### 1. Import des données (PostgreSQL + PostGIS requis)
+
+> Jouer d'abord les **migrations SQL** (§ 2) : plusieurs scripts remplissent des tables
+> qu'elles créent (`crime_*`, `municipales_2026_*`, `climate_station_*`, `school_sector`).
 
 ```bash
 cd scripts
@@ -210,6 +279,24 @@ python import_insee_iris.py --only logement   # ou un seul axe
 # Télécharger d'abord resultats-par-niveau-burvot-t1-france-entiere.xlsx (31,9 Mo)
 # depuis https://www.data.gouv.fr/fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/
 python import_elections.py --file ~/Downloads/resultats-par-niveau-burvot-t1-france-entiere.xlsx
+
+# Importer les Municipales 2026 (T1 + T2) — CSV data.gouv.fr, téléchargés si absents
+python import_municipales.py
+
+# Importer la délinquance SSMSI — COM (~39 Mo, 5,2 M lignes) + DEP, téléchargés si absents
+python import_crime.py
+
+# Importer les normales climatiques Météo-France 1991-2020 — ~10 min
+# Déposer d'abord les *.csv.gz décadaires dans scripts/data/climate/
+python import_climate_stations.py
+
+# Importer les indices ATMO annuels (une ville par script)
+python import_atmo_paris.py
+python import_atmo_lyon.py
+python import_atmo_marseille.py
+
+# Importer les secteurs de collège de Paris (opendata.paris.fr)
+python import_school_sectors_paris.py
 ```
 
 ### 2. Migrations SQL applicatives
@@ -223,7 +310,7 @@ done
 ```
 
 Migrations actuelles :
-- `002-narrative-cache.sql` — table `narrative_cache` (cache des synthèses IA, TTL 30j)
+- `002-narrative-cache.sql` — table `narrative_cache`, cache de l'ancienne card « Synthèse ». **Orpheline** depuis le passage aux mini-synthèses : plus aucune requête ne la touche. Non supprimée ici (`update.sh` rejoue les migrations, un `DROP` n'a pas de retour arrière) ; une migration 019 la retirera une fois la feature stabilisée en prod
 - `003-elections.sql` — tables `elections_pres_2022_t1_commune` + `elections_pres_2022_t1_results`
 - `005-commune-narrative-cache.sql` — cache des synthèses des pages `/commune/*`
 - `008-climate-station-normales.sql` / `013-climate-station-monthly.sql` — normales Météo-France
@@ -236,6 +323,11 @@ Migrations actuelles :
 - `017-insee-iris.sql` — `iris_demographics` (jusque-là créée par le script d'import),
   ses trois tables sœurs `iris_logement` / `iris_emploi` / `iris_menages`, et la vue
   matérialisée `insee_aggregate` (repères commune et France pré-calculés)
+- `018-card-insights-cache.sql` — `card_insights_cache`, le cache des mini-synthèses
+  « En bref ». Clé `(geo_key, mode, model, version)`. **Sans cette table, rien ne casse
+  visiblement** : le provider avale ses erreurs SQL, et le seul symptôme est un appel au
+  LLM à chaque affichage. Penser à la jouer sur une base locale créée avant cette
+  migration — `update.sh` s'en charge en prod, rien ne le fait en dev
 
 Le script `update.sh` exécute automatiquement toutes les migrations à chaque déploiement.
 Elles sont idempotentes grâce à `CREATE TABLE IF NOT EXISTS` — avec une réserve :
@@ -259,11 +351,18 @@ pnpm dev
 
 | Variable | Description | Défaut |
 |----------|-------------|--------|
-| `POSTGRES_URL` | URL de connexion PostgreSQL (OSM + DVF + cache synthèses) | - |
+| `POSTGRES_URL` | URL de connexion PostgreSQL (OSM + DVF + IRIS + caches LLM) | - |
 | `ATMO_USERNAME` | Email du compte Atmo France (optionnel) | - |
 | `ATMO_PASSWORD` | Mot de passe du compte Atmo France (optionnel) | - |
-| `MISTRAL_API_KEY` | Clé API Mistral pour la synthèse LLM. Sans elle, la card « Synthèse » n'apparaît pas | - |
-| `MISTRAL_MODEL` | Modèle Mistral à utiliser (optionnel) | `mistral-small-latest` |
+| `MISTRAL_API_KEY` | Clé API Mistral. Sans elle, les phrases « En bref » n'apparaissent simplement pas : cards et graphiques restent identiques | - |
+| `MISTRAL_MODEL` | Modèle à utiliser (optionnel) | `mistral-small-latest` |
+| `LLM_BASE_URL` | Base d'une API `/chat/completions` compatible OpenAI (autre fournisseur, modèle local) | `https://api.mistral.ai/v1` |
+| `LLM_API_KEY` | Clé de ce fournisseur ; retombe sur `MISTRAL_API_KEY` si absente | - |
+| `CARD_INSIGHTS_FIXTURE` | Phrases factices sans appel au LLM. `slow` ajoute 1,2 s de latence | - |
+| `COMMUNE_LEGENDS_FIXTURE` | Idem pour les légendes des pages `/commune/*`. À poser **au build** (pages prérendues) | - |
+| `DISABLE_CACHE` | Désactive tous les caches in-memory (`1`, `true`, `yes`) | - |
+| `NEXT_PUBLIC_DEBUG` | Données brutes Atmo dans la card, payload envoyé au modèle sous les cards — et **court-circuite le cache des mini-synthèses** | `false` |
+| `NEXT_PUBLIC_SITE_VARIANT` | Variante du site : `PUBLIC` (complet) ou `PRO` (voisinage + mobilité). Relu au démarrage seulement | `PUBLIC` |
 
 ## Sources de données — notes et accès
 
@@ -342,18 +441,27 @@ claireadresse/
 │   ├── import_iris.py       # Import INSEE IRIS (contours, démographie, revenus)
 │   ├── import_insee_iris.py # Enrichissement IRIS : logement, emploi, ménages
 │   ├── import_elections.py  # Import Présidentielle 2022 T1 (agrégation par commune)
+│   ├── import_municipales.py         # Import Municipales 2026 (T1 + T2)
+│   ├── import_crime.py               # Import délinquance SSMSI (commune + dept + France)
+│   ├── import_climate_stations.py    # Normales Météo-France 1991-2020 par station
+│   ├── import_atmo_*.py              # Indices ATMO annuels (Paris, Lyon, Marseille)
+│   ├── import_school_sectors_paris.py # Secteurs de collège (opendata.paris.fr)
 │   ├── requirements.txt     # Dépendances Python
 │   └── .env                 # Config PostgreSQL locale (non versionné)
 └── frontend/              # Next.js / React / MapLibre
     └── src/
-        ├── app/api/              # Routes API Next.js (analyze, narrative, search)
+        ├── app/
+        │   ├── api/              # Routes API Next.js (analyze, card-insights, search, health)
+        │   └── commune/[slug]/   # Pages SEO par arrondissement
         ├── components/
-        │   ├── map/              # Carte, couches WMS, toggles, contour communal
-        │   └── analysis/         # Cards d'analyse (Mobilité, Risques, Cadastre, Élections, Narrative, etc.)
+        │   ├── map/              # Carte, couches WMS, toggles, contour communal, époques anciennes
+        │   ├── commune/          # Sections des pages SEO /commune/*
+        │   └── analysis/         # Cards d'analyse (Mobilité, Risques, Sécurité, Élections, Histoire, etc.)
         ├── features/
-        │   ├── location-analysis/  # Hooks (useLocationAnalysis, useNarrative)
+        │   ├── location-analysis/  # Hooks (useLocationAnalysis, useCardInsights)
         │   └── analysis-pdf/       # Export PDF (react-pdf) — document, sections, capture carte
-        ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, summary, narrative
+        ├── lib/site-features.ts  # Drapeaux de features des variantes PUBLIC / PRO
+        ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, security, school-sector, commune-stats, summary, narrative
         ├── server-shared/
         │   ├── infrastructure/
         │   │   ├── database/     # Pool PostgreSQL + migrations SQL applicatives

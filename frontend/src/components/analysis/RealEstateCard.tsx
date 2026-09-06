@@ -18,7 +18,8 @@ export function RealEstateCard({ realEstate, children }: Props) {
       {children ? (
         <div className="card-map">
           <p className="card-map-hint">
-            Cliquez sur une surface colorée pour afficher le détail de la vente.
+            Cliquez sur une surface colorée pour afficher le détail de la vente. Zoomez ou
+            dézoomez pour les faire apparaître si nécessaire.
           </p>
           {children}
         </div>

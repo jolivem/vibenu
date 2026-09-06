@@ -2324,7 +2324,9 @@ html {
   opacity: 0.8;
 }
 
-.opacity-slider {
+/* Le dosage entre la vue actuelle et l'époque choisie : un curseur encadré par ses
+   deux pôles, qui disent ce qu'on voit en arrivant à chaque extrémité. */
+.era-blend {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2333,20 +2335,21 @@ html {
   color: var(--muted);
 }
 
-.opacity-slider input[type="range"] {
+.era-blend input[type="range"] {
   flex: 1;
   max-width: 220px;
   accent-color: var(--accent);
   cursor: pointer;
 }
 
-.opacity-slider.is-disabled {
+.era-blend.is-disabled {
   opacity: 0.5;
 }
 
-.opacity-slider-value {
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
+/* Les pôles ne se coupent pas : « Aujourd'hui » sur deux lignes déséquilibrerait le
+   curseur, et le pôle droit change de longueur à chaque époque. */
+.era-blend-pole {
+  white-space: nowrap;
 }
 
 /* Pages commune : les époques décrites en clair sous la carte. Contenu indexable, et la

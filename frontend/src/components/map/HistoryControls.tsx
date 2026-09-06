@@ -66,19 +66,38 @@ export function EraTimeline({ value, onChange, eras }: TimelineProps) {
   );
 }
 
-interface OpacityProps {
-  /** 0 à 100. */
+interface EraBlendProps {
+  /** 0 à 100 : la part de la vue ancienne dans le mélange. */
   value: number;
   onChange: (value: number) => void;
-  /** Désactivé quand aucune époque n'est affichée : il n'y a rien à faire varier. */
-  disabled?: boolean;
+  /** L'époque en cours, pour nommer le pôle droit. `null` = aucune, curseur inactif. */
+  era: HistoricalEra | null;
 }
 
-export function OpacitySlider({ value, onChange, disabled }: OpacityProps) {
+/**
+ * Le dosage entre la vue d'aujourd'hui et l'époque choisie.
+ *
+ * S'est longtemps appelé « Opacité », ce qui nommait le mécanisme — `raster-opacity` —
+ * et non le geste : le pourcentage n'avait pas de référent (60 % de quoi, vers quoi ?),
+ * et c'était le seul terme de logiciel graphique dans une card dont tout le reste est en
+ * langage courant. Les deux pôles répondent à la question sans qu'on ait à la poser :
+ * chaque extrémité dit ce qu'on voit en y arrivant.
+ *
+ * Le pourcentage disparaît donc de l'écran, mais pas de l'accessibilité : un curseur qui
+ * n'annoncerait que « 60 » à un lecteur d'écran ne dirait rien du tout, d'où le
+ * `aria-valuetext` qui le rattache à l'époque. Les pôles sont `aria-hidden` : ils
+ * seraient sinon lus en plus du nom du curseur, qui les reprend déjà.
+ */
+export function EraBlendSlider({ value, onChange, era }: EraBlendProps) {
+  // Sans époque il n'y a rien à mélanger. Le curseur reste affiché, inactif : le retirer
+  // ferait sauter la mise en page à chaque passage par « Aujourd'hui ».
+  const disabled = era === null;
+  const oldView = era ? era.shortLabel : "Vue ancienne";
+
   return (
-    <label className={disabled ? "opacity-slider is-disabled" : "opacity-slider"}>
-      <span className="opacity-slider-label">
-        Opacité <span className="opacity-slider-value">{value} %</span>
+    <label className={disabled ? "era-blend is-disabled" : "era-blend"}>
+      <span className="era-blend-pole" aria-hidden="true">
+        Aujourd&apos;hui
       </span>
       <input
         type="range"
@@ -87,10 +106,17 @@ export function OpacitySlider({ value, onChange, disabled }: OpacityProps) {
         step={5}
         value={value}
         disabled={disabled}
-        // Sans lui, le lecteur d'écran annonce « 60 », sans unité.
-        aria-valuetext={`${value} %`}
+        aria-label={
+          era
+            ? `Fondu entre la vue actuelle et ${era.label.toLowerCase()} ${era.period}`
+            : "Fondu entre la vue actuelle et la vue ancienne"
+        }
+        aria-valuetext={era ? `${era.period} à ${value} %` : `${value} %`}
         onChange={(event) => onChange(Number(event.target.value))}
       />
+      <span className="era-blend-pole" aria-hidden="true">
+        {oldView}
+      </span>
     </label>
   );
 }
