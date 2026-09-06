@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SECTION_ORDER, SECTION_TITLES, type SectionId } from "@/components/analysis/sections";
+import { FEATURES } from "@/lib/site-features";
 
 /**
  * La vitrine « Ce que vous découvrez » de la page d'accueil.
@@ -62,7 +63,8 @@ const CONTENT: Record<SectionId, FeatureContent> = {
     schemaLabel: "Transports en commun et gares",
   },
   environnement: {
-    // Soleil et nuage : les deux cards de la section, le climat et l'air.
+    // Soleil et nuage : les deux cards de la section quand la qualité de l'air est
+    // active. Sans elle, le nuage reste lisible comme un pictogramme météo.
     icon: (
       <>
         <circle cx="8" cy="7" r="2.8" />
@@ -70,9 +72,12 @@ const CONTENT: Record<SectionId, FeatureContent> = {
         <path d="M6 19h11a3 3 0 0 0 0-6h-.3a4.5 4.5 0 0 0-8.6-1.1A4 4 0 0 0 6 19z" />
       </>
     ),
-    blurb:
-      "Températures, précipitations et ensoleillement mois par mois, normales 1991-2020. Indice quotidien de qualité de l'air des derniers jours.",
-    schemaLabel: "Climat (normales Météo-France) et qualité de l'air",
+    blurb: FEATURES.showAirQuality
+      ? "Températures, précipitations et ensoleillement mois par mois, normales 1991-2020. Indice quotidien de qualité de l'air des derniers jours."
+      : "Températures, précipitations et ensoleillement mois par mois, normales 1991-2020.",
+    schemaLabel: FEATURES.showAirQuality
+      ? "Climat (normales Météo-France) et qualité de l'air"
+      : "Climat (normales Météo-France)",
   },
   securite: {
     icon: <path d="M12 3.2 19 6v5.4c0 4.2-2.9 7.4-7 9.4-4.1-2-7-5.2-7-9.4V6z" />,

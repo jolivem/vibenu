@@ -34,7 +34,6 @@ export function CommuneDemographicsSection({ stats, nomCourt, legendes }: Props)
   return (
     <section className="commune-section commune-section--alt" id="demographie">
       <div className="commune-section-head">
-        <span className="section-num">02</span>
         <h2 className="commune-section-title">
           Démographie &amp; <i>profil</i>
         </h2>

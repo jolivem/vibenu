@@ -1956,10 +1956,10 @@ html {
 /*
  * En-tête de zone d'une section — le périmètre que ses cards décrivent, nommé une fois.
  *
- * Ni card ni encadré : le texte se lit à la suite du titre de section. Lui donner un
- * fond et une bordure en ferait une cinquième card, en concurrence avec les quatre
- * qu'il chapeaute. Seule la carte porte un cadre : c'est elle qui a besoin d'être
- * délimitée, pas la phrase.
+ * Il porte `card` : posé nu au milieu d'une colonne de cards, il lisait comme un bloc
+ * inachevé. Sa ligne de titre reste plus discrète que les `h2` des cards qu'il chapeaute
+ * (1,15rem contre 1,6rem, et pas de vert d'accent) — il les introduit, il ne rivalise
+ * pas avec elles.
  *
  * Aucune marge de séparation à écrire : le bandeau est le premier enfant de
  * `.analysis-section-body`, il hérite donc du `gap` ci-dessus.
@@ -1990,40 +1990,6 @@ html {
 
 .section-scope .demographics-note {
   margin: 4px 0 0;
-}
-
-/*
- * Hors d'une card, la carte porte son propre cadre — même filet et même rayon que
- * `.card`, pour qu'elle appartienne visiblement à la même famille. Décalque de
- * `.commune-map-wrap`, y compris la neutralisation du décor propre de `.map-wrapper`.
- */
-.section-scope-map {
-  margin-top: 16px;
-  border-radius: 14px;
-  /* C'est lui qui rogne le canvas MapLibre et l'attribution sur les coins arrondis,
-     une fois le rayon de la tuile mis à zéro ci-dessous. */
-  overflow: hidden;
-  border: 0.5px solid var(--hairline-strong);
-}
-
-.section-scope-map .map-wrapper {
-  border: none;
-  padding: 0;
-  border-radius: 0;
-}
-
-/* Annule les 8px posés en style inline par `Map` : c'est le cadre qui porte le rayon,
-   et deux arrondis concentriques laisseraient voir un liseré de fond aux quatre coins. */
-.section-scope-map .map-container {
-  border-radius: 0 !important;
-}
-
-/* Le squelette du montage différé occupe la place de la carte dans un cadre déjà posé :
-   ni bordure ni rayon propres, seulement une valeur de fond. */
-.section-scope-map .lazy-map-skeleton {
-  border: none;
-  border-radius: 0;
-  background: var(--bg-alt);
 }
 
 /* Cartes thématiques en montage différé */

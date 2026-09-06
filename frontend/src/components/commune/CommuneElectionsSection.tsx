@@ -57,7 +57,6 @@ export function CommuneElectionsSection({ stats, legendes }: Props) {
   return (
     <section className="commune-section" id="elections">
       <div className="commune-section-head">
-        <span className="section-num">05</span>
         <h2 className="commune-section-title">
           Résultats <i>électoraux</i>
         </h2>

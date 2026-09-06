@@ -362,6 +362,7 @@ pnpm dev
 | `COMMUNE_LEGENDS_FIXTURE` | Idem pour les légendes des pages `/commune/*`. À poser **au build** (pages prérendues) | - |
 | `DISABLE_CACHE` | Désactive tous les caches in-memory (`1`, `true`, `yes`) | - |
 | `NEXT_PUBLIC_DEBUG` | Données brutes Atmo dans la card, payload envoyé au modèle sous les cards — et **court-circuite le cache des mini-synthèses** | `false` |
+| `NEXT_PUBLIC_HIDE_AIR_QUALITY` | Coupe la rubrique « Qualité de l'air » partout (card, pages `/commune/*`, PDF, landing). Le titre de section redevient « Climat » | - |
 | `NEXT_PUBLIC_SITE_VARIANT` | Variante du site : `PUBLIC` (complet) ou `PRO` (voisinage + mobilité). Relu au démarrage seulement | `PUBLIC` |
 
 ## Sources de données — notes et accès

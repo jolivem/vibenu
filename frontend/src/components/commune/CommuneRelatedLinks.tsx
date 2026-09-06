@@ -13,7 +13,6 @@ export function CommuneRelatedLinks({ commune }: Props) {
   return (
     <section className="commune-section commune-section--alt commune-related" id="autour">
       <div className="commune-section-head">
-        <span className="section-num">08</span>
         <h2 className="commune-section-title">
           À <i>proximité</i>
         </h2>

@@ -108,7 +108,6 @@ export async function CityHubPage({ city }: Props) {
 
       <section className="commune-section" id="liste">
         <div className="commune-section-head">
-          <span className="section-num">01</span>
           <h2 className="commune-section-title">
             Les <i>{cityDef.nbArrondissements} arrondissements</i>
           </h2>

@@ -27,7 +27,6 @@ export function CommuneHistorySection({ commune, contour }: Props) {
   return (
     <section className="commune-section commune-section--alt" id="histoire">
       <div className="commune-section-head">
-        <span className="section-num">06</span>
         <h2 className="commune-section-title">
           {commune.nomCourt} <i>autrefois</i>
         </h2>

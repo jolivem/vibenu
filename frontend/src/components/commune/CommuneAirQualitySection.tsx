@@ -5,6 +5,7 @@ import type {
 import { CITIES } from "@/lib/commune-slugs";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
+import { FEATURES } from "@/lib/site-features";
 
 interface Props {
   stats: CommuneStats;
@@ -57,13 +58,14 @@ function StackedBar({ year, height }: { year: AirQualityAtmoYear; height: number
 }
 
 export function CommuneAirQualitySection({ stats, legendes }: Props) {
+  if (!FEATURES.showAirQuality) return null;
+
   const cityDef = CITIES[stats.city];
 
   if (!stats.airQuality || stats.airQuality.historique.length === 0) {
     return (
       <section className="commune-section commune-section--alt" id="qualite-air">
         <div className="commune-section-head">
-          <span className="section-num">04</span>
           <h2 className="commune-section-title">
             Qualité de <i>l&apos;air</i>
           </h2>
@@ -82,7 +84,6 @@ export function CommuneAirQualitySection({ stats, legendes }: Props) {
   return (
     <section className="commune-section commune-section--alt" id="qualite-air">
       <div className="commune-section-head">
-        <span className="section-num">04</span>
         <h2 className="commune-section-title">
           Qualité de <i>l&apos;air</i>
         </h2>

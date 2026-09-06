@@ -132,10 +132,29 @@ export function buildSecurityChartModel(
     yTicks,
     x,
     y,
-    // Deux chiffres en abscisse : « 2016 » dix fois de suite se chevaucherait.
-    xLabels: annees.map((a) => String(a).slice(2)),
+    xLabels: yearLabels(annees),
     xTitles: annees.map(String),
   };
+}
+
+/**
+ * Abscisses : l'année complète aux deux extrémités, deux chiffres entre les deux.
+ *
+ * « 2016 » répété dix fois se chevaucherait — d'où l'abrégé au départ. Mais une rangée
+ * de « 16 17 18 … 25 » ne dit plus de quoi il s'agit : ce sont peut-être des âges, des
+ * rangs, des numéros de département. Les deux bornes écrites en clair suffisent à
+ * ancrer l'échelle, et le lecteur déduit le reste sans effort.
+ *
+ * La place existe aux extrémités et nulle part ailleurs : `BAND_HALF_WIDTH_RATIO`
+ * réserve un retrait de part et d'autre du tracé, si bien que le premier et le dernier
+ * point sont les seuls à n'avoir de voisin que d'un côté.
+ *
+ * Une seule année → elle est écrite en entier, l'abréger n'économiserait rien.
+ */
+function yearLabels(annees: number[]): string[] {
+  return annees.map((annee, i) =>
+    i === 0 || i === annees.length - 1 ? String(annee) : String(annee).slice(2),
+  );
 }
 
 /** Pas d'axe lisible : 1, 2, 5, 10… selon l'amplitude, pour 4 graduations. */

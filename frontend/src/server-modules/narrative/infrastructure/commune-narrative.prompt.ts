@@ -6,6 +6,7 @@ import type {
 } from "../domain/commune-narrative.types";
 import { COMMUNE_LEGEND_KEYS } from "../domain/commune-narrative.types";
 import { CITIES } from "@/lib/commune-slugs";
+import { FEATURES } from "@/lib/site-features";
 
 /**
  * Bump this version when the prompt changes.
@@ -108,7 +109,9 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
     })),
     surperformances_equipements: stats.highlights.surperformances,
     sousrepresentation_equipements: stats.highlights.sousrepresentations,
-    qualite_air_ville: stats.airQuality && stats.airQuality.historique.length > 0
+    // Coupé avec la rubrique : sans ce garde, l'éditorial « cadre_de_vie » continuerait
+    // de commenter un air dont la page ne montre plus rien.
+    qualite_air_ville: FEATURES.showAirQuality && stats.airQuality && stats.airQuality.historique.length > 0
       ? {
           note: `Indice ATMO agrégé pour ${cityDef.nomAffiche} entière — même valeur pour tous les arrondissements de la ville.`,
           source: cityDef.airSourceLabel,
@@ -157,16 +160,18 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
  * Les sections réellement rendues sur la page, donc les seules à légender.
  *
  * Réplique les gardes des composants : `CommuneEquipmentsSection` rend `null` sans
- * équipement, `CommuneAirQualitySection` bascule sur un message d'attente sans
- * historique, `CommuneElectionsSection` rend `null` sans scrutin ni candidat. Prix et
- * démographie sont toujours rendus.
+ * équipement, `CommuneAirQualitySection` rend `null` si la rubrique est coupée et
+ * bascule sur un message d'attente sans historique, `CommuneElectionsSection` rend
+ * `null` sans scrutin ni candidat. Prix et démographie sont toujours rendus.
  */
 function sectionsAffichees(input: CommuneNarrativeInput): CommuneLegendKey[] {
   const { stats } = input;
   const keys: CommuneLegendKey[] = ["legende_prix", "legende_demographie"];
 
   if (stats.equipements.some((e) => e.nb > 0)) keys.push("legende_equipements");
-  if (stats.airQuality && stats.airQuality.historique.length > 0) keys.push("legende_air");
+  if (FEATURES.showAirQuality && stats.airQuality && stats.airQuality.historique.length > 0) {
+    keys.push("legende_air");
+  }
   if (stats.elections && stats.elections.candidats.length > 0) keys.push("legende_elections");
 
   return keys;

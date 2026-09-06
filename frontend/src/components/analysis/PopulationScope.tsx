@@ -12,7 +12,7 @@ interface Props {
 }
 
 /**
- * En-tête de zone de la section Population.
+ * En-tête de zone de la section Population, rendu comme une card.
  *
  * Les quatre cards qui suivent — démographie, logement, emploi, ménages — décrivent
  * toutes le même périmètre : la requête localise un IRIS par son contour, puis joint
@@ -24,13 +24,19 @@ interface Props {
  * En mode commune il n'y a pas d'IRIS à montrer — celui que renvoie le serveur est celui
  * du centroïde, sans rapport avec l'étendue de la ville. Le bandeau se réduit alors à sa
  * ligne de texte, qui dit que tout ce qui suit porte sur la commune entière.
+ *
+ * Il a d'abord été rendu sans cadre, pour ne pas ajouter une cinquième card à celles
+ * qu'il chapeaute. À l'usage, l'inverse s'est vérifié : posé nu au milieu d'une colonne
+ * de cards, il lisait comme un élément inachevé plutôt que comme un en-tête. Il porte
+ * donc `card`, et sa carte passe en `card-map` — même filet haut, mêmes débords
+ * jusqu'aux bords que la carte des prix ou de la carte scolaire.
  */
 export function PopulationScope({ demographics, mode, children }: Props) {
   const { nomIris, nomCommune, codeIris, communeStats, communeIrisCount } = demographics;
 
   if (mode === "commune") {
     return (
-      <div className="section-scope">
+      <div className="card section-scope">
         <p className="section-scope-zone">
           <span className="section-scope-kicker">Commune :</span> {nomCommune || codeIris}
         </p>
@@ -47,7 +53,7 @@ export function PopulationScope({ demographics, mode, children }: Props) {
   const showCommune = communeIrisCount > 1 && communeStats !== null;
 
   return (
-    <div className="section-scope">
+    <div className="card section-scope">
       <p className="section-scope-zone">
         <span className="section-scope-kicker">Quartier :</span> {nomIris || codeIris}
         {nomCommune && <span className="section-scope-kicker"> — {nomCommune}</span>}
@@ -70,7 +76,7 @@ export function PopulationScope({ demographics, mode, children }: Props) {
 
       {children ? (
         <div
-          className="section-scope-map"
+          className="card-map"
           role="group"
           aria-label={`Limites du quartier ${nomIris || codeIris}`}
         >

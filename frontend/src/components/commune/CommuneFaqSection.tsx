@@ -112,7 +112,6 @@ export function CommuneFaqSection({ stats, nomCourt }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="commune-section-head">
-        <span className="section-num">07</span>
         <h2 className="commune-section-title">
           Questions <i>fréquentes</i>
         </h2>

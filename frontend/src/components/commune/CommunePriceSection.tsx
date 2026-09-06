@@ -26,7 +26,6 @@ export function CommunePriceSection({ stats, nomCourt, legendes }: Props) {
   return (
     <section className="commune-section" id="prix-immobilier">
       <div className="commune-section-head">
-        <span className="section-num">01</span>
         <h2 className="commune-section-title">
           Prix <i>immobilier</i>
         </h2>

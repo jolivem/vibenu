@@ -141,7 +141,31 @@ const PRO_FEATURES: SiteFeatures = {
   hasShareLinks: false, // usage professionnel : pas de partage « à des proches »
 };
 
-export const FEATURES: SiteFeatures = SITE_VARIANT === "PRO" ? PRO_FEATURES : PUBLIC_FEATURES;
+const VARIANT_FEATURES: SiteFeatures = SITE_VARIANT === "PRO" ? PRO_FEATURES : PUBLIC_FEATURES;
+
+/** Même convention que `DISABLE_CACHE` : `1`, `true` ou `yes`. */
+function isEnvTrue(value: string | undefined): boolean {
+  const v = value?.trim().toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
+/**
+ * Coupe-circuits d'env, appliqués **par-dessus** la variante.
+ *
+ * Ils ne peuvent que retirer une rubrique, jamais en ajouter une : une variante qui ne
+ * prévoit pas la qualité de l'air ne doit pas se la voir imposer par une variable
+ * d'environnement oubliée sur un serveur.
+ *
+ * `NEXT_PUBLIC_` est obligatoire : `FEATURES` est lu dans des composants client
+ * (`AnalysisScreen`, `SectionNav`), donc la valeur doit être inlinée au build. Elle
+ * n'est pas relue à chaud — `next dev` ne recharge pas les `NEXT_PUBLIC_*`, il faut
+ * redémarrer.
+ */
+export const FEATURES: SiteFeatures = {
+  ...VARIANT_FEATURES,
+  showAirQuality:
+    VARIANT_FEATURES.showAirQuality && !isEnvTrue(process.env.NEXT_PUBLIC_HIDE_AIR_QUALITY),
+};
 
 /**
  * Branding du site (nom, logo splitté, tagline, accroche hero).

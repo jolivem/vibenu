@@ -27,7 +27,6 @@ export function CommuneNarrativeSection({ content, nomCourt }: Props) {
   return (
     <section className="commune-section commune-section--alt" id="synthese">
       <div className="commune-section-head">
-        <span className="section-num">00</span>
         <h2 className="commune-section-title">
           Synthèse <i>{nomCourt}</i>
         </h2>
