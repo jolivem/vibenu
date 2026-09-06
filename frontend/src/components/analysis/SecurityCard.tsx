@@ -53,7 +53,7 @@ function SecurityIndicatorChart({
       />
       {conversion && (
         <p className="security-conversion">
-          Bande violette : {conversion.annees === annees.length ? "toutes les années" : `${conversion.annees} année${conversion.annees > 1 ? "s" : ""}`}{" "}
+          Bande verte : {conversion.annees === annees.length ? "toutes les années" : `${conversion.annees} année${conversion.annees > 1 ? "s" : ""}`}{" "}
           où le chiffre exact n&apos;est pas publié. Il s&apos;agit d&apos;<strong>1 à 4 faits</strong>{" "}
           dans l&apos;année, ce qui représente ici {formatRate(conversion.lo)} à{" "}
           {formatRate(conversion.hi)} — l&apos;échelle du graphe étant en ‰, pas en nombre de faits.

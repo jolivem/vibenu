@@ -2449,15 +2449,19 @@ html {
 /*
  * Bande d'incertitude : la valeur exacte est masquée mais encadrée.
  *
- * Teintée du violet de la série locale, et non d'un gris neutre : cette bande EST la
+ * Teintée du vert de la série locale, et non d'un gris neutre : cette bande EST la
  * valeur de la commune, simplement inconnue. Le gris la rangeait visuellement du côté
  * des repères département et France, alors qu'elle parle du lieu consulté.
+ *
+ * La valeur de repli double `LOCAL_SERIES_COLOR` de `components/analysis/chartColors.ts`
+ * — aucune variable n'est posée sur ces éléments, donc c'est elle qui s'applique
+ * toujours. Les deux se changent ensemble.
  *
  * Très pâle et sans bordure — c'est un « quelque part là-dedans », pas une mesure, et
  * elle ne doit jamais peser autant à l'œil qu'un point réellement publié.
  */
 .line-chart-band {
-  fill: var(--line-chart-band-color, #8b5cf6);
+  fill: var(--line-chart-band-color, #4B9319);
   opacity: 0.16;
 }
 
@@ -2467,7 +2471,7 @@ html {
   height: 10px;
   flex-shrink: 0;
   border-radius: 2px;
-  background: var(--line-chart-band-color, #8b5cf6);
+  background: var(--line-chart-band-color, #4B9319);
   opacity: 0.32;
 }
 

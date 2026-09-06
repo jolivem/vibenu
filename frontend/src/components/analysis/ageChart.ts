@@ -1,5 +1,6 @@
 import type { AgeDistributionDto } from "@/types/location-analysis";
 import { LINE_CHART_DIMENSIONS } from "./lineChart";
+import { LOCAL_SERIES_COLOR } from "./chartColors";
 
 export const AGE_BUCKETS: ReadonlyArray<{ label: string; key: keyof AgeDistributionDto }> = [
   { label: "0-14", key: "pct0_14" },
@@ -43,8 +44,8 @@ export function buildAgeChartModel(params: {
   const { iris, commune, france, showCommune, mainSeriesName = "Quartier" } = params;
 
   const series: AgeChartSeries[] = [
-    // Série principale : violet plein, trait épais, points larges
-    { name: mainSeriesName, color: "#8b5cf6", strokeWidth: 2.8, dotRadius: 4.5, opacity: 1, data: iris },
+    // Série principale : vert plein, trait épais, points larges
+    { name: mainSeriesName, color: LOCAL_SERIES_COLOR, strokeWidth: 2.8, dotRadius: 4.5, opacity: 1, data: iris },
   ];
   if (showCommune && commune) {
     series.push({ name: "Commune", color: "#a78060", strokeWidth: 1.4, dotRadius: 2.5, opacity: 0.65, data: commune });

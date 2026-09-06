@@ -1,6 +1,7 @@
 import { LINE_CHART_DIMENSIONS } from "./lineChart";
 import type { LineChartSeries } from "./LineChart";
 import type { AnalysisMode, DemographicsAnalysisDto, ScopedStatsDto } from "@/types/location-analysis";
+import { LOCAL_SERIES_COLOR } from "./chartColors";
 
 /**
  * Modèles des graphes de répartition de la rubrique Population.
@@ -14,8 +15,8 @@ import type { AnalysisMode, DemographicsAnalysisDto, ScopedStatsDto } from "@/ty
  * délinquance. `AgeChart` reste à part : il est antérieur et porte son propre rendu.
  */
 
-/** Le violet est « le lieu que vous consultez », dans toute la page. */
-export const LOCAL_COLOR = "#8b5cf6";
+/** Le vert est « le lieu que vous consultez », dans toute la page. */
+export const LOCAL_COLOR = LOCAL_SERIES_COLOR;
 const COMMUNE_COLOR = "#a78060";
 const FRANCE_COLOR = "#6b7280";
 
@@ -23,9 +24,9 @@ const FRANCE_COLOR = "#6b7280";
  * Palette des barres empilées — les catégories d'une partition.
  *
  * Volontairement disjointe des trois couleurs de séries ci-dessus : dans une courbe,
- * la couleur désigne une *échelle* (violet = le lieu consulté) ; dans une barre
+ * la couleur désigne une *échelle* (vert = le lieu consulté) ; dans une barre
  * empilée, elle désigne une *catégorie*, et les échelles sont les lignes. Réutiliser
- * le violet ferait cohabiter deux significations à quelques pixels d'écart.
+ * le vert ferait cohabiter deux significations à quelques pixels d'écart.
  *
  * Quatre teintes, assignées dans un ordre fixe et jamais recyclées, validées pour les
  * trois formes de daltonisme et pour le contraste sur fond de card (écart minimal

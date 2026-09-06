@@ -1,13 +1,14 @@
 import type { SecurityIndicatorDto } from "@/types/location-analysis";
 import { BAND_HALF_WIDTH_RATIO, LINE_CHART_DIMENSIONS } from "./lineChart";
 import type { LineChartBand, LineChartSeries } from "./LineChart";
+import { LOCAL_SERIES_COLOR } from "./chartColors";
 
 /**
- * Couleur de la série communale — le même violet que la série principale des graphes
- * d'âge et de climat. « La courbe violette est celle qui vous concerne » vaut pour
- * toute la page.
+ * Couleur de la série communale — la même que la série principale des graphes d'âge et
+ * de climat, définie une fois dans `chartColors.ts`. « La courbe verte est celle qui
+ * vous concerne » vaut pour toute la page.
  */
-export const LOCAL_SERIES_COLOR = "#8b5cf6";
+export { LOCAL_SERIES_COLOR };
 
 /** Repères, dans les teintes désaturées déjà employées par le graphe climatique. */
 const DEPARTEMENT_COLOR = "#7c8ba1";

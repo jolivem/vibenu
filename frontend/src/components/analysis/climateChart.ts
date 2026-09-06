@@ -1,5 +1,6 @@
 import type { ClimateMonthlySeriesDto } from "@/types/location-analysis";
 import { LINE_CHART_DIMENSIONS } from "./lineChart";
+import { LOCAL_SERIES_COLOR } from "./chartColors";
 
 export const MONTH_LABELS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"] as const;
 
@@ -49,24 +50,42 @@ export const CLIMATE_METRICS: ReadonlyArray<{
  * obligeait à une pastille de légende en dégradé, signe que l'encodage était faux : la
  * mesure est déjà nommée par le titre du graphe.
  *
- * Ce violet est celui de la série principale du graphe de répartition par âge
- * (ageChart.ts) : « la courbe violette est celle qui me concerne » vaut ainsi pour
- * toute la page.
+ * C'est la couleur de la série principale de tous les graphes de la page
+ * (`chartColors.ts`) : « la courbe verte est celle qui me concerne » vaut partout.
  */
-export const LOCAL_SERIES_COLOR = "#8b5cf6";
+export { LOCAL_SERIES_COLOR };
 
 /**
  * Teintes des villes de référence, **fixes d'un graphe à l'autre** : la légende
  * s'apprend une fois et vaut pour les trois graphes. Volontairement désaturées, pour
  * rester des repères et ne pas concurrencer la série locale.
+ *
+ * Chaque teinte dit le climat qu'elle représente, ce qui donne une légende qu'on n'a
+ * presque pas besoin de lire : bleu pour le continental de Strasbourg, rouge pour le
+ * méditerranéen de Marseille, gris pour l'océanique tempéré de La Rochelle.
+ *
+ * ⚠️ Le rouge et le vert de la série locale se ressemblent en vision deutéranope. Ce
+ * qui les sépare tient au tracé bien plus qu'à la teinte : la série locale est deux fois
+ * plus épaisse (2,8 contre 1,4), à pleine opacité contre 0,75, avec des points deux fois
+ * plus larges. La clarté ajoute une marge — le rouge est à L* 61, le vert à 54,5.
+ *
+ * Cette marge disparaît entre L* 52 et 57, où le rouge aurait exactement la clarté du
+ * vert : c'est la zone à ne pas viser en ajustant la teinte. Sous ~50 ou au-dessus de
+ * ~59, l'écart est rétabli. Et ne pas uniformiser les épaisseurs de trait « pour faire
+ * propre » sans reprendre les couleurs : c'est là que se joue l'essentiel.
  */
 export const REFERENCE_COLORS: Record<string, string> = {
-  Strasbourg: "#7c8ba1",
-  Marseille: "#b08968",
-  "La Rochelle": "#86a789",
+  Strasbourg: "#3F6EA3",
+  Marseille: "#CB7F76",
+  "La Rochelle": "#6B7280",
 };
 
-const FALLBACK_REFERENCE_COLOR = "#9ca3af";
+/**
+ * Pour une ville de référence hors de la table — cas qui ne se produit qu'après un ajout
+ * dans `REFERENCE_CLIMATES`. Volontairement plus clair que le gris de La Rochelle, pour
+ * qu'un oubli se voie au lieu de passer pour elle.
+ */
+const FALLBACK_REFERENCE_COLOR = "#9CA3AF";
 
 export interface ClimateChartSeries {
   name: string;
