@@ -1614,9 +1614,20 @@ html {
   }
 }
 
-/* Sur les pages commune, la phrase se pose sur les fonds alternés des sections. */
+/*
+ * Sur les pages commune, la phrase se pose sur les fonds alternés des sections.
+ *
+ * Elle doit se centrer comme ses voisines : dans une `.commune-section` en pleine
+ * largeur, chaque bloc pose lui-même sa colonne (`max-width` + marges automatiques).
+ * Une largeur maximale seule ne centre rien — la légende se calait alors sur le bord
+ * gauche de la section, désalignée du titre qu'elle suit et de la carte qu'elle
+ * commente. Les marges gauche et droite sont posées en longhand pour ne pas écraser
+ * le rythme vertical de `.card-insight` (2px au-dessus, 18px en dessous).
+ */
 .commune-legend {
-  max-width: 68ch;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .card-insight-debug {

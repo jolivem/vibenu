@@ -28,16 +28,28 @@ const FRANCE_COLOR = "#6b7280";
  * empilée, elle désigne une *catégorie*, et les échelles sont les lignes. Réutiliser
  * le vert ferait cohabiter deux significations à quelques pixels d'écart.
  *
- * Quatre teintes, assignées dans un ordre fixe et jamais recyclées, validées pour les
- * trois formes de daltonisme et pour le contraste sur fond de card (écart minimal
- * ΔE 11,3 en vision déficiente, 15,5 en vision normale).
+ * Quatre teintes, assignées dans un ordre fixe et jamais recyclées. Ce sont les mêmes
+ * que les précédentes éclaircies d'un quart vers le blanc — mêmes tons, moins de
+ * saturation : ce qui distingue les segments est leur teinte, et elle est intacte.
+ *
+ * Mesuré (CIEDE2000, dichromatismes simulés par les matrices de Machado 2009) :
+ * l'écart minimal entre deux segments reste de 12,0 dans le pire des trois
+ * daltonismes, contre 12,6 avant éclaircissement — la lecture ne perd rien.
+ *
+ * ⚠️ Ce que l'éclaircissement coûte est ailleurs : le contraste d'un segment avec la
+ * piste de la barre (`--hairline`) passe de 3,04 à 2,21, sous le seuil WCAG de 3:1
+ * pour un objet graphique. Autrement dit, on distingue toujours les segments les uns
+ * des autres, mais la fin de la barre se détache moins de son fond. Éclaircir la piste
+ * pour compenser ne marche pas — je l'ai vérifié, ça rapproche les deux valeurs au
+ * lieu de les écarter. Le rattrapage, si on le veut, est un filet sombre en `inset`
+ * sur `.stacked-bar-seg`, qui porte la limite indépendamment du remplissage.
  *
  * Un cinquième segment n'obtient pas une cinquième couleur : les résidus (« autres
  * ménages ») sortent de l'espace chromatique et passent par une texture — aucun gris
  * ne se sépare proprement du teal, et un reste n'est de toute façon pas une catégorie
  * comme les autres.
  */
-export const STACK_COLORS = ["#1d4ed8", "#0d9488", "#ea580c", "#be123c"] as const;
+export const STACK_COLORS = ["#567AE2", "#4AAFA6", "#EF8249", "#CE4D6D"] as const;
 
 export interface InseeView<T> {
   scoped: ScopedStatsDto<T>;
