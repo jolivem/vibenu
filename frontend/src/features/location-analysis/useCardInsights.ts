@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { backendApi } from "@/lib/api/backend-api";
-import type { CardInsights, LocationAnalysisDto } from "@/types/location-analysis";
+import type { CardInsights, LocationAnalysisDto, SecurityRating } from "@/types/location-analysis";
 
 /**
  * Charge les mini-synthèses une fois l'analyse arrivée.
@@ -15,9 +15,16 @@ import type { CardInsights, LocationAnalysisDto } from "@/types/location-analysi
  * génération ratée laisse `insights` vide, et la page est celle d'avant la
  * fonctionnalité — un objet vide plutôt que `null`, pour que les sept sites d'appel
  * puissent y accéder sans garde.
+ *
+ * Le même appel rend la note de sécurité du bandeau de chiffres clés. Elle arrive donc
+ * après les autres tuiles, qui sont tirées du DTO d'analyse : la tuile « Sécurité »
+ * s'insère à sa place dans la rangée quand la réponse arrive.
  */
 export function useCardInsights(data: LocationAnalysisDto | null, citycode?: string) {
   const [insights, setInsights] = useState<CardInsights>({});
+  /** `undefined` tant que l'appel n'a pas rendu, et définitivement si le modèle n'a pas
+   *  produit de note exploitable : la tuile du bandeau n'apparaît alors pas. */
+  const [securityRating, setSecurityRating] = useState<SecurityRating | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [debugInput, setDebugInput] = useState<unknown>(undefined);
 
@@ -32,6 +39,7 @@ export function useCardInsights(data: LocationAnalysisDto | null, citycode?: str
       .then((result) => {
         if (cancelled) return;
         setInsights(result.insights);
+        setSecurityRating(result.securityRating);
         setDebugInput(result.debugInput);
       })
       .catch((err) => {
@@ -46,5 +54,5 @@ export function useCardInsights(data: LocationAnalysisDto | null, citycode?: str
     };
   }, [data, citycode]);
 
-  return { insights, isLoading, debugInput };
+  return { insights, securityRating, isLoading, debugInput };
 }

@@ -8,6 +8,9 @@
  * Cette liste est la source unique : le type, le format de sortie du prompt, le parseur
  * et le cache en dérivent tous. Ajouter une card revient à ajouter une entrée ici, puis
  * à laisser le compilateur désigner les endroits à compléter.
+ *
+ * Le même appel rend aussi une note de sécurité (`SecurityRating`), affichée dans le
+ * bandeau de chiffres clés — un mot, là où les autres tuiles portent un nombre.
  */
 
 export const CARD_INSIGHT_KEYS = [
@@ -29,8 +32,49 @@ export type CardInsightKey = (typeof CARD_INSIGHT_KEYS)[number];
  */
 export type CardInsights = Partial<Record<CardInsightKey, string>>;
 
-export interface CardInsightsDto {
+/**
+ * Échelle de la note de sécurité, demandée au modèle dans le même appel que les phrases.
+ *
+ * Rupture assumée avec le principe « on calcule, le modèle verbalise » qui régit tout le
+ * reste du module : ici le classement lui-même vient du modèle. Le prompt ancre donc
+ * chaque cran sur les écarts déjà calculés (`ecart_vs_departement_pct`,
+ * `ecart_vs_france_pct`, `tendance_10ans`) pour que la note reste reproductible d'un
+ * appel à l'autre, et le parseur refuse toute valeur hors de cette liste.
+ *
+ * La note qualifie le lieu **par rapport à ses repères** (département, France), jamais
+ * dans l'absolu : « mauvais » veut dire « nettement au-dessus de ses repères », pas
+ * « dangereux ».
+ */
+export const SECURITY_RATINGS = ["excellent", "bon", "moyen", "mediocre", "mauvais"] as const;
+
+export type SecurityRating = (typeof SECURITY_RATINGS)[number];
+
+/** Libellés affichés. Les valeurs restent sans accent : ce sont des clés de protocole. */
+export const SECURITY_RATING_LABELS: Record<SecurityRating, string> = {
+  excellent: "Excellent",
+  bon: "Bon",
+  moyen: "Moyen",
+  mediocre: "Médiocre",
+  mauvais: "Mauvais",
+};
+
+/**
+ * Ce qu'un appel au modèle produit, et ce que le cache Postgres stocke tel quel.
+ *
+ * Le passage de `CardInsights` nu à cet objet enveloppe change la forme de la colonne
+ * `content` : c'est pour cela que `CARD_INSIGHTS_PROMPT_VERSION` est passée à 2. Les
+ * lignes de la version 1 ne sont plus servies, donc aucune migration n'est nécessaire.
+ */
+export interface CardInsightsPayload {
   insights: CardInsights;
+  /**
+   * Absente si la card « Sécurité » n'est pas rendue, ou si le modèle n'a pas répondu
+   * une valeur de l'échelle. La tuile de sécurité disparaît alors du bandeau.
+   */
+  securityRating?: SecurityRating;
+}
+
+export interface CardInsightsDto extends CardInsightsPayload {
   generatedAt: string;
   cached: boolean;
   /**

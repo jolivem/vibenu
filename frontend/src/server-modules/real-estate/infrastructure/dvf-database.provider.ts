@@ -1,6 +1,5 @@
 import type { RealEstateProvider } from "./real-estate.provider";
 import type { DvfTransactionFeature } from "../domain/real-estate.types";
-import type { ConfidenceLevel, PriceLevel } from "../../../server-shared/domain/common.types";
 import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 
@@ -20,8 +19,6 @@ interface DvfRow {
 
 interface DvfResult {
   nearbyTransactionsCount: number;
-  priceLevel: PriceLevel;
-  confidence: ConfidenceLevel;
   medianPricePerSquareMeter: number;
   transactionFeatures: DvfTransactionFeature[];
 }
@@ -163,18 +160,8 @@ export class DvfDatabaseProvider implements RealEstateProvider {
     pricesPerSqm.sort((a, b) => a - b);
     const median = pricesPerSqm[Math.floor(pricesPerSqm.length / 2)];
 
-    let priceLevel: PriceLevel = "moyen";
-    if (median < 2500) priceLevel = "faible";
-    else if (median > 5000) priceLevel = "élevé";
-
-    let confidence: ConfidenceLevel = "faible";
-    if (pricesPerSqm.length >= 10) confidence = "moyenne";
-    if (pricesPerSqm.length >= 50) confidence = "élevée";
-
     return {
       nearbyTransactionsCount: pricesPerSqm.length,
-      priceLevel,
-      confidence,
       medianPricePerSquareMeter: Math.round(median),
       transactionFeatures: features.slice(0, 50),
     };
@@ -197,8 +184,6 @@ export class DvfDatabaseProvider implements RealEstateProvider {
   private getFallbackData(): DvfResult {
     return {
       nearbyTransactionsCount: 0,
-      priceLevel: "moyen",
-      confidence: "faible",
       medianPricePerSquareMeter: 0,
       transactionFeatures: [],
     };

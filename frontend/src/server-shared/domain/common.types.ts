@@ -6,5 +6,3 @@ export interface Coordinates {
 export type RiskLevel = "faible" | "modéré" | "élevé";
 export type RiskCategoryLevel = "absent" | "faible" | "modéré" | "élevé";
 export type MobilityLabel = "faible" | "correct" | "bon" | "très bon" | "excellent";
-export type PriceLevel = "faible" | "moyen" | "élevé";
-export type ConfidenceLevel = "faible" | "moyenne" | "élevée";

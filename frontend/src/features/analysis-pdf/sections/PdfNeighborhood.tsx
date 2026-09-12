@@ -1,4 +1,5 @@
 import { Text, View } from "@react-pdf/renderer";
+import { formatDistance } from "@/lib/format";
 import type { NeighborhoodAnalysisDto } from "@/types/location-analysis";
 import { pdfStyles } from "../pdfStyles";
 
@@ -36,10 +37,6 @@ function groupByCategory(pois: NeighborhoodAnalysisDto["pois"]) {
     groups[key].push(poi);
   }
   return groups;
-}
-
-function formatDistance(meters: number): string {
-  return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${meters} m`;
 }
 
 // Vitesse de marche moyenne ≈ 4,5 km/h (75 m/min)

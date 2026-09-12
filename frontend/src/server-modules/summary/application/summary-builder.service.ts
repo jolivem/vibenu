@@ -2,6 +2,9 @@ import type { SummaryService } from "./summary.service";
 import type { SummaryInput } from "../domain/summary.types";
 import type { SummaryDto } from "../../../server-shared/types/location-analysis.dto";
 
+/** En dessous, la médiane DVF locale repose sur trop peu de ventes pour servir de repère. */
+const MIN_TRANSACTIONS_LISIBLES = 10;
+
 export class SummaryBuilderService implements SummaryService {
   build(input: SummaryInput): SummaryDto {
     const strengths: string[] = [];
@@ -26,7 +29,7 @@ export class SummaryBuilderService implements SummaryService {
     }
 
     // Immobilier
-    if (input.realEstateConfidence === "élevée" || input.realEstateConfidence === "moyenne") {
+    if ((input.realEstateTransactionsCount ?? 0) >= MIN_TRANSACTIONS_LISIBLES) {
       strengths.push("Contexte immobilier local relativement lisible");
     } else {
       warnings.push("Peu de repères immobiliers exploitables dans la zone proche");

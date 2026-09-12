@@ -1,4 +1,4 @@
-import type { CardInsights } from "@/server-shared/types/card-insights";
+import type { CardInsights, SecurityRating } from "@/server-shared/types/card-insights";
 
 /**
  * Jeu de synthèses factices, activé par CARD_INSIGHTS_FIXTURE.
@@ -22,3 +22,11 @@ export const CARD_INSIGHTS_FIXTURE: CardInsights = {
   elections: "La participation a dépassé de trois points la moyenne nationale. Le vote s'est porté nettement plus à gauche qu'en France, l'écart le plus marqué atteignant une quinzaine de points.",
   climat: "Le climat est proche de celui de Rennes : des hivers doux, un mois de juillet qui culmine autour de 19 °C et une amplitude annuelle modérée. Les précipitations, réparties sur toute l'année, sont un peu supérieures à celles des villes de référence les plus sèches, avec un maximum en novembre et un minimum estival marqué.",
 };
+
+/**
+ * Note de sécurité factice, rendue avec les phrases ci-dessus.
+ *
+ * "mediocre" plutôt qu'une valeur flatteuse : c'est le cran au libellé le plus long
+ * (« Médiocre ») et le seul accentué, donc celui qui éprouve la tuile du bandeau.
+ */
+export const CARD_INSIGHTS_FIXTURE_SECURITY_RATING: SecurityRating = "mediocre";

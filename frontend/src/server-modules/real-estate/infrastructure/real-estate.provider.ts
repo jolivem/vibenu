@@ -1,10 +1,7 @@
-import type { ConfidenceLevel, PriceLevel } from "../../../server-shared/domain/common.types";
 import type { DvfTransactionFeature } from "../domain/real-estate.types";
 
 export interface RealEstateMarketData {
   nearbyTransactionsCount?: number;
-  priceLevel?: PriceLevel;
-  confidence?: ConfidenceLevel;
   medianPricePerSquareMeter?: number;
   transactionFeatures?: DvfTransactionFeature[];
 }

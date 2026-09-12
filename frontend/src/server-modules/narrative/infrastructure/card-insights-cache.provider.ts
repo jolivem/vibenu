@@ -1,6 +1,6 @@
 import { isCacheDisabled } from "@/server-shared/infrastructure/cache/in-memory-cache";
 import { query } from "@/server-shared/infrastructure/database/postgres";
-import type { CardInsights } from "@/server-shared/types/card-insights";
+import type { CardInsightsPayload } from "@/server-shared/types/card-insights";
 import type { AnalysisMode } from "@/server-shared/types/location-analysis.dto";
 import { CARD_INSIGHTS_PROMPT_VERSION } from "./card-insights.prompt";
 
@@ -12,12 +12,12 @@ import { CARD_INSIGHTS_PROMPT_VERSION } from "./card-insights.prompt";
 const TTL_MS = 90 * 24 * 60 * 60 * 1000;
 
 interface CacheRow {
-  content: CardInsights | string;
+  content: CardInsightsPayload | string;
   generated_at: Date | string;
 }
 
 export interface CachedCardInsights {
-  insights: CardInsights;
+  payload: CardInsightsPayload;
   generatedAt: string;
 }
 
@@ -47,10 +47,20 @@ export class CardInsightsCacheProvider {
 
       if (Date.now() - new Date(generatedAt).getTime() > TTL_MS) return null;
 
-      const insights =
-        typeof row.content === "string" ? (JSON.parse(row.content) as CardInsights) : row.content;
+      const payload =
+        typeof row.content === "string"
+          ? (JSON.parse(row.content) as CardInsightsPayload)
+          : row.content;
 
-      return { insights, generatedAt };
+      // La version 2 enveloppe les phrases dans `{ insights, securityRating }` ; la
+      // version 1 stockait les phrases nues. Les deux ne se croisent pas — `version`
+      // est dans la clé primaire — mais une ligne éditée à la main, elle, se croise :
+      // mieux vaut la traiter en miss que rendre `insights: undefined` au client.
+      if (!payload || typeof payload.insights !== "object" || payload.insights === null) {
+        return null;
+      }
+
+      return { payload, generatedAt };
     } catch (err) {
       console.warn("[card-insights] cache read failed:", err);
       return null;
@@ -61,7 +71,7 @@ export class CardInsightsCacheProvider {
     geoKey: string,
     mode: AnalysisMode,
     model: string,
-    insights: CardInsights,
+    payload: CardInsightsPayload,
   ): Promise<void> {
     if (isCacheDisabled()) return;
 
@@ -71,7 +81,7 @@ export class CardInsightsCacheProvider {
               VALUES ($1, $2, $3, $4, $5::jsonb, NOW())
          ON CONFLICT (geo_key, mode, model, version)
          DO UPDATE SET content = EXCLUDED.content, generated_at = EXCLUDED.generated_at`,
-        [geoKey, mode, model, CARD_INSIGHTS_PROMPT_VERSION, JSON.stringify(insights)],
+        [geoKey, mode, model, CARD_INSIGHTS_PROMPT_VERSION, JSON.stringify(payload)],
       );
     } catch (err) {
       console.warn("[card-insights] cache write failed:", err);

@@ -8,8 +8,13 @@
  * compile pas, et le bloc du prompt comme la validation en découlent.
  */
 
-import type { CardInsightKey, CardInsights } from "@/server-shared/types/card-insights";
-import { CARD_INSIGHT_KEYS } from "@/server-shared/types/card-insights";
+import type {
+  CardInsightKey,
+  CardInsights,
+  CardInsightsPayload,
+  SecurityRating,
+} from "@/server-shared/types/card-insights";
+import { CARD_INSIGHT_KEYS, SECURITY_RATINGS } from "@/server-shared/types/card-insights";
 import type { CardInsightsInput } from "../domain/card-insights.types";
 
 /**
@@ -17,7 +22,7 @@ import type { CardInsightsInput } from "../domain/card-insights.types";
  * elle fait partie de la clé primaire du cache, donc les entrées d'une version
  * antérieure cessent d'être servies sans qu'il y ait rien à supprimer.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 1;
+export const CARD_INSIGHTS_PROMPT_VERSION = 2;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
@@ -97,9 +102,20 @@ LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
 CLÉS À PRODUIRE
 Le champ "cles_attendues" du JSON d'entrée liste les sections effectivement affichées. Tu produis EXACTEMENT ces clés, ni plus ni moins. Une clé non listée ne doit pas apparaître dans ta réponse.
 
+NOTE DE SÉCURITÉ — champ "securite_note"
+Si et seulement si "securite" figure dans "cles_attendues", ajoute au JSON un champ "securite_note" valant EXACTEMENT l'une de ces cinq chaînes : ${SECURITY_RATINGS.map((r) => `"${r}"`).join(", ")}.
+Elle situe le lieu PAR RAPPORT À SES REPÈRES, jamais dans l'absolu : elle ne dit pas si un lieu est dangereux, mais comment il se place face à son département et à la France. Fonde-la sur les champs déjà calculés "ecart_vs_departement_pct", "ecart_vs_france_pct" et "tendance_10ans", en pesant d'abord les indicateurs aux taux les plus élevés — ce sont eux qui font le quotidien du lieu.
+- "excellent" : sous les deux repères de plus de 25 %, sans hausse marquée sur dix ans.
+- "bon" : sous les repères, ou proche d'eux avec une baisse nette sur dix ans.
+- "moyen" : à moins de 15 % des repères, sans tendance nette.
+- "mediocre" : au-dessus des repères, ou proche d'eux avec une hausse nette sur dix ans.
+- "mauvais" : au-dessus des deux repères de plus de 25 %, sans baisse marquée sur dix ans.
+Quand les indicateurs se contredisent, tranche sur les plus fréquents et retiens "moyen" faute de tendance claire. La note ne doit jamais contredire la phrase "securite".
+
 FORMAT DE SORTIE (JSON OBLIGATOIRE, RIEN D'AUTRE) :
 {
 ${OUTPUT_BLOCK}
+  "securite_note": "…"   // uniquement si "securite" est demandée — une des cinq valeurs ci-dessus
 }
 
 Réponds uniquement avec le JSON, sans préambule ni commentaire.`;
@@ -126,12 +142,14 @@ export function buildCardInsightsUserPrompt(
  * les quatre sections forment un texte éditorial solidaire ; ici chaque phrase vit sous
  * sa propre card. Une clé absente, vide, non-textuelle ou hors bornes est simplement
  * ignorée — sa card s'affichera sans synthèse, ce qui est un état normal de la page.
- * On ne lève que si rien n'est exploitable, auquel cas l'appelant dégrade en silence.
+ * On ne lève que si aucune PHRASE n'est exploitable, auquel cas l'appelant dégrade en
+ * silence. Une note de sécurité seule ne sauve pas la réponse : c'est un complément de
+ * la card, pas un produit qui se tiendrait sans elle.
  */
 export function parseCardInsightsJson(
   raw: string,
   expected: readonly CardInsightKey[],
-): CardInsights {
+): CardInsightsPayload {
   const start = raw.indexOf("{");
   const end = raw.lastIndexOf("}");
   if (start === -1 || end <= start) {
@@ -154,5 +172,30 @@ export function parseCardInsightsJson(
   if (Object.keys(out).length === 0) {
     throw new Error("Aucune synthèse exploitable dans la réponse LLM.");
   }
-  return out;
+
+  return {
+    insights: out,
+    // Pas de note sans sa card : `expected` commande ici comme pour les phrases.
+    ...(expected.includes("securite")
+      ? { securityRating: parseSecurityRating(parsed["securite_note"]) }
+      : {}),
+  };
+}
+
+/**
+ * Ramène la note du modèle sur l'échelle, ou rend `undefined`.
+ *
+ * Tolère l'accent et la casse — un modèle à qui l'on demande "mediocre" répond parfois
+ * « Médiocre » — mais rien au-delà : une valeur inventée (« correct », « très bon »)
+ * est rejetée plutôt que rapprochée d'un cran au hasard, et la tuile disparaît. Mieux
+ * vaut pas de note qu'une note qui ne veut pas dire ce qu'elle affiche.
+ */
+function parseSecurityRating(value: unknown): SecurityRating | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  return SECURITY_RATINGS.find((rating) => rating === normalized);
 }

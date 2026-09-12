@@ -11,7 +11,7 @@ import { LazyMap } from "@/components/map/LazyMap";
 import { THEMATIC_BASEMAP } from "@/components/map/basemaps";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
 import { RisksCard } from "@/components/analysis/RisksCard";
-import { AirQualityCard, LEVEL_CONFIG as AIR_QUALITY_LEVELS } from "@/components/analysis/AirQualityCard";
+import { AirQualityCard } from "@/components/analysis/AirQualityCard";
 import { RealEstateCard } from "@/components/analysis/RealEstateCard";
 import { CadastreCard } from "@/components/analysis/CadastreCard";
 import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
@@ -27,10 +27,10 @@ import { SchoolSectorCard } from "@/components/analysis/SchoolSectorCard";
 import { SecurityCard } from "@/components/analysis/SecurityCard";
 import { MunicipalesCard } from "@/components/analysis/MunicipalesCard";
 import { KeyFigures, type KeyFigure } from "@/components/analysis/KeyFigures";
+import { SECURITY_RATING_LABELS } from "@/types/location-analysis";
 import { SectionNav } from "@/components/analysis/SectionNav";
 import { ShareLinks } from "@/components/analysis/ShareLinks";
 import { SECTION_ORDER, SECTION_TITLES, type SectionId } from "@/components/analysis/sections";
-import { formatRevenu } from "@/components/analysis/demographicsFormat";
 import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
 import { Brand } from "@/components/Brand";
 import { formatFr } from "@/lib/format";
@@ -111,7 +111,7 @@ export function AnalysisScreen() {
   // En PRO, on ne demande aucune synthèse : les sept cards concernées y sont toutes
   // désactivées, l'appel au modèle serait payé pour rien.
   const insightsInput = FEATURES.showCardInsights ? data ?? null : null;
-  const { insights, debugInput: insightsDebug } = useCardInsights(insightsInput, citycode);
+  const { insights, securityRating, debugInput: insightsDebug } = useCardInsights(insightsInput, citycode);
 
   // Le PDF ne capture qu'une carte : celle de localisation, la seule montée d'emblée.
   // Les trois cartes thématiques sont en montage différé — leur canvas peut ne pas exister.
@@ -175,9 +175,10 @@ export function AnalysisScreen() {
     [hasContent],
   );
 
-  /** Une tuile par section, chacune ancrant vers la sienne : le bandeau est un miroir du
-   *  sommaire. Une section sans chiffre disponible n'a pas de tuile, et le bandeau se
-   *  resserre — il ne reste pas de trou. */
+  /** Une tuile par section, chacune ancrant vers la sienne. Le bandeau ne reprend plus
+   *  tout le sommaire : « Environnement » (qualité de l'air), « Risques » et
+   *  « Population » en sont volontairement absents. Une section sans chiffre disponible
+   *  n'a pas de tuile non plus, et le bandeau se resserre — il ne reste pas de trou. */
   const keyFigures = useMemo<KeyFigure[]>(() => {
     if (!data) return [];
 
@@ -209,32 +210,20 @@ export function AnalysisScreen() {
       };
     }
 
-    if (data.airQuality.available && data.airQuality.level) {
-      figures.environnement = {
-        section: "environnement",
-        label: "Qualité de l'air",
-        value: AIR_QUALITY_LEVELS[data.airQuality.level].label,
-      };
-    }
-
-    figures.risques = {
-      section: "risques",
-      label: "Risques",
-      value: capitalizeFirst(data.risks.level),
-    };
-
-    if (data.demographics?.revenuMedian != null) {
-      figures.population = {
-        section: "population",
-        label: "Revenu médian",
-        value: formatRevenu(data.demographics.revenuMedian),
+    // Seule tuile dont la valeur vient du modèle et non du DTO : elle s'insère donc
+    // dans la rangée au second aller-retour, quand la note arrive.
+    if (securityRating) {
+      figures.securite = {
+        section: "securite",
+        label: "Sécurité",
+        value: SECURITY_RATING_LABELS[securityRating],
       };
     }
 
     return activeSections
       .map((id) => figures[id])
       .filter((figure): figure is KeyFigure => figure !== undefined);
-  }, [data, activeSections]);
+  }, [data, activeSections, securityRating]);
 
   return (
     <main className="analysis-layout">

@@ -1,3 +1,4 @@
+import { formatDistance } from "@/lib/format";
 import type { NeighborhoodAnalysisDto } from "@/types/location-analysis";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -57,11 +58,6 @@ function groupByCategory(pois: NeighborhoodAnalysisDto["pois"]) {
   return groups;
 }
 
-function formatDistance(meters: number): string {
-  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
-  return `${meters} m`;
-}
-
 // Vitesse de marche moyenne ≈ 4,5 km/h (75 m/min)
 function formatWalkingTime(meters: number): string {
   const minutes = Math.max(1, Math.round(meters / 75));
@@ -110,7 +106,7 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodA
                         <span className="poi-distance">
                           —{" "}
                           {poi.distanceMeters <= WALKABLE_LIMIT_METERS
-                            ? `${formatWalkingTime(poi.distanceMeters)} (${formatDistance(poi.distanceMeters)})`
+                            ? formatWalkingTime(poi.distanceMeters)
                             : formatDistance(poi.distanceMeters)}
                         </span>
                       </li>

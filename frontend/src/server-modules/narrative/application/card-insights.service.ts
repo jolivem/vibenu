@@ -1,8 +1,16 @@
 import { buildGeoKey } from "@/server-shared/infrastructure/cache/in-memory-cache";
-import type { CardInsightKey, CardInsights, CardInsightsDto } from "@/server-shared/types/card-insights";
+import type {
+  CardInsightKey,
+  CardInsights,
+  CardInsightsDto,
+  CardInsightsPayload,
+} from "@/server-shared/types/card-insights";
 import type { LocationAnalysisDto } from "@/server-shared/types/location-analysis.dto";
 import { CardInsightsCacheProvider } from "../infrastructure/card-insights-cache.provider";
-import { CARD_INSIGHTS_FIXTURE } from "../infrastructure/card-insights.fixture";
+import {
+  CARD_INSIGHTS_FIXTURE,
+  CARD_INSIGHTS_FIXTURE_SECURITY_RATING,
+} from "../infrastructure/card-insights.fixture";
 import {
   buildCardInsightsUserPrompt,
   CARD_INSIGHTS_SYSTEM_PROMPT,
@@ -85,7 +93,15 @@ export class CardInsightsService {
         const text = CARD_INSIGHTS_FIXTURE[key];
         if (text) insights[key] = text;
       }
-      return { insights, generatedAt: new Date().toISOString(), cached: false, ...(debugInput !== undefined ? { debugInput } : {}) };
+      return {
+        insights,
+        ...(expected.includes("securite")
+          ? { securityRating: CARD_INSIGHTS_FIXTURE_SECURITY_RATING }
+          : {}),
+        generatedAt: new Date().toISOString(),
+        cached: false,
+        ...(debugInput !== undefined ? { debugInput } : {}),
+      };
     }
 
     const geoKey = buildGeoKey(data.map.center.lat, data.map.center.lon);
@@ -93,7 +109,7 @@ export class CardInsightsService {
     if (!options.debug) {
       const cached = await this.cache.get(geoKey, data.mode, this.model);
       if (cached) {
-        return { insights: cached.insights, generatedAt: cached.generatedAt, cached: true };
+        return { ...cached.payload, generatedAt: cached.generatedAt, cached: true };
       }
     }
 
@@ -103,20 +119,20 @@ export class CardInsightsService {
       return emptyResult(debugInput);
     }
 
-    let insights: CardInsights;
+    let payload: CardInsightsPayload;
     try {
-      insights = await this.callModel(apiKey, buildCardInsightsUserPrompt(input, expected), expected);
+      payload = await this.callModel(apiKey, buildCardInsightsUserPrompt(input, expected), expected);
     } catch (err) {
       console.warn("[card-insights] generation failed:", err);
       return emptyResult(debugInput);
     }
 
     if (!options.debug) {
-      await this.cache.set(geoKey, data.mode, this.model, insights);
+      await this.cache.set(geoKey, data.mode, this.model, payload);
     }
 
     return {
-      insights,
+      ...payload,
       generatedAt: new Date().toISOString(),
       cached: false,
       ...(debugInput !== undefined ? { debugInput } : {}),
@@ -127,7 +143,7 @@ export class CardInsightsService {
     apiKey: string,
     userPrompt: string,
     expected: readonly CardInsightKey[],
-  ): Promise<CardInsights> {
+  ): Promise<CardInsightsPayload> {
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {

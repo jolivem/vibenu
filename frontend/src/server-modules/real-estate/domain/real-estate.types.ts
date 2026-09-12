@@ -1,4 +1,3 @@
-import type { ConfidenceLevel, PriceLevel } from "../../../server-shared/domain/common.types";
 
 export interface DvfTransactionFeature {
   type: "Feature";
@@ -17,8 +16,6 @@ export interface DvfTransactionFeature {
 
 export interface RealEstateAnalysis {
   nearbyTransactionsCount?: number;
-  priceLevel?: PriceLevel;
-  confidence?: ConfidenceLevel;
   medianPricePerSquareMeter?: number;
   transactionFeatures?: DvfTransactionFeature[];
 }

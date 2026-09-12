@@ -1,4 +1,4 @@
-import type { ConfidenceLevel, MobilityLabel, PriceLevel, RiskCategoryLevel, RiskLevel } from "../domain/common.types";
+import type { MobilityLabel, RiskCategoryLevel, RiskLevel } from "../domain/common.types";
 
 /**
  * Les mini-synthèses des cards voyagent sur la même frontière client/serveur que
@@ -80,8 +80,6 @@ export interface DvfTransactionFeatureDto {
 
 export interface RealEstateAnalysisDto {
   nearbyTransactionsCount?: number;
-  priceLevel?: PriceLevel;
-  confidence?: ConfidenceLevel;
   medianPricePerSquareMeter?: number;
   transactionFeatures?: DvfTransactionFeatureDto[];
 }

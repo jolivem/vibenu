@@ -103,7 +103,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
     const summary = this.dependencies.summaryService.build({
       mobilityLabel: mobility.label,
       riskLevel: risks.level,
-      realEstateConfidence: realEstate.confidence,
+      realEstateTransactionsCount: realEstate.nearbyTransactionsCount,
       addressLabel: address.label,
     });
 

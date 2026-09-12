@@ -10,8 +10,6 @@ export class MockRealEstateProvider implements RealEstateProvider {
   private sample() {
     return {
       nearbyTransactionsCount: 14,
-      priceLevel: "élevé" as const,
-      confidence: "moyenne" as const,
       medianPricePerSquareMeter: 6150,
       transactionFeatures: [],
     };
