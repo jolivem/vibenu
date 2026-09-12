@@ -2480,6 +2480,15 @@ html {
   color: var(--muted);
 }
 
+/* La première colonne porte les libellés de ligne, alignés à gauche par la règle
+   ci-dessus. Son en-tête doit suivre : « Indicateur » aligné à droite flottait au-dessus
+   d'une colonne alignée à gauche, et rien ne le rattachait visuellement à elle. Les
+   colonnes de valeurs, elles, restent à droite — c'est ainsi que des nombres se
+   comparent d'une ligne à l'autre. */
+.demographics-table thead th:first-child {
+  text-align: left;
+}
+
 .demographics-note {
   font-size: 0.8rem;
   color: var(--muted);

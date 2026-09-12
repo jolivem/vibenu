@@ -1,3 +1,4 @@
+import { formatDistance } from "@/lib/format";
 import type { AnalysisMode, MobilityAnalysisDto } from "@/types/location-analysis";
 
 function stationLabel(mode: string): string {
@@ -10,10 +11,8 @@ function stationLabel(mode: string): string {
   }
 }
 
-function formatDistance(meters: number): string {
-  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
-  return `${meters} m`;
-}
+/** Cf. `NeighborhoodCard` : au-delà, on ne propose plus de temps de marche. */
+const WALKABLE_LIMIT_METERS = 2000;
 
 // Vitesse de marche moyenne ≈ 4,5 km/h (75 m/min)
 function formatWalkingTime(meters: number): string {
@@ -22,6 +21,17 @@ function formatWalkingTime(meters: number): string {
   const h = Math.floor(minutes / 60);
   const m = Math.round((minutes - h * 60) / 5) * 5;
   return m === 0 ? `${h} h à pied` : `${h} h ${String(m).padStart(2, "0")} à pied`;
+}
+
+/**
+ * Temps de marche seul, ou distance seule — jamais les deux.
+ *
+ * La distance ne disparaît que là où le temps de marche la remplace utilement. Une gare
+ * à 20 km se lit « 20 km », pas « 4 h 25 à pied » : le temps de marche y est exact et
+ * sans usage, puisque personne ne rejoint sa gare à pied à cette distance.
+ */
+function formatProximity(meters: number): string {
+  return meters <= WALKABLE_LIMIT_METERS ? formatWalkingTime(meters) : formatDistance(meters);
 }
 
 interface Props {
@@ -54,7 +64,7 @@ export function MobilityCard({ mobility, mode }: Props) {
                   <>
                     {" "}
                     <span className="poi-distance">
-                      — {formatWalkingTime(stop.distanceMeters)} ({formatDistance(stop.distanceMeters)})
+                      — {formatProximity(stop.distanceMeters)}
                     </span>
                   </>
                 )}
@@ -78,7 +88,7 @@ export function MobilityCard({ mobility, mode }: Props) {
                   <>
                     {" "}
                     <span className="poi-distance">
-                      — {formatWalkingTime(s.distanceMeters)} ({formatDistance(s.distanceMeters)})
+                      — {formatProximity(s.distanceMeters)}
                     </span>
                   </>
                 )}
