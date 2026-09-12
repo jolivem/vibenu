@@ -91,7 +91,7 @@ export function HouseholdsCard({ demographics, mode, insight }: Props) {
 
       <div className="insee-metric">
         <h3>Composition des ménages</h3>
-        <p className="insee-metric-unit">en % des ménages</p>
+        <p className="metric-unit">en % des ménages</p>
         <StackedBarGroup rows={scopedBarRows(view, compositionSegments)} />
       </div>
 

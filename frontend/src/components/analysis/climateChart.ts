@@ -25,19 +25,21 @@ export const CLIMATE_METRICS: ReadonlyArray<{
   {
     key: "temperatureC",
     label: "Température",
-    unit: "°C",
+    // Phrasé comme une ligne d'unité, puisque c'en est une depuis que l'unité a quitté
+    // le titre : elle dit aussi ce que la courbe agrège, moyenne ou cumul.
+    unit: "moyenne mensuelle, en °C",
     format: (n) => `${n.toFixed(1).replace(".", ",")} °C`,
   },
   {
     key: "precipitationMm",
     label: "Précipitations",
-    unit: "mm",
+    unit: "cumul mensuel, en mm",
     format: (n) => `${Math.round(n)} mm`,
   },
   {
     key: "sunshineHours",
     label: "Ensoleillement",
-    unit: "h",
+    unit: "cumul mensuel, en heures",
     format: (n) => `${Math.round(n)} h`,
   },
 ];

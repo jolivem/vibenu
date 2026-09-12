@@ -107,7 +107,7 @@ export function IndicatorBlock<T>({
   return (
     <div className="insee-metric">
       <h3>{indicator.title}</h3>
-      <p className="insee-metric-unit">{indicator.unit}</p>
+      <p className="metric-unit">{indicator.unit}</p>
       <p className="insee-prose">
         {/* « ici » plutôt que « dans ce quartier » : le même mot vaut pour une adresse
             et pour une commune, comme dans le prompt des mini-synthèses. */}

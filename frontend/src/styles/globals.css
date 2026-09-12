@@ -1332,12 +1332,28 @@ html {
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
 }
 
+/* Titre de bloc — une seule règle pour toute la page d'analyse.
+ *
+ * Les blocs la surchargeaient chacun de leur côté (1 rem ici, 6 px de marge là, 2 px
+ * ailleurs) et deux cards y échappaient entièrement : le Voisinage et les Transports en
+ * commun gardaient 1,15 rem et les marges par défaut du navigateur, seuls titres de la
+ * page à ne pas avoir été repris. La valeur commune est celle des blocs de la rubrique
+ * Population, la plus nombreuse. */
 .card h3 {
   font-family: var(--font-serif), var(--font-serif-fallback);
   font-weight: 400;
-  font-size: 1.15rem;
+  font-size: 1rem;
   letter-spacing: -0.005em;
   color: var(--text);
+  margin: 0 0 2px;
+}
+
+/* Un `h3` posé directement dans la card n'a pas de conteneur pour l'espacer du bloc
+   précédent — c'est le cas des Transports en commun. Les titres imbriqués dans un
+   `.insee-metric`, `.cadastre-section` ou `.poi-family` tiennent leur écart de ce
+   conteneur et ne sont pas touchés. */
+.card > h3 {
+  margin-top: 22px;
 }
 
 .search-panel {
@@ -2056,8 +2072,10 @@ html {
 }
 
 /* Voisinage — 4 familles, chacune regroupant ses catégories */
-.poi-family + .poi-family {
-  margin-top: 18px;
+/* 22 px comme `.insee-metric` et `.cadastre-section` : depuis que `.card h3` ne porte
+   plus de marge haute, c'est ce conteneur qui espace les familles. */
+.poi-family {
+  margin-top: 22px;
 }
 
 .poi-group + .poi-group {
@@ -2644,37 +2662,23 @@ html {
 
 /* Légende commune aux trois graphes : posée une fois en haut, elle vaut pour tous —
    les couleurs des villes ne changent pas d'une mesure à l'autre. */
-/* Légendes posées en tête de card, valables pour tous ses graphes : climat et sécurité.
-   Bridées et centrées comme les graphes qu'elles décrivent (`.climate-metric`,
-   `.security-metric`) — à plat sur toute la largeur de la card, elles partaient du bord
-   gauche pendant que les courbes commençaient 290 px plus loin. */
-.climate-legend,
-.security-legend {
-  max-width: var(--line-chart-max);
-  margin: 0 auto 18px;
-  padding-bottom: 14px;
-  border-bottom: 0.5px solid var(--hairline);
-  row-gap: 6px;
-}
-
-/* Légende d'échelles : le lieu consulté prend sa propre ligne, en tête, dans le ton du
-   texte courant ; ses repères restent en gris sur la ligne suivante.
-   Ce n'est pas une préférence de mise en page. Les quatre graphes de séries de la page —
-   climat, sécurité, âge, répartitions INSEE — portent déjà cette hiérarchie dans leur
-   tracé : trait de 2,8 contre 1,4, opacité pleine contre 0,75, points deux fois plus
-   larges. Et c'est elle, non la teinte, qui tient en vision dichromate — cf. la note de
-   `climateChart.ts` sur le rouge de Marseille et le vert local. Une légende à plat
-   effaçait le seul repère qui vaut pour tout le monde.
-   Ne s'applique pas aux légendes de catégories (barres empilées) : y mettre la première
-   part en avant serait faux. D'où le modificateur, posé par `ChartLegend`. */
-.line-chart-legend--scales > li:first-child {
-  flex-basis: 100%;
-  color: var(--text);
-  font-weight: 600;
-}
-
-/* Pastilles au diamètre des points de leur courbe : 12 px pour la locale, 8 px pour les
-   repères. La légende cesse ainsi d'être un simple nuancier. */
+/* Légende d'échelles : le lieu consulté d'abord, ses repères ensuite, tous sur la même
+   ligne et dans le même style. La hiérarchie ne passe que par le diamètre de la pastille.
+ *
+ * Le premier item a un temps pris sa propre ligne, en gras. Le décrochage se défend sur
+ * une légende unique en tête de card — il y coûte une ligne — mais pas sous chacun des
+ * cinq graphes de la card Sécurité, où il en coûte cinq avec cinq mises en gras. Plutôt
+ * que de maintenir une exception par card, la légende reste plate partout.
+ *
+ * Le diamètre, lui, est conservé : les quatre graphes de séries de la page portent la même
+ * hiérarchie dans leur tracé — trait de 2,8 contre 1,4, points deux fois plus larges — et
+ * c'est elle, non la teinte, qui tient en vision dichromate (cf. la note de
+ * `climateChart.ts` sur le rouge de Marseille et le vert local). Elle ne coûte aucune
+ * ligne, contrairement au décrochage.
+ *
+ * Ne s'applique pas aux légendes de catégories (barres empilées) : y grossir la première
+ * pastille serait faux, les parts d'une partition sont de même rang. D'où le
+ * modificateur, posé par `ChartLegend`. */
 .line-chart-legend--scales > li:first-child .line-chart-legend-dot {
   width: 12px;
   height: 12px;
@@ -2685,30 +2689,14 @@ html {
   height: 8px;
 }
 
-.climate-legend-type {
+/* Précision rattachée à un item de légende — le type de climat d'une ville de
+   référence. */
+.line-chart-legend-detail {
   color: var(--muted-soft);
-}
-
-/* Même bride que la répartition par âge : sans elle le graphe climatique s'étirerait sur
-   toute la largeur de la card et rendrait ses axes plus gros que ceux de la démographie,
-   à viewBox pourtant identique. */
-.climate-metric {
-  max-width: var(--line-chart-max);
-  margin-inline: auto;
 }
 
 .climate-metric + .climate-metric {
   margin-top: 22px;
-}
-
-.climate-metric h3 {
-  margin: 0 0 6px;
-  font-size: 1rem;
-}
-
-.climate-metric-unit {
-  color: var(--muted-soft);
-  font-size: 0.85rem;
 }
 
 /* Sécurité — cinq courbes sur 10 ans, mêmes conventions que le climat */
@@ -2717,23 +2705,8 @@ html {
   font-size: 0.85rem;
 }
 
-.security-metric {
-  max-width: var(--line-chart-max);
-  margin-inline: auto;
-}
-
 .security-metric + .security-metric {
   margin-top: 22px;
-}
-
-.security-metric h3 {
-  margin: 0 0 6px;
-  font-size: 1rem;
-}
-
-.security-metric-unit {
-  color: var(--muted-soft);
-  font-size: 0.85rem;
 }
 
 /* Traduit la bande d'incertitude — exprimée en faits — dans l'unité de l'axe, qui est
@@ -2760,14 +2733,7 @@ html {
    côté SVG. Une seule classe pour les trois cards — trois classes jumelles auraient
    dérivé l'une de l'autre à la première retouche. */
 .insee-metric {
-  max-width: var(--line-chart-max);
-  margin-inline: auto;
   margin-top: 22px;
-}
-
-.insee-metric h3 {
-  margin: 0 0 2px;
-  font-size: 1rem;
 }
 
 /* Paragraphe rédigé d'un bloc d'indicateurs — les trois taux de la card Emploi.
@@ -2779,7 +2745,52 @@ html {
   line-height: 1.55;
 }
 
-.insee-metric-unit {
+/* Mise en page des blocs de la page d'analyse — titres à gauche, graphiques au centre.
+ *
+ * Le bloc occupe toute la largeur de la card, si bien que son `h3` et sa ligne d'unité
+ * tombent à l'aplomb du `h2` de la card et de la mini-synthèse. Seuls les contenus
+ * graphiques gardent la colonne de `--line-chart-max` : c'est elle qui fixe la taille
+ * apparente des axes (cf. la note de cette variable), et elle doit donc rester identique
+ * d'un graphe à l'autre. La bride portait auparavant sur le bloc entier, ce qui indentait
+ * le titre de près de 300 px sans raison lisible.
+ *
+ * Les contenus sont énumérés un par un, et non ciblés par la négative : la ligne d'unité
+ * appartient au titre et reste à gauche avec lui, tandis qu'une note sous une courbe
+ * appartient à la courbe et se centre avec elle. */
+.insee-metric,
+.climate-metric,
+.security-metric {
+  max-width: none;
+  margin-inline: 0;
+}
+
+.insee-metric > .line-chart,
+.insee-metric > .line-chart-legend,
+.insee-metric > .stacked-bar-group,
+.insee-metric > .demographics-note,
+.climate-metric > .line-chart,
+.climate-metric > .line-chart-legend,
+.security-metric > .line-chart,
+.security-metric > .line-chart-legend,
+.security-metric > .security-conversion {
+  max-width: var(--line-chart-max);
+  margin-inline: auto;
+}
+
+/* Les blocs sans graphe s'alignent entièrement à gauche, titre et phrase d'un même bord.
+   La bride de largeur est conservée mais posée à gauche : une phrase étalée sur les
+   1 100 px de la card ferait des lignes de 140 caractères — ce n'est pas la position qui
+   limite la longueur, c'est la mesure. */
+.insee-metric > .insee-prose {
+  max-width: var(--line-chart-max);
+  margin-inline: 0;
+}
+
+/* Ligne d'unité, sous le titre de bloc. Une seule classe pour toute la page : le climat
+   et la sécurité mettaient jusqu'ici leur unité entre parenthèses DANS le `h3`, avec
+   chacun sa classe — deux structures pour la même information, d'où les marges de titre
+   qui divergeaient. */
+.metric-unit {
   margin: 0 0 8px;
   color: var(--muted-soft);
   font-size: 0.85rem;
@@ -2990,27 +3001,42 @@ html {
 }
 
 /* Cadastre card */
+/* Même respiration entre sections que `.insee-metric`, pour un rythme unique de page. */
 .cadastre-section {
-  margin-top: 12px;
+  margin-top: 22px;
 }
 
-.cadastre-section h3 {
-  font-size: 0.85rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin: 0 0 6px;
+/* Les contenus tiennent la colonne de lecture des autres cards, alignés à gauche sous
+   leur titre — comme les blocs rédigés de la rubrique Population. Sans bride, une grille
+   de deux colonnes et une glose s'étalaient sur les 1 100 px de la card. */
+.cadastre-section > .cadastre-grid,
+.cadastre-section > .cadastre-zone,
+.cadastre-section > .cadastre-zone-gloss,
+.cadastre-section > .cadastre-prescriptions {
+  max-width: var(--line-chart-max);
 }
 
+/* Une ligne par donnée, et non une grille de deux colonnes : à trois entrées, celle-ci
+   laissait une case vide et cassait l'alignement des valeurs. Empilées, les trois
+   valeurs tombent l'une sous l'autre. */
 .cadastre-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.cadastre-item {
   display: flex;
   flex-direction: column;
+}
+
+/* Libellé à gauche, valeur à droite, séparées par un filet — même structure que les
+   listes d'indicateurs de la rubrique Population. */
+.cadastre-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 16px;
+  padding: 6px 0;
+  border-bottom: 0.5px solid var(--hairline);
+}
+
+.cadastre-item:last-child {
+  border-bottom: none;
 }
 
 .cadastre-label {
@@ -3021,6 +3047,7 @@ html {
 .cadastre-value {
   font-size: 0.9rem;
   font-weight: 600;
+  text-align: right;
 }
 
 .cadastre-zone {

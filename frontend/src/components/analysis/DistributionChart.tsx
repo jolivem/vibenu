@@ -28,7 +28,7 @@ export function DistributionChart<T>({ title, unit, view, pick, labels, titles, 
   return (
     <div className="insee-metric">
       <h3>{title}</h3>
-      <p className="insee-metric-unit">{unit}</p>
+      <p className="metric-unit">{unit}</p>
       <LineChart
         series={model.series}
         xLabels={labels}

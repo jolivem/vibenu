@@ -116,12 +116,34 @@ export class ApiCartoCadastreProvider implements CadastreProvider {
         /^hauteur plafond$/i,
       ];
 
+      /**
+       * Une prescription par libellé.
+       *
+       * L'API rend une entité par *géométrie* : une même prescription découpée en
+       * plusieurs polygones — cas courant d'un PPRI ou d'un secteur d'habitation —
+       * revient autant de fois, et la card affichait la même ligne deux ou trois fois.
+       *
+       * La clé est le libellé seul, et non le couple (type, libellé) : l'écran comme le
+       * PDF ne rendent que `label`, donc deux entrées portant le même texte sont
+       * indiscernables pour le lecteur. Conséquence assumée — deux types distincts qui
+       * partageraient un libellé seraient fondus en un ; afficher deux fois la même
+       * phrase serait pire. Le tri de la source est conservé : on garde la première.
+       */
+      const seen = new Set<string>();
       return data.features
         .map((f) => ({
-          label: f.properties.libelle as string,
+          label: typeof f.properties.libelle === "string" ? f.properties.libelle.trim() : "",
           type: f.properties.typepsc as string,
         }))
-        .filter((p) => !excludedPatterns.some((re) => re.test(p.label)));
+        // Un libellé absent rendait un <li> vide : l'API ne garantit pas `libelle`.
+        .filter((p) => p.label.length > 0)
+        .filter((p) => !excludedPatterns.some((re) => re.test(p.label)))
+        .filter((p) => {
+          const key = p.label.toLocaleLowerCase("fr-FR");
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
     } catch (error) {
       console.warn("API Carto gpu/prescription-surf error:", error);
       return [];

@@ -1,3 +1,4 @@
+import { toDisplayName } from "./poi-display-name";
 import type { NeighborhoodProvider } from "./neighborhood.provider";
 import type { NeighborhoodPoi, PoiCategory } from "../domain/neighborhood.types";
 import { query } from "../../../server-shared/infrastructure/database/postgres";
@@ -284,7 +285,9 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
           }
         }
 
-        const name = row.name || DEFAULT_NAMES[row.category] || row.category;
+        const name = row.name
+          ? toDisplayName(row.name)
+          : DEFAULT_NAMES[row.category] || row.category;
         const dist = Math.round(Number(row.distance_meters));
         const normalized = row.name ? normalizeName(row.name) : "";
 
@@ -457,7 +460,7 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
 
           taken.set(row.category, (taken.get(row.category) ?? 0) + 1);
           out.push({
-            name: row.name || DEFAULT_NAMES[row.category] || row.category,
+            name: row.name ? toDisplayName(row.name) : DEFAULT_NAMES[row.category] || row.category,
             category: row.category as PoiCategory,
             distanceMeters: Math.round(Number(row.distance_meters)),
           });
@@ -495,7 +498,7 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
           const best = pickClearestName(atLevel, level);
           if (!best) continue;
           out.push({
-            name: best.name || DEFAULT_NAMES.school,
+            name: best.name ? toDisplayName(best.name) : DEFAULT_NAMES.school,
             category: "school",
             distanceMeters: Math.round(Number(best.distance_meters)),
           });

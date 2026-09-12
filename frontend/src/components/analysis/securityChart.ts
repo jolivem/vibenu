@@ -57,10 +57,19 @@ export interface SecurityChartModel {
 export function buildSecurityChartModel(
   indicator: SecurityIndicatorDto,
   annees: number[],
+  /**
+   * Nom de la série locale — « Cette commune » ou « Cet arrondissement ».
+   *
+   * En paramètre et non en dur : la maille dépend du code INSEE, et le nom était
+   * jusqu'ici figé à « Cette commune ». La légende de la card le corrigeait de son côté,
+   * mais pas les infobulles du graphe, qui annonçaient donc « Cette commune » sur une
+   * adresse parisienne. Un seul porteur du nom, désormais.
+   */
+  localName: string,
 ): SecurityChartModel {
   const series: LineChartSeries[] = [
     {
-      name: "Cette commune",
+      name: localName,
       color: LOCAL_SERIES_COLOR,
       strokeWidth: 2.8,
       dotRadius: 4,

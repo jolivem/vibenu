@@ -1,5 +1,10 @@
 export interface ChartLegendItem {
   name: string;
+  /**
+   * Précision rattachée à l'item, en gris clair — le type de climat d'une ville de
+   * référence. Le climat rendait sa légende à la main pour ce seul besoin.
+   */
+  detail?: string;
   /** Absent pour une pastille de bande, qui tire son style du CSS. */
   color?: string;
   /**
@@ -27,12 +32,12 @@ export function ChartLegend({
   /**
    * Ce que les items désignent, ce qui n'est pas décoratif :
    *
-   * - `scales` — des échelles : le lieu consulté d'abord, ses repères ensuite. Le
-   *   premier item est mis en avant, à l'image de sa courbe (trait de 2,8 contre 1,4,
-   *   points deux fois plus larges). C'est cette hiérarchie, et non la teinte, qui tient
-   *   en vision dichromate — cf. la note de `climateChart.ts` sur le rouge et le vert.
-   * - `categories` — les parts d'une partition, de même rang. Mettre la première en
-   *   avant y serait faux : « Propriétaires » ne domine pas « Locataires ».
+   * - `scales` — des échelles : le lieu consulté d'abord, ses repères ensuite. Sa
+   *   pastille est plus large, à l'image de sa courbe (trait de 2,8 contre 1,4, points
+   *   deux fois plus larges). C'est cette hiérarchie, et non la teinte, qui tient en
+   *   vision dichromate — cf. la note de `climateChart.ts` sur le rouge et le vert.
+   * - `categories` — les parts d'une partition, de même rang. Y grossir la première
+   *   pastille serait faux : « Propriétaires » ne domine pas « Locataires ».
    */
   kind?: "scales" | "categories";
 }) {
@@ -52,6 +57,7 @@ export function ChartLegend({
             <span className="line-chart-legend-dot" style={{ background: item.color }} />
           )}
           {item.name}
+          {item.detail && <span className="line-chart-legend-detail"> · {item.detail}</span>}
         </li>
       ))}
     </ul>

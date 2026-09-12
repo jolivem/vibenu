@@ -1,9 +1,7 @@
 import type { ClimateAnalysisDto } from "@/types/location-analysis";
 import { ClimateChart } from "./ClimateChart";
-import { CLIMATE_METRICS, LOCAL_SERIES_COLOR, REFERENCE_COLORS } from "./climateChart";
+import { CLIMATE_METRICS } from "./climateChart";
 import { CardInsight } from "@/components/CardInsight";
-
-const FALLBACK_REFERENCE_COLOR = "#9ca3af";
 
 function stationLine(
   label: string,
@@ -55,28 +53,6 @@ export function ClimateCard({
       </p>
 
       <CardInsight text={insight} />
-
-      <ul className="line-chart-legend line-chart-legend--scales climate-legend">
-        <li>
-          <span className="line-chart-legend-dot" style={{ background: LOCAL_SERIES_COLOR }} />
-          {monthly.local.name}
-        </li>
-        {monthly.references.map((ref) => (
-          <li key={ref.name}>
-            <span
-              className="line-chart-legend-dot"
-              style={{ background: REFERENCE_COLORS[ref.name] ?? FALLBACK_REFERENCE_COLOR }}
-            />
-            {ref.name}
-            {/* « climat » ajouté ici et non dans `REFERENCE_CLIMATES` : ces valeurs
-                partent aussi au modèle sous `type_climat`, où l'adjectif nu se combine
-                mieux dans une phrase rédigée. */}
-            {ref.climateType && (
-              <span className="climate-legend-type"> · climat {ref.climateType}</span>
-            )}
-          </li>
-        ))}
-      </ul>
 
       {CLIMATE_METRICS.map((metric) => (
         <ClimateChart

@@ -6,18 +6,22 @@ import {
   buildSecurityChartModel,
   formatRate,
   isArrondissement,
-  LOCAL_SERIES_COLOR,
 } from "./securityChart";
 import { CardInsight } from "@/components/CardInsight";
 
 function SecurityIndicatorChart({
   indicator,
   annees,
+  maille,
 }: {
   indicator: SecurityIndicatorDto;
   annees: number[];
+  maille: "commune" | "arrondissement";
 }) {
-  const model = buildSecurityChartModel(indicator, annees);
+  // « Cet arrondissement », pas « Cette arrondissement » : le genre ne suit pas la
+  // variable. L'interpolation directe traînait depuis l'ancienne légende de card.
+  const localName = maille === "arrondissement" ? "Cet arrondissement" : "Cette commune";
+  const model = buildSecurityChartModel(indicator, annees, localName);
   const unite = baseLabel(indicator.base);
 
   // Le graphe est gradué en ‰ alors que le secret statistique s'exprime en faits. Sans
@@ -34,9 +38,8 @@ function SecurityIndicatorChart({
 
   return (
     <div className="security-metric">
-      <h3>
-        {indicator.indicateur} <span className="security-metric-unit">({unite})</span>
-      </h3>
+      <h3>{indicator.indicateur}</h3>
+      <p className="metric-unit">faits enregistrés, {unite}</p>
       <LineChart
         series={model.series}
         bands={model.bands}
@@ -51,6 +54,20 @@ function SecurityIndicatorChart({
           `${annees[i]} — entre 1 et 4 faits (${formatRate(low)} à ${formatRate(high)}), valeur masquée par le secret statistique`
         }
       />
+      <ChartLegend
+        items={[
+          ...model.series.map((s) => ({ name: s.name, color: s.color })),
+          // La pastille de fourchette n'a de sens que sur un graphe qui en porte : la
+          // légende de card l'annonçait pour les cinq indicateurs, y compris ceux dont
+          // toutes les valeurs sont publiées.
+          //
+          // Et surtout pas « entre 1 et 4 » comme libellé : l'axe est gradué en ‰, pas en
+          // nombre de faits. Annoncer des faits à côté d'un axe de taux invite à lire la
+          // borne sur l'axe. La conversion est donnée juste en dessous.
+          ...(conversion ? [{ name: "Fourchette (valeur non publiée)", swatch: "band" as const }] : []),
+        ]}
+      />
+
       {conversion && (
         <p className="security-conversion">
           Bande verte : {conversion.annees === annees.length ? "toutes les années" : `${conversion.annees} année${conversion.annees > 1 ? "s" : ""}`}{" "}
@@ -106,19 +123,6 @@ export function SecurityCard({
 
       <CardInsight text={insight} />
 
-      <ChartLegend
-        className="security-legend"
-        items={[
-          { name: `Cette ${maille}`, color: LOCAL_SERIES_COLOR },
-          { name: "Département", color: "#7c8ba1" },
-          { name: "France", color: "#b08968" },
-          // Surtout pas « entre 1 et 4 » ici : l'axe est gradué en ‰, pas en nombre de
-          // faits. Annoncer des faits à côté d'un axe de taux invite à lire la borne sur
-          // l'axe. La conversion est donnée sous chaque graphe et dans les infobulles.
-          { name: "Fourchette (valeur non publiée)", swatch: "band" },
-        ]}
-      />
-
       {aucunePublication && (
         <p className="security-note">
           Aucune année ne dépasse 4 faits pour les indicateurs suivis : les valeurs exactes ne
@@ -131,6 +135,7 @@ export function SecurityCard({
           key={indicator.indicateur}
           indicator={indicator}
           annees={annees}
+          maille={maille}
         />
       ))}
 

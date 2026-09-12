@@ -98,7 +98,7 @@ export function DemographicsCard({ demographics, mode, insight }: Props) {
       {local?.ageDistribution && (
         <div className="insee-metric">
           <h3>Répartition par âge</h3>
-          <p className="insee-metric-unit">en % de la population</p>
+          <p className="metric-unit">en % de la population</p>
           <AgeChart
             iris={local.ageDistribution}
             commune={communeAges ?? null}

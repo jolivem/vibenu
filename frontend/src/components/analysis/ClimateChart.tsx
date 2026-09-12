@@ -1,4 +1,5 @@
 import type { ClimateMonthlySeriesDto } from "@/types/location-analysis";
+import { ChartLegend } from "./ChartLegend";
 import { LineChart } from "./LineChart";
 import {
   MONTH_LABELS,
@@ -28,9 +29,8 @@ export function ClimateChart({ metric, label, unit, format, local, references }:
 
   return (
     <div className="climate-metric">
-      <h3>
-        {label} <span className="climate-metric-unit">({unit})</span>
-      </h3>
+      <h3>{label}</h3>
+      <p className="metric-unit">{unit}</p>
       <LineChart
         series={model.series}
         xLabels={MONTH_LABELS}
@@ -40,6 +40,17 @@ export function ClimateChart({ metric, label, unit, format, local, references }:
         y={model.y}
         formatValue={format}
         ariaLabel={`${label} mois par mois — comparaison avec trois climats types`}
+      />
+      {/* Dérivée du modèle de CE graphe : une ville de référence dont la mesure manque
+          n'y figure pas. La légende de card, unique, les annonçait toutes les trois pour
+          les trois mesures — or l'ensoleillement n'est relevé que par une station sur
+          trente. */}
+      <ChartLegend
+        items={model.series.map((s) => ({
+          name: s.name,
+          color: s.color,
+          detail: s.climateType ?? undefined,
+        }))}
       />
     </div>
   );

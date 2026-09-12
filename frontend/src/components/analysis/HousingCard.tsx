@@ -92,13 +92,13 @@ export function HousingCard({ demographics, mode, insight }: Props) {
 
       <div className="insee-metric">
         <h3>Statut d&apos;occupation</h3>
-        <p className="insee-metric-unit">en % des résidences principales</p>
+        <p className="metric-unit">en % des résidences principales</p>
         <StackedBarGroup rows={scopedBarRows(view, occupancySegments)} />
       </div>
 
       <div className="insee-metric">
         <h3>Type de logement</h3>
-        <p className="insee-metric-unit">en % du parc total</p>
+        <p className="metric-unit">en % du parc total</p>
         <StackedBarGroup rows={scopedBarRows(view, dwellingSegments)} />
         <p className="demographics-note">
           Les deux parts ne bouclent pas toujours à 100 % : l&apos;INSEE compte à part
