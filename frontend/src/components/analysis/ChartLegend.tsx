@@ -1,10 +1,5 @@
 export interface ChartLegendItem {
   name: string;
-  /**
-   * Précision rattachée à l'item, en gris clair — le type de climat d'une ville de
-   * référence. Le climat rendait sa légende à la main pour ce seul besoin.
-   */
-  detail?: string;
   /** Absent pour une pastille de bande, qui tire son style du CSS. */
   color?: string;
   /**
@@ -57,7 +52,6 @@ export function ChartLegend({
             <span className="line-chart-legend-dot" style={{ background: item.color }} />
           )}
           {item.name}
-          {item.detail && <span className="line-chart-legend-detail"> · {item.detail}</span>}
         </li>
       ))}
     </ul>

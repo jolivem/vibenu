@@ -3,6 +3,37 @@ import { ClimateChart } from "./ClimateChart";
 import { CLIMATE_METRICS } from "./climateChart";
 import { CardInsight } from "@/components/CardInsight";
 
+/** « le continental », mais « l'océanique » — élision devant voyelle. */
+function withArticle(type: string): string {
+  return /^[aeiouyàâäéèêëîïôöùûü]/i.test(type) ? `l'${type}` : `le ${type}`;
+}
+
+/**
+ * « Strasbourg pour le climat continental, Marseille pour le méditerranéen, La Rochelle
+ * pour l'océanique. »
+ *
+ * Construite depuis les références effectivement reçues, et non écrite en dur : la table
+ * `REFERENCE_CLIMATES` du serveur peut changer de villes, et une ville dont aucune mesure
+ * n'est disponible n'arrive pas jusqu'ici.
+ *
+ * Cette phrase porte désormais la correspondance ville ↔ climat que les légendes
+ * répétaient sous chacun des trois graphes. Dite une fois, en tête, elle allège trois
+ * légendes — et elle a la place d'être explicite là où la légende devait abréger.
+ */
+function referenceSentence(
+  references: ReadonlyArray<{ name: string; climateType?: string }>,
+): string | null {
+  const typed = references.filter(
+    (r): r is { name: string; climateType: string } => Boolean(r.climateType),
+  );
+  if (typed.length === 0) return null;
+  return typed
+    .map(({ name, climateType }, i) =>
+      i === 0 ? `${name} pour le climat ${climateType}` : `${name} pour ${withArticle(climateType)}`,
+    )
+    .join(", ");
+}
+
 function stationLine(
   label: string,
   station?: { name: string; distanceKm: number },
@@ -48,8 +79,11 @@ export function ClimateCard({
     <section className="card climate-card">
       <h2>Climat (normales {climate.periodStart}–{climate.periodEnd})</h2>
       <p className="muted">
-        Profil mois par mois, comparé à trois villes représentatives des grands climats
-        français.
+        Profil mois par mois, comparé à des villes représentatives des grands climats
+        français
+        {referenceSentence(monthly.references)
+          ? ` : ${referenceSentence(monthly.references)}.`
+          : "."}
       </p>
 
       <CardInsight text={insight} />

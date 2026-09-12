@@ -45,13 +45,9 @@ export function ClimateChart({ metric, label, unit, format, local, references }:
           n'y figure pas. La légende de card, unique, les annonçait toutes les trois pour
           les trois mesures — or l'ensoleillement n'est relevé que par une station sur
           trente. */}
-      <ChartLegend
-        items={model.series.map((s) => ({
-          name: s.name,
-          color: s.color,
-          detail: s.climateType ?? undefined,
-        }))}
-      />
+      {/* Les noms seuls : la correspondance ville ↔ climat est donnée une fois en tête
+          de card, ce qui évite de la répéter sous les trois graphes. */}
+      <ChartLegend items={model.series.map((s) => ({ name: s.name, color: s.color }))} />
     </div>
   );
 }

@@ -2689,12 +2689,6 @@ html {
   height: 8px;
 }
 
-/* Précision rattachée à un item de légende — le type de climat d'une ville de
-   référence. */
-.line-chart-legend-detail {
-  color: var(--muted-soft);
-}
-
 .climate-metric + .climate-metric {
   margin-top: 22px;
 }
