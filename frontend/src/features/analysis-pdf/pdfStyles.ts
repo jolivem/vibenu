@@ -138,20 +138,36 @@ export const pdfStyles = StyleSheet.create({
     marginBottom: 16,
   },
   /**
-   * Mini-synthèse IA, pendant PDF de `.card-insight`. Le liseré d'accent joue le même
-   * rôle qu'à l'écran : séparer le commentaire généré de la donnée sourcée.
-   * react-pdf n'accepte pas le raccourci `borderLeft` — d'où les deux propriétés.
+   * Mini-synthèse IA, pendant PDF de `.card-insight`.
+   *
+   * Le liseré d'accent a disparu avec celui de l'écran : le libellé « EN BREF » posé en
+   * surtitre (`insightTag`) est le seul marqueur du commentaire généré — et le PDF n'en
+   * affichait aucun jusqu'ici, le liseré seul y étant muet.
    */
   insight: {
     fontFamily: FONTS.sans,
     fontSize: 8.5,
     lineHeight: 1.45,
     color: COLORS.textSoft,
-    marginTop: 4,
     marginBottom: 10,
-    borderLeftWidth: 1.5,
-    borderLeftColor: COLORS.accent,
-    paddingLeft: 7,
+  },
+  /** Surtitre du bloc ci-dessus — le pendant de `.card-insight-tag`, même vert d'accent. */
+  insightTag: {
+    fontFamily: FONTS.sansBold,
+    fontSize: 6.5,
+    letterSpacing: 0.6,
+    color: COLORS.accent,
+    marginTop: 4,
+    marginBottom: 1,
+  },
+
+  /** Mention d'origine des mini-synthèses, en pied de couverture. */
+  coverAiNotice: {
+    fontFamily: FONTS.sans,
+    fontSize: 7,
+    lineHeight: 1.4,
+    color: COLORS.mutedSoft,
+    marginTop: 20,
   },
 
   // === Cover page ===

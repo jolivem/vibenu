@@ -1,4 +1,6 @@
 import type { MunicipalesAnalysisDto, MunicipalesListeDto } from "@/types/location-analysis";
+import { CardInsight } from "@/components/CardInsight";
+import { NUANCE_LABEL } from "./electionLabels";
 
 /**
  * Couleurs par nuance de liste. Les codes municipaux sont préfixés « L » (liste), et
@@ -27,27 +29,6 @@ const NUANCE_COLOR: Record<string, string> = {
   LUXD: "#16233a",
 };
 
-const NUANCE_LABEL: Record<string, string> = {
-  LEXG: "Extrême gauche",
-  LFI: "La France insoumise",
-  LCOM: "Communiste",
-  LSOC: "Socialiste",
-  LUG: "Union de la gauche",
-  LVEC: "Écologiste",
-  LDVG: "Divers gauche",
-  LDIV: "Divers",
-  LREG: "Régionaliste",
-  LDVC: "Divers centre",
-  LENS: "Ensemble",
-  LMDM: "Modem",
-  LUDI: "UDI",
-  LLR: "Les Républicains",
-  LDVD: "Divers droite",
-  LUD: "Union de la droite",
-  LRN: "Rassemblement national",
-  LEXD: "Extrême droite",
-  LUXD: "Union extrême droite",
-};
 
 function formatPct(v: number): string {
   return `${v.toFixed(1).replace(".", ",")} %`;
@@ -168,7 +149,14 @@ function PlainList({ listes }: { listes: MunicipalesListeDto[] }) {
   );
 }
 
-export function MunicipalesCard({ municipales }: { municipales: MunicipalesAnalysisDto }) {
+export function MunicipalesCard({
+  municipales,
+  insight,
+}: {
+  municipales: MunicipalesAnalysisDto;
+  /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
+  insight?: string | null;
+}) {
   const { tour, participationPct, nuancee, villeEntiere, listes } = municipales;
   if (listes.length === 0) return null;
 
@@ -182,6 +170,8 @@ export function MunicipalesCard({ municipales }: { municipales: MunicipalesAnaly
         {villeEntiere && " · Résultat de la ville entière : le scrutin municipal ne se décline pas par arrondissement."}
         {listeUnique && " · Une seule liste était en lice."}
       </p>
+
+      <CardInsight text={insight} />
 
       {nuancee ? <NuancedList listes={listes} /> : <PlainList listes={listes} />}
 

@@ -14,6 +14,7 @@
 
 import { AGE_BUCKETS } from "@/components/analysis/ageChart";
 import { CLIMATE_METRICS, MONTH_NAMES } from "@/components/analysis/climateChart";
+import { NUANCE_LABEL, PARTI_LABEL } from "@/components/analysis/electionLabels";
 import { viewForMode } from "@/components/analysis/inseeChart";
 import { baseLabel, isArrondissement } from "@/components/analysis/securityChart";
 import type { CardInsightKey } from "@/server-shared/types/card-insights";
@@ -27,6 +28,7 @@ import type {
   HousingStatsDto,
   HouseholdsStatsDto,
   LocationAnalysisDto,
+  MunicipalesAnalysisDto,
   SecurityAnalysisDto,
 } from "@/server-shared/types/location-analysis.dto";
 import type {
@@ -39,6 +41,7 @@ import type {
   IndicateurCompare,
   LogementInsightInput,
   MenagesInsightInput,
+  MunicipalesInsightInput,
   PartCompare,
   SecuriteInsightInput,
   Tendance,
@@ -360,7 +363,10 @@ function buildElections(
     .slice(0, 3)
     .map((c) => ({
       candidat: c.candidat,
-      parti: c.parti,
+      // Le libellé, pas le code : « Rassemblement national » et non « RN ». Le modèle ne
+      // peut pas développer un sigle qu'il ne reçoit pas, et le prompt lui interdit d'en
+      // écrire.
+      parti: PARTI_LABEL[c.parti] ?? c.parti,
       pct_local: round(c.pctCommune),
       pct_national: round(c.pctNational),
       ecart_pts: round(c.pctCommune - c.pctNational),
@@ -372,6 +378,40 @@ function buildElections(
     participation_france_pct: round(elections.nationalParticipationPct),
     ecart_participation_pts: round(elections.participationPct - elections.nationalParticipationPct),
     candidats: top,
+  };
+}
+
+// --- Municipales ------------------------------------------------------------
+
+function buildMunicipales(
+  municipales: MunicipalesAnalysisDto | null | undefined,
+): MunicipalesInsightInput | undefined {
+  // Garde de MunicipalesCard : sans liste, pas de card.
+  if (!municipales || municipales.listes.length === 0) return undefined;
+
+  // Les trois premières, comme pour la présidentielle : au-delà, les scores sont dans le
+  // bruit et le modèle est tenté d'énumérer.
+  const top = [...municipales.listes]
+    .sort((a, b) => b.pctExprimes - a.pctExprimes)
+    .slice(0, 3)
+    .map((l) => ({
+      // La tête de liste plutôt que le libellé officiel quand elle existe : c'est le nom
+      // sous lequel la card la présente.
+      liste: l.teteDeListe ?? l.libelle,
+      // Idem : « Divers droite » et non « LDVD ».
+      nuance: l.nuance ? (NUANCE_LABEL[l.nuance] ?? l.nuance) : null,
+      pct_local: round(l.pctExprimes),
+      pct_national: l.pctNational === null ? null : round(l.pctNational),
+      ecart_pts: l.pctNational === null ? null : round(l.pctExprimes - l.pctNational),
+      sieges: l.siegesCm,
+    }));
+
+  return {
+    scrutin: `Municipales 2026, ${municipales.tour === 1 ? "1er" : "2e"} tour`,
+    ville_entiere: municipales.villeEntiere,
+    participation_pct: round(municipales.participationPct),
+    nuancee: municipales.nuancee,
+    listes: top,
   };
 }
 
@@ -523,6 +563,7 @@ export function buildCardInsightsInput(
     emploi: buildEmploi(data.demographics, data.mode),
     menages: buildMenages(data.demographics, data.mode),
     elections: buildElections(data.elections),
+    municipales: buildMunicipales(data.municipales),
     climat: buildClimat(data.climate),
   };
 }

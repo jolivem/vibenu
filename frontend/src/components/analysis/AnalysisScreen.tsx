@@ -410,7 +410,7 @@ export function AnalysisScreen() {
                 {hasContent.elections && (
                   <AnalysisSection id="elections">
                     {FEATURES.showMunicipales && data.municipales && (
-                      <MunicipalesCard municipales={data.municipales} />
+                      <MunicipalesCard municipales={data.municipales} insight={insights.municipales} />
                     )}
                     {FEATURES.showElections && data.elections && (
                       <ElectionsCard elections={data.elections} insight={insights.elections} />

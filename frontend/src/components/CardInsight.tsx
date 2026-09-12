@@ -34,8 +34,10 @@ export function CardInsight({ text, animate = true, className }: Props) {
 
   return (
     <p className={classes}>
-      {/* L'espace est explicite : la marge CSS règle l'affichage, pas le copier-coller
-          ni la lecture par un lecteur d'écran, qui liraient sinon « En brefLe prix ». */}
+      {/* Le libellé est posé sur sa propre ligne — `display: block` en CSS — mais reste
+          dans le même paragraphe : c'est une seule phrase du point de vue du texte, et
+          l'espace explicite évite « En brefLe prix » au copier-coller comme à la lecture
+          par un lecteur d'écran. */}
       <span className="card-insight-tag">En bref</span>{" "}
       {value}
     </p>

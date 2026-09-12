@@ -129,6 +129,29 @@ export interface ElectionsInsightInput {
   }>;
 }
 
+// --- Municipales ------------------------------------------------------------
+
+export interface MunicipalesInsightInput {
+  scrutin: string;
+  /** Résultat de la ville entière alors que l'adresse est dans un arrondissement (PLM). */
+  ville_entiere: boolean;
+  participation_pct: number;
+  /**
+   * Les listes ne sont nuancées que dans les communes d'une certaine taille — 91 % n'ont
+   * aucune étiquette politique, et il n'y a alors pas de score national à comparer. Le
+   * prompt doit le savoir pour ne pas chercher un écart qui n'existe pas.
+   */
+  nuancee: boolean;
+  listes: Array<{
+    liste: string;
+    nuance: string | null;
+    pct_local: number;
+    pct_national: number | null;
+    ecart_pts: number | null;
+    sieges: number | null;
+  }>;
+}
+
 // --- Climat -----------------------------------------------------------------
 
 export interface ClimatInsightInput {
@@ -177,5 +200,6 @@ export interface CardInsightsInput {
   emploi?: EmploiInsightInput;
   menages?: MenagesInsightInput;
   elections?: ElectionsInsightInput;
+  municipales?: MunicipalesInsightInput;
   climat?: ClimatInsightInput;
 }

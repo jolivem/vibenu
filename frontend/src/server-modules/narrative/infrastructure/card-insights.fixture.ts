@@ -20,6 +20,7 @@ export const CARD_INSIGHTS_FIXTURE: CardInsights = {
   logement: "Le parc est presque exclusivement collectif et majoritairement locatif, à l'inverse du profil national. Les logements de deux pièces dominent, dans des immeubles construits pour l'essentiel avant 1946.",
   emploi: "Les cadres et professions intellectuelles forment la catégorie la plus représentée, et la part de diplômés du supérieur dépasse de plus de quinze points la moyenne française. Le chômage reste proche du niveau national.",
   elections: "La participation a dépassé de trois points la moyenne nationale. Le vote s'est porté nettement plus à gauche qu'en France, l'écart le plus marqué atteignant une quinzaine de points.",
+  municipales: "La liste arrivée en tête réunit un peu plus du tiers des voix, dans un scrutin où la participation est restée sous la moitié des inscrits. Sa nuance dépasse de quelques points son score national.",
   climat: "Le climat est proche de celui de Rennes : des hivers doux, un mois de juillet qui culmine autour de 19 °C et une amplitude annuelle modérée. Les précipitations, réparties sur toute l'année, sont un peu supérieures à celles des villes de référence les plus sèches, avec un maximum en novembre et un minimum estival marqué.",
 };
 

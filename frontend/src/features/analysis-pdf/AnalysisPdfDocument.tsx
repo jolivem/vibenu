@@ -226,6 +226,18 @@ export function AnalysisPdfDocument({
           </View>
         )}
 
+        {/* Le pendant de `.analysis-ai-notice` de l'écran, que le PDF n'avait pas : il
+            circule sans la page d'analyse, et rien n'y disait que ces phrases sont
+            écrites par un modèle. Sur la couverture faute de bas de page assez long. */}
+        {FEATURES.showCardInsights && (
+          <Text style={pdfStyles.coverAiNotice}>
+            Les synthèses «&nbsp;En bref&nbsp;» de ce rapport sont rédigées par une
+            intelligence artificielle, à partir des seules données qu&apos;il contient. Les
+            chiffres et les sources, eux, proviennent directement des fichiers publics
+            cités.
+          </Text>
+        )}
+
         <View style={pdfStyles.coverFooter}>
           <Text style={pdfStyles.runningFooterDate}>{formattedDate}</Text>
           <Text style={pdfStyles.runningFooterPage}>01 / {String(totalPages).padStart(2, "0")}</Text>

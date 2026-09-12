@@ -22,7 +22,7 @@ import type { CardInsightsInput } from "../domain/card-insights.types";
  * elle fait partie de la clé primaire du cache, donc les entrées d'une version
  * antérieure cessent d'être servies sans qu'il y ait rien à supprimer.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 2;
+export const CARD_INSIGHTS_PROMPT_VERSION = 4;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
@@ -59,6 +59,11 @@ const BRIEFS: Record<CardInsightKey, { titreCard: string; consigne: string }> = 
     consigne:
       "la participation par rapport au national, et l'écart au national des un ou deux candidats les plus marquants",
   },
+  municipales: {
+    titreCard: "Municipales 2026",
+    consigne:
+      "la liste arrivée en tête et son score, la participation, et l'écart au national de sa nuance quand il est fourni",
+  },
   climat: {
     titreCard: "Climat",
     consigne:
@@ -85,6 +90,7 @@ RÈGLES DE FOND
 
 RÈGLES DE FORME
 - Langage courant. Interdits : IRIS, quantile, médiane pondérée, taux normalisé, corrélation, écart-type.
+- AUCUN sigle ni acronyme, même présent dans les données. Les étiquettes politiques te sont fournies en clair — « Union de la gauche », « Divers droite » — et tu les reprends telles quelles : jamais « LUG », « LDVD », « RN ». Si un nom d'établissement ou de liste contient un sigle, cite-le sans chercher à l'expliquer.
 - Ne nomme jamais le support : pas de « le graphique montre », « la courbe indique », « on observe ». Écris le fait directement.
 - Ton neutre et descriptif. Pas de jugement (« quartier agréable »), pas de superlatif sans chiffre, pas de conseil ni d'appel à l'action.
 - Pas de markdown, pas de titre, pas de guillemets autour du texte. Une seule chaîne par clé.
@@ -98,6 +104,7 @@ LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
 - Climat : il n'y a pas de moyenne France pertinente ; la comparaison se fait aux villes de référence fournies, en t'appuyant sur "ville_reference_la_plus_proche".
 - Emploi : le taux de chômage est celui du recensement, déclaratif, structurellement 1 à 2 points au-dessus du taux trimestriel diffusé dans les médias. Compare-le au taux France fourni, à rien d'autre.
 - Élections : décris l'écart au national, jamais l'électeur. Aucun jugement sur les habitants.
+- Municipales : quand "nuancee" est faux, les listes n'ont AUCUNE étiquette politique — l'État ne les attribue qu'au-delà d'une certaine taille de commune. Il n'y a alors ni nuance ni score national : décris les scores et la participation, sans chercher un écart qui n'existe pas et sans qualifier politiquement une liste. Quand "ville_entiere" est vrai, le résultat est celui de la ville entière et non de l'arrondissement : ne l'attribue pas au quartier.
 
 CLÉS À PRODUIRE
 Le champ "cles_attendues" du JSON d'entrée liste les sections effectivement affichées. Tu produis EXACTEMENT ces clés, ni plus ni moins. Une clé non listée ne doit pas apparaître dans ta réponse.

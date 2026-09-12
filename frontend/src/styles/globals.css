@@ -1339,13 +1339,34 @@ html {
  * commun gardaient 1,15 rem et les marges par défaut du navigateur, seuls titres de la
  * page à ne pas avoir été repris. La valeur commune est celle des blocs de la rubrique
  * Population, la plus nombreuse. */
-.card h3 {
-  font-family: var(--font-serif), var(--font-serif-fallback);
-  font-weight: 400;
-  font-size: 1rem;
-  letter-spacing: -0.005em;
-  color: var(--text);
+/* Titre de bloc, et le libellé « En bref » qui en partage la composition.
+ *
+ * Sans et capitales, là où le `h2` de la card reste en serif bas de casse. La distinction
+ * devient porteuse : le serif nomme la card — un titre éditorial —, les capitales nomment
+ * un bloc à l'intérieur. Le libellé de la mini-synthèse en est un : il annonce la phrase
+ * qui suit comme un titre annonce son bloc.
+ *
+ * Trois réglages solidaires des capitales : la taille descend (des capitales ont la
+ * hauteur apparente d'un corps supérieur d'un tiers), l'interlettrage passe en positif
+ * (des capitales serrées deviennent illisibles), et la graisse reste à 600 pour tenir face
+ * au texte courant.
+ *
+ * Déclaration partagée plutôt que recopiée : c'est la seule façon que les deux ne
+ * divergent pas au prochain réglage. Seule la couleur les sépare, plus bas. */
+.card h3,
+.card-insight-tag {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
   margin: 0 0 2px;
+}
+
+/* Noir : en gris, ce serait l'ancien style des sections cadastre, qui se lisait comme une
+   étiquette de champ et non comme un titre. */
+.card h3 {
+  color: var(--text);
 }
 
 /* Un `h3` posé directement dans la card n'a pas de conteneur pour l'espacer du bloc
@@ -1582,32 +1603,57 @@ html {
 }
 
 /* Mini-synthèse IA — ce que disent les courbes, sous le titre de la card */
+/*
+ * Chapeau d'une card : la phrase qui dit, sous le titre, ce que la card montre.
+ *
+ * Règle unique. Elle était recopiée à l'identique dans trois cards — élections, climat,
+ * sécurité — et absente des quatre autres, dont les chapeaux rendaient donc à la taille
+ * héritée avec les marges par défaut de `<p>`. La classe ne posait même pas de couleur :
+ * son nom promettait un gris que le CSS ne donnait pas.
+ *
+ * Sélecteur en enfant direct : les sept usages sont des enfants immédiats de `.card`, et
+ * la restriction évite d'attraper un `.muted` qu'on placerait un jour dans un bloc
+ * intérieur, où la taille et les marges d'un chapeau n'auraient pas de sens.
+ */
+.card > .muted {
+  margin: 4px 0 14px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/*
+ * La phrase portait trois marqueurs pour une seule idée : un liseré d'accent, une
+ * étiquette en capitales vertes au fil du texte, et le paragraphe de bas de page qui
+ * annonce déjà que ces synthèses sont écrites par une IA. Le liseré disparaît — répété
+ * sous cinq titres de card, il encadrait ce que l'étiquette nommait déjà.
+ */
 .card-insight {
   margin: 2px 0 18px;
   font-family: var(--font-sans);
   font-size: 0.95rem;
   line-height: 1.55;
   color: #2A2A2A;
-  border-left: 2px solid var(--accent);
-  padding-left: 12px;
-}
-
-/* Le sous-titre qui précède porte déjà `margin: 4px 0 14px` : on resserre l'écart. */
-.muted + .card-insight {
-  margin-top: -6px;
 }
 
 /*
  * Le libellé distingue le commentaire généré de la donnée sourcée qui l'entoure.
- * Discret mais présent : le lecteur doit pouvoir reconnaître une interprétation.
+ * Discret mais présent : le lecteur doit pouvoir reconnaître une interprétation — c'est
+ * le seul marqueur depuis que le liseré d'accent est tombé, d'où le vert, qui le rend
+ * repérable d'un coup d'œil.
+ *
+ * Sa composition est celle des titres de bloc (`.card h3`, plus haut) : il annonce la
+ * phrase qui suit exactement comme un titre annonce son bloc. `display: block` parce
+ * qu'il s'agit d'un `span` dans le paragraphe — une seule phrase du point de vue du
+ * texte, deux lignes à l'écran.
+ *
+ * Deux écarts avec les titres, et deux seulement : le vert, et une graisse d'un cran
+ * au-dessus (700 contre 600). Le vert ne suffit pas toujours — sur un écran mal calibré
+ * ou en vision dichromate, il se rapproche du noir — la graisse tient alors le relais.
  */
 .card-insight-tag {
+  display: block;
+  font-weight: 700;
   color: var(--accent);
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-right: 0.5em;
 }
 
 /*
@@ -2483,11 +2529,6 @@ html {
 }
 
 /* Elections card */
-.elections-card .muted {
-  margin: 4px 0 14px;
-  font-size: 0.85rem;
-}
-
 /* Les blocs de données des cards Élections et Municipales se calent sur la colonne de
    lecture commune à la page — celle des graphes (`--line-chart-max`) et des listes
    d'indicateurs. Sans elle, les barres s'étiraient sur toute la largeur de la card
@@ -2655,11 +2696,6 @@ html {
 }
 
 /* Climate card — profil mensuel en courbes (.line-chart*) + notes en .elections-footnote */
-.climate-card .muted {
-  margin: 4px 0 14px;
-  font-size: 0.85rem;
-}
-
 /* Légende commune aux trois graphes : posée une fois en haut, elle vaut pour tous —
    les couleurs des villes ne changent pas d'une mesure à l'autre. */
 /* Légende d'échelles : le lieu consulté d'abord, ses repères ensuite, tous sur la même
@@ -2694,11 +2730,6 @@ html {
 }
 
 /* Sécurité — cinq courbes sur 10 ans, mêmes conventions que le climat */
-.security-card .muted {
-  margin: 4px 0 14px;
-  font-size: 0.85rem;
-}
-
 .security-metric + .security-metric {
   margin-top: 22px;
 }
@@ -2787,7 +2818,9 @@ html {
 .metric-unit {
   margin: 0 0 8px;
   color: var(--muted-soft);
-  font-size: 0.85rem;
+  /* Sous un titre en capitales de 0,82 rem : à 0,85 rem, la ligne d'unité était
+     numériquement plus grande que le titre qu'elle suit. */
+  font-size: 0.78rem;
 }
 
 /* Barre empilée d'une partition — statut d'occupation, composition des ménages.
