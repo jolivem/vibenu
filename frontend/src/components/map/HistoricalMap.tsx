@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { CadastreParcelDto, GeoJsonGeometryDto } from "@/types/location-analysis";
 import { Map } from "./Map";
 import { LazyMap } from "./LazyMap";
@@ -57,6 +57,9 @@ interface Props {
  * texte de contexte doivent rester dans le DOM même hors écran, pour le Ctrl+F et, sur
  * les pages commune, pour l'indexation.
  */
+/** Curseur à gauche : la vue ancienne seule, sans rien du fond actuel. */
+const FULL_OLD_VIEW = 100;
+
 export function HistoricalMap({
   lat,
   lon,
@@ -67,14 +70,10 @@ export function HistoricalMap({
   defaultEraId = null,
 }: Props) {
   const [eraId, setEraId] = useState<string | null>(defaultEraId);
-  // Le dosage ne se réinitialise pas au changement d'époque : la frise est une
-  // sélection, le curseur un réglage. Qui a dosé 50 % pour lire un tracé ancien sur le
-  // bâti actuel veut la même lecture à l'époque suivante, pas un retour au plein écran.
-  //
   // Reste nommé `opacity` ici, et pas `blend` : c'est la valeur brute passée à
   // `raster-opacity`. Le mot juste à l'écran n'est pas le mot juste à la frontière de
   // MapLibre — c'est précisément la confusion que le libellé « Opacité » entretenait.
-  const [opacity, setOpacity] = useState(100);
+  const [opacity, setOpacity] = useState(FULL_OLD_VIEW);
 
   const coverage = useHistoricalCoverage(lon, lat, communeContour ? COMMUNE_PROBE_ZOOM : ADDRESS_ZOOM);
   const available = coveredEras(coverage);
@@ -87,6 +86,23 @@ export function HistoricalMap({
       setEraId(nearestCoveredEraId(eraId, coverage));
     }
   }, [coverage, eraId]);
+
+  /**
+   * Choisir une époque, c'est demander à la voir.
+   *
+   * Le dosage revient donc à fond sur la vue ancienne — curseur à gauche — à chaque
+   * sélection. Le réglage précédent était de le conserver, au motif que la frise est
+   * une sélection et le curseur un réglage ; en pratique, qui avait ramené le curseur
+   * près d'« Aujourd'hui » puis cliquait sur 1950 ne voyait rien changer, et la frise
+   * paraissait cassée. Le cas fréquent l'emporte sur le cas fin.
+   *
+   * Rien à réinitialiser en passant à « Aujourd'hui » (`null`) : le curseur y est
+   * inactif, et la sélection d'époque suivante le remettra à gauche.
+   */
+  const handleEraChange = useCallback((nextEraId: string | null) => {
+    setEraId(nextEraId);
+    if (nextEraId !== null) setOpacity(FULL_OLD_VIEW);
+  }, []);
 
   const { onMapReady } = useHistoricalLayer(eraId, opacity / 100);
   const era = eraId === null ? null : HISTORICAL_ERAS_BY_ID.get(eraId);
@@ -111,7 +127,7 @@ export function HistoricalMap({
       </LazyMap>
 
       <div className="history-controls">
-        <EraTimeline value={eraId} onChange={setEraId} eras={available} />
+        <EraTimeline value={eraId} onChange={handleEraChange} eras={available} />
         <EraBlendSlider value={opacity} onChange={setOpacity} era={era ?? null} />
         <p className="era-context">
           {era ? (

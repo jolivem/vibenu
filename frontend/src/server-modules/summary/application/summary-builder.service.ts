@@ -19,13 +19,24 @@ export class SummaryBuilderService implements SummaryService {
       warnings.push("Desserte en transports limitée");
     }
 
-    // Risques
-    if (input.riskLevel === "faible") {
-      strengths.push("Profil de risque plutôt favorable");
-    } else if (input.riskLevel === "modéré") {
-      warnings.push("Quelques risques modérés à vérifier avant engagement");
-    } else {
-      warnings.push("Risques élevés identifiés — étude spécialisée recommandée");
+    // Risques — `switch` exhaustif : l'ajout d'un niveau ne compilera pas sans passer
+    // ici, ce qui évite de reconduire le « tout le reste est élevé » d'avant.
+    switch (input.riskLevel) {
+      case "faible":
+        strengths.push("Profil de risque plutôt favorable");
+        break;
+      case "présent":
+        warnings.push("Risques signalés à cette adresse, sans gravité publiée — à vérifier");
+        break;
+      case "modéré":
+        warnings.push("Quelques risques modérés à vérifier avant engagement");
+        break;
+      case "élevé":
+        warnings.push("Risques élevés identifiés — étude spécialisée recommandée");
+        break;
+      case "inconnu":
+        warnings.push("Risques non renseignés pour cette adresse — à vérifier sur georisques.gouv.fr");
+        break;
     }
 
     // Immobilier

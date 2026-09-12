@@ -56,7 +56,7 @@ export function ClimateCard({
 
       <CardInsight text={insight} />
 
-      <ul className="line-chart-legend climate-legend">
+      <ul className="line-chart-legend line-chart-legend--scales climate-legend">
         <li>
           <span className="line-chart-legend-dot" style={{ background: LOCAL_SERIES_COLOR }} />
           {monthly.local.name}
@@ -68,7 +68,12 @@ export function ClimateCard({
               style={{ background: REFERENCE_COLORS[ref.name] ?? FALLBACK_REFERENCE_COLOR }}
             />
             {ref.name}
-            {ref.climateType && <span className="climate-legend-type"> · {ref.climateType}</span>}
+            {/* « climat » ajouté ici et non dans `REFERENCE_CLIMATES` : ces valeurs
+                partent aussi au modèle sous `type_climat`, où l'adjectif nu se combine
+                mieux dans une phrase rédigée. */}
+            {ref.climateType && (
+              <span className="climate-legend-type"> · climat {ref.climateType}</span>
+            )}
           </li>
         ))}
       </ul>

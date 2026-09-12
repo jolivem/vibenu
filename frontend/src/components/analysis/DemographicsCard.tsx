@@ -1,8 +1,15 @@
-import type { DemographicsAnalysisDto } from "@/types/location-analysis";
+import type { AggregateStatsDto, DemographicsAnalysisDto, ScopedStatsDto } from "@/types/location-analysis";
 import type { AnalysisMode } from "@/server-shared/types/location-analysis.dto";
 import { CardInsight } from "@/components/CardInsight";
 import { AgeChart } from "./AgeChart";
-import { formatDensity, formatPct, formatPopulation, formatRevenu } from "./demographicsFormat";
+import {
+  IndicatorBlock,
+  absoluteComparison,
+  ratioComparison,
+  type Indicator,
+} from "./IndicatorBlock";
+import { viewForMode } from "./inseeChart";
+import { formatDensity, formatPct, formatRevenu } from "./demographicsFormat";
 
 interface Props {
   demographics: DemographicsAnalysisDto;
@@ -12,75 +19,66 @@ interface Props {
 }
 
 /**
- * Chiffres démographiques du périmètre analysé.
+ * Densité, revenus et pauvreté du périmètre analysé, plus la pyramide des âges.
  *
- * La zone n'est plus nommée ici ni montrée sur une carte : `PopulationScope` s'en charge
- * en tête de section, pour les quatre cards à la fois.
+ * La population totale n'y figure plus : elle ne se compare pas — les 67 millions
+ * d'habitants de la France ne sont pas un repère pour un quartier de 2 000 — et
+ * `PopulationScope` nomme déjà la zone en tête de section, pour les quatre cards.
  */
+const INDICATORS: Array<Indicator<AggregateStatsDto>> = [
+  {
+    key: "densite",
+    title: "Densité",
+    unit: "habitants au km²",
+    pick: (s) => s.density,
+    format: formatDensity,
+    // En rapport et non en écart : « 479 fois la moyenne française » se lit, « 50 615
+    // hab./km² de plus » ne dit rien à l'œil.
+    comparison: ratioComparison(formatDensity),
+  },
+  {
+    key: "revenu",
+    title: "Revenu médian",
+    unit: "revenu disponible médian par unité de consommation",
+    pick: (s) => s.revenuMedian,
+    format: formatRevenu,
+    comparison: absoluteComparison(formatRevenu),
+  },
+  {
+    key: "pauvrete",
+    title: "Taux de pauvreté",
+    unit: "part de la population sous le seuil de 60 % du niveau de vie médian",
+    pick: (s) => s.tauxPauvrete,
+    format: formatPct,
+  },
+];
+
 export function DemographicsCard({ demographics, mode, insight }: Props) {
-  const { communeStats, nationalStats, communeIrisCount } = demographics;
-  const france = nationalStats;
-  const isCommuneMode = mode === "commune";
+  /**
+   * Les champs du quartier sont à plat sur le DTO, là où les trois autres axes de la
+   * rubrique suivent `{ iris, commune, france }` — irrégularité documentée dans
+   * `DemographicsAnalysisDto`. On la replie ici pour réutiliser `viewForMode`, qui règle
+   * d'un coup ce que cette card traitait en deux branches : en mode commune, la commune
+   * devient la série principale comparée à la seule France ; en mode adresse, la colonne
+   * communale s'efface quand la commune n'a qu'un IRIS.
+   */
+  const scoped: ScopedStatsDto<AggregateStatsDto> = {
+    iris: {
+      population: demographics.population,
+      density: demographics.density,
+      ageDistribution: demographics.ageDistribution,
+      revenuMedian: demographics.revenuMedian,
+      tauxPauvrete: demographics.tauxPauvrete,
+    },
+    commune: demographics.communeStats,
+    france: demographics.nationalStats,
+  };
 
-  // En mode commune : pas d'IRIS pertinent, on affiche commune vs France uniquement.
-  if (isCommuneMode) {
-    const communeData = communeStats;
-    return (
-      <section className="card">
-        <h2>Démographie</h2>
+  const view = viewForMode(scoped, mode, demographics);
+  if (!view) return null;
 
-        <CardInsight text={insight} />
-
-        <table className="demographics-table">
-          <thead>
-            <tr>
-              <th scope="col">Indicateur</th>
-              <th scope="col">{demographics.nomCommune || "Commune"}</th>
-              {france && <th scope="col">France</th>}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Population</th>
-              <td>{formatPopulation(communeData?.population ?? null)}</td>
-              {france && <td>{formatPopulation(france.population)}</td>}
-            </tr>
-            <tr>
-              <th scope="row">Revenu médian</th>
-              <td>{formatRevenu(communeData?.revenuMedian ?? null)}</td>
-              {france && <td>{formatRevenu(france.revenuMedian)}</td>}
-            </tr>
-            <tr>
-              <th scope="row">Taux de pauvreté</th>
-              <td>{formatPct(communeData?.tauxPauvrete ?? null)}</td>
-              {france && <td>{formatPct(france.tauxPauvrete)}</td>}
-            </tr>
-          </tbody>
-        </table>
-
-        {communeData?.ageDistribution && (
-          <div className="demographics-age">
-            <h3>Répartition par âge</h3>
-            <AgeChart
-              iris={communeData.ageDistribution}
-              france={france?.ageDistribution ?? null}
-              showCommune={false}
-              mainSeriesName={demographics.nomCommune || "Commune"}
-            />
-          </div>
-        )}
-
-        <p className="demographics-footnote">
-          Moyennes pondérées par population, agrégées à partir des quartiers IRIS de la
-          commune. Le revenu médian et le taux de pauvreté ne sont publiés que pour les quartiers assez peuplés, plutôt urbains : ils manquent souvent à l'échelle du quartier, et le repère France s'en trouve un peu plus élevé que le taux national.
-        </p>
-      </section>
-    );
-  }
-
-  // Mode adresse : IRIS principal + commune (si plusieurs IRIS) + France.
-  const showCommune = communeIrisCount > 1 && communeStats !== null;
-  const commune = showCommune ? communeStats : null;
+  const local = view.scoped.iris;
+  const communeAges = view.showCommune ? view.scoped.commune?.ageDistribution : null;
 
   return (
     <section className="card">
@@ -88,58 +86,36 @@ export function DemographicsCard({ demographics, mode, insight }: Props) {
 
       <CardInsight text={insight} />
 
-      <table className="demographics-table">
-        <thead>
-          <tr>
-            <th scope="col">Indicateur</th>
-            <th scope="col">Quartier</th>
-            {showCommune && <th scope="col">{demographics.nomCommune || "Commune"}</th>}
-            {france && <th scope="col">France</th>}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">Population</th>
-            <td>{formatPopulation(demographics.population)}</td>
-            {showCommune && <td>{formatPopulation(commune?.population ?? null)}</td>}
-            {france && <td>{formatPopulation(france.population)}</td>}
-          </tr>
-          <tr>
-            <th scope="row">Densité</th>
-            <td>{formatDensity(demographics.density)}</td>
-            {showCommune && <td>—</td>}
-            {france && <td>—</td>}
-          </tr>
-          <tr>
-            <th scope="row">Revenu médian</th>
-            <td>{formatRevenu(demographics.revenuMedian)}</td>
-            {showCommune && <td>{formatRevenu(commune?.revenuMedian ?? null)}</td>}
-            {france && <td>{formatRevenu(france.revenuMedian)}</td>}
-          </tr>
-          <tr>
-            <th scope="row">Taux de pauvreté</th>
-            <td>{formatPct(demographics.tauxPauvrete)}</td>
-            {showCommune && <td>{formatPct(commune?.tauxPauvrete ?? null)}</td>}
-            {france && <td>{formatPct(france.tauxPauvrete)}</td>}
-          </tr>
-        </tbody>
-      </table>
+      {INDICATORS.map((indicator) => (
+        <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
+      ))}
 
-      {demographics.ageDistribution && (
-        <div className="demographics-age">
+      {/* `.insee-metric` : même gabarit que les blocs d'indicateurs ci-dessus et que les
+          graphes des autres cards — titre en `h3` de plein rang, puis ligne d'unité.
+          L'ancienne classe `.demographics-age` composait ce titre en légende (0,85 rem,
+          gris, centré), ce qui le faisait lire comme le sous-titre du graphe plutôt que
+          comme un titre de section. */}
+      {local?.ageDistribution && (
+        <div className="insee-metric">
           <h3>Répartition par âge</h3>
+          <p className="insee-metric-unit">en % de la population</p>
           <AgeChart
-            iris={demographics.ageDistribution}
-            commune={commune?.ageDistribution ?? null}
-            france={france?.ageDistribution ?? null}
-            showCommune={showCommune}
+            iris={local.ageDistribution}
+            commune={communeAges ?? null}
+            france={view.scoped.france?.ageDistribution ?? null}
+            showCommune={view.showCommune}
+            mainSeriesName={view.localName}
           />
         </div>
       )}
 
       <p className="demographics-footnote">
-        Commune et France : moyennes pondérées par population, calculées à partir des
-        quartiers. Le revenu médian et le taux de pauvreté ne sont publiés que pour les quartiers assez peuplés, plutôt urbains : ils manquent souvent à l'échelle du quartier, et le repère France s'en trouve un peu plus élevé que le taux national.
+        {mode === "commune"
+          ? "Moyennes pondérées par population, agrégées à partir des quartiers IRIS de la commune."
+          : "Commune et France : moyennes pondérées par population, calculées à partir des quartiers."}{" "}
+        Le revenu médian et le taux de pauvreté ne sont publiés que pour les quartiers
+        assez peuplés, plutôt urbains : ils manquent souvent à l&apos;échelle du quartier,
+        et le repère France s&apos;en trouve un peu plus élevé que le taux national.
       </p>
     </section>
   );

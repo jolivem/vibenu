@@ -87,6 +87,12 @@ interface EraBlendProps {
  * n'annoncerait que « 60 » à un lecteur d'écran ne dirait rien du tout, d'où le
  * `aria-valuetext` qui le rattache à l'époque. Les pôles sont `aria-hidden` : ils
  * seraient sinon lus en plus du nom du curseur, qui les reprend déjà.
+ *
+ * Sens de lecture : le passé à gauche, aujourd'hui à droite, comme la frise des époques
+ * juste au-dessus — pousser le curseur vers la droite avance dans le temps. La prop
+ * `value`, elle, reste la part de la vue ANCIENNE : c'est ce que `raster-opacity` attend
+ * de l'autre côté, et la retourner ici plutôt que dans `HistoricalMap` garde le
+ * renversement là où il est visible, à côté des deux pôles qu'il fait correspondre.
  */
 export function EraBlendSlider({ value, onChange, era }: EraBlendProps) {
   // Sans époque il n'y a rien à mélanger. Le curseur reste affiché, inactif : le retirer
@@ -97,25 +103,28 @@ export function EraBlendSlider({ value, onChange, era }: EraBlendProps) {
   return (
     <label className={disabled ? "era-blend is-disabled" : "era-blend"}>
       <span className="era-blend-pole" aria-hidden="true">
-        Aujourd&apos;hui
+        {oldView}
       </span>
       <input
         type="range"
         min={0}
         max={100}
         step={5}
-        value={value}
+        // La position du curseur va du passé (0, à gauche) à aujourd'hui (100, à
+        // droite) ; `value` compte l'inverse, la part de la vue ancienne.
+        value={100 - value}
         disabled={disabled}
         aria-label={
           era
-            ? `Fondu entre la vue actuelle et ${era.label.toLowerCase()} ${era.period}`
-            : "Fondu entre la vue actuelle et la vue ancienne"
+            ? `Fondu entre ${era.label.toLowerCase()} ${era.period} et la vue actuelle`
+            : "Fondu entre la vue ancienne et la vue actuelle"
         }
+        // Annonce la part de l'époque, et non la position : c'est ce que l'écran montre.
         aria-valuetext={era ? `${era.period} à ${value} %` : `${value} %`}
-        onChange={(event) => onChange(Number(event.target.value))}
+        onChange={(event) => onChange(100 - Number(event.target.value))}
       />
       <span className="era-blend-pole" aria-hidden="true">
-        {oldView}
+        Aujourd&apos;hui
       </span>
     </label>
   );

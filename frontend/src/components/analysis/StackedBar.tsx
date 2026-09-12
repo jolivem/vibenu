@@ -93,6 +93,7 @@ export function StackedBarGroup({ rows }: { rows: StackedBarRow[] }) {
       ))}
       <ChartLegend
         className="stacked-bar-legend"
+        kind="categories"
         items={legend.map((s) => ({
           name: s.label,
           color: s.color,

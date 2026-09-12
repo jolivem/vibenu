@@ -11,6 +11,15 @@ interface LayerToggleProps {
   overlayLayers?: OverlayLayerConfig[];
   visibleLayers: Set<string>;
   onToggle: (layerId: string) => void;
+  /**
+   * Consigne d'usage, affichée à côté du titre « Risques » — donc juste au-dessus des
+   * cases qu'elle décrit.
+   *
+   * En prop et non en dur : ce panneau sert toutes les cartes de la page. Une phrase
+   * parlant de zones de risque y serait fausse dès qu'une autre carte activerait ses
+   * calques.
+   */
+  hint?: string;
 }
 
 function LayerCheckbox({
@@ -27,11 +36,14 @@ function LayerCheckbox({
   );
 }
 
-export function LayerTogglePanel({ riskLayers, overlayLayers = [], visibleLayers, onToggle }: LayerToggleProps) {
+export function LayerTogglePanel({ riskLayers, overlayLayers = [], visibleLayers, onToggle, hint }: LayerToggleProps) {
   return (
     <div className="layer-toggle-panel">
       <div className="layer-toggle-group">
-        <span className="layer-toggle-title">Risques</span>
+        <span className="layer-toggle-title">
+          Risques
+          {hint && <span className="layer-toggle-hint">{hint}</span>}
+        </span>
         {riskLayers.map((l) => (
           <LayerCheckbox key={l.id} id={l.id} label={l.label} color={l.color}
             checked={visibleLayers.has(l.id)} onToggle={onToggle} />

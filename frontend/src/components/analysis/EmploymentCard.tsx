@@ -1,6 +1,6 @@
 import type { AnalysisMode, DemographicsAnalysisDto, EmploymentStatsDto } from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
-import { ScopedStatsTable, type ScopedRow } from "./ScopedStatsTable";
+import { IndicatorBlock, type Indicator } from "./IndicatorBlock";
 import { formatPct } from "./demographicsFormat";
 import { viewForMode } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
@@ -26,10 +26,32 @@ const DIPLOMA_TITLES = [
   "Bac + 5 ou plus",
 ] as const;
 
-const ROWS: ScopedRow<EmploymentStatsDto>[] = [
-  { label: "Taux de chômage", render: (s) => formatPct(s.tauxChomage) },
-  { label: "Taux d'activité", render: (s) => formatPct(s.tauxActivite) },
-  { label: "Diplômés du supérieur", render: (s) => formatPct(s.pctDiplomesSuperieur) },
+/**
+ * Les trois taux de la card, chacun dans son propre bloc titré — même gabarit que les
+ * deux graphes qui les suivent. Cf. `IndicatorBlock` pour le motif.
+ */
+const INDICATORS: Array<Indicator<EmploymentStatsDto>> = [
+  {
+    key: "chomage",
+    title: "Taux de chômage",
+    unit: "en % des actifs de 15-64 ans",
+    pick: (s) => s.tauxChomage,
+    format: formatPct,
+  },
+  {
+    key: "activite",
+    title: "Taux d'activité",
+    unit: "en % des 15-64 ans",
+    pick: (s) => s.tauxActivite,
+    format: formatPct,
+  },
+  {
+    key: "diplomes",
+    title: "Diplômés du supérieur",
+    unit: "en % des 15 ans et plus non scolarisés",
+    pick: (s) => s.pctDiplomesSuperieur,
+    format: formatPct,
+  },
 ];
 
 interface Props {
@@ -54,18 +76,11 @@ export function EmploymentCard({ demographics, mode, insight }: Props) {
   return (
     <section className="card">
       <h2>Emploi et qualifications</h2>
-      <p className="muted">
-        Ce que font et ce qu&apos;ont étudié les habitants, recensés par l&apos;INSEE en
-        2021.
-      </p>
-
       <CardInsight text={insight} />
 
-      <ScopedStatsTable view={view} rows={ROWS} />
-      <p className="demographics-note">
-        Chômage et activité rapportés aux 15-64 ans ; diplômés du supérieur, aux
-        personnes de 15 ans ou plus ayant terminé leurs études.
-      </p>
+      {INDICATORS.map((indicator) => (
+        <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
+      ))}
 
       <DistributionChart
         title="Catégories socioprofessionnelles"

@@ -21,9 +21,13 @@ interface Props {
  * nom du quartier vivaient dans la card Démographie : qui arrivait sur la card Logement
  * n'avait aucun moyen de savoir à quoi « Quartier » renvoyait.
  *
- * En mode commune il n'y a pas d'IRIS à montrer — celui que renvoie le serveur est celui
- * du centroïde, sans rapport avec l'étendue de la ville. Le bandeau se réduit alors à sa
- * ligne de texte, qui dit que tout ce qui suit porte sur la commune entière.
+ * **Rien n'est rendu en mode commune.** Il n'y a alors pas d'IRIS à montrer — celui que
+ * renvoie le serveur est celui du centroïde, sans rapport avec l'étendue de la ville —
+ * et le bandeau se réduisait à répéter le nom de la commune, déjà en tête de page, suivi
+ * d'une phrase disant qu'il n'y avait pas de découpage. Une card entière pour annoncer
+ * une absence de subdivision : la section commence désormais directement par ses
+ * données. `lead` est rendu tel quel dans le corps en `flex column`, donc un retour
+ * `null` ne laisse ni cadre vide ni interstice.
  *
  * Il a d'abord été rendu sans cadre, pour ne pas ajouter une cinquième card à celles
  * qu'il chapeaute. À l'usage, l'inverse s'est vérifié : posé nu au milieu d'une colonne
@@ -34,19 +38,7 @@ interface Props {
 export function PopulationScope({ demographics, mode, children }: Props) {
   const { nomIris, nomCommune, codeIris, communeStats, communeIrisCount } = demographics;
 
-  if (mode === "commune") {
-    return (
-      <div className="card section-scope">
-        <p className="section-scope-zone">
-          <span className="section-scope-kicker">Commune :</span> {nomCommune || codeIris}
-        </p>
-        <p className="section-scope-text">
-          Toutes les données ci-dessous décrivent la commune entière, sans découpage par
-          quartier.
-        </p>
-      </div>
-    );
-  }
+  if (mode === "commune") return null;
 
   // Même prédicat que la colonne « Commune » des quatre tableaux : dans une commune à
   // IRIS unique, elle répéterait le quartier à l'identique.

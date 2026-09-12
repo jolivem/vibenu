@@ -5,16 +5,19 @@ import { pdfStyles } from "../pdfStyles";
 const LEVEL_LABEL: Record<string, string> = {
   élevé: "Élevé",
   modéré: "Modéré",
+  présent: "Signalé",
   faible: "Faible",
+  inconnu: "Non renseigné",
   absent: "Absent",
 };
 
 export function PdfRisks({ risks }: { risks: RiskAnalysisDto }) {
+  // Même répartition que `RisksCard`, pour que l'export dise ce que dit l'écran.
   const highlighted = risks.categories.filter(
-    (r) => r.level === "élevé" || r.level === "modéré",
+    (r) => r.level === "élevé" || r.level === "modéré" || r.level === "présent",
   );
   const minor = risks.categories.filter(
-    (r) => r.level === "faible" || r.level === "absent",
+    (r) => r.level === "faible" || r.level === "inconnu",
   );
 
   return (
@@ -31,8 +34,10 @@ export function PdfRisks({ risks }: { risks: RiskAnalysisDto }) {
 
       {minor.length > 0 && (
         <>
+          {/* « Autres risques » et non « Risques faibles » : le groupe accueille aussi
+              les catégories non renseignées, qui ne sont pas faibles. */}
           <Text style={pdfStyles.faiblesHeader}>
-            Risques faibles
+            Autres risques
           </Text>
           <View style={pdfStyles.faiblesGrid}>
             {minor.map((risk) => (

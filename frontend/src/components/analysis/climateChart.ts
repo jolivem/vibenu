@@ -57,12 +57,19 @@ export { LOCAL_SERIES_COLOR };
 
 /**
  * Teintes des villes de référence, **fixes d'un graphe à l'autre** : la légende
- * s'apprend une fois et vaut pour les trois graphes. Volontairement désaturées, pour
- * rester des repères et ne pas concurrencer la série locale.
+ * s'apprend une fois et vaut pour les trois graphes. Rouge et gris restent désaturés,
+ * pour ne pas concurrencer la série locale.
  *
  * Chaque teinte dit le climat qu'elle représente, ce qui donne une légende qu'on n'a
  * presque pas besoin de lire : bleu pour le continental de Strasbourg, rouge pour le
  * méditerranéen de Marseille, gris pour l'océanique tempéré de La Rochelle.
+ *
+ * Le bleu de Strasbourg fait exception et porte une chroma de 53 : à 33, il se
+ * confondait avec le gris de La Rochelle. Mesuré (CIEDE2000, dichromatismes simulés
+ * par les matrices de Machado 2009), l'écart entre les deux passe de 13,2 à 16,6 en
+ * vision normale, et de 12,1 à 17,3 en protanopie — le pire cas de l'ancienne valeur.
+ * La clarté, elle, ne bouge pas (L* 45,8 contre 45,4) : c'est la saturation seule qui
+ * les sépare, donc l'argument de clarté ci-dessous reste valable tel quel.
  *
  * ⚠️ Le rouge et le vert de la série locale se ressemblent en vision deutéranope. Ce
  * qui les sépare tient au tracé bien plus qu'à la teinte : la série locale est deux fois
@@ -75,7 +82,7 @@ export { LOCAL_SERIES_COLOR };
  * propre » sans reprendre les couleurs : c'est là que se joue l'essentiel.
  */
 export const REFERENCE_COLORS: Record<string, string> = {
-  Strasbourg: "#3F6EA3",
+  Strasbourg: "#2F6BC4",
   Marseille: "#CB7F76",
   "La Rochelle": "#6B7280",
 };

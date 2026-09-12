@@ -395,14 +395,14 @@ export function AnalysisScreen() {
                     {FEATURES.showDemographics && data.demographics && (
                       <DemographicsCard demographics={data.demographics} mode={data.mode} insight={insights.demographie} />
                     )}
-                    {FEATURES.showHousing && data.demographics && (
-                      <HousingCard demographics={data.demographics} mode={data.mode} insight={insights.logement} />
-                    )}
                     {FEATURES.showEmployment && data.demographics && (
                       <EmploymentCard demographics={data.demographics} mode={data.mode} insight={insights.emploi} />
                     )}
                     {FEATURES.showHouseholds && data.demographics && (
                       <HouseholdsCard demographics={data.demographics} mode={data.mode} insight={insights.menages} />
+                    )}
+                    {FEATURES.showHousing && data.demographics && (
+                      <HousingCard demographics={data.demographics} mode={data.mode} insight={insights.logement} />
                     )}
                   </AnalysisSection>
                 )}
@@ -439,6 +439,7 @@ export function AnalysisScreen() {
                           communeContour={data.map.communeContour}
                           basemap={THEMATIC_BASEMAP}
                           initialLayers={[DEFAULT_RISK_LAYER]}
+                          layerToggleHint="Cochez pour afficher les zones sur la carte."
                           height={THEMATIC_MAP_HEIGHT}
                         />
                       </LazyMap>

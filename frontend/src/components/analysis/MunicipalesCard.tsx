@@ -79,13 +79,19 @@ function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
         const label = liste.nuance ? (NUANCE_LABEL[liste.nuance] ?? liste.nuance) : "Sans étiquette";
         const delta = liste.pctNational === null ? null : liste.pctExprimes - liste.pctNational;
         const nbSieges = sieges(liste);
+        // Sans tête de liste publiée, le libellé officiel tient ce rang plutôt que de
+        // laisser la ligne réduite à sa seule nuance.
+        const teteDeListe = liste.teteDeListe ?? liste.libelle;
 
         return (
           <li key={liste.panneau} className="elections-row">
             <div className="elections-row-head">
+              {/* La nuance d'abord : c'est le nom de la liste, et c'est ce qu'on cherche
+                  dans un scrutin municipal. La tête de liste, souvent inconnue hors de
+                  la commune, la suit au second rang. */}
               <span className="elections-name">
-                {liste.teteDeListe ?? liste.libelle}
-                <span className="elections-parti">{label}</span>
+                {label}
+                {teteDeListe && <span className="elections-tete">{teteDeListe}</span>}
               </span>
               {delta !== null && (
                 <span
@@ -188,7 +194,7 @@ export function MunicipalesCard({ municipales }: { municipales: MunicipalesAnaly
       )}
       <p className="elections-footnote">
         Source : Ministère de l&apos;Intérieur · Résultats des élections municipales des 15
-        et 22 mars 2026 (licence Ouverte 2.0).
+        et 22 mars 2026.
       </p>
     </section>
   );

@@ -142,7 +142,7 @@ export function SecurityCard({
       </p>
       <p className="elections-footnote">
         Source : Ministère de l&apos;Intérieur (SSMSI) · Bases statistiques de la délinquance
-        enregistrée (licence Ouverte 2.0).
+        enregistrée.
       </p>
     </section>
   );

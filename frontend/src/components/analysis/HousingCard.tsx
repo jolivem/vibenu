@@ -1,10 +1,9 @@
 import type { AnalysisMode, DemographicsAnalysisDto, HousingStatsDto } from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
-import { ScopedStatsTable, type ScopedRow } from "./ScopedStatsTable";
+import { IndicatorBlock, type Indicator } from "./IndicatorBlock";
 import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { formatPct } from "./demographicsFormat";
 import { STACK_COLORS, viewForMode } from "./inseeChart";
-import { formatFr } from "@/lib/format";
 import { CardInsight } from "@/components/CardInsight";
 
 const ROOM_LABELS = ["1 p.", "2 p.", "3 p.", "4 p.", "5 p. et +"] as const;
@@ -22,14 +21,29 @@ const EPOCH_TITLES = [
 const [OWNER, PRIVATE_RENT, SOCIAL_RENT, FREE] = STACK_COLORS;
 const [HOUSE, FLAT] = STACK_COLORS;
 
-const ROWS: ScopedRow<HousingStatsDto>[] = [
-  { label: "Logements", render: (s) => (s.logements == null ? "—" : formatFr(s.logements)) },
+/**
+ * Les deux taux scalaires de la card, chacun dans son bloc titré.
+ *
+ * Le nombre de logements et celui des résidences principales n'y figurent plus : deux
+ * effectifs, qui ne se comparent pas à un total national, et dont le second ne servait
+ * que de dénominateur — il est désormais nommé dans la ligne d'unité des blocs qui
+ * l'utilisent.
+ */
+const INDICATORS: Array<Indicator<HousingStatsDto>> = [
   {
-    label: "Résidences principales",
-    render: (s) => (s.residencesPrincipales == null ? "—" : formatFr(s.residencesPrincipales)),
+    key: "vacants",
+    title: "Logements vacants",
+    unit: "en % du parc total",
+    pick: (s) => s.pctVacants,
+    format: formatPct,
   },
-  { label: "Logements vacants", render: (s) => formatPct(s.pctVacants) },
-  { label: "Résidences secondaires", render: (s) => formatPct(s.pctResidencesSecondaires) },
+  {
+    key: "secondaires",
+    title: "Résidences secondaires",
+    unit: "en % du parc total",
+    pick: (s) => s.pctResidencesSecondaires,
+    format: formatPct,
+  },
 ];
 
 function occupancySegments(s: HousingStatsDto) {
@@ -72,7 +86,9 @@ export function HousingCard({ demographics, mode, insight }: Props) {
 
       <CardInsight text={insight} />
 
-      <ScopedStatsTable view={view} rows={ROWS} />
+      {INDICATORS.map((indicator) => (
+        <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
+      ))}
 
       <div className="insee-metric">
         <h3>Statut d&apos;occupation</h3>

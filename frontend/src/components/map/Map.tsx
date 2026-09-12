@@ -112,6 +112,8 @@ interface MapProps {
   onReady?: (map: MapLibreMap) => void;
   height?: string;
   showLayerToggle?: boolean;
+  /** Consigne affichée à côté du titre du panneau de calques. */
+  layerToggleHint?: string;
   /**
    * Fond de carte. `standard` (numéros de rue) pour la localisation, `gris` sous les
    * couches thématiques, ou un style complet pour un fond raster — `IGN_ORTHO_RASTER_STYLE`
@@ -138,7 +140,7 @@ interface MapProps {
   zoom?: number;
 }
 
-export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
+export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -615,6 +617,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           overlayLayers={overlayLayers}
           visibleLayers={visibleLayers}
           onToggle={handleToggle}
+          hint={layerToggleHint}
         />
       )}
     </div>

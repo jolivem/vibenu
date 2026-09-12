@@ -20,12 +20,28 @@ export interface ChartLegendItem {
 export function ChartLegend({
   items,
   className,
+  kind = "scales",
 }: {
   items: ChartLegendItem[];
   className?: string;
+  /**
+   * Ce que les items désignent, ce qui n'est pas décoratif :
+   *
+   * - `scales` — des échelles : le lieu consulté d'abord, ses repères ensuite. Le
+   *   premier item est mis en avant, à l'image de sa courbe (trait de 2,8 contre 1,4,
+   *   points deux fois plus larges). C'est cette hiérarchie, et non la teinte, qui tient
+   *   en vision dichromate — cf. la note de `climateChart.ts` sur le rouge et le vert.
+   * - `categories` — les parts d'une partition, de même rang. Mettre la première en
+   *   avant y serait faux : « Propriétaires » ne domine pas « Locataires ».
+   */
+  kind?: "scales" | "categories";
 }) {
+  const classes = ["line-chart-legend"];
+  if (kind === "scales") classes.push("line-chart-legend--scales");
+  if (className) classes.push(className);
+
   return (
-    <ul className={className ? `line-chart-legend ${className}` : "line-chart-legend"}>
+    <ul className={classes.join(" ")}>
       {items.map((item) => (
         <li key={item.name}>
           {item.swatch === "band" && <span className="line-chart-legend-band" />}

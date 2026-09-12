@@ -2179,6 +2179,17 @@ html {
   color: var(--muted);
 }
 
+/* Consigne posée à côté du titre du groupe. Annule les attributs de l'étiquette qui
+   l'héberge — capitales, graisse, interlettrage : ils conviennent à un mot, pas à une
+   phrase. */
+.layer-toggle-hint {
+  margin-left: 8px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 .layer-toggle-group label {
   display: flex;
   align-items: center;
@@ -2347,19 +2358,6 @@ html {
   color: var(--text);
 }
 
-/* Demographics card */
-.demographics-age {
-  max-width: var(--line-chart-max);
-  margin: 16px auto 0;
-}
-
-.demographics-age h3 {
-  font-size: 0.85rem;
-  margin: 12px 0 6px;
-  color: var(--muted);
-  text-align: center;
-}
-
 /* Graphe multi-séries en courbes, partagé par la répartition par âge et le profil
    climatique mensuel. Neutre par nature : rien ici ne connaît les tranches d'âge. */
 .line-chart {
@@ -2452,43 +2450,6 @@ html {
   opacity: 0.32;
 }
 
-.demographics-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  margin-top: 8px;
-}
-
-.demographics-table th,
-.demographics-table td {
-  padding: 6px 8px;
-  text-align: right;
-  border-bottom: 1px solid var(--border);
-}
-
-.demographics-table thead th {
-  font-weight: 600;
-  color: var(--muted);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.demographics-table tbody th {
-  text-align: left;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-/* La première colonne porte les libellés de ligne, alignés à gauche par la règle
-   ci-dessus. Son en-tête doit suivre : « Indicateur » aligné à droite flottait au-dessus
-   d'une colonne alignée à gauche, et rien ne le rattachait visuellement à elle. Les
-   colonnes de valeurs, elles, restent à droite — c'est ainsi que des nombres se
-   comparent d'une ligne à l'autre. */
-.demographics-table thead th:first-child {
-  text-align: left;
-}
-
 .demographics-note {
   font-size: 0.8rem;
   color: var(--muted);
@@ -2507,6 +2468,26 @@ html {
 .elections-card .muted {
   margin: 4px 0 14px;
   font-size: 0.85rem;
+}
+
+/* Les blocs de données des cards Élections et Municipales se calent sur la colonne de
+   lecture commune à la page — celle des graphes (`--line-chart-max`) et des listes
+   d'indicateurs. Sans elle, les barres s'étiraient sur toute la largeur de la card
+   quand « Statut d'occupation », deux sections plus haut, s'arrête à 520 px.
+
+   Portée limitée à `.elections-card`, et c'est délibéré : les mêmes classes servent à
+   `CommuneElectionsSection` sur les pages /commune/*, où `.commune-elections-wrap`
+   impose déjà 880 px, une largeur propre à ce gabarit qu'il ne faut pas écraser ici.
+
+   Le titre, le sous-titre de participation et la mini-synthèse restent pleine largeur :
+   c'est la règle du reste de la page — l'en-tête d'une card porte toute sa largeur,
+   seuls ses blocs de données sont bridés. */
+.elections-card .elections-list,
+.elections-card .municipales-plain,
+.elections-card .elections-toggle,
+.elections-card .elections-footnote {
+  max-width: var(--line-chart-max);
+  margin-inline: auto;
 }
 
 .elections-list {
@@ -2543,6 +2524,24 @@ html {
   font-weight: 500;
   color: var(--muted);
   letter-spacing: 0.05em;
+}
+
+/* Municipales : la tête de liste, passée au second rang derrière le nom de la liste.
+   Classe distincte de `.elections-parti` — qui reste le sigle en fin de ligne de la card
+   présidentielle — parce qu'un nom de personne ne se compose pas comme un sigle : ni
+   interlettrage, ni corps de 0,7 rem. Le point médian sépare deux noms propres qu'un
+   simple blanc laisserait se confondre. */
+.elections-tete {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.elections-tete::before {
+  content: "·";
+  margin-right: 8px;
 }
 
 .elections-delta-pill {
@@ -2645,10 +2644,45 @@ html {
 
 /* Légende commune aux trois graphes : posée une fois en haut, elle vaut pour tous —
    les couleurs des villes ne changent pas d'une mesure à l'autre. */
-.climate-legend {
-  margin-bottom: 18px;
+/* Légendes posées en tête de card, valables pour tous ses graphes : climat et sécurité.
+   Bridées et centrées comme les graphes qu'elles décrivent (`.climate-metric`,
+   `.security-metric`) — à plat sur toute la largeur de la card, elles partaient du bord
+   gauche pendant que les courbes commençaient 290 px plus loin. */
+.climate-legend,
+.security-legend {
+  max-width: var(--line-chart-max);
+  margin: 0 auto 18px;
   padding-bottom: 14px;
   border-bottom: 0.5px solid var(--hairline);
+  row-gap: 6px;
+}
+
+/* Légende d'échelles : le lieu consulté prend sa propre ligne, en tête, dans le ton du
+   texte courant ; ses repères restent en gris sur la ligne suivante.
+   Ce n'est pas une préférence de mise en page. Les quatre graphes de séries de la page —
+   climat, sécurité, âge, répartitions INSEE — portent déjà cette hiérarchie dans leur
+   tracé : trait de 2,8 contre 1,4, opacité pleine contre 0,75, points deux fois plus
+   larges. Et c'est elle, non la teinte, qui tient en vision dichromate — cf. la note de
+   `climateChart.ts` sur le rouge de Marseille et le vert local. Une légende à plat
+   effaçait le seul repère qui vaut pour tout le monde.
+   Ne s'applique pas aux légendes de catégories (barres empilées) : y mettre la première
+   part en avant serait faux. D'où le modificateur, posé par `ChartLegend`. */
+.line-chart-legend--scales > li:first-child {
+  flex-basis: 100%;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Pastilles au diamètre des points de leur courbe : 12 px pour la locale, 8 px pour les
+   repères. La légende cesse ainsi d'être un simple nuancier. */
+.line-chart-legend--scales > li:first-child .line-chart-legend-dot {
+  width: 12px;
+  height: 12px;
+}
+
+.line-chart-legend--scales > li:not(:first-child) .line-chart-legend-dot {
+  width: 8px;
+  height: 8px;
 }
 
 .climate-legend-type {
@@ -2681,12 +2715,6 @@ html {
 .security-card .muted {
   margin: 4px 0 14px;
   font-size: 0.85rem;
-}
-
-.security-legend {
-  margin-bottom: 18px;
-  padding-bottom: 14px;
-  border-bottom: 0.5px solid var(--hairline);
 }
 
 .security-metric {
@@ -2740,6 +2768,15 @@ html {
 .insee-metric h3 {
   margin: 0 0 2px;
   font-size: 1rem;
+}
+
+/* Paragraphe rédigé d'un bloc d'indicateurs — les trois taux de la card Emploi.
+   Corps du texte courant, pas de gris : ces phrases portent des chiffres sourcés, au
+   même rang que les graphes voisins, et non un commentaire à leur sujet. */
+.insee-prose {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .insee-metric-unit {
@@ -3094,6 +3131,22 @@ html {
   color: var(--muted);
 }
 
+/* « Signalé » — le risque concerne l'adresse, Géorisques ne le gradue pas. Bleu et non
+   ambre : ce n'est pas un cran entre modéré et faible, c'est une gravité absente de la
+   source. La teinte le sort de l'échelle vert-ambre-rouge au lieu de l'y ranger. */
+.risk-badge--present {
+  background: #e6edfa;
+  color: #1e429f;
+}
+
+/* « Non renseigné » — pas de donnée. Fond transparent et contour tireté : une pastille
+   pleine se lirait comme un résultat, alors qu'il n'y en a pas. */
+.risk-badge--inconnu {
+  background: transparent;
+  color: var(--muted-soft);
+  border: 1px dashed var(--hairline-strong);
+}
+
 .air-badge {
   display: inline-block;
   font-size: 0.75rem;
@@ -3148,11 +3201,13 @@ html {
   color: var(--text);
 }
 
-/* Minor risk list (faible / absent) */
+/* Risques du second groupe : faible, non renseigné, absent.
+   L'écart passe de 4 à 12 px : les lignes portent désormais une explication, et serrées
+   à 4 px on ne voyait plus où l'une finissait. */
 .risk-list {
   margin-top: 12px;
   display: grid;
-  gap: 4px;
+  gap: 12px;
 }
 
 .risk-row-header {
@@ -3163,6 +3218,15 @@ html {
 
 .risk-name {
   font-size: 0.875rem;
+}
+
+/* Ce qu'est le risque, sous son nom. Plus discret que `.risk-message`, qui porte le
+   niveau mesuré : l'un est la donnée du lieu, l'autre une définition valable partout. */
+.risk-explain {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--muted);
 }
 
 @media (max-width: 900px) {
