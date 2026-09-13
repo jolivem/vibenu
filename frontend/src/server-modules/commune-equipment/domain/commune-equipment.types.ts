@@ -84,10 +84,19 @@ export interface EquipmentRubric {
   per10k: number;
   /** La même densité pour la France entière, `null` si le repère n'a pas pu être calculé. */
   francePer10k: number | null;
+  /**
+   * Vrai pour un arrondissement qui détient plus de la moitié des équipements de sa ville
+   * dans un code de la rubrique : la BPE les localise sans doute à l'adresse de leur
+   * gestionnaire (les 11 bibliothèques de Marseille « dans » le 1er). La comparaison à la
+   * France n'est alors pas affichée.
+   */
+  locationUncertain: boolean;
 }
 
 export interface CommuneEquipment {
   codeCommune: string;
   population: number;
+  /** Arrondissement de Paris, Lyon ou Marseille : les nombres y sont moins sûrs. */
+  isArrondissement: boolean;
   families: Array<{ title: string; rubrics: EquipmentRubric[] }>;
 }

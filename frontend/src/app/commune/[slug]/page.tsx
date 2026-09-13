@@ -193,8 +193,8 @@ export default async function CommunePage({
       <CommuneMapSection commune={commune} contour={contour} />
       {narrative && <CommuneNarrativeSection content={narrative.content} nomCourt={commune.nomCourt} />}
       <CommunePriceSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
-      <CommuneDemographicsSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
       <CommuneEquipmentsSection stats={stats} legendes={legendes} />
+      <CommuneDemographicsSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
       <CommuneAirQualitySection stats={stats} legendes={legendes} />
       <CommuneElectionsSection stats={stats} legendes={legendes} />
       <CommuneHistorySection commune={commune} contour={contour} />

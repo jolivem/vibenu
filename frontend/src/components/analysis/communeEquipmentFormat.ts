@@ -19,12 +19,20 @@ function formatDensity(value: number, digits: number): string {
   return value.toLocaleString("fr-FR", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 
-/** « 11,2 pour 10 000 hab. (France 9,1) » — partagé par la card et le PDF. */
+/**
+ * « 11,2 pour 10 000 hab. (France 9,1) » — partagé par la card et le PDF.
+ *
+ * Sans comparaison quand la localisation est incertaine : comparer à la France un nombre
+ * faussé par la BPE (les bibliothèques de toute une ville rattachées à un arrondissement)
+ * en amplifierait l'erreur.
+ */
 export function equipmentDensity(rubric: Rubric): string {
   const france = rubric.francePer10k;
-  const digits = france != null ? densityDigits(rubric.per10k, france) : densityDigits(rubric.per10k);
-  const reference = france != null ? ` (France ${formatDensity(france, digits)})` : "";
-  return `${formatDensity(rubric.per10k, digits)} pour 10 000 hab.${reference}`;
+  if (rubric.locationUncertain || france == null) {
+    return `${formatDensity(rubric.per10k, densityDigits(rubric.per10k))} pour 10 000 hab.${rubric.locationUncertain ? " (localisation incertaine)" : ""}`;
+  }
+  const digits = densityDigits(rubric.per10k, france);
+  return `${formatDensity(rubric.per10k, digits)} pour 10 000 hab. (France ${formatDensity(france, digits)})`;
 }
 
 /** « 246 — 11,2 pour 10 000 hab. (France 9,1) ». À zéro, le seul repère France. */

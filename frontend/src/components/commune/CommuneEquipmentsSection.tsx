@@ -1,6 +1,6 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
-import { formatInt, formatDecimal, formatDelta } from "./format";
+import { formatInt, formatDensityPer10k, formatDelta } from "./format";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
 
@@ -19,12 +19,12 @@ export function CommuneEquipmentsSection({ stats, legendes }: Props) {
   }
 
   return (
-    <section className="commune-section" id="equipements">
+    <section className="commune-section commune-section--alt" id="equipements">
       <div className="commune-section-head">
         <h2 className="commune-section-title">
           Équipements &amp; <i>cadre de vie</i>
         </h2>
-        <span className="section-meta">INSEE BPE · densité pour 1 000 hab.</span>
+        <span className="section-meta">INSEE BPE · densité pour 10 000 hab.</span>
       </div>
 
       <CardInsight text={legendes?.legende_equipements} animate={false} className="commune-legend" />
@@ -38,13 +38,17 @@ export function CommuneEquipmentsSection({ stats, legendes }: Props) {
               <h3 className="commune-equip-title">{eq.label}</h3>
               <div className="commune-equip-count-line">
                 <span className="commune-equip-nb">{formatInt(eq.nb)}</span>
-                <span className="commune-equip-count-suffix">équipements</span>
+                <span className="commune-equip-count-suffix">
+                  {eq.nb > 1 ? "équipements" : "équipement"}
+                </span>
               </div>
               <div className="commune-equip-density-line">
+                {/* La donnée reste pour 1 000 hab. (le prompt de la narrative la lit ainsi) ;
+                    seul l'affichage passe pour 10 000, lisible pour les équipements rares. */}
                 <span className="commune-equip-density-value">
-                  {formatDecimal(eq.densite1000hab)}
+                  {formatDensityPer10k(eq.densite1000hab)}
                 </span>
-                <span className="commune-equip-density-unit">pour 1 000 hab.</span>
+                <span className="commune-equip-density-unit">pour 10 000 hab.</span>
                 {deltaPct !== null && Math.abs(deltaPct) >= 5 && (
                   <span
                     className={`commune-equip-delta ${deltaPct >= 0 ? "is-up" : "is-down"}`}
@@ -53,14 +57,30 @@ export function CommuneEquipmentsSection({ stats, legendes }: Props) {
                     {formatDelta(deltaPct, 0)} vs {cityDef.nomAffiche}
                   </span>
                 )}
+                {/* L'écart est retiré côté serveur : un arrondissement qui concentre l'essentiel
+                    des équipements de sa ville dans une catégorie a un nombre faussé. */}
+                {eq.concentrationAnormale && (
+                  <span
+                    className="commune-equip-delta"
+                    title={`Plus de la moitié des équipements de ${cityDef.nomAffiche} d'une catégorie sont rattachés à cet arrondissement : la BPE les localise sans doute à l'adresse de leur gestionnaire.`}
+                  >
+                    écart non calculé
+                  </span>
+                )}
               </div>
             </article>
           );
         })}
       </div>
       <p className="commune-equip-note">
-        Densité comparée à la moyenne {cityDef.adjectif} (équipements rapportés à la population).
-        Les écarts &lt; 5 % ne sont pas affichés.
+        Densité pour 10 000 habitants, comparée à la moyenne {cityDef.adjectif} (équipements
+        rapportés à la population). Les écarts &lt; 5 % ne sont pas affichés.
+      </p>
+      <p className="commune-equip-note">
+        La BPE rattache certains équipements à l&apos;adresse de leur gestionnaire : à
+        l&apos;échelle d&apos;un arrondissement, les nombres peuvent être surestimés ou
+        sous-estimés. L&apos;écart n&apos;est pas calculé quand un arrondissement concentre plus
+        de la moitié des équipements de sa ville dans une catégorie.
       </p>
     </section>
   );

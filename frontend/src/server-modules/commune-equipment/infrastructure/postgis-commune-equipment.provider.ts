@@ -5,6 +5,14 @@ import type { CommuneEquipmentProvider } from "./commune-equipment.provider";
 /** La BPE et le recensement sont annuels : un mois de cache ne fait rien perdre. */
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 
+type CountRow = { typequ: string; nb: number };
+
+function toCounts(rows: CountRow[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const row of rows) counts[row.typequ] = Number(row.nb);
+  return counts;
+}
+
 /**
  * Comptages BPE et populations INSEE, lus en base.
  *
@@ -22,14 +30,14 @@ export class PostgisCommuneEquipmentProvider implements CommuneEquipmentProvider
 
     const rows =
       codeCommune === null
-        ? await query<{ typequ: string; nb: number }>(
+        ? await query<CountRow>(
             `SELECT typequ, COUNT(*)::int AS nb
                FROM bpe_equipment
               WHERE typequ = ANY($1)
               GROUP BY typequ`,
             [typequ],
           )
-        : await query<{ typequ: string; nb: number }>(
+        : await query<CountRow>(
             `SELECT typequ, COUNT(*)::int AS nb
                FROM bpe_equipment
               WHERE depcom = $1 AND typequ = ANY($2)
@@ -37,8 +45,25 @@ export class PostgisCommuneEquipmentProvider implements CommuneEquipmentProvider
             [codeCommune, typequ],
           );
 
-    const counts: Record<string, number> = {};
-    for (const row of rows) counts[row.typequ] = Number(row.nb);
+    const counts = toCounts(rows);
+    PostgisCommuneEquipmentProvider.countsCache.set(cacheKey, counts);
+    return counts;
+  }
+
+  async countByTypequLike(pattern: string, typequ: readonly string[]): Promise<Record<string, number>> {
+    const cacheKey = `like:${pattern}:${[...typequ].sort().join(",")}`;
+    const cached = PostgisCommuneEquipmentProvider.countsCache.get(cacheKey);
+    if (cached) return cached;
+
+    const rows = await query<CountRow>(
+      `SELECT typequ, COUNT(*)::int AS nb
+         FROM bpe_equipment
+        WHERE depcom LIKE $1 AND typequ = ANY($2)
+        GROUP BY typequ`,
+      [pattern, typequ],
+    );
+
+    const counts = toCounts(rows);
     PostgisCommuneEquipmentProvider.countsCache.set(cacheKey, counts);
     return counts;
   }

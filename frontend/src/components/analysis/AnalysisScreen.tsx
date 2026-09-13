@@ -35,6 +35,7 @@ import { SECTION_ORDER, SECTION_TITLES, type SectionId } from "@/components/anal
 import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
 import { Brand } from "@/components/Brand";
 import { FEATURES } from "@/lib/site-features";
+import { seoPageForCitycode } from "@/lib/commune-routing";
 
 /** Couche d'aléa allumée d'office sur la carte des risques : la seule à couvrir tout le
  *  territoire avec un dégradé lisible. Les trois autres restent derrière leur case. */
@@ -117,6 +118,8 @@ export function AnalysisScreen() {
   const getMap = useCallback(() => mapRef.current, []);
 
   const isCommune = data?.mode === "commune";
+  // L'arrondissement analysé a aussi sa page commune SEO : on la propose, sans l'imposer.
+  const seoPage = isCommune ? seoPageForCitycode(citycode) : undefined;
 
   /**
    * Une section n'est rendue que si elle a du contenu. Deux cas la vident :
@@ -213,6 +216,11 @@ export function AnalysisScreen() {
             Analyse{city ? ` · ${city}` : ""}{postcode ? ` · ${postcode}` : ""}
           </p>
           <h1 className="analysis-hero-title">{label ?? "Adresse à analyser"}</h1>
+          {seoPage && (
+            <Link href={`/commune/${seoPage.slug}`} className="analysis-hero-seo-link">
+              Voir la page {seoPage.nomCourt} →
+            </Link>
+          )}
         </div>
       </div>
 

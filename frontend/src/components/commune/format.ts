@@ -38,6 +38,20 @@ export function formatDecimal(value: number | null | undefined): string {
   return decimalFormatter.format(value);
 }
 
+/**
+ * Densité d'équipements pour 10 000 habitants, à partir d'une densité pour 1 000.
+ *
+ * Pour 1 000 et à une décimale, les équipements rares s'arrondissaient à « 0,0 » — suivis
+ * d'un « +84 % vs Marseille » qui contredisait le zéro. Pour 10 000, avec deux décimales
+ * sous 1 et une sous 10 : « 0,26 », « 6,4 », « 185 ». Même unité que la card de l'analyse.
+ */
+export function formatDensityPer10k(per1000: number | null | undefined): string {
+  if (per1000 === null || per1000 === undefined || !Number.isFinite(per1000)) return "—";
+  const value = per1000 * 10;
+  const digits = value < 1 ? 2 : value < 10 ? 1 : 0;
+  return value.toLocaleString("fr-FR", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
 export function formatDelta(delta: number | null | undefined, decimals = 1): string {
   if (delta === null || delta === undefined || !Number.isFinite(delta)) return "—";
   const sign = delta >= 0 ? "+" : "";

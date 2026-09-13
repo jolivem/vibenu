@@ -83,7 +83,7 @@ function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] {
     if (top.length > 0) {
       items.push({
         question: `Quels équipements à proximité dans ${nomCourt} ?`,
-        answer: `Les domaines les plus représentés à ${nomCourt} sont : ${top.map((t) => `${t.label.toLowerCase()} (${formatInt(t.nb)} équipements)`).join(", ")}.`,
+        answer: `Les domaines les plus représentés à ${nomCourt} sont : ${top.map((t) => `${t.label.toLowerCase()} (${formatInt(t.nb)} équipement${t.nb > 1 ? "s" : ""})`).join(", ")}.`,
       });
     }
   }

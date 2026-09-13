@@ -11,8 +11,13 @@ import { FEATURES } from "@/lib/site-features";
 /**
  * Bump this version when the prompt changes.
  * Cache entries with a different version are ignored and regenerated.
+ *
+ * v6 : `ratio_vs_ville` vaut null pour un domaine d'équipements anormalement concentré dans
+ * l'arrondissement (la BPE y rattache des équipements à l'adresse de leur gestionnaire). Les
+ * légendes générées sur l'ancien écart — « forte présence culturelle » à Marseille 1er — sont
+ * régénérées.
  */
-export const COMMUNE_PROMPT_VERSION = 5;
+export const COMMUNE_PROMPT_VERSION = 6;
 
 export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement (Paris, Lyon ou Marseille) pour un site d'analyse immobilière.
 Ton : clair, factuel, ni promotionnel ni alarmiste.

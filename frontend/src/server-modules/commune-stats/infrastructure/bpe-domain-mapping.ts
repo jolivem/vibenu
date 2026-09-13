@@ -75,7 +75,10 @@ export const DOMAIN_CONFIG: DomainConfig[] = [
   },
   {
     domain: "transports",
-    label: "Transports",
+    // « Gares ferroviaires » et non « Transports » : le domaine ne compte que les gares, et
+    // « Transports : 1 » se lisait comme tout le réseau d'un arrondissement desservi par
+    // cinq stations de métro (Marseille 1er, seule la gare Saint-Charles est recensée).
+    label: "Gares ferroviaires",
     // Pas de `metro_station` : la BPE ne recense que les gares de voyageurs
     // (E107 à E109). Métro, tram et bus viennent du module mobilité (GTFS).
     categories: ["rail_station"],

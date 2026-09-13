@@ -203,8 +203,10 @@ const PUBLIC_BRANDING: SiteBranding = {
   tagline: "Analysez une adresse avant de louer ou acheter",
   // Sert de meta description, de description OG/Twitter ET de lead du hero, lue juste
   // sous le <h1> : elle doit rester une phrase, pas une énumération de douze sources.
+  // Les thèmes suivent l'ordre des sections de l'analyse (`SECTION_ORDER`) ; élections et
+  // histoire n'y figurent pas, pour tenir sous les ~160 caractères d'une meta description.
   description:
-    "Prix, urbanisme, risques, transports, voisinage, climat : ce que les données publiques officielles disent d'une adresse française, en quelques secondes.",
+    "Prix, urbanisme, voisinage, transports, sécurité, population, climat, risques : ce que les données publiques officielles disent d'une adresse française.",
   heroTitle: "Analysez une adresse",
   heroEmphasis: "avant de louer ou acheter.",
 };

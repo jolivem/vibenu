@@ -436,6 +436,8 @@ export type AnalysisMode = "address" | "commune";
 export interface CommuneEquipmentDto {
   codeCommune: string;
   population: number;
+  /** Arrondissement de Paris, Lyon ou Marseille : les nombres y sont moins sûrs. */
+  isArrondissement: boolean;
   families: Array<{
     title: string;
     rubrics: Array<{
@@ -444,6 +446,8 @@ export interface CommuneEquipmentDto {
       count: number;
       per10k: number;
       francePer10k: number | null;
+      /** Concentration anormale dans l'arrondissement : la comparaison à la France est masquée. */
+      locationUncertain: boolean;
     }>;
   }>;
 }

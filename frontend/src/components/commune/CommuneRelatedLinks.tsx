@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCommuneBySlug, type CommuneSlugEntry } from "@/lib/commune-slugs";
+import { analyzeUrlForCommune } from "@/lib/commune-routing";
 
 interface Props {
   commune: CommuneSlugEntry;
@@ -29,12 +30,16 @@ export function CommuneRelatedLinks({ commune }: Props) {
         </ul>
       )}
 
+      {/* L'analyse en mode commune couvre ce que cette page n'a pas encore — sécurité,
+          climat, risques, municipales — et produit le PDF. Cf. CLAUDE.md, « Commune mode vs
+          SEO commune pages ». */}
       <div className="commune-cta">
         <p>
-          Vous cherchez une analyse précise pour une adresse dans {commune.nomCourt} ?
+          Sécurité, climat, risques naturels, élections municipales, fiche PDF : retrouvez
+          l&apos;analyse complète de {commune.nomCourt}.
         </p>
-        <Link href="/" className="commune-cta-btn">
-          Analyser une adresse précise →
+        <Link href={analyzeUrlForCommune(commune)} className="commune-cta-btn">
+          Analyse détaillée de {commune.nomCourt} →
         </Link>
       </div>
     </section>

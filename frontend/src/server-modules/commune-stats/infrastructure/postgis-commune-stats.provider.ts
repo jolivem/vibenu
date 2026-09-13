@@ -86,6 +86,18 @@ interface ElectionsResultRow {
 }
 
 /**
+ * Seuils de la concentration anormale d'une catégorie d'équipements dans un arrondissement.
+ *
+ * La BPE rattache certains équipements à l'adresse de leur gestionnaire : les 11
+ * bibliothèques de Marseille, de Bonneveine au Merlan, sont toutes géolocalisées dans le
+ * 1er, siège du réseau municipal. Un arrondissement qui détient plus de la moitié des
+ * équipements de sa ville dans une catégorie est donc suspect. Le minimum évite de signaler
+ * une salle de concert unique (1 sur 1), qui se trouve forcément quelque part.
+ */
+const CONCENTRATION_MAX_SHARE = 0.5;
+const CONCENTRATION_MIN_CITY_COUNT = 5;
+
+/**
  * Provider d'agrégations Postgres pour les pages /commune/[slug].
  * Cache 24h par code_commune.
  */
@@ -93,6 +105,7 @@ export class PostgisCommuneStatsProvider {
   private static cache = new InMemoryCache<CommuneStats>(ONE_DAY);
   private static benchmarkCache = new InMemoryCache<PriceStats>(ONE_DAY);
   private static benchmarkEquipCache = new InMemoryCache<EquipmentDomainStats[]>(ONE_DAY);
+  private static cityCategoryCache = new InMemoryCache<Map<string, number>>(ONE_DAY);
   private static franceElectionsCache = new InMemoryCache<{
     commune: ElectionsCommuneRow | null;
     candidats: Map<string, number>; // candidat → pct exprimés France
@@ -118,6 +131,7 @@ export class PostgisCommuneStatsProvider {
       prixBenchmarkVille,
       equipBenchmark,
       demoFrance,
+      cityCategoryCounts,
     ] = await Promise.all([
       this.queryPriceStats({ codeCommune }),
       this.queryDemographics(codeCommune),
@@ -127,9 +141,16 @@ export class PostgisCommuneStatsProvider {
       this.getCityBenchmarkPrice(city),
       this.getCityBenchmarkEquipment(city),
       this.getFranceDemographics(),
+      this.getCityCategoryCounts(city),
     ]);
 
-    const equipements = this.aggregateEquipment(bpeRows, demo.populationTotale, equipBenchmark);
+    // Signalée avant les highlights et la narrative : un écart retiré ici ne produit ni
+    // « surperformance » ni phrase éditoriale sur un nombre faussé.
+    const equipements = this.flagConcentration(
+      this.aggregateEquipment(bpeRows, demo.populationTotale, equipBenchmark),
+      bpeRows,
+      cityCategoryCounts,
+    );
     const highlights = this.computeHighlights(demo, equipements, elections);
 
     const stats: CommuneStats = {
@@ -500,8 +521,42 @@ export class PostgisCommuneStatsProvider {
         nb,
         densite1000hab,
         ratioVsBenchmark,
+        concentrationAnormale: false,
       };
     });
+  }
+
+  /** Comptages BPE de la ville entière par catégorie — le dénominateur des concentrations. */
+  private async getCityCategoryCounts(city: City): Promise<Map<string, number>> {
+    const cached = PostgisCommuneStatsProvider.cityCategoryCache.get(city);
+    if (cached) return cached;
+    const rows = await this.queryBpeCountsForCity(city);
+    const counts = new Map(rows.map((row) => [row.category, Number(row.nb)]));
+    PostgisCommuneStatsProvider.cityCategoryCache.set(city, counts);
+    return counts;
+  }
+
+  /**
+   * Retire l'écart à la ville des domaines dont une catégorie est anormalement concentrée dans
+   * l'arrondissement (cf. `CONCENTRATION_MAX_SHARE`). Le nombre reste affiché, avec la note
+   * de la section ; seul l'écart, qui en amplifiait l'erreur (« +748 % vs Marseille »), tombe.
+   */
+  private flagConcentration(
+    equipements: EquipmentDomainStats[],
+    bpeRows: BpeCategoryRow[],
+    cityCounts: Map<string, number>,
+  ): EquipmentDomainStats[] {
+    const flagged = new Set<EquipmentDomain>();
+    for (const row of bpeRows) {
+      const cfg = getDomainForCategory(row.category);
+      const cityCount = cityCounts.get(row.category) ?? 0;
+      if (cfg && cityCount >= CONCENTRATION_MIN_CITY_COUNT && Number(row.nb) / cityCount > CONCENTRATION_MAX_SHARE) {
+        flagged.add(cfg.domain);
+      }
+    }
+    return equipements.map((e) =>
+      flagged.has(e.domain) ? { ...e, ratioVsBenchmark: null, concentrationAnormale: true } : e,
+    );
   }
 
   private computeHighlights(

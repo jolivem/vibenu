@@ -47,8 +47,17 @@ export interface EquipmentDomainStats {
   nb: number;
   /** Densité pour 1000 habitants */
   densite1000hab: number;
-  /** ratio vs Paris global (1 = identique, >1 = au-dessus, <1 = en-dessous) */
+  /**
+   * ratio vs la ville entière (1 = identique, >1 = au-dessus, <1 = en-dessous).
+   * `null` quand `concentrationAnormale` : l'écart ne se calcule pas sur un nombre faussé.
+   */
   ratioVsBenchmark: number | null;
+  /**
+   * Vrai quand l'arrondissement concentre plus de la moitié des équipements de sa ville dans
+   * une catégorie du domaine — signe que la BPE les rattache à l'adresse de leur gestionnaire
+   * plutôt qu'à leur lieu. Les 11 bibliothèques de Marseille sont ainsi toutes « dans » le 1er.
+   */
+  concentrationAnormale: boolean;
 }
 
 /**

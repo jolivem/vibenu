@@ -51,7 +51,7 @@ runs on the VPS (git pull → docker compose pull → replay migrations → rest
 
 Every data domain (`address`, `mobility`, `risks`, `real-estate`, `cadastre`, `air-quality`,
 `neighborhood`, `demographics`, `elections`, `climate`, `security`, `school-sector`,
-`commune-stats`, `summary`, `narrative`) follows the same three-layer shape:
+`commune-stats`, `commune-equipment`, `summary`, `narrative`) follows the same three-layer shape:
 
 - `domain/` — types only
 - `application/` — a `*.service.ts` interface + `*.service.impl.ts`, depending on the provider interface
@@ -81,6 +81,36 @@ The BAN suggestion `type` (`housenumber` | `street` | `locality` | `municipality
 In `commune` mode the use-case short-circuits point-based sources (cadastre, neighbourhood POIs,
 school sector) to empty values, loads the commune contour, and DVF switches from a 1 km radius to
 `WHERE code_commune = ?`. No code outside the use-case should compare against `"municipality"`.
+
+### Commune mode vs SEO commune pages
+
+Two "commune" experiences share nothing but the word — different routes, data, components and AI
+text:
+
+| | Analysis, commune mode | SEO commune pages |
+|---|---|---|
+| URL | `/analyze?type=municipality&citycode=…` | `/commune/paris` (hub), `/commune/paris-15e`… |
+| Communes | every commune, Paris/Lyon/Marseille arrondissements included | Paris, Lyon, Marseille and their arrondissements only |
+| Rendering | client-side, data fetched on demand | server; arrondissements ISR 24 h, hubs `force-dynamic` |
+| Data | `LocationAnalysisDto` (`mode === "commune"`) via the use-case | `CommuneStats` via `commune-stats` (throws for any other commune) |
+| Components | `components/analysis/` | `components/commune/` |
+| AI text | "En bref" (`card-insights`) | synthesis + legends (`commune-narrative`) |
+| PDF, sharing | yes | no |
+| Variant | always | `FEATURES.hasSEOPages` (PRO: no) |
+
+- **Routing** — [commune-routing.ts](frontend/src/lib/commune-routing.ts), used by `SearchPanel`: a
+  whole city (Paris, Lyon, Marseille) opens its SEO hub when `hasSEOPages`; everything else,
+  arrondissements included, opens `/analyze`. The analysis cannot handle a whole city: BPE and
+  INSEE only know arrondissements, so `75056` showed a zero price and one arrondissement's figures
+  under the city name.
+- **Entry points** — the landing's "Explorer par commune" links the three hubs; each hub lists its
+  arrondissements. `app/sitemap.ts` lists every page.
+- **Cross-links** — an arrondissement analysis links to its SEO page ("Voir la page Paris 15e");
+  the SEO page's call-to-action opens the detailed analysis (`analyzeUrlForCommune`).
+- **The SEO pages lag behind the analysis** (to be completed): no security, employment / housing /
+  households, climate, risks, municipales 2026, detailed equipment compared to France, "En bref"
+  or PDF.
+- `app/sitemap.ts` and `app/commune/page.tsx` still ignore `hasSEOPages`.
 
 ### Client
 
@@ -126,8 +156,9 @@ debugging a prompt, it burns the API quota.
 Mistral (`mistral-small-latest`) behind an OpenAI-compatible `/chat/completions`, so swapping
 providers is just `LLM_BASE_URL` + `LLM_API_KEY` (falls back to `MISTRAL_API_KEY`).
 
-Two pipelines: `card-insights.*` (seven keys — `securite`, `demographie`, `logement`, `emploi`,
-`menages`, `elections`, `climat` — in one call, for the "En bref" lines under card titles) and
+Two pipelines: `card-insights.*` (eight keys — `securite`, `demographie`, `logement`, `emploi`,
+`menages`, `elections`, `municipales`, `climat` — in one call, for the "En bref" lines under card
+titles) and
 `commune-narrative.*` (editorial paragraphs for the `/commune/*` pages).
 
 Non-negotiable invariants:

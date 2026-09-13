@@ -32,7 +32,7 @@ export function CommuneDemographicsSection({ stats, nomCourt, legendes }: Props)
   const ageFrance = demoFrance ? toAgeDistribution(demoFrance) : null;
 
   return (
-    <section className="commune-section commune-section--alt" id="demographie">
+    <section className="commune-section" id="demographie">
       <div className="commune-section-head">
         <h2 className="commune-section-title">
           Démographie &amp; <i>profil</i>

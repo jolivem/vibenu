@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAddressSearch } from "@/features/address-search/useAddressSearch";
 import type { AddressSuggestionDto } from "@/types/location-analysis";
-import { getCommuneByCodeInsee } from "@/lib/commune-slugs";
+import { seoHubForCitycode } from "@/lib/commune-routing";
 
 const TYPE_LABEL: Record<string, string> = {
   housenumber: "Adresse précise",
@@ -19,11 +19,13 @@ export function SearchPanel() {
   const { results, isLoading, error } = useAddressSearch(query);
 
   const selectAddress = (address: AddressSuggestionDto) => {
-    // Une commune (saisie sans n° de rue) → page SEO si on l'a, sinon /analyze en mode commune.
-    if (address.type === "municipality" && address.citycode) {
-      const seoEntry = getCommuneByCodeInsee(address.citycode);
-      if (seoEntry) {
-        router.push(`/commune/${seoEntry.slug}`);
+    // Une ville entière (Paris, Lyon, Marseille) → son hub SEO, qui liste les
+    // arrondissements : l'analyse ne sait pas la traiter. Toute autre commune, arrondissement
+    // compris, → /analyze en mode commune. Cf. `commune-routing.ts`.
+    if (address.type === "municipality") {
+      const hub = seoHubForCitycode(address.citycode);
+      if (hub) {
+        router.push(`/commune/${hub.slug}`);
         return;
       }
     }

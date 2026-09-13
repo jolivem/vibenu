@@ -274,6 +274,11 @@ export function PdfProximiteFiche({
               ))}
             </View>
           ))}
+          {communeEquipment.isArrondissement && (
+            <Fact>
+              La BPE rattache certains équipements à l'adresse de leur gestionnaire : à l'échelle d'un arrondissement, les nombres peuvent être surestimés ou sous-estimés.
+            </Fact>
+          )}
         </>
       )}
       {counts && <Sub>{`Dans un rayon de ${counts.radiusMeters} m`}</Sub>}
