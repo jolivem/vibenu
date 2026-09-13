@@ -1,7 +1,7 @@
-import type { AnalysisMode, DemographicsAnalysisDto, EmploymentStatsDto } from "@/types/location-analysis";
+import type { AnalysisMode, DemographicsAnalysisDto } from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
-import { IndicatorBlock, type Indicator } from "./IndicatorBlock";
-import { formatPct } from "./demographicsFormat";
+import { IndicatorBlock } from "./IndicatorBlock";
+import { EMPLOYMENT_INDICATORS } from "./populationIndicators";
 import { viewForMode } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
 
@@ -25,34 +25,6 @@ const DIPLOMA_TITLES = [
   "Bac + 3 ou + 4",
   "Bac + 5 ou plus",
 ] as const;
-
-/**
- * Les trois taux de la card, chacun dans son propre bloc titré — même gabarit que les
- * deux graphes qui les suivent. Cf. `IndicatorBlock` pour le motif.
- */
-const INDICATORS: Array<Indicator<EmploymentStatsDto>> = [
-  {
-    key: "chomage",
-    title: "Taux de chômage",
-    unit: "en % des actifs de 15-64 ans",
-    pick: (s) => s.tauxChomage,
-    format: formatPct,
-  },
-  {
-    key: "activite",
-    title: "Taux d'activité",
-    unit: "en % des 15-64 ans",
-    pick: (s) => s.tauxActivite,
-    format: formatPct,
-  },
-  {
-    key: "diplomes",
-    title: "Diplômés du supérieur",
-    unit: "en % des 15 ans et plus non scolarisés",
-    pick: (s) => s.pctDiplomesSuperieur,
-    format: formatPct,
-  },
-];
 
 interface Props {
   demographics: DemographicsAnalysisDto;
@@ -78,7 +50,7 @@ export function EmploymentCard({ demographics, mode, insight }: Props) {
       <h2>Emploi et qualifications</h2>
       <CardInsight text={insight} />
 
-      {INDICATORS.map((indicator) => (
+      {EMPLOYMENT_INDICATORS.map((indicator) => (
         <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
       ))}
 

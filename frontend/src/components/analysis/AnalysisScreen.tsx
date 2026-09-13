@@ -27,33 +27,22 @@ import { SchoolSectorCard } from "@/components/analysis/SchoolSectorCard";
 import { SecurityCard } from "@/components/analysis/SecurityCard";
 import { MunicipalesCard } from "@/components/analysis/MunicipalesCard";
 import { KeyFigures, type KeyFigure } from "@/components/analysis/KeyFigures";
-import { SECURITY_RATING_LABELS } from "@/types/location-analysis";
+import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
 import { SectionNav } from "@/components/analysis/SectionNav";
 import { ShareLinks } from "@/components/analysis/ShareLinks";
 import { SECTION_ORDER, SECTION_TITLES, type SectionId } from "@/components/analysis/sections";
 import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
 import { Brand } from "@/components/Brand";
-import { formatFr } from "@/lib/format";
 import { FEATURES } from "@/lib/site-features";
 
 /** Couche d'aléa allumée d'office sur la carte des risques : la seule à couvrir tout le
  *  territoire avec un dégradé lisible. Les trois autres restent derrière leur case. */
 const DEFAULT_RISK_LAYER = "risk-argile";
 
-/** Rayon retenu pour « à moins de 10 min à pied », à 75 m/min — la vitesse de marche
- *  déjà utilisée pour afficher les temps de trajet des POI. */
-const TEN_MINUTES_WALK_METERS = 750;
-
 const LOCATOR_MAP_HEIGHT = "420px";
 const THEMATIC_MAP_HEIGHT = "340px";
 /** Plus haute que les cartes thématiques : c'est une carte qu'on regarde, pas qu'on lit. */
 const HISTORY_MAP_HEIGHT = "420px";
-
-/** Les niveaux du DTO sont en minuscules (« très bon », « modéré ») : ils se lisent au fil
- *  d'une phrase dans les cards, mais isolés dans une tuile ils veulent une capitale. */
-function capitalizeFirst(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
 
 function AnalysisSection({
   id,
@@ -111,7 +100,12 @@ export function AnalysisScreen() {
   // En PRO, on ne demande aucune synthèse : les sept cards concernées y sont toutes
   // désactivées, l'appel au modèle serait payé pour rien.
   const insightsInput = FEATURES.showCardInsights ? data ?? null : null;
-  const { insights, securityRating, debugInput: insightsDebug } = useCardInsights(insightsInput, citycode);
+  const {
+    insights,
+    securityRating,
+    isLoading: insightsLoading,
+    debugInput: insightsDebug,
+  } = useCardInsights(insightsInput, citycode);
 
   // Le PDF ne capture qu'une carte : celle de localisation, la seule montée d'emblée.
   // Les trois cartes thématiques sont en montage différé — leur canvas peut ne pas exister.
@@ -175,55 +169,12 @@ export function AnalysisScreen() {
     [hasContent],
   );
 
-  /** Une tuile par section, chacune ancrant vers la sienne. Le bandeau ne reprend plus
-   *  tout le sommaire : « Environnement » (qualité de l'air), « Risques » et
-   *  « Population » en sont volontairement absents. Une section sans chiffre disponible
-   *  n'a pas de tuile non plus, et le bandeau se resserre — il ne reste pas de trou. */
-  const keyFigures = useMemo<KeyFigure[]>(() => {
-    if (!data) return [];
-
-    const figures: Partial<Record<SectionId, KeyFigure>> = {};
-
-    const medianPrice = data.realEstate?.medianPricePerSquareMeter;
-    if (medianPrice != null) {
-      figures.immobilier = {
-        section: "immobilier",
-        label: "Prix médian",
-        value: `${formatFr(Math.round(medianPrice))} €/m²`,
-      };
-    }
-
-    figures.deplacer = {
-      section: "deplacer",
-      label: "Transports",
-      value: capitalizeFirst(data.mobility.label),
-    };
-
-    if (data.mode !== "commune") {
-      const nearby = data.neighborhood.pois.filter(
-        (poi) => poi.distanceMeters <= TEN_MINUTES_WALK_METERS,
-      ).length;
-      figures.proximite = {
-        section: "proximite",
-        label: "À moins de 10 min",
-        value: `${nearby} service${nearby > 1 ? "s" : ""}`,
-      };
-    }
-
-    // Seule tuile dont la valeur vient du modèle et non du DTO : elle s'insère donc
-    // dans la rangée au second aller-retour, quand la note arrive.
-    if (securityRating) {
-      figures.securite = {
-        section: "securite",
-        label: "Sécurité",
-        value: SECURITY_RATING_LABELS[securityRating],
-      };
-    }
-
-    return activeSections
-      .map((id) => figures[id])
-      .filter((figure): figure is KeyFigure => figure !== undefined);
-  }, [data, activeSections, securityRating]);
+  /** Une tuile par section, chacune ancrant vers la sienne — calcul partagé avec l'en-tête
+   *  de la fiche PDF (`buildKeyFigures`). */
+  const keyFigures = useMemo<KeyFigure[]>(
+    () => (data ? buildKeyFigures(data, securityRating, activeSections) : []),
+    [data, activeSections, securityRating],
+  );
 
   return (
     <main className="analysis-layout">
@@ -243,6 +194,8 @@ export function AnalysisScreen() {
                   data={data}
                   realEstate={realEstate ?? null}
                   insights={insights}
+                  insightsLoading={insightsLoading}
+                  securityRating={securityRating}
                   getMap={getMap}
                 />
               )}

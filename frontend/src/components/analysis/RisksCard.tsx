@@ -1,37 +1,15 @@
 import type { ReactNode } from "react";
 import type { RiskAnalysisDto, RiskCategoryDto } from "@/types/location-analysis";
-import { RISK_EXPLANATIONS } from "./riskExplanations";
-
-/**
- * « Signalé » et « Non renseigné » ne sont pas des degrés : le premier dit qu'un risque
- * concerne l'adresse sans que Géorisques le gradue, le second qu'il n'y a pas de donnée.
- * D'où deux allures distinctes des quatre pastilles de gravité — voir `.risk-badge--*`.
- */
-const LEVEL_BADGES: Record<RiskCategoryDto["level"], { label: string; className: string }> = {
-  élevé:   { label: "Élevé",          className: "risk-badge risk-badge--eleve" },
-  modéré:  { label: "Modéré",         className: "risk-badge risk-badge--modere" },
-  présent: { label: "Signalé",        className: "risk-badge risk-badge--present" },
-  faible:  { label: "Faible",         className: "risk-badge risk-badge--faible" },
-  inconnu: { label: "Non renseigné",  className: "risk-badge risk-badge--inconnu" },
-  absent:  { label: "Absent",         className: "risk-badge risk-badge--absent" },
-};
+import { RISK_LEVEL_BADGES, riskExplanation, splitRisks } from "./riskLevels";
 
 function levelBadge(level: RiskCategoryDto["level"]) {
-  const c = LEVEL_BADGES[level];
+  const c = RISK_LEVEL_BADGES[level];
   return <span className={c.className}>{c.label}</span>;
 }
 
-/**
- * Ce qu'est le risque, sous son nom.
- *
- * Rendue dès que le risque concerne le lieu — donc à tous les niveaux sauf « absent »,
- * y compris « faible » et « non renseigné ». C'est délibéré : le radon classé faible
- * n'affichait jusqu'ici qu'une pastille, et c'est précisément le risque que personne ne
- * sait lire. Un risque absent, lui, n'a rien à faire expliquer.
- */
+/** Ce qu'est le risque, sous son nom — cf. `riskExplanation` pour la règle d'affichage. */
 function RiskExplanation({ risk }: { risk: RiskCategoryDto }) {
-  if (risk.level === "absent") return null;
-  const text = RISK_EXPLANATIONS[risk.code];
+  const text = riskExplanation(risk);
   if (!text) return null;
   return <p className="risk-explain">{text}</p>;
 }
@@ -44,14 +22,7 @@ export function RisksCard({
   /** Carte thématique, rendue en fin de card et débordant jusqu'à ses bords. */
   children?: ReactNode;
 }) {
-  // « présent » rejoint les risques mis en avant : son message porte l'avertissement que
-  // la gravité n'est pas publiée, et c'est justement ce qu'il faut lire.
-  const highlighted = risks.categories.filter(
-    (r) => r.level === "élevé" || r.level === "modéré" || r.level === "présent",
-  );
-  const minor = risks.categories.filter(
-    (r) => r.level === "faible" || r.level === "inconnu",
-  );
+  const { highlighted, minor } = splitRisks(risks.categories);
 
   return (
     <section className="card">

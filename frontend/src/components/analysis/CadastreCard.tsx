@@ -1,13 +1,6 @@
 import type { CadastreAnalysisDto } from "@/types/location-analysis";
-import { formatFr } from "@/lib/format";
+import { formatSurface } from "./cadastreFormat";
 import { pluZoneLongLabel, pluZoneType } from "./pluZone";
-
-function formatSurface(m2: number): string {
-  if (m2 >= 10_000) {
-    return `${(m2 / 10_000).toFixed(2)} ha`;
-  }
-  return `${formatFr(m2)} m²`;
-}
 
 /**
  * Le zonage, en séparant ce qui est national de ce qui ne l'est pas.

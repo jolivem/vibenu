@@ -1,10 +1,6 @@
 import type { ReactNode } from "react";
 import type { SchoolSectorDto } from "@/types/location-analysis";
-
-const NIVEAU_LABEL: Record<SchoolSectorDto["niveau"], string> = {
-  college: "Collège de secteur",
-  lycee: "Lycée de secteur",
-};
+import { SCHOOL_LEVEL_LABEL } from "./sectorSchool";
 
 export function SchoolSectorCard({
   schoolSector,
@@ -23,7 +19,7 @@ export function SchoolSectorCard({
           où le nom du collège pesait autant que son code UAI, identifiant administratif
           que presque personne ne sait lire — il descend en note. */}
       <div className="cadastre-section">
-        <h3>{NIVEAU_LABEL[schoolSector.niveau]}</h3>
+        <h3>{SCHOOL_LEVEL_LABEL[schoolSector.niveau]}</h3>
         <p className="cadastre-headline">{schoolSector.nomEtablissement}</p>
         {schoolSector.adresse && <p className="cadastre-subline">{schoolSector.adresse}</p>}
       </div>

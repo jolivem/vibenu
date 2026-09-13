@@ -1,13 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Map as MapLibreMap } from "maplibre-gl";
-import type { CardInsights, LocationAnalysisDto, RealEstateAnalysisDto } from "@/types/location-analysis";
+import type {
+  CardInsights,
+  LocationAnalysisDto,
+  RealEstateAnalysisDto,
+  SecurityRating,
+} from "@/types/location-analysis";
 
 interface Props {
   data: LocationAnalysisDto;
   realEstate: RealEstateAnalysisDto | null;
   insights: CardInsights;
+  /**
+   * Vrai tant que les « En bref » sont en cours de génération. Ils arrivent quelques
+   * secondes après l'analyse : un PDF lancé dans l'intervalle sortait sans aucune
+   * synthèse, `insights` valant encore `{}`.
+   */
+  insightsLoading?: boolean;
+  /** Note de sécurité, rendue par le même appel que les « En bref ». */
+  securityRating?: SecurityRating;
   getMap: () => MapLibreMap | null;
 }
 
@@ -21,11 +34,39 @@ function slugify(label: string): string {
     .slice(0, 60) || "analyse";
 }
 
-export function DownloadPdfButton({ data, realEstate, insights, getMap }: Props) {
+export function DownloadPdfButton({
+  data,
+  realEstate,
+  insights,
+  insightsLoading = false,
+  securityRating,
+  getMap,
+}: Props) {
   const [loading, setLoading] = useState(false);
+  /** Clic reçu pendant la génération des « En bref » : le PDF part dès leur arrivée. */
+  const [pending, setPending] = useState(false);
 
-  async function handleClick() {
-    if (loading) return;
+  function handleClick() {
+    if (loading || pending) return;
+    if (insightsLoading) {
+      setPending(true);
+      return;
+    }
+    void generate();
+  }
+
+  // Les « En bref » sont arrivés — ou leur génération a échoué, et le PDF part sans eux
+  // plutôt que de rester bloqué. L'effet s'exécute après le rendu qui porte les nouvelles
+  // `insights` : `generate` les lit donc à jour.
+  useEffect(() => {
+    if (pending && !insightsLoading) {
+      setPending(false);
+      void generate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending, insightsLoading]);
+
+  async function generate() {
     setLoading(true);
     try {
       const [{ pdf }, { AnalysisPdfDocument }, { captureMap }] = await Promise.all([
@@ -48,6 +89,8 @@ export function DownloadPdfButton({ data, realEstate, insights, getMap }: Props)
         <AnalysisPdfDocument
           data={data}
           realEstate={realEstate}
+          securityRating={securityRating}
+          pageUrl={window.location.href}
           mapDataUrl={mapDataUrl}
           insights={insights}
           generatedAt={new Date()}
@@ -57,7 +100,7 @@ export function DownloadPdfButton({ data, realEstate, insights, getMap }: Props)
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `analyse-${slugify(data.address.label)}.pdf`;
+      a.download = `fiche-${slugify(data.address.label)}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -72,9 +115,9 @@ export function DownloadPdfButton({ data, realEstate, insights, getMap }: Props)
       type="button"
       className="pdf-download-btn"
       onClick={handleClick}
-      disabled={loading}
+      disabled={loading || pending}
     >
-      {loading ? "Génération..." : "Télécharger PDF"}
+      {pending ? "Préparation des synthèses..." : loading ? "Génération..." : "Télécharger PDF"}
     </button>
   );
 }

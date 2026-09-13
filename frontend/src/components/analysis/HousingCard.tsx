@@ -1,9 +1,9 @@
-import type { AnalysisMode, DemographicsAnalysisDto, HousingStatsDto } from "@/types/location-analysis";
+import type { AnalysisMode, DemographicsAnalysisDto } from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
-import { IndicatorBlock, type Indicator } from "./IndicatorBlock";
+import { IndicatorBlock } from "./IndicatorBlock";
 import { scopedBarRows, StackedBarGroup } from "./StackedBar";
-import { formatPct } from "./demographicsFormat";
-import { STACK_COLORS, viewForMode } from "./inseeChart";
+import { HOUSING_INDICATORS, dwellingSegments, occupancySegments } from "./populationIndicators";
+import { viewForMode } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
 
 const ROOM_LABELS = ["1 p.", "2 p.", "3 p.", "4 p.", "5 p. et +"] as const;
@@ -17,50 +17,6 @@ const EPOCH_TITLES = [
   "1991-2005",
   "2006-2018",
 ] as const;
-
-const [OWNER, PRIVATE_RENT, SOCIAL_RENT, FREE] = STACK_COLORS;
-const [HOUSE, FLAT] = STACK_COLORS;
-
-/**
- * Les deux taux scalaires de la card, chacun dans son bloc titré.
- *
- * Le nombre de logements et celui des résidences principales n'y figurent plus : deux
- * effectifs, qui ne se comparent pas à un total national, et dont le second ne servait
- * que de dénominateur — il est désormais nommé dans la ligne d'unité des blocs qui
- * l'utilisent.
- */
-const INDICATORS: Array<Indicator<HousingStatsDto>> = [
-  {
-    key: "vacants",
-    title: "Logements vacants",
-    unit: "en % du parc total",
-    pick: (s) => s.pctVacants,
-    format: formatPct,
-  },
-  {
-    key: "secondaires",
-    title: "Résidences secondaires",
-    unit: "en % du parc total",
-    pick: (s) => s.pctResidencesSecondaires,
-    format: formatPct,
-  },
-];
-
-function occupancySegments(s: HousingStatsDto) {
-  return [
-    { label: "Propriétaires", color: OWNER, value: s.pctProprietaires },
-    { label: "Locataires du privé", color: PRIVATE_RENT, value: s.pctLocatairesPrives },
-    { label: "Locataires HLM", color: SOCIAL_RENT, value: s.pctHlm },
-    { label: "Logés gratuitement", color: FREE, value: s.pctLogesGratuitement },
-  ];
-}
-
-function dwellingSegments(s: HousingStatsDto) {
-  return [
-    { label: "Maisons", color: HOUSE, value: s.pctMaisons },
-    { label: "Appartements", color: FLAT, value: s.pctAppartements },
-  ];
-}
 
 interface Props {
   demographics: DemographicsAnalysisDto;
@@ -85,7 +41,7 @@ export function HousingCard({ demographics, mode, insight }: Props) {
 
       <CardInsight text={insight} />
 
-      {INDICATORS.map((indicator) => (
+      {HOUSING_INDICATORS.map((indicator) => (
         <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
       ))}
 

@@ -3,32 +3,8 @@
 import { useState } from "react";
 import type { ElectionsAnalysisDto } from "@/types/location-analysis";
 import { CardInsight } from "@/components/CardInsight";
+import { NEUTRAL_COLOR, PARTI_COLOR, electionDeltaLabel, formatElectionPct } from "./electionFormat";
 
-const PARTI_COLOR: Record<string, string> = {
-  LO: "#bf3f3f",
-  PCF: "#cc0000",
-  REN: "#ffc000",
-  RES: "#7e857e",
-  RN: "#0d3a6b",
-  REC: "#1f4068",
-  LFI: "#cc0066",
-  PS: "#ff8da1",
-  EELV: "#3aaa35",
-  LR: "#1f5fbf",
-  NPA: "#7a1f1f",
-  DLF: "#205d96",
-};
-
-function formatPct(v: number): string {
-  return `${v.toFixed(1).replace(".", ",")} %`;
-}
-
-function deltaLabel(delta: number): string {
-  const rounded = Math.round(delta * 10) / 10;
-  if (rounded === 0) return "= national";
-  const sign = rounded > 0 ? "+" : "−";
-  return `${sign}${Math.abs(rounded).toFixed(1).replace(".", ",")} pts`;
-}
 
 export function ElectionsCard({
   elections,
@@ -58,8 +34,8 @@ export function ElectionsCard({
     <section className="card elections-card">
       <h2>Présidentielle 2022 — 1er tour</h2>
       <p className="muted">
-        Participation : {formatPct(elections.participationPct)} ·{" "}
-        France : {formatPct(elections.nationalParticipationPct)}
+        Participation : {formatElectionPct(elections.participationPct)} ·{" "}
+        France : {formatElectionPct(elections.nationalParticipationPct)}
       </p>
 
       <CardInsight text={insight} />
@@ -69,7 +45,7 @@ export function ElectionsCard({
           const delta = c.pctCommune - c.pctNational;
           const wCommune = (c.pctCommune / max) * 100;
           const wNational = (c.pctNational / max) * 100;
-          const color = PARTI_COLOR[c.parti] ?? "#6b7280";
+          const color = PARTI_COLOR[c.parti] ?? NEUTRAL_COLOR;
           return (
             <li key={c.candidat} className="elections-row">
               <div className="elections-row-head">
@@ -86,7 +62,7 @@ export function ElectionsCard({
                         : "elections-delta-pill"
                   }
                 >
-                  {deltaLabel(delta)}
+                  {electionDeltaLabel(delta)}
                 </span>
               </div>
 
@@ -98,7 +74,7 @@ export function ElectionsCard({
                     style={{ width: `${wCommune}%`, background: color }}
                   />
                 </div>
-                <span className="elections-bar-pct">{formatPct(c.pctCommune)}</span>
+                <span className="elections-bar-pct">{formatElectionPct(c.pctCommune)}</span>
               </div>
 
               <div className="elections-bar-row">
@@ -110,7 +86,7 @@ export function ElectionsCard({
                   />
                 </div>
                 <span className="elections-bar-pct elections-bar-pct--national">
-                  {formatPct(c.pctNational)}
+                  {formatElectionPct(c.pctNational)}
                 </span>
               </div>
             </li>

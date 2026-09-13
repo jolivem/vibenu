@@ -1,50 +1,8 @@
 import type { MunicipalesAnalysisDto, MunicipalesListeDto } from "@/types/location-analysis";
 import { CardInsight } from "@/components/CardInsight";
 import { NUANCE_LABEL } from "./electionLabels";
+import { NEUTRAL_COLOR, NUANCE_COLOR, electionDeltaLabel, formatElectionPct, siegesLabel } from "./electionFormat";
 
-/**
- * Couleurs par nuance de liste. Les codes municipaux sont préfixés « L » (liste), et
- * l'essentiel du corpus est composé de « divers » — LDVD, LDVG, LDIV, LDVC — que l'État
- * attribue quand aucune étiquette de parti ne s'impose.
- */
-const NUANCE_COLOR: Record<string, string> = {
-  LEXG: "#bf3f3f",
-  LFI: "#cc0066",
-  LCOM: "#cc0000",
-  LSOC: "#ff8da1",
-  LUG: "#e8607d",
-  LVEC: "#3aaa35",
-  LDVG: "#f2a0b4",
-  LDIV: "#9ca3af",
-  LREG: "#7c8ba1",
-  LDVC: "#f0b429",
-  LENS: "#ffc000",
-  LMDM: "#f7a600",
-  LUDI: "#4aa3df",
-  LLR: "#1f5fbf",
-  LDVD: "#7fa8dd",
-  LUD: "#2b6fc9",
-  LRN: "#0d3a6b",
-  LEXD: "#1f2f4a",
-  LUXD: "#16233a",
-};
-
-
-function formatPct(v: number): string {
-  return `${v.toFixed(1).replace(".", ",")} %`;
-}
-
-function deltaLabel(delta: number): string {
-  const rounded = Math.round(delta * 10) / 10;
-  if (rounded === 0) return "= national";
-  const sign = rounded > 0 ? "+" : "−";
-  return `${sign}${Math.abs(rounded).toFixed(1).replace(".", ",")} pts`;
-}
-
-function sieges(liste: MunicipalesListeDto): string | null {
-  if (liste.siegesCm === null || liste.siegesCm === 0) return null;
-  return `${liste.siegesCm} siège${liste.siegesCm > 1 ? "s" : ""}`;
-}
 
 /** Mode nuancé : barres commune / France, comme la card présidentielle. */
 function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
@@ -56,10 +14,10 @@ function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
   return (
     <ul className="elections-list">
       {listes.map((liste) => {
-        const color = liste.nuance ? (NUANCE_COLOR[liste.nuance] ?? "#6b7280") : "#6b7280";
+        const color = liste.nuance ? (NUANCE_COLOR[liste.nuance] ?? NEUTRAL_COLOR) : NEUTRAL_COLOR;
         const label = liste.nuance ? (NUANCE_LABEL[liste.nuance] ?? liste.nuance) : "Sans étiquette";
         const delta = liste.pctNational === null ? null : liste.pctExprimes - liste.pctNational;
-        const nbSieges = sieges(liste);
+        const nbSieges = siegesLabel(liste);
         // Sans tête de liste publiée, le libellé officiel tient ce rang plutôt que de
         // laisser la ligne réduite à sa seule nuance.
         const teteDeListe = liste.teteDeListe ?? liste.libelle;
@@ -84,7 +42,7 @@ function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
                         : "elections-delta-pill"
                   }
                 >
-                  {deltaLabel(delta)}
+                  {electionDeltaLabel(delta)}
                 </span>
               )}
             </div>
@@ -97,7 +55,7 @@ function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
                   style={{ width: `${(liste.pctExprimes / max) * 100}%`, background: color }}
                 />
               </div>
-              <span className="elections-bar-pct">{formatPct(liste.pctExprimes)}</span>
+              <span className="elections-bar-pct">{formatElectionPct(liste.pctExprimes)}</span>
             </div>
 
             {liste.pctNational !== null && (
@@ -110,7 +68,7 @@ function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
                   />
                 </div>
                 <span className="elections-bar-pct elections-bar-pct--national">
-                  {formatPct(liste.pctNational)}
+                  {formatElectionPct(liste.pctNational)}
                 </span>
               </div>
             )}
@@ -134,12 +92,12 @@ function PlainList({ listes }: { listes: MunicipalesListeDto[] }) {
   return (
     <ul className="municipales-plain">
       {listes.map((liste) => {
-        const nbSieges = sieges(liste);
+        const nbSieges = siegesLabel(liste);
         return (
           <li key={liste.panneau}>
             <span className="municipales-plain-name">{liste.libelle}</span>
             <span className="municipales-plain-meta">
-              {liste.voix.toLocaleString("fr-FR")} voix · {formatPct(liste.pctExprimes)}
+              {liste.voix.toLocaleString("fr-FR")} voix · {formatElectionPct(liste.pctExprimes)}
               {nbSieges ? ` · ${nbSieges}` : ""}
             </span>
           </li>
@@ -166,7 +124,7 @@ export function MunicipalesCard({
     <section className="card elections-card">
       <h2>Municipales 2026 — {tour === 1 ? "1er" : "2e"} tour</h2>
       <p className="muted">
-        Participation : {formatPct(participationPct)}
+        Participation : {formatElectionPct(participationPct)}
         {listeUnique && " · Une seule liste était en lice."}
       </p>
 

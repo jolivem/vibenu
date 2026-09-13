@@ -2,6 +2,7 @@ import type { ClimateAnalysisDto } from "@/types/location-analysis";
 import { ClimateChart } from "./ClimateChart";
 import { CLIMATE_METRICS } from "./climateChart";
 import { CardInsight } from "@/components/CardInsight";
+import { climateStationLines, climateTitle } from "./climateFormat";
 
 /** « le continental », mais « l'océanique » — élision devant voyelle. */
 function withArticle(type: string): string {
@@ -34,15 +35,6 @@ function referenceSentence(
     .join(", ");
 }
 
-function stationLine(
-  label: string,
-  station?: { name: string; distanceKm: number },
-): string | null {
-  if (!station) return null;
-  const km = station.distanceKm.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
-  return `${label} : ${station.name} (${km} km)`;
-}
-
 /**
  * Climat de l'adresse, mois par mois, comparé à trois villes de climats types.
  *
@@ -68,16 +60,11 @@ export function ClimateCard({
   );
   if (!hasAnyMetric) return null;
 
-  const byMetric = climate.stationsByMetric;
-  const stationLines = [
-    stationLine("Température", byMetric?.temperature),
-    stationLine("Précipitations", byMetric?.precipitation),
-    stationLine("Ensoleillement", byMetric?.sunshine),
-  ].filter((l): l is string => l !== null);
+  const stationLines = climateStationLines(climate);
 
   return (
     <section className="card climate-card">
-      <h2>Climat (normales {climate.periodStart}–{climate.periodEnd})</h2>
+      <h2>{climateTitle(climate)}</h2>
 
       <CardInsight text={insight} />
 

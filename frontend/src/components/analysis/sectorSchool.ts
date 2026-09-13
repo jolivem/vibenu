@@ -2,6 +2,12 @@ import type { SchoolSectorDto } from "@/types/location-analysis";
 
 export type SectorSchool = Pick<SchoolSectorDto, "niveau" | "nomEtablissement">;
 
+/** Titre du bloc, partagé par `SchoolSectorCard` et `PdfSchoolSector`. */
+export const SCHOOL_LEVEL_LABEL: Record<SchoolSectorDto["niveau"], string> = {
+  college: "Collège de secteur",
+  lycee: "Lycée de secteur",
+};
+
 /**
  * Mots qui ne distinguent pas un établissement d'un autre : on les écarte avant de
  * comparer. « MADAME DE STAEL » (carte scolaire) et « Collège de Stael » (OSM/BPE) se

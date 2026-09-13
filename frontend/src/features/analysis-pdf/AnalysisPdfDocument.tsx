@@ -1,21 +1,27 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import type { CardInsights, LocationAnalysisDto, RealEstateAnalysisDto } from "@/types/location-analysis";
-import { formatFr } from "@/lib/format";
+import type {
+  CardInsights,
+  LocationAnalysisDto,
+  RealEstateAnalysisDto,
+  SecurityRating,
+} from "@/types/location-analysis";
+import { formatSurface } from "@/components/analysis/cadastreFormat";
+import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
+import { SECTION_ORDER, type SectionId } from "@/components/analysis/sections";
 import "./registerFonts";
 import { pdfStyles } from "./pdfStyles";
-import { PdfInsight } from "./sections/PdfInsight";
-import { PdfMobility } from "./sections/PdfMobility";
-import { PdfRisks } from "./sections/PdfRisks";
-import { PdfAirQuality } from "./sections/PdfAirQuality";
-import { PdfRealEstate } from "./sections/PdfRealEstate";
-import { PdfNeighborhood } from "./sections/PdfNeighborhood";
-import { PdfDemographics } from "./sections/PdfDemographics";
-import { PdfInseeProfile } from "./sections/PdfInseeProfile";
-import { PdfElections } from "./sections/PdfElections";
-import { PdfClimate } from "./sections/PdfClimate";
-import { PdfCadastre } from "./sections/PdfCadastre";
-import { PdfSchoolSector } from "./sections/PdfSchoolSector";
 import { PdfMap } from "./sections/PdfMap";
+import {
+  PdfDeplacerFiche,
+  PdfElectionsFiche,
+  PdfEnvironnementFiche,
+  PdfImmobilierFiche,
+  PdfKeyFigures,
+  PdfPopulationFiche,
+  PdfProximiteFiche,
+  PdfRisquesFiche,
+  PdfSecuriteFiche,
+} from "./sections/PdfFiche";
 import { BRANDING, FEATURES } from "@/lib/site-features";
 
 interface Props {
@@ -24,6 +30,10 @@ interface Props {
   mapDataUrl: string | null;
   insights: CardInsights;
   generatedAt: Date;
+  /** Note de sécurité du bandeau de chiffres clés, rendue avec les « En bref ». */
+  securityRating?: SecurityRating;
+  /** Adresse de la page d'analyse, citée en pied de fiche pour le détail. */
+  pageUrl?: string;
 }
 
 function splitAddress(label: string, city: string, postcode: string) {
@@ -50,66 +60,61 @@ function Brand({ small = false }: { small?: boolean }) {
   );
 }
 
-function RunningHeader({ chapter }: { chapter: string }) {
+/** En-tête répété à partir de la deuxième page : la première porte l'en-tête de la fiche. */
+function RunningHeader({ place }: { place: string }) {
   return (
-    <View style={pdfStyles.runningHeader} fixed>
-      <Text style={pdfStyles.runningHeaderLabel}>Dossier d&apos;analyse</Text>
-      <Brand small />
-      <Text style={pdfStyles.runningHeaderLabelRight}>{chapter}</Text>
-    </View>
+    <View
+      fixed
+      render={({ pageNumber }) =>
+        pageNumber === 1 ? null : (
+          <View style={pdfStyles.runningHeader}>
+            <Text style={pdfStyles.runningHeaderLabel}>Fiche de synthèse</Text>
+            <Brand small />
+            <Text style={pdfStyles.runningHeaderLabelRight}>{place}</Text>
+          </View>
+        )
+      }
+    />
   );
 }
 
-function RunningFooter({
-  date,
-  address,
-  pageNumber,
-  totalPages,
-}: {
-  date: string;
-  address: string;
-  pageNumber: number;
-  totalPages: number;
-}) {
-  const pn = `${String(pageNumber).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`;
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * Pied de page fixe, numéroté à la page physique : `fixed` le répète sur chaque page
+ * produite, et `render` lit le numéro et le total une fois la mise en page faite.
+ */
+function RunningFooter({ date, address }: { date: string; address: string }) {
   return (
-    <View style={pdfStyles.runningFooter}>
+    <View style={pdfStyles.runningFooter} fixed>
       <Text style={pdfStyles.runningFooterDate}>{date}</Text>
       <Text style={pdfStyles.runningFooterAddress}>{address}</Text>
-      <Text style={pdfStyles.runningFooterPage}>{pn}</Text>
+      <Text
+        style={pdfStyles.runningFooterPage}
+        render={({ pageNumber, totalPages }) => `${pad(pageNumber)} / ${pad(totalPages)}`}
+      />
     </View>
   );
 }
 
-function ChapterTitle({
-  pre,
-  italic,
-  post,
-  subtitle,
-}: {
-  pre?: string;
-  italic: string;
-  post?: string;
-  subtitle?: string;
-}) {
-  return (
-    <View>
-      <Text style={pdfStyles.chapterTitle}>
-        {pre}
-        <Text style={pdfStyles.chapterTitleItalic}>{italic}</Text>
-        {post}
-      </Text>
-      {subtitle && <Text style={pdfStyles.chapterSub}>{subtitle}</Text>}
-    </View>
-  );
-}
-
+/**
+ * La fiche de synthèse : ce qu'on emporte en visite, qu'on transmet à un banquier ou qu'on
+ * pose à côté d'une autre adresse.
+ *
+ * Elle succède à un dossier de onze pages qui recopiait l'écran — cards, graphes, notes de
+ * méthode. Sur papier, on retient et on compare ; on n'explore pas. La fiche garde donc,
+ * dans l'ordre de l'écran, un bloc par section : son « En bref » et quelques faits
+ * (cf. `PdfFiche`). Graphes, cartes et listes complètes restent en ligne, et le pied de
+ * fiche en donne l'adresse.
+ */
 export function AnalysisPdfDocument({
   data,
   realEstate,
   mapDataUrl,
   insights,
   generatedAt,
+  securityRating,
+  pageUrl,
 }: Props) {
   const formattedDate = generatedAt.toLocaleDateString("fr-FR", {
     day: "2-digit",
@@ -123,311 +128,137 @@ export function AnalysisPdfDocument({
     data.address.postcode,
   );
 
-  // Détermine quelles pages sont rendues. La cover est toujours là.
-  // Si la carte est désactivée (variante PRO), on consolide la mobilité directement
-  // sur la cover plutôt que de garder une page 2 dédiée — rapport plus compact.
-  const hasMapMobilityPage = FEATURES.showLocation;
+  const showMap = FEATURES.showLocation && Boolean(mapDataUrl);
+  const showRealEstate = FEATURES.showRealEstate && Boolean(realEstate);
+  const showCadastre = FEATURES.showCadastre && Boolean(data.cadastre);
+  const showNeighborhood = FEATURES.showNeighborhood && data.mode !== "commune";
+  const showSchoolSector = FEATURES.showSchoolSector && Boolean(data.schoolSector);
+  const showSecurity = FEATURES.showSecurity && Boolean(data.security?.indicateurs.length);
+  const showMunicipales = FEATURES.showMunicipales && Boolean(data.municipales?.listes.length);
+  const showElections = FEATURES.showElections && Boolean(data.elections);
+  const showClimate = FEATURES.showClimate && Boolean(data.climate);
+  const showAirQuality = FEATURES.showAirQuality && data.airQuality.available;
 
-  const hasRisksAirClimatePage =
-    FEATURES.showRisks ||
-    (FEATURES.showAirQuality && data.airQuality.available) ||
-    (FEATURES.showClimate && Boolean(data.climate));
+  // Mêmes conditions que `hasContent` dans `AnalysisScreen`, une section par entrée.
+  const sections: Record<SectionId, boolean> = {
+    immobilier: showRealEstate || showCadastre,
+    proximite: showNeighborhood || showSchoolSector,
+    deplacer: FEATURES.showMobility,
+    securite: showSecurity,
+    population:
+      Boolean(data.demographics) &&
+      (FEATURES.showDemographics ||
+        (FEATURES.showHousing && Boolean(data.demographics?.housing)) ||
+        (FEATURES.showEmployment && Boolean(data.demographics?.employment)) ||
+        (FEATURES.showHouseholds && Boolean(data.demographics?.households))),
+    elections: showElections || showMunicipales,
+    environnement: showClimate || showAirQuality,
+    risques: FEATURES.showRisks,
+    histoire: false,
+  };
+  const activeSections = SECTION_ORDER.filter((id) => sections[id]);
 
-  const hasNeighborhoodPage = FEATURES.showNeighborhood && data.mode !== "commune";
-
-  // La démographie et les trois axes INSEE ont leur propre page : à quatre tableaux,
-  // ils ne tiennent plus à côté de l'immobilier et du cadastre.
-  const hasPopulationPage =
-    (FEATURES.showDemographics && Boolean(data.demographics)) ||
-    ((FEATURES.showHousing || FEATURES.showEmployment || FEATURES.showHouseholds) &&
-      Boolean(data.demographics));
-
-  const hasDemoCadastrePage =
-    (FEATURES.showElections && Boolean(data.elections)) ||
-    (FEATURES.showRealEstate && Boolean(realEstate)) ||
-    (FEATURES.showCadastre && Boolean(data.cadastre)) ||
-    (FEATURES.showSchoolSector && Boolean(data.schoolSector));
-
-  // Numérotation dynamique : cover=1, puis map+mobilité=2 si présente, puis les autres.
-  // L'ordre des déclarations EST l'ordre des pages — déplacer une ligne renumérote.
-  let nextPageNum = 2;
-  const mapMobilityPageNum = hasMapMobilityPage ? nextPageNum++ : null;
-  const risksPageNum = hasRisksAirClimatePage ? nextPageNum++ : null;
-  const neighborhoodPageNum = hasNeighborhoodPage ? nextPageNum++ : null;
-  const populationPageNum = hasPopulationPage ? nextPageNum++ : null;
-  const demoCadastrePageNum = hasDemoCadastrePage ? nextPageNum++ : null;
-  const totalPages = nextPageNum - 1;
-
-  const coverMeta: Array<{ label: string; value: string }> = [];
-  if (data.cadastre?.parcel) {
-    coverMeta.push({
-      label: "Surface",
-      value:
-        data.cadastre.parcel.contenance >= 10_000
-          ? `${(data.cadastre.parcel.contenance / 10_000).toFixed(2)} ha`
-          : `${formatFr(data.cadastre.parcel.contenance)} m²`,
-    });
-  }
-  if (coverMeta.length === 0) {
-    coverMeta.push({
-      label: "Commune",
-      value: data.address.city,
-    });
-    coverMeta.push({
-      label: "Code postal",
-      value: data.address.postcode,
-    });
+  // Les tuiles du bandeau de l'écran, et la surface de la parcelle juste après le prix :
+  // les deux chiffres qu'on compare d'une adresse à l'autre.
+  const figures: Array<{ label: string; value: string }> = buildKeyFigures(data, securityRating, activeSections);
+  if (showCadastre && data.cadastre?.parcel) {
+    const afterPrice = figures.findIndex((f) => f.label === "Prix médian") + 1;
+    figures.splice(afterPrice, 0, { label: "Surface", value: formatSurface(data.cadastre.parcel.contenance) });
   }
 
   return (
     <Document
-      title={`Analyse · ${data.address.label}`}
+      title={`Fiche · ${data.address.label}`}
       author={BRANDING.name}
-      subject="Analyse d'adresse"
+      subject="Fiche de synthèse d'une adresse"
     >
-      {/* PAGE 1 — COVER */}
       <Page size="A4" style={pdfStyles.page}>
-        <View style={pdfStyles.coverTop}>
-          <Brand />
-          <Text style={pdfStyles.coverStamp}>{formattedDate}</Text>
-        </View>
+        <RunningHeader place={locality} />
+        <RunningFooter date={formattedDate} address={street} />
 
-        <Text style={pdfStyles.coverEyebrow}>
-          Dossier d&apos;analyse
-        </Text>
-        <View style={pdfStyles.coverEyebrowRule} />
-
-        <Text style={pdfStyles.coverTitle}>{street}</Text>
-        <Text style={pdfStyles.coverSubtitle}>{locality}</Text>
-
-        <View style={pdfStyles.coverMeta}>
-          {coverMeta.map((item, i) => (
-            <View
-              key={item.label}
-              style={[
-                pdfStyles.coverMetaItem,
-                i > 0 ? pdfStyles.coverMetaItemBordered : {},
-              ]}
-            >
-              <Text style={pdfStyles.coverMetaLabel}>{item.label}</Text>
-              <Text style={pdfStyles.coverMetaValue}>{item.value}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* PRO : pas de page 2 dédiée, on consolide la mobilité directement sur la cover. */}
-        {!hasMapMobilityPage && (
-          <View style={{ marginTop: 24 }} wrap={false}>
-            <Text style={pdfStyles.chapterTitle}>
-              {"Transports en "}
-              <Text style={pdfStyles.chapterTitleItalic}>commun</Text>
-            </Text>
-            <PdfMobility mobility={data.mobility} mode={data.mode} />
+        <View wrap={false}>
+          <View style={pdfStyles.coverTop}>
+            <Brand />
+            <Text style={pdfStyles.coverStamp}>{formattedDate}</Text>
           </View>
+          <Text style={pdfStyles.coverEyebrow}>Fiche de synthèse</Text>
+          <View style={pdfStyles.coverEyebrowRule} />
+          <Text style={pdfStyles.coverTitle}>{street}</Text>
+          <Text style={pdfStyles.coverSubtitle}>{locality}</Text>
+          <PdfKeyFigures figures={figures} />
+          {showMap && mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} />}
+        </View>
+
+        {sections.immobilier && (
+          <PdfImmobilierFiche
+            realEstate={showRealEstate ? realEstate : null}
+            cadastre={showCadastre ? data.cadastre : null}
+          />
         )}
 
-        {/* Le pendant de `.analysis-ai-notice` de l'écran, que le PDF n'avait pas : il
-            circule sans la page d'analyse, et rien n'y disait que ces phrases sont
-            écrites par un modèle. Sur la couverture faute de bas de page assez long. */}
-        {FEATURES.showCardInsights && (
-          <Text style={pdfStyles.coverAiNotice}>
-            Les synthèses «&nbsp;En bref&nbsp;» de ce rapport sont rédigées par une
-            intelligence artificielle, à partir des seules données qu&apos;il contient. Les
-            chiffres et les sources, eux, proviennent directement des fichiers publics
-            cités.
-          </Text>
+        {sections.proximite && (
+          <PdfProximiteFiche
+            neighborhood={showNeighborhood ? data.neighborhood : null}
+            schoolSector={showSchoolSector ? (data.schoolSector ?? null) : null}
+          />
         )}
 
-        <View style={pdfStyles.coverFooter}>
-          <Text style={pdfStyles.runningFooterDate}>{formattedDate}</Text>
-          <Text style={pdfStyles.runningFooterPage}>01 / {String(totalPages).padStart(2, "0")}</Text>
-        </View>
-      </Page>
+        {sections.deplacer && <PdfDeplacerFiche mobility={data.mobility} mode={data.mode} />}
 
-      {/* PAGE 2 — CARTE + MOBILITÉ (PUBLIC seulement ; en PRO la mobilité est sur la cover) */}
-      {hasMapMobilityPage && mapMobilityPageNum !== null && (
-      <Page size="A4" style={pdfStyles.page}>
-        <RunningHeader chapter="Carte" />
-        <ChapterTitle italic="Carte" subtitle={data.address.label} />
-        {mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} />}
-        <View style={{ marginTop: 6 }}>
-          <Text style={pdfStyles.chapterTitle}>
-            {"Transports en "}
-            <Text style={pdfStyles.chapterTitleItalic}>commun</Text>
-          </Text>
-        </View>
-        <PdfMobility mobility={data.mobility} mode={data.mode} />
+        {sections.securite && <PdfSecuriteFiche insight={insights.securite} />}
 
-        <RunningFooter
-          date={formattedDate}
-          address={street}
-          pageNumber={mapMobilityPageNum}
-          totalPages={totalPages}
-        />
-      </Page>
-      )}
-
-      {/* PAGE 3 — RISQUES + AIR + CLIMAT (optionnelle selon variante) */}
-      {hasRisksAirClimatePage && risksPageNum !== null && (
-        <Page size="A4" style={pdfStyles.page}>
-          <RunningHeader chapter="Risques, air & climat" />
-          <ChapterTitle italic="Risques" />
-
-          {FEATURES.showRisks && <PdfRisks risks={data.risks} />}
-
-          {FEATURES.showAirQuality && data.airQuality.available && (
-            <View style={{ marginTop: 36 }} wrap={false}>
-              <Text style={pdfStyles.chapterTitle}>
-                {"Qualité de "}
-                <Text style={pdfStyles.chapterTitleItalic}>l&apos;air</Text>
-              </Text>
-              <PdfAirQuality airQuality={data.airQuality} />
-            </View>
-          )}
-
-          {FEATURES.showSecurity && insights.securite && (
-            <View style={{ marginTop: 36 }} wrap={false}>
-              <Text style={pdfStyles.chapterTitle}>
-                <Text style={pdfStyles.chapterTitleItalic}>Sécurité</Text>
-              </Text>
-              <PdfInsight text={insights.securite} />
-              <Text style={pdfStyles.chartNote}>
-                Source : Ministère de l&apos;Intérieur (SSMSI) · faits enregistrés par la
-                police et la gendarmerie, à l&apos;échelle de la commune. Le détail par
-                indicateur et par année figure sur la page d&apos;analyse en ligne.
-              </Text>
-            </View>
-          )}
-
-          {FEATURES.showClimate && data.climate && (
-            <PdfClimate climate={data.climate} insight={insights.climat} />
-          )}
-
-          <RunningFooter
-            date={formattedDate}
-            address={street}
-            pageNumber={risksPageNum}
-            totalPages={totalPages}
-          />
-        </Page>
-      )}
-
-      {/* PAGE — VOISINAGE (optionnelle selon variante / mode) */}
-      {hasNeighborhoodPage && neighborhoodPageNum !== null && (
-        <Page size="A4" style={pdfStyles.page}>
-          <RunningHeader chapter="Voisinage" />
-          <ChapterTitle
-            pre="Le "
-            italic="voisinage"
-            post=" immédiat"
-            subtitle="Commerces, services et équipements à proximité"
-          />
-
-          <PdfNeighborhood
-            neighborhood={data.neighborhood}
-            sectorSchool={FEATURES.showSchoolSector ? data.schoolSector : null}
-          />
-
-          <RunningFooter
-            date={formattedDate}
-            address={street}
-            pageNumber={neighborhoodPageNum}
-            totalPages={totalPages}
-          />
-        </Page>
-      )}
-
-      {/* PAGE — POPULATION (démographie + profil INSEE du quartier) */}
-      {hasPopulationPage && populationPageNum !== null && data.demographics && (
-        <Page size="A4" style={pdfStyles.page}>
-          <RunningHeader chapter="Population" />
-          {/* Le sous-titre porte la zone, comme le bandeau la porte à l'écran : elle vaut
-              pour les deux blocs de la page, pas seulement pour le premier tableau.
-              Le suffixe était en dur et donc faux pour une recherche communale. */}
-          <ChapterTitle
-            italic="Population"
-            post={data.mode === "commune" ? " de la commune" : " du quartier"}
-            subtitle={
-              data.mode === "commune"
-                ? `Commune · ${data.demographics.nomCommune || data.demographics.codeIris}`
-                : `Quartier · ${data.demographics.nomIris || data.demographics.codeIris}${
-                    data.demographics.nomCommune ? ` — ${data.demographics.nomCommune}` : ""
-                  }`
-            }
-          />
-
-          <PdfInsight text={insights.demographie} />
-
-          {FEATURES.showDemographics && <PdfDemographics demographics={data.demographics} />}
-
-          <PdfInseeProfile
+        {sections.population && data.demographics && (
+          <PdfPopulationFiche
             demographics={data.demographics}
             mode={data.mode}
             insights={insights}
+            show={{
+              demographics: FEATURES.showDemographics,
+              employment: FEATURES.showEmployment,
+              households: FEATURES.showHouseholds,
+              housing: FEATURES.showHousing,
+            }}
           />
+        )}
 
-          <RunningFooter
-            date={formattedDate}
-            address="Source : INSEE · Recensement de la population 2021 · Filosofi"
-            pageNumber={populationPageNum}
-            totalPages={totalPages}
+        {sections.elections && (
+          <PdfElectionsFiche
+            municipales={showMunicipales ? (data.municipales ?? null) : null}
+            elections={showElections ? (data.elections ?? null) : null}
+            insights={insights}
           />
-        </Page>
-      )}
+        )}
 
-      {/* PAGE — ÉLECTIONS + IMMO + CADASTRE (optionnelle selon variante) */}
-      {hasDemoCadastrePage && demoCadastrePageNum !== null && (
-        <Page size="A4" style={pdfStyles.page}>
-          <RunningHeader chapter="Élections & cadastre" />
-          <ChapterTitle italic="Élections" post=" & cadastre" />
-
-          <PdfInsight text={insights.elections} />
-
-          {FEATURES.showElections && data.elections && <PdfElections elections={data.elections} />}
-
-          {FEATURES.showRealEstate && realEstate && (
-            <View style={{ marginTop: 36 }} wrap={false}>
-              <Text style={pdfStyles.chapterTitle}>
-                <Text style={pdfStyles.chapterTitleItalic}>Immobilier</Text>
-              </Text>
-              <PdfRealEstate realEstate={realEstate} />
-            </View>
-          )}
-
-          {FEATURES.showCadastre && data.cadastre && (
-            <View style={{ marginTop: 36 }} wrap={false}>
-              <Text style={pdfStyles.chapterTitle}>
-                {"Cadastre & "}
-                <Text style={pdfStyles.chapterTitleItalic}>urbanisme</Text>
-              </Text>
-              <PdfCadastre cadastre={data.cadastre} />
-            </View>
-          )}
-
-          {FEATURES.showSchoolSector && data.schoolSector && (
-            <View style={{ marginTop: 36 }} wrap={false}>
-              <Text style={pdfStyles.chapterTitle}>
-                {"Carte "}
-                <Text style={pdfStyles.chapterTitleItalic}>scolaire</Text>
-              </Text>
-              <PdfSchoolSector schoolSector={data.schoolSector} />
-            </View>
-          )}
-
-          <View style={pdfStyles.endMark}>
-            <View style={pdfStyles.endMarkLine} />
-            <Text style={pdfStyles.endMarkText}>Fin du dossier</Text>
-            <View style={pdfStyles.endMarkLine} />
-          </View>
-
-          <RunningFooter
-            date={formattedDate}
-            address={`Sources : IGN · DVF · Géorisques · INSEE · ATMO`}
-            pageNumber={demoCadastrePageNum}
-            totalPages={totalPages}
+        {sections.environnement && (
+          <PdfEnvironnementFiche
+            climate={showClimate ? (data.climate ?? null) : null}
+            airQuality={showAirQuality ? data.airQuality : null}
+            insight={insights.climat}
           />
-        </Page>
-      )}
+        )}
+
+        {sections.risques && <PdfRisquesFiche risks={data.risks} />}
+
+        {/* Une seule fois pour toute la fiche, là où chaque card portait ses notes. */}
+        <View wrap={false} style={pdfStyles.ficheNotes}>
+          {FEATURES.showCardInsights && (
+            <Text style={pdfStyles.ficheNote}>
+              Les «&nbsp;En bref&nbsp;» sont rédigés par une intelligence artificielle, à partir
+              des seules données de l&apos;analyse ; les chiffres viennent directement des
+              fichiers publics.
+            </Text>
+          )}
+          <Text style={pdfStyles.ficheNote}>
+            Sources : IGN · DVF · Géorisques · INSEE · Ministère de l&apos;Intérieur · Météo-France
+            · ATMO · Éducation nationale.
+          </Text>
+          {pageUrl && (
+            <Text style={pdfStyles.ficheNote}>
+              Détail, graphes et cartes : <Text style={pdfStyles.ficheLink}>{pageUrl}</Text>
+            </Text>
+          )}
+        </View>
+      </Page>
     </Document>
   );
 }
