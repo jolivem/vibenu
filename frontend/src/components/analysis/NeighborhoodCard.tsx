@@ -1,5 +1,6 @@
 import { formatDistance } from "@/lib/format";
 import type { NeighborhoodAnalysisDto } from "@/types/location-analysis";
+import { withSectorSchool, type SectorSchool } from "./sectorSchool";
 
 const CATEGORY_LABELS: Record<string, string> = {
   school: "Enseignement",
@@ -67,7 +68,18 @@ function formatWalkingTime(meters: number): string {
   return m === 0 ? `${h} h à pied` : `${h} h ${String(m).padStart(2, "0")} à pied`;
 }
 
-export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodAnalysisDto }) {
+export function NeighborhoodCard({
+  neighborhood,
+  sectorSchool,
+}: {
+  neighborhood: NeighborhoodAnalysisDto;
+  /**
+   * Établissement de la carte scolaire. S'il figure parmi les écoles trouvées, il est
+   * toujours affiché, même au-delà du plafond de la catégorie : c'est le seul de la liste
+   * qui concerne vraiment l'adresse, et il n'est pas forcément le plus proche.
+   */
+  sectorSchool?: SectorSchool | null;
+}) {
   const groups = groupByCategory(neighborhood.pois);
   const isTruncated = Object.entries(groups).some(([category, pois]) => {
     const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
@@ -95,13 +107,18 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodA
             <h3>{family.title}</h3>
             {present.map((category) => {
               const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
+              const { shown, sectorPoi } =
+                category === "school"
+                  ? withSectorSchool(groups.school, limit, sectorSchool)
+                  : { shown: groups[category].slice(0, limit), sectorPoi: null };
               return (
                 <div className="poi-group" key={category}>
                   <p className="poi-group-label">{CATEGORY_LABELS[category] ?? category}</p>
                   <ul>
-                    {groups[category].slice(0, limit).map((poi, i) => (
+                    {shown.map((poi, i) => (
                       <li key={i}>
                         {poi.name}{" "}
+                        {poi === sectorPoi && <span className="poi-sector-tag">de secteur</span>}{" "}
                         <span className="poi-distance">
                           —{" "}
                           {poi.distanceMeters <= WALKABLE_LIMIT_METERS

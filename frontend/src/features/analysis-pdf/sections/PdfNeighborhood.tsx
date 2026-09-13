@@ -1,6 +1,7 @@
 import { Text, View } from "@react-pdf/renderer";
 import { formatDistance } from "@/lib/format";
 import type { NeighborhoodAnalysisDto } from "@/types/location-analysis";
+import { withSectorSchool, type SectorSchool } from "@/components/analysis/sectorSchool";
 import { pdfStyles } from "../pdfStyles";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -48,7 +49,14 @@ function formatWalkingTime(meters: number): string {
   return r === 0 ? `${h} h à pied` : `${h} h ${String(r).padStart(2, "0")} à pied`;
 }
 
-export function PdfNeighborhood({ neighborhood }: { neighborhood: NeighborhoodAnalysisDto }) {
+export function PdfNeighborhood({
+  neighborhood,
+  sectorSchool,
+}: {
+  neighborhood: NeighborhoodAnalysisDto;
+  /** Cf. `NeighborhoodCard` : l'établissement de secteur est toujours listé. */
+  sectorSchool?: SectorSchool | null;
+}) {
   const groups = groupByCategory(neighborhood.pois);
   const level = neighborhood.label.charAt(0).toUpperCase() + neighborhood.label.slice(1);
   const categoryCount = Object.keys(groups).length;
@@ -78,14 +86,19 @@ export function PdfNeighborhood({ neighborhood }: { neighborhood: NeighborhoodAn
           .sort(([a], [b]) => (a === "school" ? -1 : b === "school" ? 1 : 0))
           .map(([category, pois]) => {
           const limit = PER_CATEGORY_LIMIT[category] ?? DEFAULT_PER_CATEGORY_LIMIT;
+          const { shown, sectorPoi } =
+            category === "school"
+              ? withSectorSchool(pois, limit, sectorSchool)
+              : { shown: pois.slice(0, limit), sectorPoi: null };
           return (
             <View key={category} style={pdfStyles.voisCat} wrap={false}>
               <Text style={pdfStyles.voisCatTitle}>
                 {CATEGORY_LABELS[category] ?? category}
               </Text>
-              {pois.slice(0, limit).map((poi, i) => (
+              {shown.map((poi, i) => (
                 <Text key={i} style={pdfStyles.voisItem}>
                   <Text style={pdfStyles.voisItemName}>{poi.name}</Text>
+                  {poi === sectorPoi && <Text style={pdfStyles.voisItemSector}> · de secteur</Text>}
                   <Text style={pdfStyles.voisItemDist}>
                     {" — "}
                     {poi.distanceMeters <= WALKABLE_LIMIT_METERS

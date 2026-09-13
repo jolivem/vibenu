@@ -2896,6 +2896,21 @@ html {
   font-variant-numeric: tabular-nums;
 }
 
+/* « de secteur » dans la liste Enseignement de Voisinage : l'établissement de la carte
+   scolaire, épinglé même au-delà du plafond de la catégorie. Pastille plutôt que texte
+   gris, pour qu'on ne le confonde pas avec la distance qui suit. */
+.poi-sector-tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 0.72em;
+  font-weight: 600;
+  line-height: 1.4;
+  vertical-align: 0.1em;
+}
+
 /* Air quality card — échelle, polluant dominant, historique 7 jours */
 .air-headline {
   display: flex;
@@ -3040,45 +3055,29 @@ html {
 /* Les contenus tiennent la colonne de lecture des autres cards, alignés à gauche sous
    leur titre — comme les blocs rédigés de la rubrique Population. Sans bride, une grille
    de deux colonnes et une glose s'étalaient sur les 1 100 px de la card. */
-.cadastre-section > .cadastre-grid,
 .cadastre-section > .cadastre-zone,
 .cadastre-section > .cadastre-zone-gloss,
 .cadastre-section > .cadastre-prescriptions {
   max-width: var(--line-chart-max);
 }
 
-/* Une ligne par donnée, et non une grille de deux colonnes : à trois entrées, celle-ci
-   laissait une case vide et cassait l'alignement des valeurs. Empilées, les trois
-   valeurs tombent l'une sous l'autre. */
-.cadastre-grid {
-  display: flex;
-  flex-direction: column;
+/* Valeur principale d'un bloc — surface de la parcelle, collège ou lycée de secteur :
+   même typographie que les valeurs du bandeau de chiffres clés (`.key-figure-value`), un
+   cran au-dessus puisqu'elle est seule dans son bloc. Remplace l'ancien tableau
+   libellé / valeur (`.cadastre-grid`), où la donnée utile pesait autant que les
+   identifiants qui l'accompagnaient. */
+.cadastre-headline {
+  margin: 0;
+  font-family: var(--font-serif), var(--font-serif-fallback);
+  font-size: 1.6rem;
+  line-height: 1.15;
+  color: var(--accent);
 }
 
-/* Libellé à gauche, valeur à droite, séparées par un filet — même structure que les
-   listes d'indicateurs de la rubrique Population. */
-.cadastre-item {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
-  column-gap: 16px;
-  padding: 6px 0;
-  border-bottom: 0.5px solid var(--hairline);
-}
-
-.cadastre-item:last-child {
-  border-bottom: none;
-}
-
-.cadastre-label {
-  font-size: 0.75rem;
+.cadastre-subline {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
   color: var(--muted);
-}
-
-.cadastre-value {
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-align: right;
 }
 
 .cadastre-zone {

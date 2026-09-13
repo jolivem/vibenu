@@ -323,7 +323,10 @@ export function AnalysisPdfDocument({
             subtitle="Commerces, services et équipements à proximité"
           />
 
-          <PdfNeighborhood neighborhood={data.neighborhood} />
+          <PdfNeighborhood
+            neighborhood={data.neighborhood}
+            sectorSchool={FEATURES.showSchoolSector ? data.schoolSector : null}
+          />
 
           <RunningFooter
             date={formattedDate}

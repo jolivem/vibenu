@@ -1,4 +1,5 @@
 import { query } from "@/server-shared/infrastructure/database/postgres";
+import { toDisplayName } from "@/server-modules/neighborhood/infrastructure/poi-display-name";
 import type { GeoJsonGeometryDto } from "@/server-shared/types/location-analysis.dto";
 import type {
   SchoolSector,
@@ -37,7 +38,11 @@ export class PostgisSchoolSectorProvider implements SchoolSectorProvider {
         niveau: row.niveau,
         territoire: row.territoire,
         codeUai: row.code_uai,
-        nomEtablissement: row.nom_etablissement,
+        // Même mise en casse que les équipements de la card Voisinage : les sources de
+        // sectorisation écrivent souvent tout en capitales (« MADAME DE STAEL »). Un nom
+        // déjà en casse normale est rendu tel quel. L'adresse n'y passe pas : la règle
+        // capitaliserait « Rue » et « Avenue ».
+        nomEtablissement: toDisplayName(row.nom_etablissement),
         adresse: row.adresse,
         geometry: row.geometry,
       };

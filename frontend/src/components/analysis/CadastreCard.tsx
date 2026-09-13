@@ -52,25 +52,17 @@ export function CadastreCard({ cadastre }: { cadastre: CadastreAnalysisDto }) {
       {cadastre.parcel && (
         <div className="cadastre-section">
           <h3>Parcelle</h3>
-          {/* La surface d'abord : c'est la seule des trois qui se compare et qui pèse
+          {/* La surface en chiffre clé : c'est la seule donnée qui se compare et qui pèse
               dans une décision. La référence cadastrale est un identifiant, utile pour
-              retrouver la parcelle mais muet en soi ; la commune est déjà en tête de page. */}
-          <div className="cadastre-grid">
-            <div className="cadastre-item">
-              <span className="cadastre-label">Surface</span>
-              <span className="cadastre-value">{formatSurface(cadastre.parcel.contenance)}</span>
-            </div>
-            <div className="cadastre-item">
-              <span className="cadastre-label">Référence</span>
-              <span className="cadastre-value">
-                Section {cadastre.parcel.section}, n° {cadastre.parcel.numero}
-              </span>
-            </div>
-            <div className="cadastre-item">
-              <span className="cadastre-label">Commune</span>
-              <span className="cadastre-value">{cadastre.parcel.commune}</span>
-            </div>
-          </div>
+              retrouver la parcelle mais muet en soi — elle suit en ligne secondaire. La
+              commune n'est plus répétée : elle est déjà en tête de page.
+
+              Ce bloc était un tableau libellé / valeur ; trois lignes de même poids
+              noyaient la surface parmi deux identifiants. */}
+          <p className="cadastre-headline">{formatSurface(cadastre.parcel.contenance)}</p>
+          <p className="cadastre-subline">
+            Section {cadastre.parcel.section} · n° {cadastre.parcel.numero}
+          </p>
         </div>
       )}
 

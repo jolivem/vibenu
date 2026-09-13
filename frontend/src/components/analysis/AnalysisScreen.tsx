@@ -325,7 +325,10 @@ export function AnalysisScreen() {
                 {hasContent.proximite && (
                   <AnalysisSection id="proximite">
                     {FEATURES.showNeighborhood && !isCommune && (
-                      <NeighborhoodCard neighborhood={data.neighborhood} />
+                      <NeighborhoodCard
+                        neighborhood={data.neighborhood}
+                        sectorSchool={FEATURES.showSchoolSector ? data.schoolSector : null}
+                      />
                     )}
                     {FEATURES.showSchoolSector && data.schoolSector && (
                       <SchoolSectorCard schoolSector={data.schoolSector}>

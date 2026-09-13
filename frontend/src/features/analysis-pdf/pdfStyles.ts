@@ -611,6 +611,12 @@ export const pdfStyles = StyleSheet.create({
     fontSize: 9,
     color: COLORS.muted,
   },
+  /** « de secteur » — pendant de `.poi-sector-tag`. En texte coloré et non en pastille :
+   *  un `Text` imbriqué n'accepte ni padding ni arrondi. */
+  voisItemSector: {
+    fontSize: 9,
+    color: COLORS.accent,
+  },
 
   // === Demographics + Cadastre ===
   demoIris: {
