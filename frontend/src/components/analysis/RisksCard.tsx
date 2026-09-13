@@ -56,7 +56,6 @@ export function RisksCard({
   return (
     <section className="card">
       <h2>Risques naturels</h2>
-      <p>Niveau global : {levelBadge(risks.level)}</p>
 
       {highlighted.length > 0 && (
         <div className="risk-alert">

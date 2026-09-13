@@ -29,11 +29,6 @@ export function HistoryCard({ lat, lon, label, mode, cadastreParcel, communeCont
   return (
     <section className="card">
       <h2>Le lieu autrefois</h2>
-      <p className="muted">
-        {isCommune
-          ? "La commune sur les cartes et les photographies aériennes anciennes de l'IGN, de la carte de Cassini à aujourd'hui."
-          : "L'adresse sur les cartes et les photographies aériennes anciennes de l'IGN. Le contour de la parcelle reste visible par-dessus : on voit ce qu'il y avait à cet endroit précis."}
-      </p>
 
       <div className="card-map">
         <HistoricalMap
@@ -47,6 +42,11 @@ export function HistoryCard({ lat, lon, label, mode, cadastreParcel, communeCont
         />
       </div>
 
+      <p className="elections-footnote">
+        {isCommune
+          ? "La commune sur les cartes et les photographies aériennes anciennes de l'IGN, de la carte de Cassini à aujourd'hui."
+          : "L'adresse sur les cartes et les photographies aériennes anciennes de l'IGN. Le contour de la parcelle reste visible par-dessus : on voit ce qu'il y avait à cet endroit précis."}
+      </p>
       <p className="elections-footnote">
         Source : IGN · Géoplateforme (cartes.gouv.fr). Les cartes anciennes s&apos;arrêtent
         aux frontières de leur époque — la Savoie et le comté de Nice ne figurent pas sur

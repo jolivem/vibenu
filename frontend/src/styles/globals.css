@@ -1611,7 +1611,11 @@ html {
  * héritée avec les marges par défaut de `<p>`. La classe ne posait même pas de couleur :
  * son nom promettait un gris que le CSS ne donnait pas.
  *
- * Sélecteur en enfant direct : les sept usages sont des enfants immédiats de `.card`, et
+ * Les notes sur les données (millésime, maille, villes de référence…) sont depuis
+ * descendues en pied de card, en `.elections-footnote` : il ne reste ici que la ligne de
+ * participation des deux cards électorales.
+ *
+ * Sélecteur en enfant direct : les usages sont des enfants immédiats de `.card`, et
  * la restriction évite d'attraper un `.muted` qu'on placerait un jour dans un bloc
  * intérieur, où la taille et les marges d'un chapeau n'auraient pas de sens.
  */

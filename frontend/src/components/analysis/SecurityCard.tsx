@@ -112,14 +112,6 @@ export function SecurityCard({
   return (
     <section className="card security-card">
       <h2>Sécurité</h2>
-      <p className="muted">
-        Faits enregistrés par la police et la gendarmerie de {annees[0]} à{" "}
-        {annees[annees.length - 1]}, à l&apos;échelle de{" "}
-        {maille === "arrondissement"
-          ? "l’arrondissement"
-          : `la commune${ville ? ` de ${ville}` : ""}`}
-        . Il n&apos;existe pas de donnée publique à l&apos;échelle du quartier.
-      </p>
 
       <CardInsight text={insight} />
 
@@ -139,6 +131,14 @@ export function SecurityCard({
         />
       ))}
 
+      <p className="elections-footnote">
+        Faits enregistrés par la police et la gendarmerie de {annees[0]} à{" "}
+        {annees[annees.length - 1]}, à l&apos;échelle de{" "}
+        {maille === "arrondissement"
+          ? "l’arrondissement"
+          : `la commune${ville ? ` de ${ville}` : ""}`}
+        . Il n&apos;existe pas de donnée publique à l&apos;échelle du quartier.
+      </p>
       <p className="elections-footnote">
         Il s&apos;agit de faits <strong>enregistrés</strong> : la mesure dépend aussi de la
         propension à porter plainte et de la présence policière. Les effectifs de 1 à 4 ne sont

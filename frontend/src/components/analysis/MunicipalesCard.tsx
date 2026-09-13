@@ -167,7 +167,6 @@ export function MunicipalesCard({
       <h2>Municipales 2026 — {tour === 1 ? "1er" : "2e"} tour</h2>
       <p className="muted">
         Participation : {formatPct(participationPct)}
-        {villeEntiere && " · Résultat de la ville entière : le scrutin municipal ne se décline pas par arrondissement."}
         {listeUnique && " · Une seule liste était en lice."}
       </p>
 
@@ -175,6 +174,12 @@ export function MunicipalesCard({
 
       {nuancee ? <NuancedList listes={listes} /> : <PlainList listes={listes} />}
 
+      {villeEntiere && (
+        <p className="elections-footnote">
+          Résultat de la ville entière : le scrutin municipal ne se décline pas par
+          arrondissement.
+        </p>
+      )}
       {!nuancee && (
         <p className="elections-footnote">
           Aucune nuance politique n&apos;est publiée pour cette commune : l&apos;État ne

@@ -17,7 +17,7 @@ function withArticle(type: string): string {
  * n'est disponible n'arrive pas jusqu'ici.
  *
  * Cette phrase porte désormais la correspondance ville ↔ climat que les légendes
- * répétaient sous chacun des trois graphes. Dite une fois, en tête, elle allège trois
+ * répétaient sous chacun des trois graphes. Dite une fois, en pied de card, elle allège trois
  * légendes — et elle a la place d'être explicite là où la légende devait abréger.
  */
 function referenceSentence(
@@ -78,13 +78,6 @@ export function ClimateCard({
   return (
     <section className="card climate-card">
       <h2>Climat (normales {climate.periodStart}–{climate.periodEnd})</h2>
-      <p className="muted">
-        Profil mois par mois, comparé à des villes représentatives des grands climats
-        français
-        {referenceSentence(monthly.references)
-          ? ` : ${referenceSentence(monthly.references)}.`
-          : "."}
-      </p>
 
       <CardInsight text={insight} />
 
@@ -100,6 +93,13 @@ export function ClimateCard({
         />
       ))}
 
+      <p className="elections-footnote">
+        Profil mois par mois, comparé à des villes représentatives des grands climats
+        français
+        {referenceSentence(monthly.references)
+          ? ` : ${referenceSentence(monthly.references)}.`
+          : "."}
+      </p>
       {stationLines.length > 0 && (
         <p className="elections-footnote">
           Stations Météo-France les plus proches — {stationLines.join(" · ")}.

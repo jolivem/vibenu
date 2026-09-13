@@ -82,7 +82,6 @@ export function HousingCard({ demographics, mode, insight }: Props) {
   return (
     <section className="card">
       <h2>Logement</h2>
-      <p className="muted">Le parc de logements, recensé par l&apos;INSEE en 2021.</p>
 
       <CardInsight text={insight} />
 
@@ -124,6 +123,9 @@ export function HousingCard({ demographics, mode, insight }: Props) {
         note="L'INSEE ne ventile par période que les logements achevés avant 2019 : les plus récents ne figurent dans aucune tranche."
       />
 
+      <p className="elections-footnote">
+        Le parc de logements, recensé par l&apos;INSEE en 2021.
+      </p>
       <p className="elections-footnote">
         Source : INSEE · Recensement de la population 2021, base logement à l&apos;IRIS.
         Les effectifs du recensement sont des estimations pondérées, arrondies à

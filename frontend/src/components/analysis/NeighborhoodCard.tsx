@@ -85,7 +85,6 @@ export function NeighborhoodCard({ neighborhood }: { neighborhood: NeighborhoodA
   return (
     <section className="card">
       <h2>Voisinage</h2>
-      <p>Niveau : {neighborhood.label}</p>
 
       {families.map((family) => {
         const present = family.categories.filter((category) => groups[category]?.length);

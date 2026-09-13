@@ -79,9 +79,6 @@ export function HouseholdsCard({ demographics, mode, insight }: Props) {
   return (
     <section className="card">
       <h2>Ménages et familles</h2>
-      <p className="muted">
-        La composition des foyers, recensée par l&apos;INSEE en 2021.
-      </p>
 
       <CardInsight text={insight} />
 
@@ -103,6 +100,9 @@ export function HouseholdsCard({ demographics, mode, insight }: Props) {
         labels={CHILDREN_LABELS}
       />
 
+      <p className="elections-footnote">
+        La composition des foyers, recensée par l&apos;INSEE en 2021.
+      </p>
       <p className="elections-footnote">
         Source : INSEE · Recensement de la population 2021, base couples-familles-ménages
         à l&apos;IRIS. Un ménage est l&apos;ensemble des personnes d&apos;un même
