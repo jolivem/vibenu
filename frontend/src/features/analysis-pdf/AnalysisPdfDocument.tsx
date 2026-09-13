@@ -133,6 +133,8 @@ export function AnalysisPdfDocument({
   const showCadastre = FEATURES.showCadastre && Boolean(data.cadastre);
   const showNeighborhood = FEATURES.showNeighborhood && data.mode !== "commune";
   const showSchoolSector = FEATURES.showSchoolSector && Boolean(data.schoolSector);
+  const showCommuneEquipment =
+    FEATURES.showCommuneEquipment && data.mode === "commune" && Boolean(data.communeEquipment);
   const showSecurity = FEATURES.showSecurity && Boolean(data.security?.indicateurs.length);
   const showMunicipales = FEATURES.showMunicipales && Boolean(data.municipales?.listes.length);
   const showElections = FEATURES.showElections && Boolean(data.elections);
@@ -142,7 +144,7 @@ export function AnalysisPdfDocument({
   // Mêmes conditions que `hasContent` dans `AnalysisScreen`, une section par entrée.
   const sections: Record<SectionId, boolean> = {
     immobilier: showRealEstate || showCadastre,
-    proximite: showNeighborhood || showSchoolSector,
+    proximite: showNeighborhood || showSchoolSector || showCommuneEquipment,
     deplacer: FEATURES.showMobility,
     securite: showSecurity,
     population:
@@ -200,6 +202,7 @@ export function AnalysisPdfDocument({
           <PdfProximiteFiche
             neighborhood={showNeighborhood ? data.neighborhood : null}
             schoolSector={showSchoolSector ? (data.schoolSector ?? null) : null}
+            communeEquipment={showCommuneEquipment ? (data.communeEquipment ?? null) : null}
           />
         )}
 

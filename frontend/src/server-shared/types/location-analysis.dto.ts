@@ -429,6 +429,25 @@ export interface DemographicsAnalysisDto {
  */
 export type AnalysisMode = "address" | "commune";
 
+/**
+ * Équipements de la commune entière (BPE 2025), en mode commune : nombre par rubrique et
+ * densité pour 10 000 habitants, comparée à la France.
+ */
+export interface CommuneEquipmentDto {
+  codeCommune: string;
+  population: number;
+  families: Array<{
+    title: string;
+    rubrics: Array<{
+      key: string;
+      label: string;
+      count: number;
+      per10k: number;
+      francePer10k: number | null;
+    }>;
+  }>;
+}
+
 export interface LocationAnalysisDto {
   mode: AnalysisMode;
   address: SelectedAddressDto;
@@ -446,4 +465,6 @@ export interface LocationAnalysisDto {
   schoolSector?: SchoolSectorDto | null;
   security?: SecurityAnalysisDto | null;
   municipales?: MunicipalesAnalysisDto | null;
+  /** Mode commune uniquement ; `null` en mode adresse ou si la BPE ne connaît pas le code. */
+  communeEquipment?: CommuneEquipmentDto | null;
 }

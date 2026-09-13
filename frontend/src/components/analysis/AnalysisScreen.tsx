@@ -24,6 +24,7 @@ import { HouseholdsCard } from "@/components/analysis/HouseholdsCard";
 import { ElectionsCard } from "@/components/analysis/ElectionsCard";
 import { ClimateCard } from "@/components/analysis/ClimateCard";
 import { SchoolSectorCard } from "@/components/analysis/SchoolSectorCard";
+import { CommuneEquipmentCard } from "@/components/analysis/CommuneEquipmentCard";
 import { SecurityCard } from "@/components/analysis/SecurityCard";
 import { MunicipalesCard } from "@/components/analysis/MunicipalesCard";
 import { KeyFigures, type KeyFigure } from "@/components/analysis/KeyFigures";
@@ -144,7 +145,9 @@ export function AnalysisScreen() {
       deplacer: FEATURES.showMobility,
       proximite:
         (FEATURES.showNeighborhood && data.mode !== "commune") ||
-        (FEATURES.showSchoolSector && !!data.schoolSector),
+        (FEATURES.showSchoolSector && !!data.schoolSector) ||
+        // En mode commune, les équipements de la commune entière remplacent le voisinage.
+        (FEATURES.showCommuneEquipment && data.mode === "commune" && !!data.communeEquipment),
       environnement:
         (FEATURES.showAirQuality && data.airQuality.available) ||
         (FEATURES.showClimate && !!data.climate),
@@ -282,6 +285,9 @@ export function AnalysisScreen() {
                         neighborhood={data.neighborhood}
                         sectorSchool={FEATURES.showSchoolSector ? data.schoolSector : null}
                       />
+                    )}
+                    {FEATURES.showCommuneEquipment && isCommune && data.communeEquipment && (
+                      <CommuneEquipmentCard equipment={data.communeEquipment} />
                     )}
                     {FEATURES.showSchoolSector && data.schoolSector && (
                       <SchoolSectorCard schoolSector={data.schoolSector}>

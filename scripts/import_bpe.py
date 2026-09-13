@@ -252,6 +252,9 @@ def create_indexes(conn):
     with conn.cursor() as cur:
         cur.execute("CREATE INDEX IF NOT EXISTS idx_bpe_geom ON bpe_equipment USING GIST (geom);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_bpe_category ON bpe_equipment (category);")
+        # Comptage par commune (card « Équipements de la commune »). Aussi créé par la
+        # migration 019, qui le rétablit si ce script a recréé la table.
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_bpe_depcom ON bpe_equipment (depcom);")
     conn.commit()
     print("Indexes created.")
 

@@ -21,8 +21,11 @@ import type { CardInsightsInput } from "../domain/card-insights.types";
  * Version du prompt. À incrémenter dès que le prompt **ou la forme de l'input** change :
  * elle fait partie de la clé primaire du cache, donc les entrées d'une version
  * antérieure cessent d'être servies sans qu'il y ait rien à supprimer.
+ *
+ * v5 : la note de sécurité se fonde sur l'écart à la France seule, comme l'annonce la
+ * tuile (« moins bonne que la moyenne France ») ; elle mêlait département et France.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 4;
+export const CARD_INSIGHTS_PROMPT_VERSION = 5;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
@@ -111,12 +114,12 @@ Le champ "cles_attendues" du JSON d'entrée liste les sections effectivement aff
 
 NOTE DE SÉCURITÉ — champ "securite_note"
 Si et seulement si "securite" figure dans "cles_attendues", ajoute au JSON un champ "securite_note" valant EXACTEMENT l'une de ces cinq chaînes : ${SECURITY_RATINGS.map((r) => `"${r}"`).join(", ")}.
-Elle situe le lieu PAR RAPPORT À SES REPÈRES, jamais dans l'absolu : elle ne dit pas si un lieu est dangereux, mais comment il se place face à son département et à la France. Fonde-la sur les champs déjà calculés "ecart_vs_departement_pct", "ecart_vs_france_pct" et "tendance_10ans", en pesant d'abord les indicateurs aux taux les plus élevés — ce sont eux qui font le quotidien du lieu.
-- "excellent" : sous les deux repères de plus de 25 %, sans hausse marquée sur dix ans.
-- "bon" : sous les repères, ou proche d'eux avec une baisse nette sur dix ans.
-- "moyen" : à moins de 15 % des repères, sans tendance nette.
-- "mediocre" : au-dessus des repères, ou proche d'eux avec une hausse nette sur dix ans.
-- "mauvais" : au-dessus des deux repères de plus de 25 %, sans baisse marquée sur dix ans.
+Elle situe le lieu PAR RAPPORT À LA FRANCE, jamais dans l'absolu : elle ne dit pas si un lieu est dangereux, mais comment il se place face à la moyenne française — c'est ainsi qu'elle est affichée (« moins bonne que la moyenne France »). Fonde-la sur les champs déjà calculés "ecart_vs_france_pct" et "tendance_10ans", en pesant d'abord les indicateurs aux taux les plus élevés — ce sont eux qui font le quotidien du lieu. N'utilise PAS "ecart_vs_departement_pct" pour la note.
+- "excellent" : sous la France de plus de 25 %, sans hausse marquée sur dix ans.
+- "bon" : sous la France, ou proche d'elle avec une baisse nette sur dix ans.
+- "moyen" : à moins de 15 % de la France, sans tendance nette.
+- "mediocre" : au-dessus de la France, ou proche d'elle avec une hausse nette sur dix ans.
+- "mauvais" : au-dessus de la France de plus de 25 %, sans baisse marquée sur dix ans.
 Quand les indicateurs se contredisent, tranche sur les plus fréquents et retiens "moyen" faute de tendance claire. La note ne doit jamais contredire la phrase "securite".
 
 FORMAT DE SORTIE (JSON OBLIGATOIRE, RIEN D'AUTRE) :

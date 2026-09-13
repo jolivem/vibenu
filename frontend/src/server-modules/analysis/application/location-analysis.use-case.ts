@@ -12,6 +12,7 @@ import type { ElectionsService } from "../../elections/application/elections.ser
 import type { ClimateService } from "../../climate/application/climate.service";
 import type { SchoolSectorService } from "../../school-sector/application/school-sector.service";
 import type { SecurityService } from "../../security/application/security.service";
+import type { CommuneEquipmentService } from "../../commune-equipment/application/commune-equipment.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
 import type { AnalysisMode, LocationAnalysisDto } from "../../../server-shared/types/location-analysis.dto";
 
@@ -30,6 +31,7 @@ interface Dependencies {
   climateService: ClimateService;
   schoolSectorService: SchoolSectorService;
   securityService: SecurityService;
+  communeEquipmentService: CommuneEquipmentService;
 }
 
 export class LocationAnalysisUseCase implements LocationAnalysisService {
@@ -75,7 +77,14 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         ? Promise.resolve(null)
         : this.dependencies.schoolSectorService.getCollegeSector(input.lat, input.lon);
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales] =
+    // Le pendant du voisinage en mode commune : les équipements de la commune entière,
+    // comptés sur le code de la commune cherchée et non sur celui du centroïde.
+    const communeEquipmentPromise =
+      mode === "commune" && contourCitycode
+        ? this.dependencies.communeEquipmentService.getCommuneEquipment(contourCitycode)
+        : Promise.resolve(null);
+
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
@@ -90,6 +99,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         schoolSectorPromise,
         this.dependencies.securityService.getSecurityData(codeInsee),
         this.dependencies.electionsService.getMunicipalesData(codeInsee),
+        communeEquipmentPromise,
       ]);
 
     const address = {
@@ -128,6 +138,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       schoolSector,
       security,
       municipales,
+      communeEquipment,
     };
   }
 }

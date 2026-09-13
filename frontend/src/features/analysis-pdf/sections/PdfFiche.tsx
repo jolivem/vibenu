@@ -6,6 +6,7 @@ import type {
   CadastreAnalysisDto,
   CardInsights,
   ClimateAnalysisDto,
+  CommuneEquipmentDto,
   DemographicsAnalysisDto,
   ElectionsAnalysisDto,
   MobilityAnalysisDto,
@@ -19,6 +20,7 @@ import { formatFr } from "@/lib/format";
 import { LEVEL_CONFIG, modalLevel } from "@/components/analysis/airQualityModel";
 import { formatSurface } from "@/components/analysis/cadastreFormat";
 import { climateTitle } from "@/components/analysis/climateFormat";
+import { equipmentLine } from "@/components/analysis/communeEquipmentFormat";
 import { formatPct } from "@/components/analysis/demographicsFormat";
 import { formatElectionPct } from "@/components/analysis/electionFormat";
 import { NUANCE_LABEL } from "@/components/analysis/electionLabels";
@@ -212,10 +214,13 @@ function plural(count: number, zero: string, one: string, many: string): string 
 export function PdfProximiteFiche({
   neighborhood,
   schoolSector,
+  communeEquipment,
 }: {
   /** `null` en mode commune : les POI y sont mesurés depuis le centroïde. */
   neighborhood: NeighborhoodAnalysisDto | null;
   schoolSector: SchoolSectorDto | null;
+  /** Mode commune : les équipements de la commune entière, à la place du voisinage. */
+  communeEquipment?: CommuneEquipmentDto | null;
 }) {
   const groups = neighborhood ? groupByCategory(neighborhood.pois) : {};
   // Les restaurants à part : 177 à 500 m d'une adresse du 15e, ils faisaient de « Culture
@@ -253,6 +258,23 @@ export function PdfProximiteFiche({
     <Block title={SECTION_TITLES.proximite}>
       {schoolSector && (
         <Fact label={SCHOOL_LEVEL_LABEL[schoolSector.niveau]}>{schoolSector.nomEtablissement}</Fact>
+      )}
+      {communeEquipment && (
+        <>
+          <Fact>
+            {`Équipements recensés dans la commune (${formatFr(communeEquipment.population)} habitants), densités pour 10 000 habitants comparées à la France.`}
+          </Fact>
+          {communeEquipment.families.map((family) => (
+            <View key={family.title} wrap={false}>
+              <Sub>{family.title}</Sub>
+              {family.rubrics.map((rubric) => (
+                <Fact key={rubric.key} label={rubric.label}>
+                  {equipmentLine(rubric)}
+                </Fact>
+              ))}
+            </View>
+          ))}
+        </>
       )}
       {counts && <Sub>{`Dans un rayon de ${counts.radiusMeters} m`}</Sub>}
       {rows.map(({ title, count, nearest }) => (

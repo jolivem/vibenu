@@ -38,13 +38,14 @@ export type CardInsights = Partial<Record<CardInsightKey, string>>;
  *
  * Rupture assumée avec le principe « on calcule, le modèle verbalise » qui régit tout le
  * reste du module : ici le classement lui-même vient du modèle. Le prompt ancre donc
- * chaque cran sur les écarts déjà calculés (`ecart_vs_departement_pct`,
- * `ecart_vs_france_pct`, `tendance_10ans`) pour que la note reste reproductible d'un
- * appel à l'autre, et le parseur refuse toute valeur hors de cette liste.
+ * chaque cran sur les écarts déjà calculés (`ecart_vs_france_pct`, `tendance_10ans`) pour
+ * que la note reste reproductible d'un appel à l'autre, et le parseur refuse toute valeur
+ * hors de cette liste.
  *
- * La note qualifie le lieu **par rapport à ses repères** (département, France), jamais
- * dans l'absolu : « mauvais » veut dire « nettement au-dessus de ses repères », pas
- * « dangereux ».
+ * La note qualifie le lieu **par rapport à la France**, jamais dans l'absolu : « mauvais »
+ * veut dire « nettement au-dessus de la moyenne française », pas « dangereux ». Elle se
+ * fondait sur le département et la France à la fois, ce que la tuile, qui ne nomme que la
+ * France, ne pouvait pas dire.
  */
 export const SECURITY_RATINGS = ["excellent", "bon", "moyen", "mediocre", "mauvais"] as const;
 
@@ -56,14 +57,15 @@ export type SecurityRating = (typeof SECURITY_RATINGS)[number];
  *
  * Comparatifs, parce que la note l'est : « Moyen », « Bon » ou « Mauvais » se lisaient dans
  * l'absolu, et « Moyen » laissait croire à une sécurité médiocre là où le lieu est
- * simplement dans la moyenne de ses repères.
+ * simplement dans la moyenne. Le repère est nommé — la France, seul repère sur lequel le
+ * prompt fonde la note (cf. `card-insights.prompt.ts`).
  */
 export const SECURITY_RATING_LABELS: Record<SecurityRating, string> = {
-  excellent: "Bien meilleure que la moyenne",
-  bon: "Meilleure que la moyenne",
-  moyen: "Dans la moyenne",
-  mediocre: "Moins bonne que la moyenne",
-  mauvais: "Nettement moins bonne",
+  excellent: "Bien meilleure que la moyenne France",
+  bon: "Meilleure que la moyenne France",
+  moyen: "Dans la moyenne France",
+  mediocre: "Moins bonne que la moyenne France",
+  mauvais: "Nettement moins bonne que la moyenne France",
 };
 
 /**

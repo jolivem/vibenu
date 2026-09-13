@@ -60,6 +60,8 @@ export interface SiteFeatures {
   showCadastre: boolean;
   /** Card "Carte scolaire" — secteur collège (Paris uniquement pour la donnée). */
   showSchoolSector: boolean;
+  /** Card "Équipements de la commune" — nombres et densités BPE, en mode commune. */
+  showCommuneEquipment: boolean;
   /** Card "Localisation" — carte interactive MapLibre + capture dans le PDF. */
   showLocation: boolean;
 
@@ -103,6 +105,7 @@ const PUBLIC_FEATURES: SiteFeatures = {
   showMunicipales: true,
   showCadastre: true,
   showSchoolSector: true,
+  showCommuneEquipment: true,
   showLocation: true,
   hasSEOPages: true,
   hasLandingExploreSection: true,
@@ -131,6 +134,7 @@ const PRO_FEATURES: SiteFeatures = {
   showMunicipales: false,
   showCadastre: false,
   showSchoolSector: false,
+  showCommuneEquipment: false,
   showLocation: false,
   hasSEOPages: false,
   hasLandingExploreSection: false,

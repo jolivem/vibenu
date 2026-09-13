@@ -27,6 +27,8 @@ import { MeteoFranceStationsProvider } from "@/server-modules/climate/infrastruc
 import { ClimateServiceImpl } from "@/server-modules/climate/application/climate.service.impl";
 import { PostgisSchoolSectorProvider } from "@/server-modules/school-sector/infrastructure/postgis-school-sector.provider";
 import { SchoolSectorServiceImpl } from "@/server-modules/school-sector/application/school-sector.service.impl";
+import { PostgisCommuneEquipmentProvider } from "@/server-modules/commune-equipment/infrastructure/postgis-commune-equipment.provider";
+import { CommuneEquipmentServiceImpl } from "@/server-modules/commune-equipment/application/commune-equipment.service.impl";
 
 const analyzeQuerySchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
@@ -53,6 +55,7 @@ const useCase = new LocationAnalysisUseCase({
   securityService: new SecurityServiceImpl(new SecurityDatabaseProvider()),
   climateService: new ClimateServiceImpl(new MeteoFranceStationsProvider()),
   schoolSectorService: new SchoolSectorServiceImpl(new PostgisSchoolSectorProvider()),
+  communeEquipmentService: new CommuneEquipmentServiceImpl(new PostgisCommuneEquipmentProvider()),
 });
 
 export async function GET(request: NextRequest) {
