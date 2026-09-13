@@ -25,6 +25,11 @@ export class OverpassNeighborhoodProvider implements NeighborhoodProvider {
   private static cache = new InMemoryCache<NeighborhoodPoi[]>(ONE_DAY);
   private readonly overpassUrl = "https://overpass-api.de/api/interpreter";
 
+  /** Provider non branché : pas de comptage (cf. `CombinedNeighborhoodProvider`). */
+  async countNearbyPois(): Promise<Partial<Record<PoiCategory, number>> | null> {
+    return null;
+  }
+
   async findNearbyPois(lat: number, lon: number, radiusMeters: number): Promise<NeighborhoodPoi[]> {
     const cacheKey = `${buildGeoKey(lat, lon)}:${radiusMeters}`;
     const cached = OverpassNeighborhoodProvider.cache.get(cacheKey);

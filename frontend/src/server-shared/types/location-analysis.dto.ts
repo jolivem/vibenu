@@ -49,9 +49,14 @@ export interface StationDto {
 
 export interface MobilityAnalysisDto {
   nearestStops: TransportStopDto[];
-  /** Gares/métros/RER les plus proches, triés par distance (max 5). */
+  /** Gares/métros/RER les plus proches, triés par distance (max 8). */
   nearestStations: StationDto[];
   label: MobilityLabel;
+  /**
+   * Arrêts (bus, tram) et gares (métro, RER, train) dans `radiusMeters`, comptés sur les
+   * listes complètes. `null` ou absent quand le comptage n'a pas pu se faire.
+   */
+  counts?: { radiusMeters: number; stops: number; stations: number } | null;
 }
 
 export interface RiskCategoryDto {
@@ -132,6 +137,11 @@ export interface NeighborhoodPoiDto {
 export interface NeighborhoodAnalysisDto {
   pois: NeighborhoodPoiDto[];
   label: string;
+  /**
+   * Équipements par catégorie dans `radiusMeters`, dédoublonnés sans plafond — `pois` est
+   * plafonnée et ne se compte pas. `null` en mode commune ou si le comptage a échoué.
+   */
+  counts?: { radiusMeters: number; byCategory: Partial<Record<string, number>> } | null;
 }
 
 export interface SummaryDto {

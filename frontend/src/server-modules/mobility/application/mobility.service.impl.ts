@@ -28,6 +28,8 @@ export class MobilityServiceImpl implements MobilityService {
       nearestStops,
       nearestStations,
       label,
+      // Comptés sur l'appel à 1 km, dont la boîte couvre largement les 500 m du comptage.
+      counts: close.counts ?? null,
     };
   }
 }

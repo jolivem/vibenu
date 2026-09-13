@@ -65,7 +65,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
     // Idem pour le voisinage (POIs autour d'un point) : pas pertinent pour une commune entière.
     const neighborhoodPromise =
       mode === "commune"
-        ? Promise.resolve({ pois: [], label: "" })
+        ? Promise.resolve({ pois: [], label: "", counts: null })
         : this.dependencies.neighborhoodService.getNeighborhoodData(input.lat, input.lon);
 
     // Carte scolaire : uniquement en mode adresse (le point au centroïde d'une commune

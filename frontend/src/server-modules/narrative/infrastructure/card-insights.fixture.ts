@@ -27,7 +27,7 @@ export const CARD_INSIGHTS_FIXTURE: CardInsights = {
 /**
  * Note de sécurité factice, rendue avec les phrases ci-dessus.
  *
- * "mediocre" plutôt qu'une valeur flatteuse : c'est le cran au libellé le plus long
- * (« Médiocre ») et le seul accentué, donc celui qui éprouve la tuile du bandeau.
+ * "excellent" : c'est le cran au libellé le plus long (« Bien meilleure que la moyenne »),
+ * donc celui qui éprouve la largeur de la tuile du bandeau.
  */
-export const CARD_INSIGHTS_FIXTURE_SECURITY_RATING: SecurityRating = "mediocre";
+export const CARD_INSIGHTS_FIXTURE_SECURITY_RATING: SecurityRating = "excellent";

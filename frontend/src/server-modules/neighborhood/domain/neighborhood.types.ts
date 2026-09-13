@@ -22,7 +22,18 @@ export type PoiCategory =
   | "hospital"
   | "emergency";
 
+/**
+ * Nombre d'équipements par catégorie dans un rayon, dédoublonnés comme la liste mais sans
+ * ses plafonds — pour « dans un rayon de 500 m », que la liste plafonnée ne peut pas dire.
+ */
+export interface NeighborhoodCounts {
+  radiusMeters: number;
+  byCategory: Partial<Record<PoiCategory, number>>;
+}
+
 export interface NeighborhoodAnalysis {
   pois: NeighborhoodPoi[];
   label: string;
+  /** `null` en mode commune, ou quand le comptage a échoué. */
+  counts: NeighborhoodCounts | null;
 }

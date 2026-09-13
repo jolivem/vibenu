@@ -26,7 +26,7 @@ import { compactIndicator } from "@/components/analysis/indicator";
 import { viewForMode } from "@/components/analysis/inseeChart";
 import type { KeyFigure } from "@/components/analysis/KeyFigures";
 import { mobilityView } from "@/components/analysis/mobilityModel";
-import { groupByCategory, presentFamilies } from "@/components/analysis/neighborhoodModel";
+import { familyCounts, groupByCategory, presentFamilies } from "@/components/analysis/neighborhoodModel";
 import { pluZoneLongLabel, pluZoneType } from "@/components/analysis/pluZone";
 import {
   DEMOGRAPHICS_INDICATORS,
@@ -197,6 +197,18 @@ export function PdfImmobilierFiche({
   );
 }
 
+/** « 23 », « 1 », « aucun » — suivi, s'il existe, de l'équipement le plus proche. */
+function countLine(count: number | null, nearest: { name: string; distanceMeters: number } | null): string {
+  const closest = nearest ? `${nearest.name} (${formatProximity(nearest.distanceMeters)})` : "";
+  if (count === null) return closest;
+  if (count === 0) return closest ? `aucun dans le rayon — le plus proche : ${closest}` : "aucun dans le rayon";
+  return closest ? `${count} — le plus proche : ${closest}` : String(count);
+}
+
+function plural(count: number, zero: string, one: string, many: string): string {
+  return count === 0 ? zero : `${count} ${count > 1 ? many : one}`;
+}
+
 export function PdfProximiteFiche({
   neighborhood,
   schoolSector,
@@ -206,23 +218,46 @@ export function PdfProximiteFiche({
   schoolSector: SchoolSectorDto | null;
 }) {
   const groups = neighborhood ? groupByCategory(neighborhood.pois) : {};
+  // Les restaurants à part : 177 à 500 m d'une adresse du 15e, ils faisaient de « Culture
+  // & loisirs » une famille de 194 équipements, et son « plus proche » était un restaurant.
+  // La tuile « À moins de 500 m » les écarte pour la même raison.
+  const { restaurant: restaurants = [], ...daily } = groups;
+  const nearestOf = (pois: NeighborhoodAnalysisDto["pois"]) =>
+    [...pois].sort((a, b) => a.distanceMeters - b.distanceMeters)[0] ?? null;
   // L'équipement le plus proche de chaque famille : la question qu'on se pose en visite
   // (« une école ? un médecin ? ») tient en une ligne par famille.
-  const nearest = presentFamilies(groups).map((family) => {
-    const poi = family.categories
-      .flatMap((category) => groups[category])
-      .sort((a, b) => a.distanceMeters - b.distanceMeters)[0];
-    return { family: family.title, poi };
-  });
+  const nearestByFamily = new Map(
+    presentFamilies(daily).map((family) => [
+      family.title,
+      nearestOf(family.categories.flatMap((category) => daily[category])),
+    ]),
+  );
+  // Avec les comptages, une ligne par famille, même vide ; sans eux, le seul équipement
+  // le plus proche, comme avant.
+  const counts = neighborhood?.counts ?? null;
+  const rows = counts
+    ? [
+        ...familyCounts({ ...counts.byCategory, restaurant: 0 }).map(({ title, count }) => ({
+          title,
+          count,
+          nearest: nearestByFamily.get(title) ?? null,
+        })),
+        { title: "Restaurants", count: counts.byCategory.restaurant ?? 0, nearest: nearestOf(restaurants) },
+      ]
+    : [
+        ...[...nearestByFamily].map(([title, nearest]) => ({ title, count: null, nearest })),
+        ...(restaurants.length ? [{ title: "Restaurants", count: null, nearest: nearestOf(restaurants) }] : []),
+      ];
 
   return (
     <Block title={SECTION_TITLES.proximite}>
       {schoolSector && (
         <Fact label={SCHOOL_LEVEL_LABEL[schoolSector.niveau]}>{schoolSector.nomEtablissement}</Fact>
       )}
-      {nearest.map(({ family, poi }) => (
-        <Fact key={family} label={family}>
-          {`${poi.name} (${formatProximity(poi.distanceMeters)})`}
+      {counts && <Sub>{`Dans un rayon de ${counts.radiusMeters} m`}</Sub>}
+      {rows.map(({ title, count, nearest }) => (
+        <Fact key={title} label={title}>
+          {countLine(count, nearest)}
         </Fact>
       ))}
     </Block>
@@ -234,10 +269,20 @@ export function PdfDeplacerFiche({ mobility, mode }: { mobility: MobilityAnalysi
   const stop = stops[0];
   const station = stations[0];
   const distance = (meters: number) => (isCommune ? "" : ` (${formatProximity(meters)})`);
+  // Pas de comptage en mode commune : le rayon partirait du centre de la commune.
+  const counts = isCommune ? null : (mobility.counts ?? null);
 
   return (
     <Block title={SECTION_TITLES.deplacer}>
-      {stop && <Fact label="Bus">{`${stop.name}${distance(stop.distanceMeters)}`}</Fact>}
+      {counts && (
+        <Fact label={`Dans un rayon de ${counts.radiusMeters} m`}>
+          {join([
+            plural(counts.stops, "aucun arrêt de bus ou tram", "arrêt de bus ou tram", "arrêts de bus ou tram"),
+            plural(counts.stations, "aucune gare ou station", "gare ou station", "gares ou stations"),
+          ])}
+        </Fact>
+      )}
+      {stop && <Fact label="Bus ou tram le plus proche">{`${stop.name}${distance(stop.distanceMeters)}`}</Fact>}
       {station && <Fact label={stationsTitle}>{`${station.name}${distance(station.distanceMeters)}`}</Fact>}
       {!stop && !station && <Fact>Aucun arrêt trouvé à proximité.</Fact>}
     </Block>

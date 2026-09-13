@@ -50,13 +50,20 @@ export const SECURITY_RATINGS = ["excellent", "bon", "moyen", "mediocre", "mauva
 
 export type SecurityRating = (typeof SECURITY_RATINGS)[number];
 
-/** Libellés affichés. Les valeurs restent sans accent : ce sont des clés de protocole. */
+/**
+ * Libellés affichés dans la tuile « Sécurité ». Les clés restent sans accent : ce sont des
+ * clés de protocole, partagées avec le prompt, le parseur et le cache.
+ *
+ * Comparatifs, parce que la note l'est : « Moyen », « Bon » ou « Mauvais » se lisaient dans
+ * l'absolu, et « Moyen » laissait croire à une sécurité médiocre là où le lieu est
+ * simplement dans la moyenne de ses repères.
+ */
 export const SECURITY_RATING_LABELS: Record<SecurityRating, string> = {
-  excellent: "Excellent",
-  bon: "Bon",
-  moyen: "Moyen",
-  mediocre: "Médiocre",
-  mauvais: "Mauvais",
+  excellent: "Bien meilleure que la moyenne",
+  bon: "Meilleure que la moyenne",
+  moyen: "Dans la moyenne",
+  mediocre: "Moins bonne que la moyenne",
+  mauvais: "Nettement moins bonne",
 };
 
 /**

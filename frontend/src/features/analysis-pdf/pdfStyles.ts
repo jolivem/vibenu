@@ -192,13 +192,19 @@ export const pdfStyles = StyleSheet.create({
   },
 
   // Carte de repérage de la fiche : on y situe l'adresse, on ne la lit pas.
+  // Même liseré que les cards (`PdfCardBox`), avec une marge intérieure pour que l'image ne
+  // mange pas les coins arrondis.
+  mapFrame: {
+    borderWidth: 0.75,
+    borderColor: COLORS.hairlineStrong,
+    borderRadius: 6,
+    padding: 3,
+    marginBottom: 10,
+  },
   mapImage: {
     width: "100%",
     height: 170,
     objectFit: "cover",
-    marginBottom: 10,
-    borderWidth: 0.5,
-    borderColor: COLORS.hairlineStrong,
   },
 
   // === Pied de fiche — mention IA, sources, lien vers la page en ligne ===

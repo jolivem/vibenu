@@ -5,11 +5,20 @@ import type { NeighborhoodProvider } from "../infrastructure/neighborhood.provid
 /** Le rayon du « voisinage » proprement dit : ce qu'on atteint à pied. */
 const RING_RADIUS_METERS = 800;
 
+/**
+ * Le rayon des comptages : environ 7 minutes à pied, ce qu'on fait vraiment au quotidien.
+ * Plus court que celui de la liste, qui doit trouver un équipement même clairsemé.
+ */
+const COUNT_RADIUS_METERS = 500;
+
 export class NeighborhoodServiceImpl implements NeighborhoodService {
   constructor(private readonly provider: NeighborhoodProvider) {}
 
   async getNeighborhoodData(lat: number, lon: number): Promise<NeighborhoodAnalysis> {
-    const pois = await this.provider.findNearbyPois(lat, lon, RING_RADIUS_METERS);
+    const [pois, byCategory] = await Promise.all([
+      this.provider.findNearbyPois(lat, lon, RING_RADIUS_METERS),
+      this.provider.countNearbyPois(lat, lon, COUNT_RADIUS_METERS),
+    ]);
 
     const essentialCategories: PoiCategory[] = [
       "school",
@@ -40,8 +49,13 @@ export class NeighborhoodServiceImpl implements NeighborhoodService {
     }
 
     return {
-      pois: pois.slice(0, 50),
+      // Pas de coupe à 50 : les plafonds par catégorie du provider bornent déjà la liste
+      // (un peu plus de 80 dans un centre-ville). La coupe éliminait les plus lointains —
+      // les hôpitaux cherchés au-delà du rayon, et, pour le 52 bd Pasteur, le collège de
+      // secteur, 51e de la liste, que la card et la fiche doivent pouvoir épingler.
+      pois,
       label,
+      counts: byCategory ? { radiusMeters: COUNT_RADIUS_METERS, byCategory } : null,
     };
   }
 }

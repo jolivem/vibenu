@@ -55,6 +55,18 @@ export function groupByCategory(pois: Poi[]): Record<string, Poi[]> {
   return groups;
 }
 
+/**
+ * Le nombre d'équipements de chaque famille, sommé sur ses catégories — pour « dans un
+ * rayon de 500 m ». Toutes les familles sont rendues, même à zéro : « aucun » se compare
+ * d'une adresse à l'autre aussi bien qu'un nombre.
+ */
+export function familyCounts(byCategory: Partial<Record<string, number>>): Array<{ title: string; count: number }> {
+  return FAMILIES.map((family) => ({
+    title: family.title,
+    count: family.categories.reduce((sum, category) => sum + (byCategory[category] ?? 0), 0),
+  }));
+}
+
 /** Vrai si au moins une catégorie compte plus d'équipements qu'on n'en affiche. */
 export function isTruncated(groups: Record<string, Poi[]>): boolean {
   return Object.entries(groups).some(([category, pois]) => pois.length > categoryLimit(category));

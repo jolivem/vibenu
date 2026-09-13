@@ -3,10 +3,6 @@ import { formatFr } from "@/lib/format";
 import type { KeyFigure } from "./KeyFigures";
 import type { SectionId } from "./sections";
 
-/** Rayon retenu pour « à moins de 10 min à pied », à 75 m/min — la vitesse de marche
- *  déjà utilisée pour afficher les temps de trajet des POI. */
-const TEN_MINUTES_WALK_METERS = 750;
-
 /** Les niveaux du DTO sont en minuscules (« très bon », « modéré ») : ils se lisent au fil
  *  d'une phrase dans les cards, mais isolés dans une tuile ils veulent une capitale. */
 function capitalizeFirst(value: string): string {
@@ -45,14 +41,19 @@ export function buildKeyFigures(
     value: capitalizeFirst(data.mobility.label),
   };
 
-  if (data.mode !== "commune") {
-    const nearby = data.neighborhood.pois.filter(
-      (poi) => poi.distanceMeters <= TEN_MINUTES_WALK_METERS,
-    ).length;
+  // Sur les comptages dédoublonnés et non sur la liste : plafonnée à 50, celle-ci
+  // affichait « 50 services » dans tout centre-ville. Les restaurants n'entrent pas dans le
+  // total — 143 à 500 m d'une adresse du 15e, ils noieraient les services du quotidien.
+  // Sans comptage, pas de tuile plutôt qu'un nombre faux.
+  const counts = data.neighborhood.counts;
+  if (data.mode !== "commune" && counts) {
+    const total = Object.entries(counts.byCategory)
+      .filter(([category]) => category !== "restaurant")
+      .reduce((sum, [, count]) => sum + (count ?? 0), 0);
     figures.proximite = {
       section: "proximite",
-      label: "À moins de 10 min",
-      value: `${nearby} service${nearby > 1 ? "s" : ""}`,
+      label: `À moins de ${counts.radiusMeters} m`,
+      value: `${total} équipement${total > 1 ? "s" : ""}`,
     };
   }
 

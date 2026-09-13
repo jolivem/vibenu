@@ -31,6 +31,11 @@ const VALID_CATEGORIES = new Set<string>([
 export class OsmNeighborhoodProvider implements NeighborhoodProvider {
   private static cache = new InMemoryCache<NeighborhoodPoi[]>(SEVEN_DAYS);
 
+  /** Provider non branché : pas de comptage (cf. `CombinedNeighborhoodProvider`). */
+  async countNearbyPois(): Promise<Partial<Record<PoiCategory, number>> | null> {
+    return null;
+  }
+
   async findNearbyPois(lat: number, lon: number, radiusMeters: number): Promise<NeighborhoodPoi[]> {
     const cacheKey = `${buildGeoKey(lat, lon)}:${radiusMeters}`;
     const cached = OsmNeighborhoodProvider.cache.get(cacheKey);
