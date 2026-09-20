@@ -27,8 +27,13 @@ import type { CardInsightsInput } from "../domain/card-insights.types";
  *
  * v6 : un écart de sécurité d'au moins deux fois le repère arrive en multiple
  * (`multiple_vs_france`) et non plus en pourcentage — « 1 262,8 % » ne se lit pas.
+ *
+ * v7 : les repères climatiques sont nommés par leur type (continental, méditerranéen,
+ * océanique) et non plus par leur ville-station (Strasbourg, Marseille, La Rochelle) :
+ * « un climat océanique » se lit, « proche de La Rochelle » laisse croire à une
+ * proximité géographique.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 6;
+export const CARD_INSIGHTS_PROMPT_VERSION = 7;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
@@ -73,7 +78,7 @@ const BRIEFS: Record<CardInsightKey, { titreCard: string; consigne: string }> = 
   climat: {
     titreCard: "Climat",
     consigne:
-      "le caractère du climat en s'appuyant sur la ville de référence la plus proche, les extrêmes mensuels et la pluviométrie",
+      "le caractère du climat en s'appuyant sur le type de climat de référence le plus proche, les extrêmes mensuels et la pluviométrie ; nomme le type de climat (« un climat océanique »), jamais une ville de référence",
   },
 };
 
@@ -89,8 +94,8 @@ Pour chaque section demandée, 1 à 2 phrases (25 à 45 mots) qui disent CE QU'I
 RÈGLES DE FOND
 - Tu ne disposes que des données JSON fournies. Tu n'inventes RIEN : ni chiffre, ni évolution, ni comparaison qui n'y figure pas.
 - Aucune explication causale. Pas de « grâce à la proximité du centre », « en raison de la gentrification » : les données ne contiennent pas les causes.
-- Les champs "tendance_…", "ecart_…", "multiple_…", "…_dominant", "…_dominante", "tranche_sur_representee", "ville_reference_la_plus_proche" sont DÉJÀ calculés. Reprends-les tels quels, ne les recalcule pas, ne les contredis pas.
-- Chaque phrase situe le lieu par rapport au repère fourni (France, département, ou villes de référence). Un chiffre sans repère n'apprend rien : ne le donne jamais seul.
+- Les champs "tendance_…", "ecart_…", "multiple_…", "…_dominant", "…_dominante", "tranche_sur_representee", "climat_de_reference_le_plus_proche" sont DÉJÀ calculés. Reprends-les tels quels, ne les recalcule pas, ne les contredis pas.
+- Chaque phrase situe le lieu par rapport au repère fourni (France, département, ou climats de référence). Un chiffre sans repère n'apprend rien : ne le donne jamais seul.
 - Seuil de saillance : en dessous de 2 points d'écart (ou 5 % en relatif), écris « proche de la moyenne » — ne dramatise pas un écart faible. Au-delà, nomme le sens de l'écart.
 - Au plus DEUX chiffres par phrase. Jamais d'énumération de pourcentages.
 
@@ -107,7 +112,7 @@ RÈGLES DE FORME
 
 LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
 - Sécurité : "annees_masquees" compte les années sous secret statistique, ce qui signifie 1 à 4 faits dans l'année — donc un phénomène RARE, et non une donnée manquante. N'écris jamais « données indisponibles » à ce sujet. Ce sont des faits ENREGISTRÉS : la mesure dépend aussi du dépôt de plainte. Quand "multiple_vs_departement" ou "multiple_vs_france" est renseigné (le taux atteint au moins le double du repère), exprime cet écart en fois — « 13,6 fois plus fréquents qu'en France » — et jamais en pourcentage.
-- Climat : il n'y a pas de moyenne France pertinente ; la comparaison se fait aux villes de référence fournies, en t'appuyant sur "ville_reference_la_plus_proche".
+- Climat : il n'y a pas de moyenne France pertinente ; la comparaison se fait aux types de climat de référence fournis, en t'appuyant sur "climat_de_reference_le_plus_proche". Désigne-les par leur type (continental, méditerranéen, océanique) et ne cite aucune ville.
 - Emploi : le taux de chômage est celui du recensement, déclaratif, structurellement 1 à 2 points au-dessus du taux trimestriel diffusé dans les médias. Compare-le au taux France fourni, à rien d'autre.
 - Élections : décris l'écart au national, jamais l'électeur. Aucun jugement sur les habitants.
 - Municipales : quand "nuancee" est faux, les listes n'ont AUCUNE étiquette politique — l'État ne les attribue qu'au-delà d'une certaine taille de commune. Il n'y a alors ni nuance ni score national : décris les scores et la participation, sans chercher un écart qui n'existe pas et sans qualifier politiquement une liste. Quand "ville_entiere" est vrai, le résultat est celui de la ville entière et non de l'arrondissement : ne l'attribue pas au quartier.

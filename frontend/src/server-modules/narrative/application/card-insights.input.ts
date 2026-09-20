@@ -419,13 +419,16 @@ function mean(values: (number | null)[]): number | null {
 }
 
 /**
- * Ville de référence dont le profil annuel ressemble le plus au profil local.
+ * Type de climat de référence dont le profil annuel ressemble le plus au profil local.
  *
  * Erreur moyenne absolue sur les trois mesures, chacune normalisée par son amplitude
  * propre — sans quoi les précipitations (centaines de mm) écraseraient la température
  * (dizaines de °C). Une mesure absente d'un côté ou de l'autre est ignorée.
+ *
+ * On renvoie le type de climat, pas la ville-station : c'est le mot que la phrase doit
+ * employer. La ville ne sert que de repli si la référence n'est pas typée.
  */
-function villeLaPlusProche(
+function climatLePlusProche(
   local: ClimateMonthlySeriesDto,
   references: ClimateMonthlySeriesDto[],
 ): string | null {
@@ -459,7 +462,7 @@ function villeLaPlusProche(
     const score = total / count;
     if (score < bestScore) {
       bestScore = score;
-      bestName = ref.name;
+      bestName = ref.climateType ?? ref.name;
     }
   }
 
@@ -506,13 +509,12 @@ function buildClimat(climate: ClimateAnalysisDto | null | undefined): ClimatInsi
           }
         : null,
     ensoleillement: soleilTotal !== null ? { cumul_annuel_h: round(soleilTotal, 0) } : null,
-    villes_reference: monthly.references.map((r) => ({
-      nom: r.name,
-      type_climat: r.climateType ?? null,
+    climats_reference: monthly.references.map((r) => ({
+      type_climat: r.climateType ?? r.name,
       temp_annuelle_c: roundOrNull(mean(r.temperatureC)),
       precip_annuelles_mm: roundOrNull(sum(r.precipitationMm), 0),
     })),
-    ville_reference_la_plus_proche: villeLaPlusProche(local, monthly.references),
+    climat_de_reference_le_plus_proche: climatLePlusProche(local, monthly.references),
   };
 }
 

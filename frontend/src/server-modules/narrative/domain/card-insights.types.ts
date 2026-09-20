@@ -176,19 +176,23 @@ export interface ClimatInsightInput {
     mm_min: number;
   } | null;
   ensoleillement: { cumul_annuel_h: number } | null;
-  villes_reference: Array<{
-    nom: string;
-    type_climat: string | null;
+  /**
+   * Les repères sont nommés par leur **type de climat** et non par la ville qui sert de
+   * station : « continental » parle au lecteur, « Strasbourg » l'envoie à 500 km de chez
+   * lui. Les villes restent visibles sur le graphique de la card, pas dans la phrase.
+   */
+  climats_reference: Array<{
+    type_climat: string;
     temp_annuelle_c: number | null;
     precip_annuelles_mm: number | null;
   }>;
   /**
-   * Ville de référence dont le profil sur 12 mois s'écarte le moins du profil local.
-   * Calculée en TS (erreur moyenne absolue sur les mesures normalisées) : c'est la
+   * Type de climat de référence dont le profil sur 12 mois s'écarte le moins du profil
+   * local. Calculé en TS (erreur moyenne absolue sur les mesures normalisées) : c'est la
    * phrase que la card promet, et la laisser au modèle reviendrait à lui demander de
    * comparer 144 nombres de tête.
    */
-  ville_reference_la_plus_proche: string | null;
+  climat_de_reference_le_plus_proche: string | null;
 }
 
 // --- Racine -----------------------------------------------------------------
