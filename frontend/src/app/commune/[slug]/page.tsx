@@ -13,19 +13,30 @@ import { Brand } from "@/components/Brand";
 import { getCommuneStatsService } from "@/server-modules/commune-stats/application/commune-stats.service";
 import { getCommuneNarrativeService } from "@/server-modules/narrative/application/commune-narrative.service";
 import { CommuneContourProvider } from "@/server-modules/address/infrastructure/commune-contour.provider";
+import { KeyFigures } from "@/components/analysis/KeyFigures";
+import { SectionNav } from "@/components/analysis/SectionNav";
 import { CommuneHero } from "@/components/commune/CommuneHero";
-import { CommuneMapSection } from "@/components/commune/CommuneMapSection";
-import { CommunePriceSection } from "@/components/commune/CommunePriceSection";
-import { CommuneDemographicsSection } from "@/components/commune/CommuneDemographicsSection";
-import { CommuneEquipmentsSection } from "@/components/commune/CommuneEquipmentsSection";
-import { CommuneSecuritySection } from "@/components/commune/CommuneSecuritySection";
-import { CommuneAirQualitySection } from "@/components/commune/CommuneAirQualitySection";
-import { CommuneElectionsSection } from "@/components/commune/CommuneElectionsSection";
-import { CommuneNarrativeSection } from "@/components/commune/CommuneNarrativeSection";
-import { CommuneHistorySection } from "@/components/commune/CommuneHistorySection";
-import { CommuneFaqSection } from "@/components/commune/CommuneFaqSection";
+import { CommuneLocatorCard } from "@/components/commune/CommuneLocatorCard";
+import { CommunePriceCard } from "@/components/commune/CommunePriceCard";
+import { CommuneAgeCard } from "@/components/commune/CommuneAgeCard";
+import { CommuneEmploymentCard } from "@/components/commune/CommuneEmploymentCard";
+import { CommuneHouseholdsCard } from "@/components/commune/CommuneHouseholdsCard";
+import { CommuneEquipmentsCard } from "@/components/commune/CommuneEquipmentsCard";
+import { CommuneSecurityCard } from "@/components/commune/CommuneSecurityCard";
+import { CommuneAirQualityCard } from "@/components/commune/CommuneAirQualityCard";
+import { CommuneElectionsCard } from "@/components/commune/CommuneElectionsCard";
+import { CommuneNarrativeCard } from "@/components/commune/CommuneNarrativeCard";
+import { CommuneHistoryCard } from "@/components/commune/CommuneHistoryCard";
+import { buildFaqItems, CommuneFaqSection } from "@/components/commune/CommuneFaqSection";
 import { CommuneRelatedLinks } from "@/components/commune/CommuneRelatedLinks";
 import { formatEur, formatInt } from "@/components/commune/format";
+import { buildCommuneKeyFigures } from "@/components/commune/keyFigures";
+import {
+  COMMUNE_SECTION_TITLES,
+  communeSectionContent,
+  type CommuneSectionId,
+} from "@/components/commune/sections";
+import { communeInseeViews } from "@/components/commune/inseeViews";
 
 export const revalidate = 86400; // 24h ISR
 // dynamicParams = true (défaut) : permet la génération à la demande quand la liste
@@ -87,6 +98,27 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * Une section du corps : son titre, son ancre, et les cards qu'elle contient.
+ *
+ * Décalque du wrapper de `AnalysisScreen` : l'`id` est l'ancre que visent le sommaire et
+ * le bandeau de chiffres clés, et le titre vient de la table — jamais écrit sur place.
+ */
+function CommuneSection({
+  id,
+  children,
+}: {
+  id: CommuneSectionId;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} className="page-section">
+      <h2 className="page-section-title">{COMMUNE_SECTION_TITLES[id]}</h2>
+      <div className="page-section-body">{children}</div>
+    </section>
+  );
+}
+
 export default async function CommunePage({
   params,
 }: {
@@ -117,6 +149,22 @@ export default async function CommunePage({
   // Les légendes voyagent avec la narrative : même appel au modèle, même cache. Une
   // page sans narrative se rend simplement sans légende, comme avant.
   const legendes = narrative?.content.legendes;
+
+  // Les questions servent de garde de section autant que de contenu : construites ici,
+  // elles alimentent le balisage `FAQPage` et la liste rendue, qui ne peuvent plus
+  // diverger.
+  const faqItems = buildFaqItems(stats, commune.nomCourt);
+  const inseeViews = communeInseeViews(stats, commune.nomCourt);
+
+  // Le point de décision unique : les cards n'ont plus de garde interne, elles ne sont
+  // montées que si leur section a quelque chose à montrer. Sommaire, bandeau et corps
+  // lisent tous les trois cette même table.
+  const content = communeSectionContent({ stats, contour, nbFaqItems: faqItems.length });
+  const activeSections = (Object.keys(COMMUNE_SECTION_TITLES) as CommuneSectionId[]).filter(
+    (id) => content[id],
+  );
+  const navSections = activeSections.map((id) => ({ id, title: COMMUNE_SECTION_TITLES[id] }));
+  const keyFigures = buildCommuneKeyFigures(stats, activeSections);
 
   const placeJsonLd = {
     "@context": "https://schema.org",
@@ -191,20 +239,85 @@ export default async function CommunePage({
       </nav>
 
       <CommuneHero commune={commune} />
-      {/* Les fonds alternent par rang dans ce conteneur (cf. `.commune-sections`) : une
-          section qui ne rend rien ne décale pas le motif. */}
-      <div className="commune-sections">
-        <CommuneMapSection commune={commune} contour={contour} />
-        {narrative && <CommuneNarrativeSection content={narrative.content} nomCourt={commune.nomCourt} />}
-        <CommunePriceSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
-        <CommuneEquipmentsSection stats={stats} legendes={legendes} />
-        {/* Même place que dans l'analyse : le cadre de vie, puis la sécurité, puis les gens. */}
-        <CommuneSecuritySection stats={stats} legendes={legendes} />
-        <CommuneDemographicsSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
-        <CommuneAirQualitySection stats={stats} legendes={legendes} />
-        <CommuneElectionsSection stats={stats} legendes={legendes} />
-        <CommuneHistorySection commune={commune} contour={contour} />
-        <CommuneFaqSection stats={stats} nomCourt={commune.nomCourt} />
+
+      <div className="page-shell">
+        <KeyFigures figures={keyFigures} />
+
+        {/* Zone chapeau, hors sommaire : la carte situe ce qui suit, la synthèse
+            l'introduit. Ni l'une ni l'autre n'est une rubrique. */}
+        <CommuneLocatorCard commune={commune} contour={contour} />
+        {narrative && (
+          <CommuneNarrativeCard content={narrative.content} nomCourt={commune.nomCourt} />
+        )}
+
+        <div className="page-body">
+          <aside className="page-sidebar">
+            {/* Pas de barre fixe sur cette page, contrairement à l'écran d'analyse. */}
+            <SectionNav sections={navSections} topOffset={0} />
+          </aside>
+
+          <div className="page-sections">
+            {content["prix-immobilier"] && (
+              <CommuneSection id="prix-immobilier">
+                <CommunePriceCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
+              </CommuneSection>
+            )}
+
+            {content.equipements && (
+              <CommuneSection id="equipements">
+                <CommuneEquipmentsCard stats={stats} legendes={legendes} />
+              </CommuneSection>
+            )}
+
+            {/* Même ordre que l'analyse : le cadre de vie, puis la sécurité, puis les gens. */}
+            {content.securite && stats.securite && (
+              <CommuneSection id="securite">
+                <CommuneSecurityCard stats={stats} securite={stats.securite} legendes={legendes} />
+              </CommuneSection>
+            )}
+
+            {content.demographie && (
+              <CommuneSection id="demographie">
+                <CommuneAgeCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
+                {inseeViews.employment && <CommuneEmploymentCard view={inseeViews.employment} />}
+                {inseeViews.households && <CommuneHouseholdsCard view={inseeViews.households} />}
+              </CommuneSection>
+            )}
+
+            {content.elections && stats.elections && (
+              <CommuneSection id="elections">
+                <CommuneElectionsCard
+                  stats={stats}
+                  elections={stats.elections}
+                  legendes={legendes}
+                />
+              </CommuneSection>
+            )}
+
+            {content["qualite-air"] && stats.airQuality && (
+              <CommuneSection id="qualite-air">
+                <CommuneAirQualityCard
+                  stats={stats}
+                  airQuality={stats.airQuality}
+                  legendes={legendes}
+                />
+              </CommuneSection>
+            )}
+
+            {content.histoire && contour && (
+              <CommuneSection id="histoire">
+                <CommuneHistoryCard commune={commune} contour={contour} />
+              </CommuneSection>
+            )}
+
+            {content.faq && (
+              <CommuneSection id="faq">
+                <CommuneFaqSection items={faqItems} />
+              </CommuneSection>
+            )}
+          </div>
+        </div>
+
         <CommuneRelatedLinks commune={commune} />
       </div>
 

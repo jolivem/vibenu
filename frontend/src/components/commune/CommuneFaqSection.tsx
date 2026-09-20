@@ -32,21 +32,21 @@ function securityPhrase(row: SecurityIndicatorSummary, ville: string): string | 
   return `${row.indicateur.toLowerCase()} : ${taux} faits ${row.unite}${details.length > 0 ? ` (${details.join(", ")})` : ""}`;
 }
 
-interface FaqItem {
+export interface FaqItem {
   question: string;
   answer: string;
 }
 
 interface Props {
-  stats: CommuneStats;
-  nomCourt: string;
+  /** Construites une seule fois par la page : elles servent aussi de garde de section. */
+  items: FaqItem[];
 }
 
 /**
  * FAQs auto-générées à partir des données réelles.
  * Toute question dont la réponse n'est pas chiffrable est exclue.
  */
-function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] {
+export function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] {
   const items: FaqItem[] = [];
 
   if (stats.prix.prixM2Median) {
@@ -138,10 +138,11 @@ function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] {
   return items;
 }
 
-export function CommuneFaqSection({ stats, nomCourt }: Props) {
-  const items = buildFaqItems(stats, nomCourt);
-  if (items.length === 0) return null;
-
+/**
+ * La liste et le JSON-LD `FAQPage` sont construits à partir des mêmes `items` reçus en
+ * prop : aucun risque que le balisage décrive autre chose que ce qui est rendu.
+ */
+export function CommuneFaqSection({ items }: Props) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -153,17 +154,11 @@ export function CommuneFaqSection({ stats, nomCourt }: Props) {
   };
 
   return (
-    <section className="commune-section" id="faq">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="commune-section-head">
-        <h2 className="commune-section-title">
-          Questions <i>fréquentes</i>
-        </h2>
-        <span className="section-meta">{items.length} questions</span>
-      </div>
       <div className="faq-list">
         {items.map((item) => (
           <details key={item.question} className="faq-item">
@@ -172,6 +167,6 @@ export function CommuneFaqSection({ stats, nomCourt }: Props) {
           </details>
         ))}
       </div>
-    </section>
+    </>
   );
 }

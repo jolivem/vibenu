@@ -10,6 +10,10 @@ import { CITIES } from "@/lib/commune-slugs";
 import { FEATURES } from "@/lib/site-features";
 import { summarizeSecurity } from "../../commune-stats/application/security-summary";
 import { roundOrNull } from "@/server-shared/domain/trend";
+import {
+  communeSectionContent,
+  type CommuneSectionId,
+} from "@/components/commune/sections";
 
 /**
  * Bump this version when the prompt changes.
@@ -268,27 +272,35 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
   ].join("\n");
 }
 
+/** La section de la page que chaque légende commente. */
+const SECTION_PAR_LEGENDE: Record<CommuneLegendKey, CommuneSectionId> = {
+  legende_prix: "prix-immobilier",
+  legende_demographie: "demographie",
+  legende_equipements: "equipements",
+  legende_securite: "securite",
+  legende_air: "qualite-air",
+  legende_elections: "elections",
+};
+
 /**
  * Les sections réellement rendues sur la page, donc les seules à légender.
  *
- * Réplique les gardes des composants : `CommuneEquipmentsSection` rend `null` sans
- * équipement, `CommuneAirQualitySection` rend `null` si la rubrique est coupée et
- * bascule sur un message d'attente sans historique, `CommuneElectionsSection` rend
- * `null` sans scrutin ni candidat. Prix et démographie sont toujours rendus.
+ * Les gardes ne sont plus répliqués ici : la page les tient dans `communeSectionContent`,
+ * et c'est cette table qu'on interroge. Une légende pour une section absente serait payée
+ * au modèle pour n'être jamais lue — et l'invariant « une clé est produite ssi sa section
+ * s'affiche » ne tient que s'il n'y a qu'un seul jeu de conditions.
+ *
+ * `contour` et `nbFaqItems` ne commandent que l'histoire et la FAQ, deux sections sans
+ * légende : les valeurs passées ici ne changent aucune des six clés.
  */
 function sectionsAffichees(input: CommuneNarrativeInput): CommuneLegendKey[] {
-  const { stats } = input;
-  const keys: CommuneLegendKey[] = ["legende_prix", "legende_demographie"];
+  const content = communeSectionContent({
+    stats: input.stats,
+    contour: null,
+    nbFaqItems: 0,
+  });
 
-  if (stats.equipements.some((e) => e.nb > 0)) keys.push("legende_equipements");
-  if (FEATURES.showAirQuality && stats.airQuality && stats.airQuality.historique.length > 0) {
-    keys.push("legende_air");
-  }
-  if (stats.elections && stats.elections.candidats.length > 0) keys.push("legende_elections");
-  // `CommuneSecuritySection` rend `null` sans `stats.securite`.
-  if (stats.securite) keys.push("legende_securite");
-
-  return keys;
+  return COMMUNE_LEGEND_KEYS.filter((key) => content[SECTION_PAR_LEGENDE[key]]);
 }
 
 /**

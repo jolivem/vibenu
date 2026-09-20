@@ -64,9 +64,9 @@ function AnalysisSection({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="analysis-section">
-      <h2 className="analysis-section-title">{SECTION_TITLES[id]}</h2>
-      <div className="analysis-section-body">
+    <section id={id} className="page-section">
+      <h2 className="page-section-title">{SECTION_TITLES[id]}</h2>
+      <div className="page-section-body">
         {lead}
         {children}
       </div>
@@ -175,9 +175,15 @@ export function AnalysisScreen() {
     [hasContent],
   );
 
+  /** Le sommaire ne connaît pas la taxonomie de l'analyse : on lui passe les titres. */
+  const navSections = useMemo(
+    () => activeSections.map((id) => ({ id, title: SECTION_TITLES[id] })),
+    [activeSections],
+  );
+
   /** Une tuile par section, chacune ancrant vers la sienne — calcul partagé avec l'en-tête
    *  de la fiche PDF (`buildKeyFigures`). */
-  const keyFigures = useMemo<KeyFigure[]>(
+  const keyFigures = useMemo<KeyFigure<SectionId>[]>(
     () => (data ? buildKeyFigures(data, securityRating, activeSections) : []),
     [data, activeSections, securityRating],
   );
@@ -224,7 +230,7 @@ export function AnalysisScreen() {
         </div>
       </div>
 
-      <div className="analysis-page">
+      <div className="page-shell">
         {isLoading && (
           <div className="analysis-loader">
             <div className="spinner" />
@@ -238,7 +244,7 @@ export function AnalysisScreen() {
             <KeyFigures figures={keyFigures} />
 
             {FEATURES.showLocation && (
-              <section className="card map-section analysis-locator">
+              <section className="card map-section page-locator">
                 <h2>Localisation</h2>
                 <Map
                   lat={data.map.center.lat}
@@ -253,12 +259,12 @@ export function AnalysisScreen() {
               </section>
             )}
 
-            <div className="analysis-body">
-              <aside className="analysis-sidebar">
-                <SectionNav sections={activeSections} />
+            <div className="page-body">
+              <aside className="page-sidebar">
+                <SectionNav sections={navSections} />
               </aside>
 
-              <div className="analysis-sections">
+              <div className="page-sections">
                 {hasContent.immobilier && (
                   <AnalysisSection id="immobilier">
                     {FEATURES.showRealEstate && realEstate && (

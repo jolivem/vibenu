@@ -6,19 +6,21 @@ interface Props {
   commune: CommuneSlugEntry;
 }
 
+/**
+ * Maillage et conversion, en pied de page sous les deux colonnes : ce n'est pas du
+ * contenu, donc pas une entrée de sommaire.
+ *
+ * Le titre était « À proximité », qui entrait en collision frontale avec la rubrique des
+ * équipements de proximité une fois les deux au sommaire.
+ */
 export function CommuneRelatedLinks({ commune }: Props) {
   const voisins = commune.voisins
     .map((slug) => getCommuneBySlug(slug))
     .filter((c): c is CommuneSlugEntry => c !== undefined);
 
   return (
-    <section className="commune-section commune-related" id="autour">
-      <div className="commune-section-head">
-        <h2 className="commune-section-title">
-          À <i>proximité</i>
-        </h2>
-        <span className="section-meta">Arrondissements limitrophes</span>
-      </div>
+    <section className="commune-related" id="autour">
+      <h2 className="page-section-title">Arrondissements voisins</h2>
 
       {voisins.length > 0 && (
         <ul className="commune-related-list">

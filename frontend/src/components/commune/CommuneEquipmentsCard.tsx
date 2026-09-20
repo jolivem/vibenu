@@ -1,6 +1,6 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
-import { formatInt, formatDensityPer10k, formatDelta } from "./format";
+import { equipementsAffichables, formatInt, formatDensityPer10k, formatDelta } from "./format";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
 
@@ -10,24 +10,15 @@ interface Props {
   stats: CommuneStats;
 }
 
-export function CommuneEquipmentsSection({ stats, legendes }: Props) {
-  const equipements = stats.equipements.filter((e) => e.nb > 0);
+export function CommuneEquipmentsCard({ stats, legendes }: Props) {
+  const equipements = equipementsAffichables(stats);
   const cityDef = CITIES[stats.city];
 
-  if (equipements.length === 0) {
-    return null;
-  }
-
   return (
-    <section className="commune-section" id="equipements">
-      <div className="commune-section-head">
-        <h2 className="commune-section-title">
-          Équipements &amp; <i>cadre de vie</i>
-        </h2>
-        <span className="section-meta">INSEE BPE · densité pour 10 000 hab.</span>
-      </div>
+    <section className="card">
+      <h2>Équipements de proximité</h2>
 
-      <CardInsight text={legendes?.legende_equipements} animate={false} className="commune-legend" />
+      <CardInsight text={legendes?.legende_equipements} animate={false} />
 
       <div className="commune-equip-grid">
         {equipements.map((eq) => {
@@ -72,15 +63,15 @@ export function CommuneEquipmentsSection({ stats, legendes }: Props) {
           );
         })}
       </div>
-      <p className="commune-equip-note">
+      <p className="elections-footnote">
         Densité pour 10 000 habitants, comparée à la moyenne {cityDef.adjectif} (équipements
         rapportés à la population). Les écarts &lt; 5 % ne sont pas affichés.
       </p>
-      <p className="commune-equip-note">
+      <p className="elections-footnote">
         La BPE rattache certains équipements à l&apos;adresse de leur gestionnaire : à
         l&apos;échelle d&apos;un arrondissement, les nombres peuvent être surestimés ou
         sous-estimés. L&apos;écart n&apos;est pas calculé quand un arrondissement concentre plus
-        de la moitié des équipements de sa ville dans une catégorie.
+        de la moitié des équipements de sa ville dans une catégorie. Source : INSEE BPE.
       </p>
     </section>
   );

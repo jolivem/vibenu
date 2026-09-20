@@ -1,9 +1,12 @@
-import type { SectionId } from "./sections";
-
-export interface KeyFigure {
+/**
+ * Le paramètre de type porte la taxonomie de la page : l'écran d'analyse a la sienne,
+ * les pages commune la leur. Le composant, lui, ne fait de `section` qu'un `href` — il
+ * n'a aucune table de titres à consulter, donc rien à savoir de l'une ni de l'autre.
+ */
+export interface KeyFigure<Id extends string = string> {
   /** Section vers laquelle la tuile ancre — une tuile par section, le bandeau
    *  est un miroir du sommaire. */
-  section: SectionId;
+  section: Id;
   label: string;
   value: string;
 }
@@ -15,7 +18,7 @@ export interface KeyFigure {
  * décalage sous la barre fixe sont réglés en CSS (`scroll-behavior`, `scroll-margin-top`),
  * sans écouteur JavaScript.
  */
-export function KeyFigures({ figures }: { figures: KeyFigure[] }) {
+export function KeyFigures({ figures }: { figures: KeyFigure<string>[] }) {
   if (figures.length === 0) return null;
 
   return (

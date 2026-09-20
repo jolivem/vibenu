@@ -1,11 +1,14 @@
-import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
+import type { CommuneStats, ElectionsStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
+import { candidatsTop } from "./format";
 
 interface Props {
   /** Légende IA de la section, rendue côté serveur. */
   legendes?: CommuneLegendes;
   stats: CommuneStats;
+  /** Passées séparément : la page a déjà vérifié leur présence pour activer la section. */
+  elections: ElectionsStats;
 }
 
 const PARTI_COLOR: Record<string, string> = {
@@ -34,13 +37,8 @@ function deltaLabel(delta: number): string {
   return `${sign}${Math.abs(rounded).toFixed(1).replace(".", ",")} pts`;
 }
 
-export function CommuneElectionsSection({ stats, legendes }: Props) {
-  if (!stats.elections) return null;
-  const { elections } = stats;
-
-  // Top 5 candidats par voix (les candidats sont déjà triés par voix dans la query SQL)
-  const top = elections.candidats.slice(0, 5);
-  if (top.length === 0) return null;
+export function CommuneElectionsCard({ stats, elections, legendes }: Props) {
+  const top = candidatsTop(stats);
 
   // Échelle commune à toutes les barres pour comparaison visuelle cohérente
   const max = Math.max(
@@ -55,17 +53,11 @@ export function CommuneElectionsSection({ stats, legendes }: Props) {
       : null;
 
   return (
-    <section className="commune-section" id="elections">
-      <div className="commune-section-head">
-        <h2 className="commune-section-title">
-          Résultats <i>électoraux</i>
-        </h2>
-        <span className="section-meta">
-          {elections.scrutin} · Ministère de l&apos;Intérieur
-        </span>
-      </div>
+    <section className="card">
+      <h2>Résultats électoraux</h2>
+      <p className="muted">{elections.scrutin}</p>
 
-      <CardInsight text={legendes?.legende_elections} animate={false} className="commune-legend" />
+      <CardInsight text={legendes?.legende_elections} animate={false} />
 
       <div className="commune-elections-wrap">
         <p className="commune-elections-participation">

@@ -415,6 +415,14 @@ html {
   text-align: left;
 }
 
+/* Les pages arrondissement alignent leur titre sur la colonne de l'ossature `page-*`.
+   Le hub ville écrit sa propre balise `.commune-hero` et garde donc la largeur d'origine. */
+.commune-hero--page {
+  max-width: 1200px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
 .commune-title {
   font-family: var(--font-serif), var(--font-serif-fallback);
   font-weight: 400;
@@ -482,17 +490,13 @@ html {
 .is-up { color: #c2410c; }
 .is-down { color: var(--accent); }
 
+/* Gabarit pleine largeur — n'est plus monté que par le hub ville (`CityHubPage`). Les
+   pages arrondissement sont passées à l'ossature `page-*`, avec cards et sommaire. Ces
+   trois règles ne sont donc pas mortes : elles n'ont plus qu'un seul consommateur. */
 .commune-section {
   border-top: 0.5px solid var(--hairline);
   padding: 56px 32px 52px;
   background: var(--card);
-}
-
-/* Fonds alternés, posés par le rang et non par chaque composant : une section qui ne rend
-   rien (qualité de l'air coupée, pas d'histoire) ne décale plus le motif, et en ajouter une
-   ne demande pas de repeindre les suivantes. Le rang ne compte que les sections rendues. */
-.commune-sections > .commune-section:nth-child(odd) {
-  background: var(--bg);
 }
 
 .commune-section-head {
@@ -521,20 +525,9 @@ html {
   color: var(--accent);
 }
 
-.commune-h3 {
-  font-family: var(--font-sans), var(--font-sans-fallback);
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted-soft);
-  margin: 0 0 16px;
-  font-weight: 500;
-}
-
 /* Prix */
 .commune-price-grid {
-  max-width: 1100px;
-  margin: 0 auto 32px;
+  margin: 0 0 32px;
   display: grid;
   grid-template-columns: 1.2fr 2fr;
   gap: 24px;
@@ -589,11 +582,6 @@ html {
   color: var(--text);
 }
 
-.commune-evolution {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
 .commune-chart {
   width: 100%;
   height: auto;
@@ -609,66 +597,18 @@ html {
   margin: 0;
 }
 
-/* Démographie */
-.commune-demo-grid {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: 28px;
-  align-items: start;
-}
-
+/* Démographie — les trois chiffres en rangée au-dessus de la pyramide. Dans la colonne de
+   l'ossature, le partage en deux colonnes de l'ancienne section pleine largeur ne laissait
+   pas assez de place au graphe. */
 .commune-demo-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.commune-pyramid-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.commune-pyramid-row {
   display: grid;
-  grid-template-columns: 100px 1fr 60px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  align-items: center;
-  font-size: 14px;
-}
-
-.commune-pyramid-label {
-  color: var(--muted);
-}
-
-.commune-pyramid-bar-wrap {
-  background: var(--hairline);
-  height: 12px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.commune-pyramid-bar {
-  display: block;
-  height: 100%;
-  background: var(--accent);
-}
-
-.commune-pyramid-value {
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-  text-align: right;
+  margin-bottom: 24px;
 }
 
 /* Équipements */
 .commune-equip-grid {
-  max-width: 1100px;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
@@ -740,18 +680,9 @@ html {
 .commune-equip-delta.is-up { color: var(--accent); }
 .commune-equip-delta.is-down { color: #c2410c; background: #ffedd5; }
 
-.commune-equip-note {
-  max-width: 1100px;
-  margin: 18px auto 0;
-  font-size: 13px;
-  color: var(--muted-soft);
-  line-height: 1.5;
-}
-
-/* Sécurité — les courbes de la card d'analyse (.security-metric), deux par ligne. */
+/* Sécurité — les courbes de la card d'analyse (.security-metric), deux par ligne.
+   Les surcharges de titre ont disparu avec le passage en card : `.card h3` s'applique. */
 .commune-security-grid {
-  max-width: 1100px;
-  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 32px 40px;
@@ -761,55 +692,12 @@ html {
   margin-top: 0;
 }
 
-.commune-security-grid .security-metric h3 {
-  font-size: 15px;
-  margin: 0 0 2px;
-}
-
-@media (max-width: 880px) {
+@media (max-width: 900px) {
   .commune-security-grid { grid-template-columns: 1fr; }
-}
-
-/* Emploi et ménages — les blocs des cards d'analyse, côte à côte sous la pyramide des âges.
-   Hors `.card`, leurs titres de graphe n'héritent d'aucun style : on reprend `.card h3`. */
-.commune-profile-grid {
-  max-width: 1100px;
-  margin: 44px auto 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 32px 40px;
-  align-items: start;
-}
-
-.commune-profile-title {
-  font-family: var(--font-serif), var(--font-serif-fallback);
-  font-weight: 400;
-  font-size: 1.4rem;
-  letter-spacing: -0.012em;
-  color: var(--accent);
-  margin: 0;
-  padding-bottom: 10px;
-  border-bottom: 0.5px solid var(--hairline);
-}
-
-.commune-profile-block .insee-metric h3 {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin: 0 0 2px;
-  color: var(--text);
-}
-
-@media (max-width: 880px) {
-  .commune-profile-grid { grid-template-columns: 1fr; }
 }
 
 /* Qualité de l'air — indice ATMO */
 .commune-air-wrap {
-  max-width: 1100px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 36px;
@@ -890,15 +778,6 @@ html {
   font-weight: 400;
 }
 
-.commune-air-history-title {
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted-soft);
-  font-weight: 500;
-  margin: 0 0 14px;
-}
-
 .commune-air-history-list {
   list-style: none;
   margin: 0;
@@ -923,21 +802,6 @@ html {
 
 .commune-air-history-bar {
   width: 100%;
-}
-
-.commune-air-note {
-  max-width: 1100px;
-  margin: 24px auto 0;
-  font-size: 13px;
-  color: var(--muted-soft);
-  line-height: 1.5;
-}
-
-.commune-empty {
-  max-width: 1100px;
-  margin: 0 auto;
-  color: var(--muted-soft);
-  font-size: 15px;
 }
 
 /* Élections (commune) — réutilise les classes .elections-* du mode adresse */
@@ -1041,7 +905,13 @@ html {
   color: var(--muted);
 }
 
-/* Maillage interne / footer page commune */
+/* Maillage interne / footer page commune — hors sommaire, sous les deux colonnes. */
+.commune-related {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 0.5px solid var(--hairline);
+}
+
 .commune-related-list {
   list-style: none;
   margin: 0 0 32px;
@@ -1103,10 +973,10 @@ html {
   background: #3d7813;
 }
 
-@media (max-width: 880px) {
+@media (max-width: 900px) {
   .commune-price-grid { grid-template-columns: 1fr; }
   .commune-price-range { grid-template-columns: 1fr; }
-  .commune-demo-grid { grid-template-columns: 1fr; }
+  .commune-demo-stats { grid-template-columns: 1fr; }
 }
 
 /* About page */
@@ -1734,22 +1604,6 @@ html {
   }
 }
 
-/*
- * Sur les pages commune, la phrase se pose sur les fonds alternés des sections.
- *
- * Elle doit se centrer comme ses voisines : dans une `.commune-section` en pleine
- * largeur, chaque bloc pose lui-même sa colonne (`max-width` + marges automatiques).
- * Une largeur maximale seule ne centre rien — la légende se calait alors sur le bord
- * gauche de la section, désalignée du titre qu'elle suit et de la carte qu'elle
- * commente. Les marges gauche et droite sont posées en longhand pour ne pas écraser
- * le rythme vertical de `.card-insight` (2px au-dessus, 18px en dessous).
- */
-.commune-legend {
-  max-width: 1100px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .card-insight-debug {
   margin: 24px 0 0;
   font-size: 0.8rem;
@@ -1877,7 +1731,7 @@ html {
   color: var(--accent-dark, var(--accent));
 }
 
-.analysis-page {
+.page-shell {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 20px 40px;
@@ -1968,11 +1822,15 @@ html {
   color: var(--muted);
 }
 
-/* ====== Ossature de l'écran d'analyse (V2) ======
+/* ====== Ossature de page (V2) — écran d'analyse et pages commune ======
  *
  * Le masonry en colonnes a été retiré : il mettait la synthèse IA — le seul contenu qui
  * conclut — au même niveau visuel que la carte scolaire, et son ordre de lecture était
- * imprévisible. À la place : un scroll continu, 6 sections, un sommaire collant.
+ * imprévisible. À la place : un scroll continu, des sections, un sommaire collant.
+ *
+ * Le préfixe est neutre (`page-`) parce que les règles le sont : les pages SEO
+ * `/commune/[slug]` montent la même ossature. Ce qui reste préfixé `analysis-` — la
+ * topbar, le hero, le loader — appartient bien au seul écran d'analyse.
  */
 
 /* Bandeau de chiffres clés — une tuile par section, chacune ancrant vers la sienne */
@@ -2016,19 +1874,19 @@ html {
 }
 
 /* Carte de localisation, pleine largeur sous la synthèse */
-.analysis-locator {
+.page-locator {
   margin-bottom: 20px;
 }
 
 /* Corps : sommaire collant à gauche, sections à droite */
-.analysis-body {
+.page-body {
   display: grid;
   grid-template-columns: 210px minmax(0, 1fr);
   gap: 32px;
   align-items: start;
 }
 
-.analysis-sidebar {
+.page-sidebar {
   position: sticky;
   /* Sous la barre du haut, qui ne défile pas. */
   top: 24px;
@@ -2070,18 +1928,18 @@ html {
   border-left-color: var(--accent);
 }
 
-.analysis-sections {
+.page-sections {
   display: flex;
   flex-direction: column;
   gap: 40px;
 }
 
-.analysis-section {
+.page-section {
   /* Décale l'ancre pour que le titre ne se colle pas au bord haut du viewport. */
   scroll-margin-top: 24px;
 }
 
-.analysis-section-title {
+.page-section-title {
   font-family: var(--font-serif), var(--font-serif-fallback);
   font-size: 1.05rem;
   font-weight: 400;
@@ -2093,7 +1951,7 @@ html {
   border-bottom: 0.5px solid var(--hairline-strong);
 }
 
-.analysis-section-body {
+.page-section-body {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -2108,7 +1966,7 @@ html {
  * pas avec elles.
  *
  * Aucune marge de séparation à écrire : le bandeau est le premier enfant de
- * `.analysis-section-body`, il hérite donc du `gap` ci-dessus.
+ * `.page-section-body`, il hérite donc du `gap` ci-dessus.
  */
 .section-scope-zone {
   /* Marges posées à la main : le bandeau n'est pas un conteneur flex, les marges par
@@ -2162,6 +2020,14 @@ html {
   border-top: 0.5px solid var(--hairline);
 }
 
+/* Le débord du bas suppose que la carte ferme la card. Les pages commune en ont deux qui
+   sont suivies de contenu (note de source, liste des époques) : la carte garde son débord
+   latéral, mais reprend une marge basse et son filet de fermeture. */
+.card-map--inline {
+  margin-bottom: 20px;
+  border-bottom: 0.5px solid var(--hairline);
+}
+
 /* Consigne d'usage, posée juste au-dessus de la carte qu'elle décrit. Discrète : elle
    s'adresse à qui hésite, sans concurrencer le contenu de la card. */
 .card-map-hint {
@@ -2212,12 +2078,12 @@ html {
 @media (max-width: 900px) {
   /* Le sommaire collant n'a pas de place à côté : il passe au-dessus, en défilement
      horizontal, et cesse de coller pour ne pas manger la hauteur d'écran. */
-  .analysis-body {
+  .page-body {
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
   }
 
-  .analysis-sidebar {
+  .page-sidebar {
     position: static;
   }
 
@@ -2268,24 +2134,6 @@ html {
 }
 
 /* Carte du contour d'arrondissement (pages SEO /commune/[slug]) */
-.commune-map-wrap {
-  max-width: 1100px;
-  margin: 0 auto 36px;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 0.5px solid var(--hairline-strong);
-}
-
-.commune-map-wrap .map-wrapper {
-  border: none;
-  padding: 0;
-  border-radius: 0;
-}
-
-.commune-map-wrap .map-container {
-  border-radius: 0 !important;
-}
-
 .map-section .layer-toggle-panel {
   margin-top: 12px;
   border-top: 0.5px solid var(--hairline);

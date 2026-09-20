@@ -21,15 +21,16 @@ const SECTIONS: Array<{
   { key: "cadre_de_vie", title: "Cadre de vie", num: "B", id: "cadre" },
 ];
 
-export function CommuneNarrativeSection({ content, nomCourt }: Props) {
+/**
+ * Chapeau éditorial de la page, en card sous la carte de situation.
+ *
+ * Hors sommaire : ce n'est pas une tranche thématique mais l'introduction de toutes les
+ * autres. Les sous-ancres `identite` et `cadre` restent, elles sont déjà servies.
+ */
+export function CommuneNarrativeCard({ content, nomCourt }: Props) {
   return (
-    <section className="commune-section" id="synthese">
-      <div className="commune-section-head">
-        <h2 className="commune-section-title">
-          Synthèse <i>{nomCourt}</i>
-        </h2>
-        <span className="section-meta">Rédigée par IA · données publiques</span>
-      </div>
+    <section className="card">
+      <h2>Synthèse {nomCourt}</h2>
 
       <div className="commune-narrative">
         {SECTIONS.map((s) => (
@@ -40,6 +41,8 @@ export function CommuneNarrativeSection({ content, nomCourt }: Props) {
           </article>
         ))}
       </div>
+
+      <p className="elections-footnote">Rédigée par IA à partir des données publiques.</p>
     </section>
   );
 }

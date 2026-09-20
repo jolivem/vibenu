@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SECTION_TITLES, type SectionId } from "./sections";
+
+/** Une entrée du sommaire : l'ancre et son libellé. */
+export interface NavSection {
+  /** L'`id` de la `<section>` visée — l'ancre `#id`. */
+  id: string;
+  title: string;
+}
 
 /**
  * Sommaire collant, en regard du corps de la page.
@@ -9,19 +15,33 @@ import { SECTION_TITLES, type SectionId } from "./sections";
  * Pas d'onglets ni d'accordéons : toutes les sections restent dans le DOM. C'est ce qui
  * préserve le Ctrl+F, le SEO si la page passe un jour en SSR, et la cohérence avec le PDF
  * qui reprend déjà toutes les sections.
+ *
+ * Le composant reçoit `{id, title}` plutôt qu'un identifiant à résoudre dans une table de
+ * titres : l'écran d'analyse et les pages commune ont chacun leur taxonomie, et c'est la
+ * seule chose qui les sépare ici. L'`IntersectionObserver` ci-dessous, lui, n'a aucune
+ * raison d'exister en deux exemplaires.
+ *
+ * `topOffset` compense une barre fixe en haut de page : l'écran d'analyse en a une, les
+ * pages commune non.
  */
-export function SectionNav({ sections }: { sections: SectionId[] }) {
-  const [active, setActive] = useState<SectionId | null>(sections[0] ?? null);
+export function SectionNav({
+  sections,
+  topOffset = 96,
+}: {
+  sections: NavSection[];
+  topOffset?: number;
+}) {
+  const [active, setActive] = useState<string | null>(sections[0]?.id ?? null);
 
   // `sections` est reconstruit à chaque rendu du parent : on dépend de son contenu et non
   // de son identité, sinon l'observateur serait recréé en boucle.
-  const key = sections.join(",");
+  const key = sections.map((section) => section.id).join(",");
 
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") return;
 
     const elements = sections
-      .map((id) => document.getElementById(id))
+      .map((section) => document.getElementById(section.id))
       .filter((el): el is HTMLElement => el !== null);
     if (elements.length === 0) return;
 
@@ -32,28 +52,28 @@ export function SectionNav({ sections }: { sections: SectionId[] }) {
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible[0]) setActive(visible[0].target.id as SectionId);
+        if (visible[0]) setActive(visible[0].target.id);
       },
-      { rootMargin: "-96px 0px -55% 0px" },
+      { rootMargin: `-${topOffset}px 0px -55% 0px` },
     );
 
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, topOffset]);
 
   return (
     <nav className="section-nav" aria-label="Sommaire">
       <p className="section-nav-title">Sommaire</p>
       <ol>
-        {sections.map((id) => (
-          <li key={id}>
+        {sections.map((section) => (
+          <li key={section.id}>
             <a
-              href={`#${id}`}
-              className={id === active ? "is-active" : undefined}
-              aria-current={id === active ? "true" : undefined}
+              href={`#${section.id}`}
+              className={section.id === active ? "is-active" : undefined}
+              aria-current={section.id === active ? "true" : undefined}
             >
-              {SECTION_TITLES[id]}
+              {section.title}
             </a>
           </li>
         ))}

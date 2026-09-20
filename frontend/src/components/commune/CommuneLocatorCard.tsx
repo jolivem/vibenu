@@ -9,19 +9,21 @@ interface Props {
   contour: GeoJsonGeometryDto | null;
 }
 
-export function CommuneMapSection({ commune, contour }: Props) {
+/**
+ * Carte de situation, en chapeau de page comme le locator de l'écran d'analyse : elle
+ * situe ce qui suit, ce n'est pas une rubrique — d'où son absence du sommaire.
+ *
+ * C'est la seule card à garder son garde interne : aucune entrée de sommaire ni tuile de
+ * chiffre clé n'en dépend, et le faire remonter serait du cérémonial.
+ */
+export function CommuneLocatorCard({ commune, contour }: Props) {
   if (!contour) return null;
 
   return (
-    <section className="commune-section" id="carte">
-      <div className="commune-section-head">
-        <h2 className="commune-section-title">
-          {commune.nomCourt} <i>sur la carte</i>
-        </h2>
-        <span className="section-meta">Contour de l&apos;arrondissement</span>
-      </div>
+    <section className="card page-locator">
+      <h2>{commune.nomCourt} sur la carte</h2>
 
-      <div className="commune-map-wrap">
+      <div className="card-map card-map--inline">
         <Map
           lat={commune.lat}
           lon={commune.lon}
@@ -31,6 +33,8 @@ export function CommuneMapSection({ commune, contour }: Props) {
           showLayerToggle={false}
         />
       </div>
+
+      <p className="elections-footnote">Contour de l&apos;arrondissement · IGN.</p>
     </section>
   );
 }

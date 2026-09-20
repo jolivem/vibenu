@@ -11,7 +11,7 @@ interface Props {
   nomCourt: string;
 }
 
-export function CommunePriceSection({ stats, nomCourt, legendes }: Props) {
+export function CommunePriceCard({ stats, nomCourt, legendes }: Props) {
   const { prix, prixBenchmarkVille } = stats;
   const deltaPrix = pctDelta(prix.prixM2Median, prixBenchmarkVille.prixM2Median);
   const adjectif = CITIES[stats.city].adjectif;
@@ -24,15 +24,10 @@ export function CommunePriceSection({ stats, nomCourt, legendes }: Props) {
       : null;
 
   return (
-    <section className="commune-section" id="prix-immobilier">
-      <div className="commune-section-head">
-        <h2 className="commune-section-title">
-          Prix <i>immobilier</i>
-        </h2>
-        <span className="section-meta">DVF · 24 mois · appartements</span>
-      </div>
+    <section className="card">
+      <h2>Prix au m²</h2>
 
-      <CardInsight text={legendes?.legende_prix} animate={false} className="commune-legend" />
+      <CardInsight text={legendes?.legende_prix} animate={false} />
 
       <div className="commune-price-grid">
         <div className="commune-price-main">
@@ -57,8 +52,8 @@ export function CommunePriceSection({ stats, nomCourt, legendes }: Props) {
       </div>
 
       {evol.length >= 2 && (
-        <div className="commune-evolution">
-          <h3 className="commune-h3">Évolution du prix médian</h3>
+        <div>
+          <h3>Évolution du prix médian</h3>
           <PriceChart points={evol} />
           {evolutionPct !== null && (
             <p className="commune-evolution-summary">
@@ -72,6 +67,10 @@ export function CommunePriceSection({ stats, nomCourt, legendes }: Props) {
           )}
         </div>
       )}
+
+      <p className="elections-footnote">
+        Source : DVF · appartements vendus au cours des 24 derniers mois.
+      </p>
     </section>
   );
 }

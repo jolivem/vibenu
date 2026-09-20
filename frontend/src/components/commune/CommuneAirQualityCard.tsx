@@ -1,14 +1,16 @@
 import type {
-  CommuneStats,
   AirQualityAtmoYear,
+  AirQualityStats,
+  CommuneStats,
 } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
-import { FEATURES } from "@/lib/site-features";
 
 interface Props {
   stats: CommuneStats;
+  /** Passé séparément : la page a déjà vérifié la présence de l'historique. */
+  airQuality: AirQualityStats;
   /** Légende IA de la section, rendue côté serveur. */
   legendes?: CommuneLegendes;
 }
@@ -57,42 +59,23 @@ function StackedBar({ year, height }: { year: AirQualityAtmoYear; height: number
   );
 }
 
-export function CommuneAirQualitySection({ stats, legendes }: Props) {
-  if (!FEATURES.showAirQuality) return null;
-
+/**
+ * Le placeholder « données en cours d'ingestion » a disparu avec l'arrivée du sommaire :
+ * une entrée de sommaire et une tuile de chiffre clé qui mènent à une excuse promettent
+ * pour rien. Sans historique, la section entière n'est plus montée — c'est la page qui
+ * l'arbitre, dans `communeSectionContent`.
+ */
+export function CommuneAirQualityCard({ stats, airQuality, legendes }: Props) {
   const cityDef = CITIES[stats.city];
-
-  if (!stats.airQuality || stats.airQuality.historique.length === 0) {
-    return (
-      <section className="commune-section" id="qualite-air">
-        <div className="commune-section-head">
-          <h2 className="commune-section-title">
-            Qualité de <i>l&apos;air</i>
-          </h2>
-        </div>
-        <p className="commune-empty">
-          Données {cityDef.airSourceLabel} en cours d&apos;ingestion.
-        </p>
-      </section>
-    );
-  }
-
-  const { historique } = stats.airQuality;
+  const { historique } = airQuality;
   const latest = historique[0];
   const older = historique.slice(1);
 
   return (
-    <section className="commune-section" id="qualite-air">
-      <div className="commune-section-head">
-        <h2 className="commune-section-title">
-          Qualité de <i>l&apos;air</i>
-        </h2>
-        <span className="section-meta">
-          {cityDef.airSourceLabel} · indice ATMO {cityDef.nomAffiche} · {latest.annee}
-        </span>
-      </div>
+    <section className="card">
+      <h2>Indice ATMO</h2>
 
-      <CardInsight text={legendes?.legende_air} animate={false} className="commune-legend" />
+      <CardInsight text={legendes?.legende_air} animate={false} />
 
       <div className="commune-air-wrap">
         <div className="commune-air-latest">
@@ -125,7 +108,7 @@ export function CommuneAirQualitySection({ stats, legendes }: Props) {
 
         {older.length > 0 && (
           <div className="commune-air-history">
-            <h3 className="commune-air-history-title">Années précédentes</h3>
+            <h3>Années précédentes</h3>
             <ul className="commune-air-history-list">
               {older.map((year) => (
                 <li key={year.annee} className="commune-air-history-row">
@@ -140,10 +123,10 @@ export function CommuneAirQualitySection({ stats, legendes }: Props) {
         )}
       </div>
 
-      <p className="commune-air-note">
+      <p className="elections-footnote">
         L&apos;indice ATMO synthétise quotidiennement les concentrations de polluants
         (PM2.5, PM10, NO₂, O₃, SO₂) en une catégorie. La même mesure couvre l&apos;ensemble
-        de {cityDef.nomAffiche}.
+        de {cityDef.nomAffiche}. Source : {cityDef.airSourceLabel}.
       </p>
     </section>
   );

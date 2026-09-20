@@ -1,7 +1,13 @@
 /**
- * Helpers de formatage pour les pages /commune/[slug].
+ * Helpers de formatage et dérivations partagées des pages /commune/[slug].
  * Locale FR par défaut.
  */
+
+import type {
+  CommuneStats,
+  ElectionCandidateResult,
+  EquipmentDomainStats,
+} from "@/server-modules/commune-stats/domain/commune-stats.types";
 
 const eurFormatter = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -64,4 +70,25 @@ export function formatDelta(delta: number | null | undefined, decimals = 1): str
 export function pctDelta(value: number | null, reference: number | null): number | null {
   if (!value || !reference || reference === 0) return null;
   return ((value - reference) / reference) * 100;
+}
+
+/**
+ * Les domaines d'équipements réellement affichables.
+ *
+ * Extrait du composant parce que le sommaire et le bandeau de chiffres clés doivent
+ * savoir si la section a du contenu **avant** de la monter. La card consomme le même
+ * tableau : le filtre ne peut pas diverger de son garde.
+ */
+export function equipementsAffichables(stats: CommuneStats): EquipmentDomainStats[] {
+  return stats.equipements.filter((e) => e.nb > 0);
+}
+
+/**
+ * Les cinq premiers candidats, déjà triés par voix décroissantes en SQL.
+ *
+ * Même raison que ci-dessus : la liste sert de garde de section autant que de contenu.
+ */
+export function candidatsTop(stats: CommuneStats): ElectionCandidateResult[] {
+  if (!stats.elections) return [];
+  return stats.elections.candidats.slice(0, 5);
 }

@@ -3,37 +3,30 @@
 import type { GeoJsonGeometryDto } from "@/types/location-analysis";
 import { HistoricalMap } from "@/components/map/HistoricalMap";
 import { HISTORICAL_ERAS } from "@/components/map/historicalLayers";
-import { FEATURES } from "@/lib/site-features";
 
 interface Props {
   commune: { nomAffiche: string; nomCourt: string; lat: number; lon: number };
-  contour: GeoJsonGeometryDto | null;
+  /** Non nul : la page a déjà vérifié sa présence pour activer la section. */
+  contour: GeoJsonGeometryDto;
 }
 
 /**
  * La commune à travers le temps, sur les cartes anciennes de l'IGN.
  *
- * Comme `CommuneMapSection`, elle disparaît sans contour : sans lui il n'y a pas de bbox
- * à ajuster et la carte retomberait sur un zoom d'adresse, beaucoup trop serré pour une
- * commune. Les deux sections cartographiques apparaissent donc ensemble.
+ * Elle a besoin du contour : sans lui il n'y a pas de bbox à ajuster et la carte
+ * retomberait sur un zoom d'adresse, beaucoup trop serré pour une commune. Ce garde vit
+ * désormais dans `communeSectionContent`, avec tous les autres ; la carte de situation
+ * lisant le même contour, les deux vues cartographiques apparaissent toujours ensemble.
  *
  * La liste des époques est rendue en clair sous la carte : c'est du texte indexable, et
  * la seule partie du contenu qui survit à un navigateur sans JavaScript.
  */
-export function CommuneHistorySection({ commune, contour }: Props) {
-  if (!FEATURES.showHistory) return null;
-  if (!contour) return null;
-
+export function CommuneHistoryCard({ commune, contour }: Props) {
   return (
-    <section className="commune-section" id="histoire">
-      <div className="commune-section-head">
-        <h2 className="commune-section-title">
-          {commune.nomCourt} <i>autrefois</i>
-        </h2>
-        <span className="section-meta">Cartes anciennes · IGN Géoplateforme</span>
-      </div>
+    <section className="card">
+      <h2>{commune.nomCourt} autrefois</h2>
 
-      <div className="commune-map-wrap">
+      <div className="card-map card-map--inline">
         <HistoricalMap
           lat={commune.lat}
           lon={commune.lon}
@@ -55,6 +48,8 @@ export function CommuneHistorySection({ commune, contour }: Props) {
           </li>
         ))}
       </ul>
+
+      <p className="elections-footnote">Cartes anciennes · IGN Géoplateforme.</p>
     </section>
   );
 }

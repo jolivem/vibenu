@@ -21,8 +21,8 @@ export function buildKeyFigures(
   data: LocationAnalysisDto,
   securityRating: SecurityRating | undefined,
   activeSections: readonly SectionId[],
-): KeyFigure[] {
-  const figures: Partial<Record<SectionId, KeyFigure>> = {};
+): KeyFigure<SectionId>[] {
+  const figures: Partial<Record<SectionId, KeyFigure<SectionId>>> = {};
 
   // Un prix nul n'est pas un prix : c'est l'absence de ventes connues. La tuile
   // « 0 €/m² » se lisait comme une donnée.
@@ -69,5 +69,5 @@ export function buildKeyFigures(
 
   return activeSections
     .map((id) => figures[id])
-    .filter((figure): figure is KeyFigure => figure !== undefined);
+    .filter((figure): figure is KeyFigure<SectionId> => figure !== undefined);
 }

@@ -4,9 +4,14 @@ interface Props {
   commune: CommuneSlugEntry;
 }
 
+/**
+ * Le modificateur `--page` aligne le titre sur la colonne de l'ossature. Le hub ville
+ * écrit sa propre balise `.commune-hero` : il garde donc la mise en page d'origine.
+ */
+
 export function CommuneHero({ commune }: Props) {
   return (
-    <section className="commune-hero">
+    <section className="commune-hero commune-hero--page">
       <span className="landing-eyebrow">
         {commune.parentNom ? `${commune.parentNom} · Arrondissement` : "Métropole"}
       </span>

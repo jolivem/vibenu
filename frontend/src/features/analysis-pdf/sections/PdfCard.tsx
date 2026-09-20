@@ -8,7 +8,7 @@ import { COLORS, FONTS } from "../pdfStyles";
  * Le dossier avait sa propre grammaire — tableaux libellé / valeur, grilles à deux
  * colonnes, pastilles de niveau — si bien qu'une même donnée ne se présentait pas de la
  * même façon à l'écran et sur papier. Ces briques reprennent celles des cards :
- * titre de section (`.analysis-section-title`), card encadrée (`.card`), titre de card
+ * titre de section (`.page-section-title`), card encadrée (`.card`), titre de card
  * (`h2`), sous-titre (`h3`), ligne d'unité (`.metric-unit`), valeur principale
  * (`.cadastre-headline`), liste à puces et note de bas de card (`.elections-footnote`).
  */
