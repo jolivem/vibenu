@@ -4,6 +4,12 @@
  */
 
 import type { City } from "@/lib/commune-slugs";
+import type { SecurityAnalysis } from "@/server-modules/security/domain/security.types";
+import type {
+  EmploymentStats,
+  HouseholdsStats,
+  ScopedStats,
+} from "@/server-modules/demographics/domain/insee-profile.types";
 
 export interface PriceStats {
   prixM2Median: number | null;
@@ -27,7 +33,7 @@ export interface DemographicsStats {
   };
   /** Médiane pondérée des médianes IRIS — approximation honnête */
   revenuMedianPondere: number | null;
-  /** Idem */
+  /** Pondéré comme le revenu. Fraction (0,385 = 38,5 %), comme `partAges`. */
   tauxPauvretePondere: number | null;
 }
 
@@ -124,6 +130,18 @@ export interface CommuneHighlights {
   }>;
 }
 
+/**
+ * Délinquance enregistrée (SSMSI) de l'arrondissement, et de sa ville entière comme repère.
+ *
+ * La ville remplace le département de la card d'analyse : pour Lyon et Marseille, le Rhône
+ * et les Bouches-du-Rhône parlent moins qu'une comparaison à la ville, et pour Paris le
+ * département est la ville. Les séries de `ville` sont réalignées sur `local.annees`.
+ */
+export interface SecurityStats {
+  local: SecurityAnalysis;
+  ville: SecurityAnalysis | null;
+}
+
 export interface CommuneStats {
   codeCommune: string;
   city: City;
@@ -131,8 +149,16 @@ export interface CommuneStats {
   prixBenchmarkVille: PriceStats; // benchmark de la ville (Paris/Lyon/Marseille) pour comparatif
   demo: DemographicsStats;
   demoFrance: DemographicsStats | null; // benchmark France pour la pyramide des âges
+  /**
+   * Emploi et ménages, bâtis par les constructeurs de la card d'analyse. L'arrondissement
+   * occupe l'échelle `commune` comme en mode commune de l'analyse ; `iris` est toujours null.
+   */
+  employment: ScopedStats<EmploymentStats> | null;
+  households: ScopedStats<HouseholdsStats> | null;
   equipements: EquipmentDomainStats[];
   airQuality: AirQualityStats | null;
   elections: ElectionsStats | null;
+  /** `null` quand aucun indicateur n'est publié pour l'arrondissement. */
+  securite: SecurityStats | null;
   highlights: CommuneHighlights;
 }

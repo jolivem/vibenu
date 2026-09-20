@@ -107,9 +107,12 @@ text:
   arrondissements. `app/sitemap.ts` lists every page.
 - **Cross-links** — an arrondissement analysis links to its SEO page ("Voir la page Paris 15e");
   the SEO page's call-to-action opens the detailed analysis (`analyzeUrlForCommune`).
-- **The SEO pages lag behind the analysis** (to be completed): no security, employment / housing /
-  households, climate, risks, municipales 2026, detailed equipment compared to France, "En bref"
-  or PDF.
+- **The SEO pages lag behind the analysis** (to be completed): no housing, climate,
+  risks, municipales 2026, detailed equipment compared to France, "En bref"
+  or PDF. Security is there (`CommuneSecuritySection`): same SSMSI data as the analysis card, but
+  compared to the whole city and France instead of the département.
+  Employment and households are there too, inside the demographics section: the analysis
+  cards export their charts (`EmploymentCharts`, `HouseholdsCharts`), arrondissement vs France.
 - `app/sitemap.ts` and `app/commune/page.tsx` still ignore `hasSEOPages`.
 
 ### Client

@@ -1,9 +1,9 @@
-import type { AnalysisMode, DemographicsAnalysisDto } from "@/types/location-analysis";
+import type { AnalysisMode, DemographicsAnalysisDto, HouseholdsStatsDto } from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
 import { IndicatorBlock } from "./IndicatorBlock";
 import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { HOUSEHOLDS_INDICATORS, compositionSegments } from "./populationIndicators";
-import { viewForMode } from "./inseeChart";
+import { viewForMode, type InseeView } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
 
 const CHILDREN_LABELS = ["Aucun", "1", "2", "3", "4 et +"] as const;
@@ -31,6 +31,27 @@ export function HouseholdsCard({ demographics, mode, insight }: Props) {
 
       <CardInsight text={insight} />
 
+      <HouseholdsCharts view={view} />
+
+      <p className="elections-footnote">
+        La composition des foyers, recensée par l&apos;INSEE en 2021.
+      </p>
+      <p className="elections-footnote">
+        Source : INSEE · Recensement de la population 2021, base couples-familles-ménages
+        à l&apos;IRIS. Un ménage est l&apos;ensemble des personnes d&apos;un même
+        logement, qu&apos;elles aient ou non un lien de parenté.
+      </p>
+    </section>
+  );
+}
+
+/**
+ * Les indicateurs, la barre de composition et le graphe des enfants, sans le cadre ni les
+ * notes de la card : les pages commune les reprennent tels quels.
+ */
+export function HouseholdsCharts({ view }: { view: InseeView<HouseholdsStatsDto> }) {
+  return (
+    <>
       {HOUSEHOLDS_INDICATORS.map((indicator) => (
         <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
       ))}
@@ -48,15 +69,6 @@ export function HouseholdsCard({ demographics, mode, insight }: Props) {
         pick={(s) => s.enfantsParFamille}
         labels={CHILDREN_LABELS}
       />
-
-      <p className="elections-footnote">
-        La composition des foyers, recensée par l&apos;INSEE en 2021.
-      </p>
-      <p className="elections-footnote">
-        Source : INSEE · Recensement de la population 2021, base couples-familles-ménages
-        à l&apos;IRIS. Un ménage est l&apos;ensemble des personnes d&apos;un même
-        logement, qu&apos;elles aient ou non un lien de parenté.
-      </p>
-    </section>
+    </>
   );
 }

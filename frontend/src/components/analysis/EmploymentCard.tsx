@@ -1,8 +1,8 @@
-import type { AnalysisMode, DemographicsAnalysisDto } from "@/types/location-analysis";
+import type { AnalysisMode, DemographicsAnalysisDto, EmploymentStatsDto } from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
 import { IndicatorBlock } from "./IndicatorBlock";
 import { EMPLOYMENT_INDICATORS } from "./populationIndicators";
-import { viewForMode } from "./inseeChart";
+import { viewForMode, type InseeView } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
 
 const CSP_LABELS = ["Agri.", "Artis.", "Cadres", "Interm.", "Employés", "Ouvriers"] as const;
@@ -50,6 +50,30 @@ export function EmploymentCard({ demographics, mode, insight }: Props) {
       <h2>Emploi et qualifications</h2>
       <CardInsight text={insight} />
 
+      <EmploymentCharts view={view} />
+
+      <p className="elections-footnote">
+        Le taux de chômage du recensement est <strong>déclaratif</strong> : il compte
+        les personnes qui se déclarent au chômage, et non celles que le Bureau
+        international du travail recense comme telles. Il est structurellement d&apos;un
+        à deux points au-dessus du taux publié chaque trimestre, et ne s&apos;y compare
+        pas.
+      </p>
+      <p className="elections-footnote">
+        Source : INSEE · Recensement de la population 2021, bases activité des résidents
+        et diplômes-formation à l&apos;IRIS.
+      </p>
+    </section>
+  );
+}
+
+/**
+ * Les indicateurs et les deux graphes de la card, sans son cadre ni ses notes : les pages
+ * commune les reprennent tels quels, avec leurs propres sources.
+ */
+export function EmploymentCharts({ view }: { view: InseeView<EmploymentStatsDto> }) {
+  return (
+    <>
       {EMPLOYMENT_INDICATORS.map((indicator) => (
         <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
       ))}
@@ -72,18 +96,6 @@ export function EmploymentCard({ demographics, mode, insight }: Props) {
         labels={DIPLOMA_LABELS}
         titles={DIPLOMA_TITLES}
       />
-
-      <p className="elections-footnote">
-        Le taux de chômage du recensement est <strong>déclaratif</strong> : il compte
-        les personnes qui se déclarent au chômage, et non celles que le Bureau
-        international du travail recense comme telles. Il est structurellement d&apos;un
-        à deux points au-dessus du taux publié chaque trimestre, et ne s&apos;y compare
-        pas.
-      </p>
-      <p className="elections-footnote">
-        Source : INSEE · Recensement de la population 2021, bases activité des résidents
-        et diplômes-formation à l&apos;IRIS.
-      </p>
-    </section>
+    </>
   );
 }

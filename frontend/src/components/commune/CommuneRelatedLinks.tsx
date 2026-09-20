@@ -12,7 +12,7 @@ export function CommuneRelatedLinks({ commune }: Props) {
     .filter((c): c is CommuneSlugEntry => c !== undefined);
 
   return (
-    <section className="commune-section commune-section--alt commune-related" id="autour">
+    <section className="commune-section commune-related" id="autour">
       <div className="commune-section-head">
         <h2 className="commune-section-title">
           À <i>proximité</i>
@@ -30,12 +30,12 @@ export function CommuneRelatedLinks({ commune }: Props) {
         </ul>
       )}
 
-      {/* L'analyse en mode commune couvre ce que cette page n'a pas encore — sécurité,
-          climat, risques, municipales — et produit le PDF. Cf. CLAUDE.md, « Commune mode vs
-          SEO commune pages ». */}
+      {/* L'analyse en mode commune couvre ce que cette page n'a pas encore — climat,
+          risques, municipales — et produit le PDF. Cf. CLAUDE.md, « Commune mode vs SEO
+          commune pages ». */}
       <div className="commune-cta">
         <p>
-          Sécurité, climat, risques naturels, élections municipales, fiche PDF : retrouvez
+          Climat, risques naturels, élections municipales, fiche PDF : retrouvez
           l&apos;analyse complète de {commune.nomCourt}.
         </p>
         <Link href={analyzeUrlForCommune(commune)} className="commune-cta-btn">

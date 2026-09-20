@@ -44,8 +44,16 @@ import type {
   MunicipalesInsightInput,
   PartCompare,
   SecuriteInsightInput,
-  Tendance,
 } from "../domain/card-insights.types";
+import {
+  ecartPct,
+  ecartRelatif,
+  firstNumber,
+  lastNumber,
+  round,
+  roundOrNull,
+  tendance,
+} from "@/server-shared/domain/trend";
 
 /**
  * Libellés complets des catégories.
@@ -69,43 +77,16 @@ const CHILDREN_LABELS = [
   "aucun enfant", "1 enfant", "2 enfants", "3 enfants", "4 enfants et plus",
 ];
 
-/** Au-delà de ce seuil relatif, une évolution sur 10 ans cesse d'être « stable ». */
-const TENDANCE_THRESHOLD_PCT = 10;
-
 // --- Petits utilitaires -----------------------------------------------------
-
-function round(n: number, decimals = 1): number {
-  const f = 10 ** decimals;
-  return Math.round(n * f) / f;
-}
-
-function roundOrNull(n: number | null | undefined, decimals = 1): number | null {
-  return n === null || n === undefined || !Number.isFinite(n) ? null : round(n, decimals);
-}
+//
+// `round`, `ecartPct`, `firstNumber`, `lastNumber` et le seuil de tendance vivent dans
+// `server-shared/domain/trend.ts` : les pages commune SEO tranchent leurs écarts de
+// sécurité avec les mêmes règles.
 
 /** Écart en points entre deux parts. `null` dès qu'un des deux termes manque. */
 function ecartPts(local: number | null | undefined, france: number | null | undefined): number | null {
   if (local === null || local === undefined || france === null || france === undefined) return null;
   return round(local - france);
-}
-
-/** Écart relatif en pourcentage — pour les grandeurs qui ne sont pas des parts. */
-function ecartPct(local: number | null | undefined, france: number | null | undefined): number | null {
-  if (local === null || local === undefined || france === null || france === undefined) return null;
-  if (france === 0) return null;
-  return round(((local - france) / france) * 100);
-}
-
-function firstNumber(values: (number | null)[]): number | null {
-  return values.find((v): v is number => v !== null) ?? null;
-}
-
-function lastNumber(values: (number | null)[]): number | null {
-  for (let i = values.length - 1; i >= 0; i--) {
-    const v = values[i];
-    if (v !== null) return v;
-  }
-  return null;
 }
 
 /**
@@ -178,22 +159,19 @@ function buildSecurite(
       const debut = firstNumber(ind.commune);
       const fin = lastNumber(ind.commune);
       const evolution = ecartPct(fin, debut);
-
-      let tendance: Tendance | null = null;
-      if (evolution !== null) {
-        if (evolution > TENDANCE_THRESHOLD_PCT) tendance = "en hausse";
-        else if (evolution < -TENDANCE_THRESHOLD_PCT) tendance = "en baisse";
-        else tendance = "stable";
-      }
+      const vsDepartement = ecartRelatif(fin, lastNumber(ind.departement));
+      const vsFrance = ecartRelatif(fin, lastNumber(ind.france));
 
       return {
         indicateur: ind.indicateur,
         unite: `faits ${baseLabel(ind.base)}`,
         taux_derniere_annee: roundOrNull(fin, 2),
-        tendance_10ans: tendance,
+        tendance_10ans: tendance(evolution),
         evolution_10ans_pct: evolution,
-        ecart_vs_departement_pct: ecartPct(fin, lastNumber(ind.departement)),
-        ecart_vs_france_pct: ecartPct(fin, lastNumber(ind.france)),
+        ecart_vs_departement_pct: vsDepartement.pct,
+        multiple_vs_departement: vsDepartement.multiple,
+        ecart_vs_france_pct: vsFrance.pct,
+        multiple_vs_france: vsFrance.multiple,
         annees_masquees: ind.commune.filter((v) => v === null).length,
       };
     }),

@@ -19,8 +19,41 @@ import {
   getAllDomains,
   getDomainLabel,
 } from "./bpe-domain-mapping";
+import { SecurityDatabaseProvider } from "../../security/infrastructure/security-database.provider";
+import type { SecurityAnalysis } from "../../security/domain/security.types";
+import {
+  buildEmploymentStats,
+  buildHouseholdsStats,
+  type InseeBlock,
+} from "../../demographics/infrastructure/insee-blocks";
+import type { ScopedStats } from "../../demographics/domain/insee-profile.types";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
+
+/** Délinquance SSMSI : même source et même cache de 7 jours que la card de l'analyse. */
+const securityProvider = new SecurityDatabaseProvider();
+
+/**
+ * Réaligne les séries d'une analyse de sécurité sur d'autres années, par année et non par
+ * index. La ville et ses arrondissements ont aujourd'hui les mêmes millésimes ; un import
+ * partiel décalerait sinon toutes les comparaisons d'un an, sans bruit.
+ */
+function alignOnYears(analysis: SecurityAnalysis, annees: number[]): SecurityAnalysis {
+  const indexes = annees.map((annee) => analysis.annees.indexOf(annee));
+  const pick = (values: (number | null)[]) => indexes.map((i) => (i >= 0 ? values[i] ?? null : null));
+  return {
+    ...analysis,
+    annees,
+    indicateurs: analysis.indicateurs.map((ind) => ({
+      ...ind,
+      commune: pick(ind.commune),
+      borneBasse: pick(ind.borneBasse),
+      borneHaute: pick(ind.borneHaute),
+      departement: pick(ind.departement),
+      france: pick(ind.france),
+    })),
+  };
+}
 
 interface DvfAggRow {
   prix_m2_median: number | null;
@@ -132,6 +165,9 @@ export class PostgisCommuneStatsProvider {
       equipBenchmark,
       demoFrance,
       cityCategoryCounts,
+      securityLocal,
+      securityVille,
+      inseeProfile,
     ] = await Promise.all([
       this.queryPriceStats({ codeCommune }),
       this.queryDemographics(codeCommune),
@@ -142,6 +178,12 @@ export class PostgisCommuneStatsProvider {
       this.getCityBenchmarkEquipment(city),
       this.getFranceDemographics(),
       this.getCityCategoryCounts(city),
+      // Le provider ne lève jamais : une base SSMSI absente rend `null`, et la page se rend
+      // sans section Sécurité.
+      securityProvider.getSecurityData(codeCommune),
+      // La ville entière existe dans la base (75056, 69123, 13055) : pas d'agrégation.
+      securityProvider.getSecurityData(CITIES[city].codeCommune),
+      this.queryInseeProfile(codeCommune),
     ]);
 
     // Signalée avant les highlights et la narrative : un écart retiré ici ne produit ni
@@ -153,6 +195,14 @@ export class PostgisCommuneStatsProvider {
     );
     const highlights = this.computeHighlights(demo, equipements, elections);
 
+    const securite =
+      securityLocal && securityLocal.indicateurs.length > 0
+        ? {
+            local: securityLocal,
+            ville: securityVille ? alignOnYears(securityVille, securityLocal.annees) : null,
+          }
+        : null;
+
     const stats: CommuneStats = {
       codeCommune,
       city,
@@ -160,9 +210,12 @@ export class PostgisCommuneStatsProvider {
       prixBenchmarkVille,
       demo,
       demoFrance,
+      employment: inseeProfile.employment,
+      households: inseeProfile.households,
       equipements,
       airQuality,
       elections,
+      securite,
       highlights,
     };
     PostgisCommuneStatsProvider.cache.set(codeCommune, stats);
@@ -275,7 +328,36 @@ export class PostgisCommuneStatsProvider {
         part_75_plus: share(row.pop_75_plus),
       },
       revenuMedianPondere: num(row.revenu_median) !== null ? Math.round(num(row.revenu_median)!) : null,
-      tauxPauvretePondere: num(row.taux_pauvrete),
+      // La vue stocke un pourcentage (38,5 pour Marseille 1er) ; le type attend une fraction,
+      // comme `partAges`. Lu tel quel, l'écran affichait « 3853,5 % ».
+      tauxPauvretePondere: num(row.taux_pauvrete) !== null ? num(row.taux_pauvrete)! / 100 : null,
+    };
+  }
+
+  /**
+   * Emploi et ménages de l'arrondissement face à la France.
+   *
+   * Les deux lignes de `insee_aggregate` passent par les constructeurs de la card d'analyse :
+   * un taux de chômage ne peut pas différer entre l'analyse d'un arrondissement et sa page.
+   * `to_jsonb` rend les effectifs en nombres JSON, là où le driver les rendrait en `string`.
+   */
+  private async queryInseeProfile(codeCommune: string): Promise<Pick<CommuneStats, "employment" | "households">> {
+    const rows = await query<{ scope_code: string; block: InseeBlock }>(
+      `SELECT scope_code, to_jsonb(a) AS block FROM insee_aggregate a WHERE scope_code = ANY($1)`,
+      [[codeCommune, "FRANCE"]],
+    );
+    const local = rows.find((r) => r.scope_code === codeCommune)?.block ?? null;
+    const france = rows.find((r) => r.scope_code === "FRANCE")?.block ?? null;
+
+    // Sans l'arrondissement, pas de graphe : la France seule ne dirait rien de la page.
+    function scoped<T>(build: (block: InseeBlock) => T | null): ScopedStats<T> | null {
+      const commune = build(local);
+      return commune ? { iris: null, commune, france: build(france) } : null;
+    }
+
+    return {
+      employment: scoped(buildEmploymentStats),
+      households: scoped(buildHouseholdsStats),
     };
   }
 

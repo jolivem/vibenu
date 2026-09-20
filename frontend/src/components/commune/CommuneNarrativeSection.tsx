@@ -6,8 +6,8 @@ interface Props {
 }
 
 /**
- * Les quatre clés éditoriales, à l'exclusion de `legendes` qui n'est pas du texte et
- * vit sous les sections chiffrées de la page, pas ici.
+ * Les clés éditoriales, à l'exclusion de `legendes` qui n'est pas du texte et vit sous les
+ * sections chiffrées de la page, pas ici.
  */
 type EditorialKey = Exclude<keyof CommuneNarrativeContent, "legendes">;
 
@@ -18,14 +18,12 @@ const SECTIONS: Array<{
   id: string;
 }> = [
   { key: "identite", title: "Identité", num: "A", id: "identite" },
-  { key: "marche_immobilier", title: "Marché immobilier", num: "B", id: "marche" },
-  { key: "cadre_de_vie", title: "Cadre de vie", num: "C", id: "cadre" },
-  { key: "profil", title: "À qui s'adresse cet arrondissement", num: "D", id: "profil" },
+  { key: "cadre_de_vie", title: "Cadre de vie", num: "B", id: "cadre" },
 ];
 
 export function CommuneNarrativeSection({ content, nomCourt }: Props) {
   return (
-    <section className="commune-section commune-section--alt" id="synthese">
+    <section className="commune-section" id="synthese">
       <div className="commune-section-head">
         <h2 className="commune-section-title">
           Synthèse <i>{nomCourt}</i>

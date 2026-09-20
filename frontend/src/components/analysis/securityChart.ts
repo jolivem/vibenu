@@ -54,6 +54,12 @@ export interface SecurityChartModel {
  * entièrement en bande. « Jamais plus de 4 faits par an ici » est une information, et
  * la masquer donnerait à tort l'impression d'une commune non documentée.
  */
+/** Un repère tracé à côté de la série locale. */
+export interface SecurityChartReference {
+  name: string;
+  values: (number | null)[];
+}
+
 export function buildSecurityChartModel(
   indicator: SecurityIndicatorDto,
   annees: number[],
@@ -66,6 +72,15 @@ export function buildSecurityChartModel(
    * adresse parisienne. Un seul porteur du nom, désormais.
    */
   localName: string,
+  /**
+   * Repères, dans l'ordre de la légende. Par défaut le département et la France, ceux de la
+   * card d'analyse ; les pages commune SEO passent la ville et la France. La France garde
+   * son brun partout, tout autre repère prend le gris-bleu.
+   */
+  references: SecurityChartReference[] = [
+    { name: "Département", values: indicator.departement },
+    { name: "France", values: indicator.france },
+  ],
 ): SecurityChartModel {
   const series: LineChartSeries[] = [
     {
@@ -76,22 +91,14 @@ export function buildSecurityChartModel(
       opacity: 1,
       values: indicator.commune,
     },
-    {
-      name: "Département",
-      color: DEPARTEMENT_COLOR,
+    ...references.map((reference) => ({
+      name: reference.name,
+      color: reference.name === "France" ? FRANCE_COLOR : DEPARTEMENT_COLOR,
       strokeWidth: 1.4,
       dotRadius: 2.5,
       opacity: 0.75,
-      values: indicator.departement,
-    },
-    {
-      name: "France",
-      color: FRANCE_COLOR,
-      strokeWidth: 1.4,
-      dotRadius: 2.5,
-      opacity: 0.75,
-      values: indicator.france,
-    },
+      values: reference.values,
+    })),
   ];
 
   const bands: LineChartBand[] = [];

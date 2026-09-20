@@ -64,7 +64,7 @@ export function CommuneAirQualitySection({ stats, legendes }: Props) {
 
   if (!stats.airQuality || stats.airQuality.historique.length === 0) {
     return (
-      <section className="commune-section commune-section--alt" id="qualite-air">
+      <section className="commune-section" id="qualite-air">
         <div className="commune-section-head">
           <h2 className="commune-section-title">
             Qualité de <i>l&apos;air</i>
@@ -82,7 +82,7 @@ export function CommuneAirQualitySection({ stats, legendes }: Props) {
   const older = historique.slice(1);
 
   return (
-    <section className="commune-section commune-section--alt" id="qualite-air">
+    <section className="commune-section" id="qualite-air">
       <div className="commune-section-head">
         <h2 className="commune-section-title">
           Qualité de <i>l&apos;air</i>

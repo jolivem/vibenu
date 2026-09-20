@@ -1,6 +1,6 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
-import { formatEur, formatInt, formatDelta, pctDelta } from "./format";
+import { formatEur, formatDelta, pctDelta } from "./format";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
 
@@ -52,10 +52,6 @@ export function CommunePriceSection({ stats, nomCourt, legendes }: Props) {
           <div>
             <span className="commune-stat-label">25% supérieurs à</span>
             <span className="commune-price-sub">{formatEur(prix.p75)}</span>
-          </div>
-          <div>
-            <span className="commune-stat-label">Transactions analysées</span>
-            <span className="commune-price-sub">{formatInt(prix.nbTransactions)}</span>
           </div>
         </div>
       </div>

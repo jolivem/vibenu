@@ -18,6 +18,7 @@ import { CommuneMapSection } from "@/components/commune/CommuneMapSection";
 import { CommunePriceSection } from "@/components/commune/CommunePriceSection";
 import { CommuneDemographicsSection } from "@/components/commune/CommuneDemographicsSection";
 import { CommuneEquipmentsSection } from "@/components/commune/CommuneEquipmentsSection";
+import { CommuneSecuritySection } from "@/components/commune/CommuneSecuritySection";
 import { CommuneAirQualitySection } from "@/components/commune/CommuneAirQualitySection";
 import { CommuneElectionsSection } from "@/components/commune/CommuneElectionsSection";
 import { CommuneNarrativeSection } from "@/components/commune/CommuneNarrativeSection";
@@ -69,8 +70,8 @@ export async function generateMetadata({
     // tolérant : si la DB n'est pas dispo, fallback générique
   }
   const desc = descParts.length > 0
-    ? `${descParts.join(" · ")}. Analyse complète du ${commune.nomCourt} : prix immobilier, démographie, équipements, qualité de l'air.`
-    : `Analyse complète du ${commune.nomCourt} : prix immobilier, démographie, équipements, qualité de l'air. Données publiques.`;
+    ? `${descParts.join(" · ")}. Analyse complète du ${commune.nomCourt} : prix immobilier, sécurité, démographie, équipements, qualité de l'air.`
+    : `Analyse complète du ${commune.nomCourt} : prix immobilier, sécurité, démographie, équipements, qualité de l'air. Données publiques.`;
 
   return {
     title: `${commune.nomAffiche} — Prix immobilier, démographie, cadre de vie`,
@@ -189,17 +190,23 @@ export default async function CommunePage({
         </div>
       </nav>
 
-      <CommuneHero commune={commune} stats={stats} />
-      <CommuneMapSection commune={commune} contour={contour} />
-      {narrative && <CommuneNarrativeSection content={narrative.content} nomCourt={commune.nomCourt} />}
-      <CommunePriceSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
-      <CommuneEquipmentsSection stats={stats} legendes={legendes} />
-      <CommuneDemographicsSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
-      <CommuneAirQualitySection stats={stats} legendes={legendes} />
-      <CommuneElectionsSection stats={stats} legendes={legendes} />
-      <CommuneHistorySection commune={commune} contour={contour} />
-      <CommuneFaqSection stats={stats} nomCourt={commune.nomCourt} />
-      <CommuneRelatedLinks commune={commune} />
+      <CommuneHero commune={commune} />
+      {/* Les fonds alternent par rang dans ce conteneur (cf. `.commune-sections`) : une
+          section qui ne rend rien ne décale pas le motif. */}
+      <div className="commune-sections">
+        <CommuneMapSection commune={commune} contour={contour} />
+        {narrative && <CommuneNarrativeSection content={narrative.content} nomCourt={commune.nomCourt} />}
+        <CommunePriceSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
+        <CommuneEquipmentsSection stats={stats} legendes={legendes} />
+        {/* Même place que dans l'analyse : le cadre de vie, puis la sécurité, puis les gens. */}
+        <CommuneSecuritySection stats={stats} legendes={legendes} />
+        <CommuneDemographicsSection stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
+        <CommuneAirQualitySection stats={stats} legendes={legendes} />
+        <CommuneElectionsSection stats={stats} legendes={legendes} />
+        <CommuneHistorySection commune={commune} contour={contour} />
+        <CommuneFaqSection stats={stats} nomCourt={commune.nomCourt} />
+        <CommuneRelatedLinks commune={commune} />
+      </div>
 
       <footer className="landing-footer">
         <div className="landing-footer-brand">

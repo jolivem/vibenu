@@ -19,7 +19,7 @@ export function CommuneEquipmentsSection({ stats, legendes }: Props) {
   }
 
   return (
-    <section className="commune-section commune-section--alt" id="equipements">
+    <section className="commune-section" id="equipements">
       <div className="commune-section-head">
         <h2 className="commune-section-title">
           Équipements &amp; <i>cadre de vie</i>

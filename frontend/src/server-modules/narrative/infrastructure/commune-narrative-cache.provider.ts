@@ -46,7 +46,7 @@ export class CommuneNarrativeCacheProvider {
    *
    * Filet de sécurité, à n'utiliser que lorsque la régénération est impossible (pas de
    * clé API, quota épuisé, fournisseur en panne). Un bump de version doit faire
-   * réécrire le texte, pas le faire disparaître : ces quatre paragraphes sont le
+   * réécrire le texte, pas le faire disparaître : ces paragraphes sont le
    * contenu propre de la page, donc sa valeur de référencement. Mieux vaut servir
    * l'éditorial de la version précédente — sans ses légendes, qu'il ne contient pas —
    * que publier une fiche amputée le temps que le service redevienne disponible.

@@ -1,6 +1,36 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
+import {
+  summarizeSecurity,
+  type SecurityIndicatorSummary,
+} from "@/server-modules/commune-stats/application/security-summary";
 import { CITIES } from "@/lib/commune-slugs";
+import type { EcartRelatif } from "@/server-shared/domain/trend";
 import { formatEur, formatInt, formatPct } from "./format";
+
+/**
+ * « 62 % au-dessus de Marseille », « 13,6 fois le taux de la France », « proche de la France »
+ * — `null` sans écart calculable.
+ */
+function ecartPhrase({ pct, multiple }: EcartRelatif, repere: string): string | null {
+  if (multiple !== null) {
+    return `${multiple.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} fois le taux de ${repere}`;
+  }
+  if (pct === null) return null;
+  if (Math.abs(pct) < 5) return `proche de ${repere}`;
+  return `${Math.round(Math.abs(pct))} % ${pct > 0 ? "au-dessus de" : "en dessous de"} ${repere}`;
+}
+
+/** « cambriolages de logement : 15,1 faits pour 1 000 logements (62 % au-dessus de Marseille, …) ». */
+function securityPhrase(row: SecurityIndicatorSummary, ville: string): string | null {
+  if (row.tauxLocal === null) return null;
+  const taux = row.tauxLocal.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+  const details = [
+    ecartPhrase(row.ecartVille, ville),
+    ecartPhrase(row.ecartFrance, "la France"),
+    row.tendance10ans ? `${row.tendance10ans} sur dix ans` : null,
+  ].filter((d): d is string => d !== null);
+  return `${row.indicateur.toLowerCase()} : ${taux} faits ${row.unite}${details.length > 0 ? ` (${details.join(", ")})` : ""}`;
+}
 
 interface FaqItem {
   question: string;
@@ -84,6 +114,23 @@ function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] {
       items.push({
         question: `Quels équipements à proximité dans ${nomCourt} ?`,
         answer: `Les domaines les plus représentés à ${nomCourt} sont : ${top.map((t) => `${t.label.toLowerCase()} (${formatInt(t.nb)} équipement${t.nb > 1 ? "s" : ""})`).join(", ")}.`,
+      });
+    }
+  }
+
+  if (stats.securite) {
+    const rows = summarizeSecurity(stats.securite);
+    // Les deux indicateurs du quotidien, et non « le taux le plus élevé » : cambriolages et
+    // violences n'ont pas le même dénominateur (logements, habitants), leurs taux ne se
+    // classent pas entre eux.
+    const phrases = ["Cambriolages de logement", "Violences physiques hors cadre familial"]
+      .map((nom) => rows.find((row) => row.indicateur === nom))
+      .map((row) => (row ? securityPhrase(row, CITIES[stats.city].nomAffiche) : null))
+      .filter((phrase): phrase is string => phrase !== null);
+    if (phrases.length > 0) {
+      items.push({
+        question: `Quel est le niveau de délinquance à ${nomCourt} ?`,
+        answer: `En ${rows[0].annee}, la police et la gendarmerie ont enregistré à ${nomCourt} : ${phrases.join(" ; ")}. Il s'agit de faits enregistrés, qui dépendent aussi du dépôt de plainte. Source : Ministère de l'Intérieur (SSMSI).`,
       });
     }
   }

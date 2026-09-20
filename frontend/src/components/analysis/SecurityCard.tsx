@@ -6,22 +6,32 @@ import {
   buildSecurityChartModel,
   formatRate,
   isArrondissement,
+  type SecurityChartReference,
 } from "./securityChart";
 import { CardInsight } from "@/components/CardInsight";
 
-function SecurityIndicatorChart({
+/**
+ * Le graphe d'un indicateur et ses repères.
+ *
+ * Exporté pour les pages commune SEO, qui comparent l'arrondissement à sa ville et à la
+ * France plutôt qu'au département.
+ */
+export function SecurityIndicatorChart({
   indicator,
   annees,
   maille,
+  references,
 }: {
   indicator: SecurityIndicatorDto;
   annees: number[];
   maille: "commune" | "arrondissement";
+  /** Repères tracés à côté de la série locale. Par défaut : département et France. */
+  references?: SecurityChartReference[];
 }) {
   // « Cet arrondissement », pas « Cette arrondissement » : le genre ne suit pas la
   // variable. L'interpolation directe traînait depuis l'ancienne légende de card.
   const localName = maille === "arrondissement" ? "Cet arrondissement" : "Cette commune";
-  const model = buildSecurityChartModel(indicator, annees, localName);
+  const model = buildSecurityChartModel(indicator, annees, localName, references);
   const unite = baseLabel(indicator.base);
 
   // Le graphe est gradué en ‰ alors que le secret statistique s'exprime en faits. Sans

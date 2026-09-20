@@ -1,6 +1,10 @@
 import type { CommuneStats, DemographicsStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import type { AgeDistributionDto } from "@/types/location-analysis";
 import { AgeChart } from "@/components/analysis/AgeChart";
+import { EmploymentCharts } from "@/components/analysis/EmploymentCard";
+import { HouseholdsCharts } from "@/components/analysis/HouseholdsCard";
+import { viewForMode } from "@/components/analysis/inseeChart";
+import { FEATURES } from "@/lib/site-features";
 import { formatEur, formatInt, formatPct } from "./format";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
@@ -30,6 +34,11 @@ export function CommuneDemographicsSection({ stats, nomCourt, legendes }: Props)
   const { demo, demoFrance } = stats;
   const ageCommune = toAgeDistribution(demo);
   const ageFrance = demoFrance ? toAgeDistribution(demoFrance) : null;
+
+  // Le mode commune de l'analyse : l'arrondissement en série principale, face à la seule France.
+  const scale = { nomCommune: nomCourt, communeIrisCount: 1 };
+  const employmentView = FEATURES.showEmployment ? viewForMode(stats.employment, "commune", scale) : null;
+  const householdsView = FEATURES.showHouseholds ? viewForMode(stats.households, "commune", scale) : null;
 
   return (
     <section className="commune-section" id="demographie">
@@ -79,10 +88,39 @@ export function CommuneDemographicsSection({ stats, nomCourt, legendes }: Props)
         </div>
       </div>
 
+      {(employmentView || householdsView) && (
+        <div className="commune-profile-grid">
+          {employmentView && (
+            <div className="commune-profile-block">
+              <h3 className="commune-profile-title">Emploi et qualifications</h3>
+              <EmploymentCharts view={employmentView} />
+            </div>
+          )}
+          {householdsView && (
+            <div className="commune-profile-block">
+              <h3 className="commune-profile-title">Ménages et familles</h3>
+              <HouseholdsCharts view={householdsView} />
+            </div>
+          )}
+        </div>
+      )}
+
       <p className="commune-air-note">
         Moyennes pondérées par population calculées à partir des quartiers IRIS (INSEE) ;
         comparaison avec la France entière agrégée par la même méthode.
       </p>
+      {(employmentView || householdsView) && (
+        <p className="commune-air-note">
+          {employmentView && (
+            <>
+              Le taux de chômage du recensement est <strong>déclaratif</strong> : il est
+              structurellement d&apos;un à deux points au-dessus du taux publié chaque trimestre,
+              et ne s&apos;y compare pas.{" "}
+            </>
+          )}
+          Source : INSEE · Recensement de la population 2021 à l&apos;IRIS.
+        </p>
+      )}
     </section>
   );
 }

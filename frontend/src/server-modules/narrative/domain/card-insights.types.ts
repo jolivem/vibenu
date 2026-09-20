@@ -16,9 +16,10 @@
  */
 
 import type { AnalysisMode } from "@/server-shared/types/location-analysis.dto";
+import type { Tendance } from "@/server-shared/domain/trend";
 
-/** Sens d'une évolution, tranché en TS sur un seuil relatif. */
-export type Tendance = "en baisse" | "stable" | "en hausse";
+/** Sens d'une évolution — défini avec son seuil, partagé avec les pages commune SEO. */
+export type { Tendance };
 
 /** Une valeur locale et son repère national, avec l'écart déjà fait. */
 export interface IndicateurCompare {
@@ -61,8 +62,11 @@ export interface SecuriteIndicateurInput {
   taux_derniere_annee: number | null;
   tendance_10ans: Tendance | null;
   evolution_10ans_pct: number | null;
+  /** Écarts en pourcentage, sauf dès le double du repère : `null`, et le multiple prend le relais. */
   ecart_vs_departement_pct: number | null;
+  multiple_vs_departement: number | null;
   ecart_vs_france_pct: number | null;
+  multiple_vs_france: number | null;
   /**
    * Nombre d'années sous secret statistique. Une valeur masquée signifie 1 à 4 faits
    * dans l'année — donc un phénomène rare, et surtout PAS une donnée manquante.

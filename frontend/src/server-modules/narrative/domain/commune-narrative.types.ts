@@ -18,6 +18,7 @@ export const COMMUNE_LEGEND_KEYS = [
   "legende_prix",
   "legende_demographie",
   "legende_equipements",
+  "legende_securite",
   "legende_air",
   "legende_elections",
 ] as const;
@@ -29,13 +30,15 @@ export type CommuneLegendes = Partial<Record<CommuneLegendKey, string>>;
 export interface CommuneNarrativeContent {
   // Texte éditorial. Obligatoire : c'est le contenu unique de la page, donc sa valeur
   // de référencement. Une clé manquante invalide toute la narrative.
+  //
+  // « Marché immobilier » et « À qui s'adresse cet arrondissement » ont été retirés : le
+  // premier redisait la section Prix en y ajoutant des interprétations fausses (« marché
+  // équilibré sans tension »), le second déduisait un public de quelques chiffres.
   identite: string;
-  marche_immobilier: string;
   cadre_de_vie: string;
-  profil: string;
   /**
    * Légendes de graphes. Optionnelles et validées une à une : une légende ratée doit
-   * coûter une phrase, jamais les quatre paragraphes éditoriaux.
+   * coûter une phrase, jamais les paragraphes éditoriaux.
    */
   legendes: CommuneLegendes;
 }

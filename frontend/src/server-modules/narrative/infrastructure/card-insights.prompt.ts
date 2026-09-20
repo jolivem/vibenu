@@ -2,7 +2,7 @@
  * Prompt et parseur des mini-synthèses de cards.
  *
  * Le format de sortie est **dérivé du jeu de clés**, pas recopié à côté : le pipeline
- * commune écrit ses quatre clés dans le type, dans le prompt, dans la liste `required`
+ * commune écrit ses clés éditoriales dans le type, dans le prompt, dans la liste `required`
  * et dans le rendu — quatre endroits à tenir d'accord. Ici, `BRIEFS` est un
  * `Record<CardInsightKey, …>` exhaustif : ajouter une clé sans écrire sa consigne ne
  * compile pas, et le bloc du prompt comme la validation en découlent.
@@ -24,8 +24,11 @@ import type { CardInsightsInput } from "../domain/card-insights.types";
  *
  * v5 : la note de sécurité se fonde sur l'écart à la France seule, comme l'annonce la
  * tuile (« moins bonne que la moyenne France ») ; elle mêlait département et France.
+ *
+ * v6 : un écart de sécurité d'au moins deux fois le repère arrive en multiple
+ * (`multiple_vs_france`) et non plus en pourcentage — « 1 262,8 % » ne se lit pas.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 5;
+export const CARD_INSIGHTS_PROMPT_VERSION = 6;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
@@ -86,7 +89,7 @@ Pour chaque section demandée, 1 à 2 phrases (25 à 45 mots) qui disent CE QU'I
 RÈGLES DE FOND
 - Tu ne disposes que des données JSON fournies. Tu n'inventes RIEN : ni chiffre, ni évolution, ni comparaison qui n'y figure pas.
 - Aucune explication causale. Pas de « grâce à la proximité du centre », « en raison de la gentrification » : les données ne contiennent pas les causes.
-- Les champs "tendance_…", "ecart_…", "…_dominant", "…_dominante", "tranche_sur_representee", "ville_reference_la_plus_proche" sont DÉJÀ calculés. Reprends-les tels quels, ne les recalcule pas, ne les contredis pas.
+- Les champs "tendance_…", "ecart_…", "multiple_…", "…_dominant", "…_dominante", "tranche_sur_representee", "ville_reference_la_plus_proche" sont DÉJÀ calculés. Reprends-les tels quels, ne les recalcule pas, ne les contredis pas.
 - Chaque phrase situe le lieu par rapport au repère fourni (France, département, ou villes de référence). Un chiffre sans repère n'apprend rien : ne le donne jamais seul.
 - Seuil de saillance : en dessous de 2 points d'écart (ou 5 % en relatif), écris « proche de la moyenne » — ne dramatise pas un écart faible. Au-delà, nomme le sens de l'écart.
 - Au plus DEUX chiffres par phrase. Jamais d'énumération de pourcentages.
@@ -103,7 +106,7 @@ RÈGLES DE FORME
 - mode "commune" → tu décris la commune entière. N'emploie JAMAIS le mot « quartier ».
 
 LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
-- Sécurité : "annees_masquees" compte les années sous secret statistique, ce qui signifie 1 à 4 faits dans l'année — donc un phénomène RARE, et non une donnée manquante. N'écris jamais « données indisponibles » à ce sujet. Ce sont des faits ENREGISTRÉS : la mesure dépend aussi du dépôt de plainte.
+- Sécurité : "annees_masquees" compte les années sous secret statistique, ce qui signifie 1 à 4 faits dans l'année — donc un phénomène RARE, et non une donnée manquante. N'écris jamais « données indisponibles » à ce sujet. Ce sont des faits ENREGISTRÉS : la mesure dépend aussi du dépôt de plainte. Quand "multiple_vs_departement" ou "multiple_vs_france" est renseigné (le taux atteint au moins le double du repère), exprime cet écart en fois — « 13,6 fois plus fréquents qu'en France » — et jamais en pourcentage.
 - Climat : il n'y a pas de moyenne France pertinente ; la comparaison se fait aux villes de référence fournies, en t'appuyant sur "ville_reference_la_plus_proche".
 - Emploi : le taux de chômage est celui du recensement, déclaratif, structurellement 1 à 2 points au-dessus du taux trimestriel diffusé dans les médias. Compare-le au taux France fourni, à rien d'autre.
 - Élections : décris l'écart au national, jamais l'électeur. Aucun jugement sur les habitants.
@@ -114,7 +117,7 @@ Le champ "cles_attendues" du JSON d'entrée liste les sections effectivement aff
 
 NOTE DE SÉCURITÉ — champ "securite_note"
 Si et seulement si "securite" figure dans "cles_attendues", ajoute au JSON un champ "securite_note" valant EXACTEMENT l'une de ces cinq chaînes : ${SECURITY_RATINGS.map((r) => `"${r}"`).join(", ")}.
-Elle situe le lieu PAR RAPPORT À LA FRANCE, jamais dans l'absolu : elle ne dit pas si un lieu est dangereux, mais comment il se place face à la moyenne française — c'est ainsi qu'elle est affichée (« moins bonne que la moyenne France »). Fonde-la sur les champs déjà calculés "ecart_vs_france_pct" et "tendance_10ans", en pesant d'abord les indicateurs aux taux les plus élevés — ce sont eux qui font le quotidien du lieu. N'utilise PAS "ecart_vs_departement_pct" pour la note.
+Elle situe le lieu PAR RAPPORT À LA FRANCE, jamais dans l'absolu : elle ne dit pas si un lieu est dangereux, mais comment il se place face à la moyenne française — c'est ainsi qu'elle est affichée (« moins bonne que la moyenne France »). Fonde-la sur les champs déjà calculés "ecart_vs_france_pct" (ou "multiple_vs_france", qui signifie au moins le double de la France) et "tendance_10ans", en pesant d'abord les indicateurs aux taux les plus élevés — ce sont eux qui font le quotidien du lieu. N'utilise PAS "ecart_vs_departement_pct" ni "multiple_vs_departement" pour la note.
 - "excellent" : sous la France de plus de 25 %, sans hausse marquée sur dix ans.
 - "bon" : sous la France, ou proche d'elle avec une baisse nette sur dix ans.
 - "moyen" : à moins de 15 % de la France, sans tendance nette.
