@@ -17,6 +17,7 @@ export interface CommuneNarrativeInput {
 export const COMMUNE_LEGEND_KEYS = [
   "legende_prix",
   "legende_demographie",
+  "legende_logement",
   "legende_equipements",
   "legende_securite",
   "legende_air",

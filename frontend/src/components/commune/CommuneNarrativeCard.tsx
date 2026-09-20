@@ -14,11 +14,10 @@ type EditorialKey = Exclude<keyof CommuneNarrativeContent, "legendes">;
 const SECTIONS: Array<{
   key: EditorialKey;
   title: string;
-  num: string;
   id: string;
 }> = [
-  { key: "identite", title: "Identité", num: "A", id: "identite" },
-  { key: "cadre_de_vie", title: "Cadre de vie", num: "B", id: "cadre" },
+  { key: "identite", title: "Identité", id: "identite" },
+  { key: "cadre_de_vie", title: "Cadre de vie", id: "cadre" },
 ];
 
 /**
@@ -29,13 +28,12 @@ const SECTIONS: Array<{
  */
 export function CommuneNarrativeCard({ content, nomCourt }: Props) {
   return (
-    <section className="card">
+    <section className="card commune-lede">
       <h2>Synthèse {nomCourt}</h2>
 
       <div className="commune-narrative">
         {SECTIONS.map((s) => (
           <article key={s.key} className="commune-narrative-block" id={s.id}>
-            <span className="commune-narrative-num">{s.num}</span>
             <h3 className="commune-narrative-title">{s.title}</h3>
             <p className="commune-narrative-text">{content[s.key]}</p>
           </article>

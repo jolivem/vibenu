@@ -62,8 +62,8 @@ import {
  * « +3/4 », « <1919 ») : lisibles sous une barre, illisibles dans une phrase. On les
  * redonne en toutes lettres, dans le même ordre que les séries du DTO.
  */
-const ROOM_LABELS = ["1 pièce", "2 pièces", "3 pièces", "4 pièces", "5 pièces et plus"];
-const EPOCH_LABELS = [
+export const ROOM_LABELS = ["1 pièce", "2 pièces", "3 pièces", "4 pièces", "5 pièces et plus"];
+export const EPOCH_LABELS = [
   "avant 1919", "1919-1945", "1946-1970", "1971-1990", "1991-2005", "2006-2018",
 ];
 const CSP_LABELS = [
@@ -94,8 +94,11 @@ function ecartPts(local: number | null | undefined, france: number | null | unde
  *
  * Rend `null` si la série locale manque : sans elle il n'y a pas de graphe à l'écran
  * non plus (`buildDistributionModel` rend `null` dans le même cas).
+ *
+ * Exportée pour le prompt des pages commune : les deux pipelines doivent trancher la
+ * classe dominante par le même code, sous peine de se contredire sur la même page.
  */
-function classeDominante(
+export function classeDominante(
   local: (number | null)[] | null | undefined,
   france: (number | null)[] | null | undefined,
   labels: string[],
@@ -419,7 +422,21 @@ function mean(values: (number | null)[]): number | null {
 }
 
 /**
- * Type de climat de référence dont le profil annuel ressemble le plus au profil local.
+ * Écart minimal, en relatif, entre le meilleur repère et le suivant pour que le premier
+ * soit désigné.
+ *
+ * Mesuré, pas choisi. Depuis que Brest tient le pôle océanique à la place de La Rochelle,
+ * les trois repères sont trois extrêmes et le milieu de la France ne ressemble
+ * franchement à aucun : sans seuil, le moins éloigné l'emporte quand même, et Caen sort
+ * « continental », l'Orne « méditerranéen ». Rejoué sur les 2 895 stations de la base,
+ * 5 % est la première valeur qui fait taire ces deux-là ; elle laisse 16 % des stations
+ * sans repère désigné, et garde Nantes en océanique.
+ */
+const ECART_MINIMAL_ENTRE_REPERES = 0.05;
+
+/**
+ * Type de climat de référence dont le profil annuel ressemble le plus au profil local —
+ * `null` quand aucun ne se détache.
  *
  * Erreur moyenne absolue sur les trois mesures, chacune normalisée par son amplitude
  * propre — sans quoi les précipitations (centaines de mm) écraseraient la température
@@ -432,8 +449,7 @@ function climatLePlusProche(
   local: ClimateMonthlySeriesDto,
   references: ClimateMonthlySeriesDto[],
 ): string | null {
-  let bestName: string | null = null;
-  let bestScore = Infinity;
+  const scores: Array<{ nom: string; score: number }> = [];
 
   for (const ref of references) {
     let total = 0;
@@ -459,14 +475,21 @@ function climatLePlusProche(
     }
 
     if (count === 0) continue;
-    const score = total / count;
-    if (score < bestScore) {
-      bestScore = score;
-      bestName = ref.climateType ?? ref.name;
-    }
+    scores.push({ nom: ref.climateType ?? ref.name, score: total / count });
   }
 
-  return bestName;
+  if (scores.length === 0) return null;
+  scores.sort((a, b) => a.score - b.score);
+
+  // Un seul repère mesurable : rien à départager, il s'impose.
+  const suivant = scores[1];
+  if (!suivant) return scores[0].nom;
+
+  // Deux repères à égalité ne désignent rien. Mieux vaut que la phrase décrive le climat
+  // local sans le rattacher à un pôle que de le rattacher au mauvais.
+  return scores[0].score <= suivant.score * (1 - ECART_MINIMAL_ENTRE_REPERES)
+    ? scores[0].nom
+    : null;
 }
 
 function buildClimat(climate: ClimateAnalysisDto | null | undefined): ClimatInsightInput | undefined {

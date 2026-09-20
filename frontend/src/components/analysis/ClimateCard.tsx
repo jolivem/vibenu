@@ -10,7 +10,7 @@ function withArticle(type: string): string {
 }
 
 /**
- * « Strasbourg pour le climat continental, Marseille pour le méditerranéen, La Rochelle
+ * « Strasbourg pour le climat continental, Marseille pour le méditerranéen, Brest
  * pour l'océanique. »
  *
  * Construite depuis les références effectivement reçues, et non écrite en dur : la table

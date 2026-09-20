@@ -43,6 +43,15 @@ interface Props {
 }
 
 /**
+ * Les parts du bloc logement sont déjà en pourcentages (0..100), là où `partAges` est en
+ * fractions : `formatPct` les multiplierait par cent une seconde fois.
+ */
+function formatPctPoints(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) return "—";
+  return `${value.toFixed(1).replace(".", ",")} %`;
+}
+
+/**
  * FAQs auto-générées à partir des données réelles.
  * Toute question dont la réponse n'est pas chiffrable est exclue.
  */
@@ -74,6 +83,34 @@ export function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] 
     items.push({
       question: `${nomCourt} est-il un arrondissement familial ?`,
       answer: `La tranche d'âge dominante à ${nomCourt} est ${stats.highlights.profilAgeDominant} (${formatPct(stats.demo.partAges.part_30_44, 1)} de la population pour les 30-44 ans, ${formatPct(stats.demo.partAges.part_0_14, 1)} pour les 0-14 ans).`,
+    });
+  }
+
+  // Le logement n'a pas de tuile de chiffres clés — le bandeau est indexé par section et
+  // la rubrique Population a déjà la sienne. La FAQ est son exutoire : elle n'est pas
+  // indexée par section, et elle alimente le balisage `FAQPage`.
+  const logement = stats.housing?.commune ?? null;
+  const logementFrance = stats.housing?.france ?? null;
+
+  if (logement && logement.pctProprietaires !== null) {
+    const repere =
+      logementFrance?.pctProprietaires !== null && logementFrance?.pctProprietaires !== undefined
+        ? ` En France, les propriétaires représentent ${formatPctPoints(logementFrance.pctProprietaires)} des résidences principales.`
+        : "";
+    items.push({
+      question: `Est-on plutôt propriétaire ou locataire à ${nomCourt} ?`,
+      answer: `À ${nomCourt}, ${formatPctPoints(logement.pctProprietaires)} des résidences principales sont occupées par leur propriétaire, ${formatPctPoints(logement.pctLocatairesPrives)} par un locataire du parc privé et ${formatPctPoints(logement.pctHlm)} relèvent du logement social.${repere} Source : INSEE, recensement 2021.`,
+    });
+  }
+
+  if (logement && logement.logements !== null) {
+    const vacants =
+      logement.pctVacants !== null
+        ? ` ${formatPctPoints(logement.pctVacants)} du parc est vacant.`
+        : "";
+    items.push({
+      question: `Combien de logements compte ${nomCourt} ?`,
+      answer: `${nomCourt} compte ${formatInt(logement.logements)} logements, dont ${formatInt(logement.residencesPrincipales)} résidences principales.${vacants} Source : INSEE, recensement 2021 à l'IRIS.`,
     });
   }
 

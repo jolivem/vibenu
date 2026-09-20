@@ -58,16 +58,17 @@ export const CLIMATE_METRICS: ReadonlyArray<{
 export { LOCAL_SERIES_COLOR };
 
 /**
- * Teintes des villes de référence, **fixes d'un graphe à l'autre** : la légende
+ * Teintes des climats de référence, **fixes d'un graphe à l'autre** : la légende
  * s'apprend une fois et vaut pour les trois graphes. Rouge et gris restent désaturés,
  * pour ne pas concurrencer la série locale.
  *
- * Chaque teinte dit le climat qu'elle représente, ce qui donne une légende qu'on n'a
- * presque pas besoin de lire : bleu pour le continental de Strasbourg, rouge pour le
- * méditerranéen de Marseille, gris pour l'océanique tempéré de La Rochelle.
+ * L'index est le type de climat et non la ville, parce que c'est le climat que la teinte
+ * désigne : bleu pour le continental, rouge pour le méditerranéen, gris pour l'océanique.
+ * La ville qui le mesure peut changer — La Rochelle a cédé la place à Brest — sans que
+ * cette table ait à le savoir.
  *
- * Le bleu de Strasbourg fait exception et porte une chroma de 53 : à 33, il se
- * confondait avec le gris de La Rochelle. Mesuré (CIEDE2000, dichromatismes simulés
+ * Le bleu continental fait exception et porte une chroma de 53 : à 33, il se
+ * confondait avec le gris océanique. Mesuré (CIEDE2000, dichromatismes simulés
  * par les matrices de Machado 2009), l'écart entre les deux passe de 13,2 à 16,6 en
  * vision normale, et de 12,1 à 17,3 en protanopie — le pire cas de l'ancienne valeur.
  * La clarté, elle, ne bouge pas (L* 45,8 contre 45,4) : c'est la saturation seule qui
@@ -84,15 +85,15 @@ export { LOCAL_SERIES_COLOR };
  * propre » sans reprendre les couleurs : c'est là que se joue l'essentiel.
  */
 export const REFERENCE_COLORS: Record<string, string> = {
-  Strasbourg: "#2F6BC4",
-  Marseille: "#CB7F76",
-  "La Rochelle": "#6B7280",
+  continental: "#2F6BC4",
+  méditerranéen: "#CB7F76",
+  océanique: "#6B7280",
 };
 
 /**
- * Pour une ville de référence hors de la table — cas qui ne se produit qu'après un ajout
- * dans `REFERENCE_CLIMATES`. Volontairement plus clair que le gris de La Rochelle, pour
- * qu'un oubli se voie au lieu de passer pour elle.
+ * Pour un type de climat hors de la table — cas qui ne se produit qu'après un ajout dans
+ * `REFERENCE_CLIMATES`. Volontairement plus clair que le gris océanique, pour qu'un oubli
+ * se voie au lieu de passer pour lui.
  */
 const FALLBACK_REFERENCE_COLOR = "#9CA3AF";
 
@@ -149,7 +150,9 @@ export function buildClimateChartModel(params: {
     series.push({
       name: ref.name,
       climateType: ref.climateType,
-      color: REFERENCE_COLORS[ref.name] ?? FALLBACK_REFERENCE_COLOR,
+      // `climateType` est optionnel dans le DTO : une référence sans type prend le gris
+      // de repli, comme une référence d'un type inconnu.
+      color: (ref.climateType && REFERENCE_COLORS[ref.climateType]) ?? FALLBACK_REFERENCE_COLOR,
       strokeWidth: 1.4,
       dotRadius: 2.5,
       opacity: 0.75,

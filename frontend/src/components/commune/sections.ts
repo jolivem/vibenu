@@ -69,7 +69,7 @@ export function communeSectionContent({
     "prix-immobilier": stats.prix.prixM2Median !== null,
     equipements: equipementsAffichables(stats).length > 0,
     securite: FEATURES.showSecurity && stats.securite !== null,
-    // La card Âge est le plancher de la section ; emploi et ménages ne font que s'y ajouter.
+    // La card Âge est le plancher de la section ; emploi, ménages et logement ne font que s'y ajouter.
     demographie: stats.demo.populationTotale > 0,
     elections: FEATURES.showElections && candidatsTop(stats).length > 0,
     "qualite-air":

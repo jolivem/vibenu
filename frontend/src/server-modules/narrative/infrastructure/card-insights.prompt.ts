@@ -32,8 +32,13 @@ import type { CardInsightsInput } from "../domain/card-insights.types";
  * océanique) et non plus par leur ville-station (Strasbourg, Marseille, La Rochelle) :
  * « un climat océanique » se lit, « proche de La Rochelle » laisse croire à une
  * proximité géographique.
+ *
+ * v8 : Brest remplace La Rochelle comme station du pôle océanique — un repère franc au
+ * lieu d'un profil moyen. Les trois repères étant désormais trois extrêmes,
+ * `climat_de_reference_le_plus_proche` peut valoir `null` : un tiers des lieux change de
+ * repère le plus proche, et le milieu de la France ne ressemble franchement à aucun.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 7;
+export const CARD_INSIGHTS_PROMPT_VERSION = 8;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
@@ -113,6 +118,7 @@ RÈGLES DE FORME
 LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
 - Sécurité : "annees_masquees" compte les années sous secret statistique, ce qui signifie 1 à 4 faits dans l'année — donc un phénomène RARE, et non une donnée manquante. N'écris jamais « données indisponibles » à ce sujet. Ce sont des faits ENREGISTRÉS : la mesure dépend aussi du dépôt de plainte. Quand "multiple_vs_departement" ou "multiple_vs_france" est renseigné (le taux atteint au moins le double du repère), exprime cet écart en fois — « 13,6 fois plus fréquents qu'en France » — et jamais en pourcentage.
 - Climat : il n'y a pas de moyenne France pertinente ; la comparaison se fait aux types de climat de référence fournis, en t'appuyant sur "climat_de_reference_le_plus_proche". Désigne-les par leur type (continental, méditerranéen, océanique) et ne cite aucune ville.
+- Climat, quand "climat_de_reference_le_plus_proche" vaut null : aucun des trois types ne se détache. Décris alors le climat local par ses extrêmes et sa pluviométrie, sans le rattacher à un type et sans en désigner un « le plus proche » de toi-même.
 - Emploi : le taux de chômage est celui du recensement, déclaratif, structurellement 1 à 2 points au-dessus du taux trimestriel diffusé dans les médias. Compare-le au taux France fourni, à rien d'autre.
 - Élections : décris l'écart au national, jamais l'électeur. Aucun jugement sur les habitants.
 - Municipales : quand "nuancee" est faux, les listes n'ont AUCUNE étiquette politique — l'État ne les attribue qu'au-delà d'une certaine taille de commune. Il n'y a alors ni nuance ni score national : décris les scores et la participation, sans chercher un écart qui n'existe pas et sans qualifier politiquement une liste. Quand "ville_entiere" est vrai, le résultat est celui de la ville entière et non de l'arrondissement : ne l'attribue pas au quartier.

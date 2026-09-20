@@ -24,6 +24,7 @@ import type { SecurityAnalysis } from "../../security/domain/security.types";
 import {
   buildEmploymentStats,
   buildHouseholdsStats,
+  buildHousingStats,
   type InseeBlock,
 } from "../../demographics/infrastructure/insee-blocks";
 import type { ScopedStats } from "../../demographics/domain/insee-profile.types";
@@ -210,6 +211,7 @@ export class PostgisCommuneStatsProvider {
       prixBenchmarkVille,
       demo,
       demoFrance,
+      housing: inseeProfile.housing,
       employment: inseeProfile.employment,
       households: inseeProfile.households,
       equipements,
@@ -335,13 +337,17 @@ export class PostgisCommuneStatsProvider {
   }
 
   /**
-   * Emploi et ménages de l'arrondissement face à la France.
+   * Logement, emploi et ménages de l'arrondissement face à la France.
    *
    * Les deux lignes de `insee_aggregate` passent par les constructeurs de la card d'analyse :
    * un taux de chômage ne peut pas différer entre l'analyse d'un arrondissement et sa page.
    * `to_jsonb` rend les effectifs en nombres JSON, là où le driver les rendrait en `string`.
+   * Le bloc porte la ligne entière de la vue : les trois constructeurs y puisent sans que
+   * la requête ait à nommer une colonne.
    */
-  private async queryInseeProfile(codeCommune: string): Promise<Pick<CommuneStats, "employment" | "households">> {
+  private async queryInseeProfile(
+    codeCommune: string,
+  ): Promise<Pick<CommuneStats, "housing" | "employment" | "households">> {
     const rows = await query<{ scope_code: string; block: InseeBlock }>(
       `SELECT scope_code, to_jsonb(a) AS block FROM insee_aggregate a WHERE scope_code = ANY($1)`,
       [[codeCommune, "FRANCE"]],
@@ -356,6 +362,7 @@ export class PostgisCommuneStatsProvider {
     }
 
     return {
+      housing: scoped(buildHousingStats),
       employment: scoped(buildEmploymentStats),
       households: scoped(buildHouseholdsStats),
     };

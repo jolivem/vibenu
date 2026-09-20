@@ -21,6 +21,7 @@ import { CommunePriceCard } from "@/components/commune/CommunePriceCard";
 import { CommuneAgeCard } from "@/components/commune/CommuneAgeCard";
 import { CommuneEmploymentCard } from "@/components/commune/CommuneEmploymentCard";
 import { CommuneHouseholdsCard } from "@/components/commune/CommuneHouseholdsCard";
+import { CommuneHousingCard } from "@/components/commune/CommuneHousingCard";
 import { CommuneEquipmentsCard } from "@/components/commune/CommuneEquipmentsCard";
 import { CommuneSecurityCard } from "@/components/commune/CommuneSecurityCard";
 import { CommuneAirQualityCard } from "@/components/commune/CommuneAirQualityCard";
@@ -281,6 +282,9 @@ export default async function CommunePage({
                 <CommuneAgeCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
                 {inseeViews.employment && <CommuneEmploymentCard view={inseeViews.employment} />}
                 {inseeViews.households && <CommuneHouseholdsCard view={inseeViews.households} />}
+                {inseeViews.housing && (
+                  <CommuneHousingCard view={inseeViews.housing} legendes={legendes} />
+                )}
               </CommuneSection>
             )}
 

@@ -830,22 +830,13 @@ html {
   gap: 28px;
 }
 
+/* `position: relative` est parti avec la pastille « A » / « B » qu'il calait : plus rien
+   n'est positionné en absolu dans ce bloc. */
 .commune-narrative-block {
   padding: 24px 28px;
   background: var(--card);
   border: 0.5px solid var(--hairline-strong);
   border-radius: 14px;
-  position: relative;
-}
-
-.commune-narrative-num {
-  font-family: var(--font-sans), var(--font-sans-fallback);
-  font-style: italic;
-  font-size: 14px;
-  color: var(--accent);
-  position: absolute;
-  top: 22px;
-  right: 28px;
 }
 
 .commune-narrative-title {
@@ -861,6 +852,12 @@ html {
   line-height: 1.7;
   color: var(--text);
   margin: 0;
+}
+
+/* Dernier bloc du chapeau, juste avant le corps à deux colonnes : il porte lui-même son
+   écart au sommaire, comme `.key-figures` et la carte de situation au-dessus de lui. */
+.commune-lede {
+  margin-bottom: 20px;
 }
 
 /* Hub Paris : liste des 20 arrondissements */

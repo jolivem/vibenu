@@ -8,6 +8,7 @@ import type { SecurityAnalysis } from "@/server-modules/security/domain/security
 import type {
   EmploymentStats,
   HouseholdsStats,
+  HousingStats,
   ScopedStats,
 } from "@/server-modules/demographics/domain/insee-profile.types";
 
@@ -150,9 +151,11 @@ export interface CommuneStats {
   demo: DemographicsStats;
   demoFrance: DemographicsStats | null; // benchmark France pour la pyramide des âges
   /**
-   * Emploi et ménages, bâtis par les constructeurs de la card d'analyse. L'arrondissement
-   * occupe l'échelle `commune` comme en mode commune de l'analyse ; `iris` est toujours null.
+   * Logement, emploi et ménages, bâtis par les constructeurs de la card d'analyse.
+   * L'arrondissement occupe l'échelle `commune` comme en mode commune de l'analyse ;
+   * `iris` est toujours null.
    */
+  housing: ScopedStats<HousingStats> | null;
   employment: ScopedStats<EmploymentStats> | null;
   households: ScopedStats<HouseholdsStats> | null;
   equipements: EquipmentDomainStats[];

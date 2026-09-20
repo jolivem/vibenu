@@ -11,6 +11,11 @@ import { FEATURES } from "@/lib/site-features";
 import { summarizeSecurity } from "../../commune-stats/application/security-summary";
 import { roundOrNull } from "@/server-shared/domain/trend";
 import {
+  classeDominante,
+  EPOCH_LABELS,
+  ROOM_LABELS,
+} from "../application/card-insights.input";
+import {
   communeSectionContent,
   type CommuneSectionId,
 } from "@/components/commune/sections";
@@ -66,8 +71,13 @@ import {
  * v15 : un écart de sécurité d'au moins deux fois le repère arrive en multiple
  * (`multiple_vs_france`) et non plus en pourcentage. Lyon 7e lisait « vols dans les
  * véhicules 1 262,8 % plus fréquents qu'en France » pour un taux 13,6 fois le taux français.
+ *
+ * v16 : le parc de logements entre dans l'entrée (`logement`) et la rubrique Population
+ * gagne une septième légende, `legende_logement`. La section `demographie` en porte donc
+ * deux, parce qu'elle rend quatre cards — une règle anti-redite les sépare, les deux
+ * graphiques étant voisins dans la même colonne.
  */
-export const COMMUNE_PROMPT_VERSION = 15;
+export const COMMUNE_PROMPT_VERSION = 16;
 
 export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement (Paris, Lyon ou Marseille) pour un site d'analyse immobilière.
 Ton : clair, factuel, ni promotionnel ni alarmiste.
@@ -78,6 +88,7 @@ RÈGLES STRICTES :
 - Une comparaison se fait uniquement au repère fourni À CÔTÉ de la valeur dans le JSON. Sans repère fourni, pas de comparaison (« inférieur à la moyenne de la ville » est interdit si le JSON ne donne pas cette moyenne). Pour les équipements, reprends le sens donné par "position_vs_ville" et rien d'autre : un domaine « non comparable » ne se juge ni faible ni élevé.
 - Pas de qualificatif d'ambiance ou de ressenti que les données ne mesurent pas (« calme », « animé », « dynamique », « dynamisme », « prisé », « familial », « équilibre »), ni d'affirmation sur la demande, l'attractivité ou la tension d'un marché que le JSON ne chiffre pas.
 - Respecte l'unité de chaque champ, indiquée par son nom : un nombre total d'équipements n'est pas une densité, une part d'habitants sous le seuil de pauvreté n'est pas un revenu.
+- Les champs "ecart_pts" sont des écarts en POINTS entre deux parts, jamais des pourcentages d'évolution : 33 % de propriétaires contre 58 % en France, c'est « 25 points en dessous », et non « 43 % en dessous ».
 - Le champ "ville" du JSON indique la ville de rattachement (Paris, Lyon, Marseille). Réfère-toi toujours à cette ville et jamais à une autre.
 - Si une donnée manque, tu l'omets SANS LE SIGNALER : n'écris jamais qu'une donnée est « indisponible », « absente » ou « non disponible ».
 - Cite des nombres concrets quand ils existent (prix, %, ratios).
@@ -98,6 +109,7 @@ DEUX FAMILLES DE CLÉS, DEUX RÔLES DISTINCTS
 
 ANTI-REDITE — RÈGLE IMPÉRATIVE
 Tu rédiges d'abord les deux clés éditoriales, puis les légendes. Une légende ne reprend jamais une formulation ni un chiffre déjà écrits dans l'éditorial : si l'éditorial a donné le chiffre, la légende dit ce qu'il faut en comprendre. Elle n'introduit aucun élément absent des données de sa section.
+"legende_demographie" et "legende_logement" légendent deux graphiques voisins de la même rubrique : la première ne parle que des habitants (âges, revenus), la seconde que des logements (parc, statut d'occupation, taille, époque). Ni l'une ni l'autre ne parle de prix, qui relève de "legende_prix".
 
 CLÉS legende_* À PRODUIRE
 Le champ "sections_affichees" du JSON d'entrée liste les sections effectivement rendues sur la page. Tu produis une clé legende_* pour celles-là uniquement, et pour aucune autre.
@@ -108,6 +120,7 @@ FORMAT DE SORTIE (JSON OBLIGATOIRE, RIEN D'AUTRE) :
   "cadre_de_vie": "...",        // ~150 mots : densité d'équipements par domaine selon "position_vs_ville", sans reprendre la population, les âges ni les revenus
   "legende_prix": "...",         // 1-2 phrases : niveau du prix au m² et son évolution, face à la moyenne de la ville
   "legende_demographie": "...",  // 1-2 phrases : profil de population et revenu, face au repère fourni
+  "legende_logement": "...",     // 1-2 phrases : ce que dit le parc — statut d'occupation dominant, type et âge des logements — face à la France
   "legende_equipements": "...",  // 1-2 phrases : les domaines où la densité d'équipements se démarque, en plus comme en moins
   "legende_securite": "...",     // 1-2 phrases : les 1 ou 2 indicateurs de délinquance les plus marquants face à la ville et à la France, et leur tendance
   "legende_air": "...",          // 1-2 phrases : niveau de qualité de l'air et sens de son évolution
@@ -202,6 +215,7 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
       "60-74": +(stats.demo.partAges.part_60_74 * 100).toFixed(1),
       "75+": +(stats.demo.partAges.part_75_plus * 100).toFixed(1),
     },
+    logement: logementInput(stats),
     prix_m2_eur: stats.prix.prixM2Median,
     prix_m2_p25: stats.prix.p25,
     prix_m2_p75: stats.prix.p75,
@@ -272,10 +286,23 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
   ].join("\n");
 }
 
-/** La section de la page que chaque légende commente. */
+/**
+ * La section dont l'**affichage commande** chaque légende — et non celle qu'elle commente,
+ * la nuance compte : `demographie` en porte deux, parce que la rubrique Population rend
+ * quatre cards. Un `Record` est une application, pas une bijection ; deux clés peuvent
+ * viser la même section, et l'invariant « une clé est produite ssi sa section s'affiche »
+ * tient littéralement.
+ *
+ * Écart résiduel assumé : `FEATURES.showHousing` à `false` ferait produire
+ * `legende_logement` sans sa card — exactement la situation que `showEmployment` et
+ * `showHouseholds` portent déjà, ces drapeaux n'entrant pas non plus dans le garde de
+ * section. Faire de cette table un jeu de prédicats pour ce seul cas serait la première
+ * divergence du mécanisme.
+ */
 const SECTION_PAR_LEGENDE: Record<CommuneLegendKey, CommuneSectionId> = {
   legende_prix: "prix-immobilier",
   legende_demographie: "demographie",
+  legende_logement: "demographie",
   legende_equipements: "equipements",
   legende_securite: "securite",
   legende_air: "qualite-air",
@@ -301,6 +328,55 @@ function sectionsAffichees(input: CommuneNarrativeInput): CommuneLegendKey[] {
   });
 
   return COMMUNE_LEGEND_KEYS.filter((key) => content[SECTION_PAR_LEGENDE[key]]);
+}
+
+/**
+ * Bloc logement de l'entrée.
+ *
+ * Décalque de `buildLogement` (card-insights), transposé à la maille arrondissement/France
+ * sans passer par le pipeline d'analyse, qui part d'un `DemographicsAnalysisDto` que la
+ * page commune n'a pas. Deux disciplines en héritent :
+ *
+ * - les distributions brutes (5 tailles, 6 époques) n'entrent pas : seule leur classe
+ *   dominante le fait, tranchée en TS par `classeDominante` — le même code que l'analyse,
+ *   pour que les deux pages ne se contredisent pas ;
+ * - les parts à `null` sont filtrées ici, `pruneNulls` n'élaguant que les objets, pas les
+ *   tableaux, dont les positions portent un sens.
+ */
+function logementInput(stats: CommuneNarrativeInput["stats"]) {
+  const local = stats.housing?.commune ?? null;
+  if (!local) return null;
+  const france = stats.housing?.france ?? null;
+
+  const part = (libelle: string, pct: number | null, pctFrance: number | null) => ({
+    libelle,
+    pct,
+    pct_france: pctFrance,
+    ecart_pts: pct !== null && pctFrance !== null ? +(pct - pctFrance).toFixed(1) : null,
+  });
+
+  const parts = (entries: Array<[string, number | null, number | null]>) =>
+    entries.map(([l, a, b]) => part(l, a, b)).filter((p) => p.pct !== null);
+
+  return {
+    note: "Parc de logements recensé par l'INSEE en 2021 ; « ecart_pts » est un écart en points à la France.",
+    parc_total_logements: local.logements,
+    residences_principales: local.residencesPrincipales,
+    parts_du_parc_pct: parts([
+      ["maisons", local.pctMaisons, france?.pctMaisons ?? null],
+      ["appartements", local.pctAppartements, france?.pctAppartements ?? null],
+      ["logements vacants", local.pctVacants, france?.pctVacants ?? null],
+      ["résidences secondaires", local.pctResidencesSecondaires, france?.pctResidencesSecondaires ?? null],
+    ]),
+    statut_occupation_pct: parts([
+      ["propriétaires", local.pctProprietaires, france?.pctProprietaires ?? null],
+      ["locataires du privé", local.pctLocatairesPrives, france?.pctLocatairesPrives ?? null],
+      ["logement social (HLM)", local.pctHlm, france?.pctHlm ?? null],
+      ["logés gratuitement", local.pctLogesGratuitement, france?.pctLogesGratuitement ?? null],
+    ]),
+    taille_dominante: classeDominante(local.pieces, france?.pieces, ROOM_LABELS),
+    epoque_dominante: classeDominante(local.epoques, france?.epoques, EPOCH_LABELS),
+  };
 }
 
 /**

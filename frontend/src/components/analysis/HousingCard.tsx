@@ -1,9 +1,13 @@
-import type { AnalysisMode, DemographicsAnalysisDto } from "@/types/location-analysis";
+import type {
+  AnalysisMode,
+  DemographicsAnalysisDto,
+  HousingStatsDto,
+} from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
 import { IndicatorBlock } from "./IndicatorBlock";
 import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { HOUSING_INDICATORS, dwellingSegments, occupancySegments } from "./populationIndicators";
-import { viewForMode } from "./inseeChart";
+import { viewForMode, type InseeView } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
 
 const ROOM_LABELS = ["1 p.", "2 p.", "3 p.", "4 p.", "5 p. et +"] as const;
@@ -41,6 +45,28 @@ export function HousingCard({ demographics, mode, insight }: Props) {
 
       <CardInsight text={insight} />
 
+      <HousingCharts view={view} />
+
+      <p className="elections-footnote">
+        Le parc de logements, recensé par l&apos;INSEE en 2021.
+      </p>
+      <p className="elections-footnote">
+        Source : INSEE · Recensement de la population 2021, base logement à l&apos;IRIS.
+        Les effectifs du recensement sont des estimations pondérées, arrondies à
+        l&apos;unité : sur un petit quartier, les parts peuvent ne pas boucler
+        exactement à 100 %.
+      </p>
+    </section>
+  );
+}
+
+/**
+ * Les indicateurs et les quatre graphes de la card, sans son cadre ni ses notes : les pages
+ * commune les reprennent tels quels, avec leurs propres sources.
+ */
+export function HousingCharts({ view }: { view: InseeView<HousingStatsDto> }) {
+  return (
+    <>
       {HOUSING_INDICATORS.map((indicator) => (
         <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
       ))}
@@ -78,16 +104,6 @@ export function HousingCard({ demographics, mode, insight }: Props) {
         titles={EPOCH_TITLES}
         note="L'INSEE ne ventile par période que les logements achevés avant 2019 : les plus récents ne figurent dans aucune tranche."
       />
-
-      <p className="elections-footnote">
-        Le parc de logements, recensé par l&apos;INSEE en 2021.
-      </p>
-      <p className="elections-footnote">
-        Source : INSEE · Recensement de la population 2021, base logement à l&apos;IRIS.
-        Les effectifs du recensement sont des estimations pondérées, arrondies à
-        l&apos;unité : sur un petit quartier, les parts peuvent ne pas boucler
-        exactement à 100 %.
-      </p>
-    </section>
+    </>
   );
 }

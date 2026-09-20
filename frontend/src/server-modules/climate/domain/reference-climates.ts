@@ -13,6 +13,14 @@
  * MARIGNANE, l'aéroport Marseille-Provence à 20 km du centre — c'est la station
  * climatologique de référence usuelle pour Marseille, mais le nom affiché diffère
  * de celui de la station, d'où la mention en note de card.
+ *
+ * Brest : c'est un pôle franc, et c'est voulu. La Rochelle tenait la place, à 13,6 °C,
+ * 753 mm et 1 949 h de soleil — plus sèche et plus ensoleillée que l'océanique type, au
+ * point d'être le repère le moins éloigné de deux tiers des stations métropolitaines.
+ * Brest-Guipavas, à 11,7 °C, 1 230 mm et 1 555 h, décrit vraiment ce que le mot désigne.
+ * Le prix de ce recentrage est que le milieu de la France ne ressemble plus franchement
+ * à aucun des trois : c'est `climatLePlusProche` (card-insights.input.ts) qui l'assume,
+ * en ne désignant un repère que lorsqu'il en devance nettement un autre.
  */
 export interface ReferenceClimate {
   stationId: string;
@@ -27,7 +35,7 @@ export interface ReferenceClimate {
 export const REFERENCE_CLIMATES: readonly ReferenceClimate[] = [
   { stationId: "67124001", name: "Strasbourg", climateType: "continental" },
   { stationId: "13054001", name: "Marseille", climateType: "méditerranéen", stationName: "Marignane" },
-  { stationId: "17300001", name: "La Rochelle", climateType: "océanique" },
+  { stationId: "29075001", name: "Brest", climateType: "océanique" },
 ] as const;
 
 /**
