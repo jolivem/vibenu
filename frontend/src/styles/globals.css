@@ -1495,12 +1495,32 @@ html {
  * annonce déjà que ces synthèses sont écrites par une IA. Le liseré disparaît — répété
  * sous cinq titres de card, il encadrait ce que l'étiquette nommait déjà.
  */
+/* Bandeau en tête de card : la phrase déborde jusqu'aux deux bords, sous le titre, et
+   cesse ainsi d'être le premier paragraphe pour devenir une zone de l'en-tête.
+   Même technique de débord que `.card-map`, qui ferme la card par le bas.
+
+   Le texte reste sombre. La couleur a été essayée et écartée : le titre de card et le
+   libellé sont déjà verts — la phrase en aurait fait un troisième d'affilée — et le vert
+   d'accent tombe à 3,43:1 sur ce fond, loin du 4,5:1 qu'exige un texte courant. */
 .card-insight {
-  margin: 2px 0 18px;
+  margin: 0 calc(-1 * var(--card-pad-x)) 20px;
+  padding: 14px var(--card-pad-x) 16px;
+  background: var(--accent-light);
+  border-bottom: 0.5px solid var(--hairline);
   font-family: var(--font-sans);
   font-size: 0.95rem;
   line-height: 1.55;
   color: #2A2A2A;
+}
+
+/* Le bandeau ferme lui-même l'en-tête : le filet du titre ferait doublon juste au-dessus.
+   Le second sélecteur couvre les cards électorales, où une ligne de participation
+   s'intercale entre le titre et la phrase. */
+.card h2:has(+ .card-insight),
+.card h2:has(+ .muted + .card-insight) {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 14px;
 }
 
 /*

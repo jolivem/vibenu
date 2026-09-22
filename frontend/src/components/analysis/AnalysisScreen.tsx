@@ -253,6 +253,7 @@ export function AnalysisScreen() {
                   cadastreParcel={data.cadastre?.parcel}
                   communeContour={data.map.communeContour}
                   showLayerToggle={false}
+                  showBaseLayers
                   height={LOCATOR_MAP_HEIGHT}
                   onReady={handleMapReady}
                 />

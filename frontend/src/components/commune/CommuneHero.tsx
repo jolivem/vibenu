@@ -1,4 +1,5 @@
 import type { CommuneSlugEntry } from "@/lib/commune-slugs";
+import { communeRubriquesAnnoncees, enumererFr } from "./sections";
 
 interface Props {
   commune: CommuneSlugEntry;
@@ -12,8 +13,8 @@ export function CommuneHero({ commune }: Props) {
       </span>
       <h1 className="commune-title">{commune.nomAffiche}</h1>
       <p className="commune-lead">
-        Analyse complète de l&apos;arrondissement : prix immobilier, démographie, équipements
-        et qualité de l&apos;air. Données publiques actualisées.
+        Analyse complète de l&apos;arrondissement :{" "}
+        {enumererFr(communeRubriquesAnnoncees())}. Données publiques actualisées.
       </p>
     </section>
   );

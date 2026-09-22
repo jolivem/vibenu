@@ -84,3 +84,51 @@ export function activeCommuneSections(input: CommuneSectionInput): CommuneSectio
   const content = communeSectionContent(input);
   return COMMUNE_SECTION_ORDER.filter((id) => content[id]);
 }
+
+/**
+ * Les rubriques que la page annonce — dans son chapeau comme dans sa méta-description.
+ *
+ * Dérivées des drapeaux et non écrites en dur, parce qu'une phrase fixe finit toujours
+ * par mentir : le chapeau promettait encore la qualité de l'air longtemps après que le
+ * coupe-circuit `NEXT_PUBLIC_HIDE_AIR_QUALITY` l'eut retirée de la page, et il taisait la
+ * sécurité, les élections et le logement, qui, eux, s'affichaient. Ces drapeaux sont figés
+ * au build, la liste l'est donc aussi — mais elle l'est pour le bon build.
+ *
+ * L'ordre suit celui des sections. `demographie` en fournit deux, « population » et
+ * « logement » : la rubrique rend quatre cards, et ce sont les deux mots que le lecteur
+ * cherche. Deux termes séparés plutôt qu'un « population et logement », dont le « et »
+ * interne percutait celui de l'énumération.
+ */
+export function communeRubriquesAnnoncees(): string[] {
+  return [
+    "prix immobilier",
+    "équipements",
+    ...(FEATURES.showSecurity ? ["sécurité"] : []),
+    "population",
+    "logement",
+    ...(FEATURES.showElections ? ["élections"] : []),
+    ...(FEATURES.showAirQuality ? ["qualité de l'air"] : []),
+  ];
+}
+
+/** « a, b et c » — l'énumération française, avec « et » devant le dernier terme. */
+export function enumererFr(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} et ${items[items.length - 1]}`;
+}
+
+/**
+ * Coupe une méta-description sur une frontière de mot.
+ *
+ * Un `slice` brut tranchait au milieu d'un mot et laissait parfois un « et » orphelin en
+ * fin de phrase — ce que le moteur affiche tel quel dans ses résultats.
+ */
+export function tronquerPropre(texte: string, max: number): string {
+  if (texte.length <= max) return texte;
+  const coupe = texte.slice(0, max);
+  const dernierEspace = coupe.lastIndexOf(" ");
+  const mots = (dernierEspace > 0 ? coupe.slice(0, dernierEspace) : coupe)
+    .replace(/[\s,;:]+$/u, "")
+    .replace(/\s+(et|ou|de|du|des|à|au|aux|en|le|la|les|un|une)$/iu, "");
+  return `${mots}…`;
+}

@@ -168,3 +168,63 @@ export const IGN_PLAN_RASTER_STYLE = ignRasterStyle("GEOGRAPHICALGRIDSYSTEMS.PLA
 export const IGN_ORTHO_RASTER_STYLE = ignRasterStyle("ORTHOIMAGERY.ORTHOPHOTOS", {
   format: "image/jpeg",
 });
+
+/**
+ * Fonds optionnels de la carte de localisation, activables à la case à cocher.
+ *
+ * Ce sont des rasters **opaques** : ils recouvrent la géométrie du plan vectoriel. Ils
+ * sont insérés avant les calques de libellés du style, si bien que les noms de rue et les
+ * numéros restent lisibles par-dessus la photo — c'est ce qui fait tenir la card
+ * « Localisation », dont tout l'objet est de confirmer qu'on regarde le bon bâtiment.
+ *
+ * Le relief est posé à 85 % : le plan transparaît juste assez pour situer les rues sous
+ * l'ombrage. À pleine opacité on perdrait tout repère, et plus bas l'ombrage vire au gris
+ * délavé sur un fond vectoriel clair et peu contrasté.
+ *
+ * Format, style et zoom maximal viennent du GetCapabilities et ont été vérifiés sur une
+ * tuile réelle. `ORTHOPHOTOS` ne répond qu'en jpeg, le MNT LiDAR s'arrête au zoom 18 là
+ * où l'ortho va jusqu'à 19 : au-delà, MapLibre réétire la dernière tuile disponible.
+ */
+export interface BaseOverlayConfig {
+  id: string;
+  label: string;
+  layer: string;
+  format: string;
+  maxzoom: number;
+  opacity: number;
+}
+
+export const ORTHO_OVERLAY_ID = "fond-ortho";
+export const RELIEF_OVERLAY_ID = "fond-relief";
+
+export const BASE_OVERLAYS: BaseOverlayConfig[] = [
+  {
+    id: ORTHO_OVERLAY_ID,
+    label: "Photo aérienne",
+    layer: "ORTHOIMAGERY.ORTHOPHOTOS",
+    format: "image/jpeg",
+    maxzoom: 19,
+    opacity: 1,
+  },
+  {
+    id: RELIEF_OVERLAY_ID,
+    label: "Relief (LiDAR HD)",
+    layer: "IGNF_LIDAR-HD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW",
+    format: "image/png",
+    maxzoom: 18,
+    opacity: 0.85,
+  },
+];
+
+/** Le plan vectoriel seul — état par défaut, aucun raster allumé. */
+export const PLAN_CHOICE_ID = "fond-plan";
+
+/**
+ * Les trois fonds proposés, en boutons radio : ce sont des images opaques qui se
+ * recouvrent, pas des calques qui s'ajoutent. Des cases à cocher laisseraient croire
+ * qu'on peut les cumuler, alors que la dernière allumée masquerait simplement l'autre.
+ */
+export const BASE_CHOICES: Array<{ id: string; label: string }> = [
+  { id: PLAN_CHOICE_ID, label: "Plan" },
+  ...BASE_OVERLAYS.map((o) => ({ id: o.id, label: o.label })),
+];

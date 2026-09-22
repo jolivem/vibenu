@@ -34,7 +34,10 @@ import { formatEur, formatInt } from "@/components/commune/format";
 import { buildCommuneKeyFigures } from "@/components/commune/keyFigures";
 import {
   COMMUNE_SECTION_TITLES,
+  communeRubriquesAnnoncees,
   communeSectionContent,
+  enumererFr,
+  tronquerPropre,
   type CommuneSectionId,
 } from "@/components/commune/sections";
 import { communeInseeViews } from "@/components/commune/inseeViews";
@@ -81,20 +84,23 @@ export async function generateMetadata({
   } catch {
     // tolérant : si la DB n'est pas dispo, fallback générique
   }
+  // Même liste que le chapeau de la page, et pour la même raison : une énumération figée
+  // finit par promettre une rubrique que le build a coupée.
+  const rubriques = enumererFr(communeRubriquesAnnoncees());
   const desc = descParts.length > 0
-    ? `${descParts.join(" · ")}. Analyse complète du ${commune.nomCourt} : prix immobilier, sécurité, démographie, équipements, qualité de l'air.`
-    : `Analyse complète du ${commune.nomCourt} : prix immobilier, sécurité, démographie, équipements, qualité de l'air. Données publiques.`;
+    ? `${descParts.join(" · ")}. Analyse complète du ${commune.nomCourt} : ${rubriques}.`
+    : `Analyse complète du ${commune.nomCourt} : ${rubriques}. Données publiques.`;
 
   return {
     title: `${commune.nomAffiche} — Prix immobilier, démographie, cadre de vie`,
-    description: desc.slice(0, 158),
+    description: tronquerPropre(desc, 158),
     alternates: { canonical: `/commune/${commune.slug}` },
     openGraph: {
       type: "article",
       locale: "fr_FR",
       url: `${SITE_URL}/commune/${commune.slug}`,
       title: `${commune.nomAffiche} — ${BRANDING.name}`,
-      description: desc.slice(0, 158),
+      description: tronquerPropre(desc, 158),
     },
   };
 }

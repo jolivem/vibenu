@@ -5,8 +5,12 @@ import maplibregl, { Map as MapLibreMap, type StyleSpecification } from "maplibr
 import "maplibre-gl/dist/maplibre-gl.css";
 import { RISK_LAYERS, buildWmsTileUrl } from "./riskLayers";
 import {
+  BASE_CHOICES,
+  BASE_OVERLAYS,
   IGN_PLAN_RASTER_STYLE,
   LOCATOR_BASEMAP,
+  PLAN_CHOICE_ID,
+  ignRasterSource,
   loadIgnStyle,
   type IgnStyleName,
 } from "./basemaps";
@@ -52,6 +56,15 @@ const NO_TRANSPORTS: NonNullable<MapProps["transports"]> = [];
  * `initialLayers` doivent être allumées dès la construction) qu'au fil des clics.
  */
 function applyLayerVisibility(m: MapLibreMap, visibleLayers: Set<string>): void {
+  for (const overlay of BASE_OVERLAYS) {
+    if (!m.getLayer(overlay.id)) continue;
+    m.setLayoutProperty(
+      overlay.id,
+      "visibility",
+      visibleLayers.has(overlay.id) ? "visible" : "none",
+    );
+  }
+
   for (const layer of RISK_LAYERS) {
     m.setLayoutProperty(layer.id, "visibility", visibleLayers.has(layer.id) ? "visible" : "none");
   }
@@ -112,6 +125,14 @@ interface MapProps {
   onReady?: (map: MapLibreMap) => void;
   height?: string;
   showLayerToggle?: boolean;
+  /**
+   * Ajoute les fonds optionnels — photo aérienne, relief LiDAR — et leurs cases.
+   *
+   * Séparé de `showLayerToggle` parce que les deux répondent à des questions différentes :
+   * la carte de localisation veut choisir son fond sans proposer les zones de risque, que
+   * la card Risques affiche déjà plus bas avec ses propres explications.
+   */
+  showBaseLayers?: boolean;
   /** Consigne affichée à côté du titre du panneau de calques. */
   layerToggleHint?: string;
   /**
@@ -140,7 +161,7 @@ interface MapProps {
   zoom?: number;
 }
 
-export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
+export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -151,6 +172,25 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
   // reconstruirait la carte à chaque case cochée.
   const visibleLayersRef = useRef(visibleLayers);
   visibleLayersRef.current = visibleLayers;
+
+  /**
+   * Le fond retenu, déduit de la même `Set` que les calques.
+   *
+   * Un second état serait un doublon à tenir d'accord : c'est bien la visibilité d'un
+   * raster qu'on manipule, le bouton radio n'en est que la commande. Aucun des deux
+   * allumés signifie « Plan », l'état par défaut.
+   */
+  const baseChoice =
+    BASE_OVERLAYS.find((o) => visibleLayers.has(o.id))?.id ?? PLAN_CHOICE_ID;
+
+  const handleBaseChoice = useCallback((id: string) => {
+    setVisibleLayers((prev) => {
+      const next = new Set(prev);
+      for (const overlay of BASE_OVERLAYS) next.delete(overlay.id);
+      if (id !== PLAN_CHOICE_ID) next.add(id);
+      return next;
+    });
+  }, []);
 
   const handleToggle = useCallback((layerId: string) => {
     setVisibleLayers((prev) => {
@@ -224,6 +264,28 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || !baseStyle) return;
+
+    // Fonds optionnels (photo, relief). En tête des surcouches : ils doivent masquer le
+    // plan vectoriel, mais surtout pas le contour de parcelle ni les zones de risque, qui
+    // n'auraient plus de sens sous une image opaque.
+    const baseOverlaySources: Record<string, maplibregl.SourceSpecification> = {};
+    const baseOverlayLayers: maplibregl.LayerSpecification[] = [];
+
+    if (showBaseLayers) {
+      for (const overlay of BASE_OVERLAYS) {
+        baseOverlaySources[overlay.id] = ignRasterSource(overlay.layer, {
+          format: overlay.format,
+          maxzoom: overlay.maxzoom,
+        });
+        baseOverlayLayers.push({
+          id: overlay.id,
+          type: "raster",
+          source: overlay.id,
+          paint: { "raster-opacity": overlay.opacity },
+          layout: { visibility: "none" },
+        });
+      }
+    }
 
     // Build WMS sources and layers
     const wmsSources: Record<string, maplibregl.SourceSpecification> = {};
@@ -462,6 +524,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     // non-symbol. Seuls 15 libellés mineurs passent alors dessous, contre 374 calques avant.
     // (`sans_toponymes` n'a aucun symbol : l'insertion tombe naturellement à la fin.)
     const overlaySpecs: maplibregl.LayerSpecification[] = [
+      ...baseOverlayLayers,
       ...wmsLayers,
       ...dvfLayers,
       ...irisLayers,
@@ -487,6 +550,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         ...baseStyle,
         sources: {
           ...baseStyle.sources,
+          ...baseOverlaySources,
           ...wmsSources,
           ...dvfSources,
           ...irisSources,
@@ -611,10 +675,13 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           overflow: "hidden",
         }}
       />
-      {showLayerToggle && (
+      {(showLayerToggle || showBaseLayers) && (
         <LayerTogglePanel
-          riskLayers={availableRiskLayers}
-          overlayLayers={overlayLayers}
+          riskLayers={showLayerToggle ? availableRiskLayers : []}
+          overlayLayers={showLayerToggle ? overlayLayers : []}
+          baseChoices={showBaseLayers ? BASE_CHOICES : []}
+          baseChoice={baseChoice}
+          onBaseChoice={handleBaseChoice}
           visibleLayers={visibleLayers}
           onToggle={handleToggle}
           hint={layerToggleHint}
