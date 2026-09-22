@@ -66,14 +66,14 @@ export const ROOM_LABELS = ["1 pièce", "2 pièces", "3 pièces", "4 pièces", "
 export const EPOCH_LABELS = [
   "avant 1919", "1919-1945", "1946-1970", "1971-1990", "1991-2005", "2006-2018",
 ];
-const CSP_LABELS = [
+export const CSP_LABELS = [
   "agriculteurs", "artisans et commerçants", "cadres et professions intellectuelles",
   "professions intermédiaires", "employés", "ouvriers",
 ];
-const DIPLOMA_LABELS = [
+export const DIPLOMA_LABELS = [
   "sans diplôme", "BEPC", "CAP-BEP", "baccalauréat", "bac+2", "bac+3/4", "bac+5 et plus",
 ];
-const CHILDREN_LABELS = [
+export const CHILDREN_LABELS = [
   "aucun enfant", "1 enfant", "2 enfants", "3 enfants", "4 enfants et plus",
 ];
 

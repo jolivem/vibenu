@@ -280,8 +280,12 @@ export default async function CommunePage({
             {content.demographie && (
               <CommuneSection id="demographie">
                 <CommuneAgeCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
-                {inseeViews.employment && <CommuneEmploymentCard view={inseeViews.employment} />}
-                {inseeViews.households && <CommuneHouseholdsCard view={inseeViews.households} />}
+                {inseeViews.employment && (
+                  <CommuneEmploymentCard view={inseeViews.employment} legendes={legendes} />
+                )}
+                {inseeViews.households && (
+                  <CommuneHouseholdsCard view={inseeViews.households} legendes={legendes} />
+                )}
                 {inseeViews.housing && (
                   <CommuneHousingCard view={inseeViews.housing} legendes={legendes} />
                 )}

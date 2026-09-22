@@ -293,15 +293,6 @@ html {
   gap: 16px;
 }
 
-/* Numérotation décorative des sections — retirée de la landing, encore montée par la
-   page « À propos ». */
-.section-num {
-  font-family: var(--font-sans);
-  font-style: italic;
-  font-size: 15px;
-  color: var(--accent);
-}
-
 .section-title {
   font-family: var(--font-serif), var(--font-serif-fallback);
   font-weight: 400;
@@ -3216,9 +3207,6 @@ html {
     text-align: center;
   }
 
-  .section-num {
-    display: none;
-  }
 }
 
 /* Municipales — sièges sous une barre, et mode sans nuance politique */

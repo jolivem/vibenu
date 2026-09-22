@@ -34,6 +34,8 @@ const LEGENDS_FIXTURE: CommuneLegendes = {
   legende_prix: "Le prix au mètre carré dépasse d'environ un cinquième la moyenne de la ville, et il progresse plus vite qu'elle depuis deux ans.",
   legende_demographie: "La population est plus jeune et plus aisée que la moyenne française, avec une nette sur-représentation des 30-44 ans.",
   legende_logement: "Le parc est presque entièrement collectif et compte une part de locataires du privé bien supérieure à la moyenne française ; les deux-pièces y dominent.",
+  legende_emploi: "Le chômage déclaré reste sous la moyenne française et les diplômés du supérieur y sont deux fois plus nombreux ; les cadres forment la catégorie la plus représentée.",
+  legende_menages: "Les ménages y sont nettement plus petits qu'en France, les personnes seules formant près de la moitié des foyers.",
   legende_equipements: "La densité de commerces et de services de santé se situe au-dessus de la moyenne de la ville ; les équipements sportifs sont en revanche moins nombreux.",
   legende_securite: "Les cambriolages enregistrés restent sous la moyenne de la ville et reculent depuis dix ans, tandis que les vols dans les véhicules dépassent le niveau français.",
   legende_elections: "La participation a dépassé de quelques points la moyenne nationale, et le vote s'est porté nettement plus à gauche qu'en France.",

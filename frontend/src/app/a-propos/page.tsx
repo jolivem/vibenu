@@ -137,7 +137,6 @@ export default function AboutPage() {
 
       <section className="landing-section" id="mission">
         <div className="section-head">
-          <span className="section-num">01</span>
           <h2 className="section-title">
             Notre <i>mission</i>
           </h2>
@@ -161,7 +160,6 @@ export default function AboutPage() {
 
       <section className="landing-section landing-section--alt" id="sources">
         <div className="section-head">
-          <span className="section-num">02</span>
           <h2 className="section-title">
             Nos <i>sources</i>
           </h2>
@@ -180,7 +178,6 @@ export default function AboutPage() {
 
       <section className="landing-section" id="methodologie">
         <div className="section-head">
-          <span className="section-num">03</span>
           <h2 className="section-title">
             Notre <i>méthodologie</i>
           </h2>

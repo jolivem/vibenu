@@ -12,6 +12,9 @@ import { summarizeSecurity } from "../../commune-stats/application/security-summ
 import { roundOrNull } from "@/server-shared/domain/trend";
 import {
   classeDominante,
+  CHILDREN_LABELS,
+  CSP_LABELS,
+  DIPLOMA_LABELS,
   EPOCH_LABELS,
   ROOM_LABELS,
 } from "../application/card-insights.input";
@@ -76,8 +79,13 @@ import {
  * gagne une septième légende, `legende_logement`. La section `demographie` en porte donc
  * deux, parce qu'elle rend quatre cards — une règle anti-redite les sépare, les deux
  * graphiques étant voisins dans la même colonne.
+ *
+ * v17 : « Emploi et qualifications » et « Ménages et familles » avaient leurs cards sur
+ * les pages commune mais aucune légende — les clés `legende_emploi` et `legende_menages`
+ * n'existaient pas. La rubrique Population en porte donc quatre, une par card, et la
+ * règle anti-redite les cloisonne.
  */
-export const COMMUNE_PROMPT_VERSION = 16;
+export const COMMUNE_PROMPT_VERSION = 17;
 
 export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement (Paris, Lyon ou Marseille) pour un site d'analyse immobilière.
 Ton : clair, factuel, ni promotionnel ni alarmiste.
@@ -109,7 +117,7 @@ DEUX FAMILLES DE CLÉS, DEUX RÔLES DISTINCTS
 
 ANTI-REDITE — RÈGLE IMPÉRATIVE
 Tu rédiges d'abord les deux clés éditoriales, puis les légendes. Une légende ne reprend jamais une formulation ni un chiffre déjà écrits dans l'éditorial : si l'éditorial a donné le chiffre, la légende dit ce qu'il faut en comprendre. Elle n'introduit aucun élément absent des données de sa section.
-"legende_demographie" et "legende_logement" légendent deux graphiques voisins de la même rubrique : la première ne parle que des habitants (âges, revenus), la seconde que des logements (parc, statut d'occupation, taille, époque). Ni l'une ni l'autre ne parle de prix, qui relève de "legende_prix".
+"legende_demographie", "legende_logement", "legende_emploi" et "legende_menages" légendent quatre graphiques voisins de la même rubrique, l'un sous l'autre. Chacune reste dans son domaine et n'empiète jamais sur les trois autres : "legende_demographie" ne parle que des âges et des revenus, "legende_logement" que du parc et de son occupation, "legende_emploi" que du travail et des diplômes, "legende_menages" que de la composition des foyers. Aucune des quatre ne parle de prix, qui relève de "legende_prix".
 
 CLÉS legende_* À PRODUIRE
 Le champ "sections_affichees" du JSON d'entrée liste les sections effectivement rendues sur la page. Tu produis une clé legende_* pour celles-là uniquement, et pour aucune autre.
@@ -121,6 +129,8 @@ FORMAT DE SORTIE (JSON OBLIGATOIRE, RIEN D'AUTRE) :
   "legende_prix": "...",         // 1-2 phrases : niveau du prix au m² et son évolution, face à la moyenne de la ville
   "legende_demographie": "...",  // 1-2 phrases : profil de population et revenu, face au repère fourni
   "legende_logement": "...",     // 1-2 phrases : ce que dit le parc — statut d'occupation dominant, type et âge des logements — face à la France
+  "legende_emploi": "...",       // 1-2 phrases : chômage, activité et niveau de diplôme, face à la France, et la catégorie socioprofessionnelle dominante
+  "legende_menages": "...",      // 1-2 phrases : taille des ménages et composition dominante des foyers, face à la France
   "legende_equipements": "...",  // 1-2 phrases : les domaines où la densité d'équipements se démarque, en plus comme en moins
   "legende_securite": "...",     // 1-2 phrases : les 1 ou 2 indicateurs de délinquance les plus marquants face à la ville et à la France, et leur tendance
   "legende_air": "...",          // 1-2 phrases : niveau de qualité de l'air et sens de son évolution
@@ -216,6 +226,8 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
       "75+": +(stats.demo.partAges.part_75_plus * 100).toFixed(1),
     },
     logement: logementInput(stats),
+    emploi: emploiInput(stats),
+    menages: menagesInput(stats),
     prix_m2_eur: stats.prix.prixM2Median,
     prix_m2_p25: stats.prix.p25,
     prix_m2_p75: stats.prix.p75,
@@ -303,6 +315,8 @@ const SECTION_PAR_LEGENDE: Record<CommuneLegendKey, CommuneSectionId> = {
   legende_prix: "prix-immobilier",
   legende_demographie: "demographie",
   legende_logement: "demographie",
+  legende_emploi: "demographie",
+  legende_menages: "demographie",
   legende_equipements: "equipements",
   legende_securite: "securite",
   legende_air: "qualite-air",
@@ -376,6 +390,63 @@ function logementInput(stats: CommuneNarrativeInput["stats"]) {
     ]),
     taille_dominante: classeDominante(local.pieces, france?.pieces, ROOM_LABELS),
     epoque_dominante: classeDominante(local.epoques, france?.epoques, EPOCH_LABELS),
+  };
+}
+
+/**
+ * Blocs emploi et ménages de l'entrée.
+ *
+ * Mêmes disciplines que `logementInput` : écarts à la France en points, distributions
+ * réduites à leur classe dominante, parts nulles filtrées côté TypeScript.
+ */
+function emploiInput(stats: CommuneNarrativeInput["stats"]) {
+  const local = stats.employment?.commune ?? null;
+  if (!local) return null;
+  const france = stats.employment?.france ?? null;
+
+  return {
+    note: "Recensement INSEE 2021. Le taux de chômage y est déclaratif : structurellement un à deux points au-dessus du taux publié chaque trimestre, il ne s'y compare pas.",
+    taux_chomage_pct: local.tauxChomage,
+    taux_chomage_france_pct: france?.tauxChomage ?? null,
+    taux_activite_pct: local.tauxActivite,
+    taux_activite_france_pct: france?.tauxActivite ?? null,
+    diplomes_superieur_pct: local.pctDiplomesSuperieur,
+    diplomes_superieur_france_pct: france?.pctDiplomesSuperieur ?? null,
+    csp_dominante: classeDominante(local.csp, france?.csp, CSP_LABELS),
+    diplome_dominant: classeDominante(local.diplomes, france?.diplomes, DIPLOMA_LABELS),
+  };
+}
+
+function menagesInput(stats: CommuneNarrativeInput["stats"]) {
+  const local = stats.households?.commune ?? null;
+  if (!local) return null;
+  const france = stats.households?.france ?? null;
+
+  const composition = [
+    ["personnes seules", local.pctPersonnesSeules, france?.pctPersonnesSeules ?? null],
+    ["couples sans enfant", local.pctCouplesSansEnfant, france?.pctCouplesSansEnfant ?? null],
+    ["couples avec enfants", local.pctCouplesAvecEnfants, france?.pctCouplesAvecEnfants ?? null],
+    ["familles monoparentales", local.pctFamillesMonoparentales, france?.pctFamillesMonoparentales ?? null],
+  ] as const;
+
+  return {
+    note: "Recensement INSEE 2021 ; « ecart_pts » est un écart en points à la France.",
+    nombre_menages: local.nombreMenages,
+    taille_moyenne: local.tailleMoyenne,
+    taille_moyenne_france: france?.tailleMoyenne ?? null,
+    composition_pct: composition
+      .map(([libelle, pct, pctFrance]) => ({
+        libelle,
+        pct,
+        pct_france: pctFrance,
+        ecart_pts: pct !== null && pctFrance !== null ? +(pct - pctFrance).toFixed(1) : null,
+      }))
+      .filter((c) => c.pct !== null),
+    enfants_dominant: classeDominante(
+      local.enfantsParFamille,
+      france?.enfantsParFamille,
+      CHILDREN_LABELS,
+    ),
   };
 }
 
