@@ -22,12 +22,28 @@ export function RisksCard({
   /** Carte thématique, rendue en fin de card et débordant jusqu'à ses bords. */
   children?: ReactNode;
 }) {
-  const { highlighted, minor } = splitRisks(risks.categories);
-
   return (
     <section className="card">
       <h2>Risques naturels</h2>
 
+      <RiskList risks={risks} />
+
+      {children ? (
+        <div className="card-map">{children}</div>
+      ) : null}
+    </section>
+  );
+}
+
+/**
+ * Les deux listes de risques, sans le cadre ni la carte : les pages commune les
+ * reprennent telles quelles, avec leurs propres notes de portée.
+ */
+export function RiskList({ risks }: { risks: RiskAnalysisDto }) {
+  const { highlighted, minor } = splitRisks(risks.categories);
+
+  return (
+    <>
       {highlighted.length > 0 && (
         <div className="risk-alert">
           {highlighted.map((risk) => (
@@ -56,10 +72,6 @@ export function RisksCard({
           ))}
         </div>
       )}
-
-      {children ? (
-        <div className="card-map">{children}</div>
-      ) : null}
-    </section>
+    </>
   );
 }

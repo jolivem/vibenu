@@ -106,13 +106,23 @@ text:
 - **Entry points** — the landing's "Explorer par commune" links the three hubs; each hub lists its
   arrondissements. `app/sitemap.ts` lists every page.
 - **Cross-links** — an arrondissement analysis links to its SEO page ("Voir la page Paris 15e");
-  the SEO page's call-to-action opens the detailed analysis (`analyzeUrlForCommune`).
-- **The SEO pages lag behind the analysis** (to be completed): no housing, climate,
-  risks, municipales 2026, detailed equipment compared to France, "En bref"
-  or PDF. Security is there (`CommuneSecuritySection`): same SSMSI data as the analysis card, but
-  compared to the whole city and France instead of the département.
-  Employment and households are there too, inside the demographics section: the analysis
-  cards export their charts (`EmploymentCharts`, `HouseholdsCharts`), arrondissement vs France.
+  the SEO page links up to its city hub (for what is city-scale) and across to the detailed
+  analysis (`analyzeUrlForCommune`, for what is address-scale).
+- **Each domain sits at the scale where it is actually unique.** An arrondissement page
+  carries what differs between arrondissements — prices, equipment, security, population
+  (age, employment, households, housing), presidential election, history. The three city
+  hubs carry what does not: climate (one Météo-France station covers the whole city),
+  natural risks (read at `scope: "commune"`), and the 2026 municipal election, whose data
+  has **no rows per arrondissement** — the ministry's files are cut by *secteur*, which does
+  not map onto INSEE codes. Putting those three on 45 pages would have published the same
+  block twenty times over.
+- Both families reuse the analysis's bare sub-components (`EmploymentCharts`,
+  `HouseholdsCharts`, `HousingCharts`, `SecurityIndicatorChart`, `ClimateCharts`,
+  `RiskList`, `MunicipalesLists`) — exported without card frame, title or source notes.
+- **Two disjoint anchor namespaces**, never crossed: `components/commune/sections.ts` for
+  arrondissements, `hubSections.ts` for hubs. Both are exhaustive `Record`s — adding an id
+  does not compile until it has a title *and* a display condition.
+- **Still missing on arrondissement pages**: PDF export, and "En bref" on a few cards.
 - `app/sitemap.ts` and `app/commune/page.tsx` still ignore `hasSEOPages`.
 
 ### Client

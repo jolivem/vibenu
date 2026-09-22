@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic";
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
-  title: "Lyon — Tous les arrondissements : prix immobilier, démographie",
+  title: "Lyon — Arrondissements, prix immobilier, climat et risques",
   description:
-    "Hub Lyon : analyse complète des 9 arrondissements. Prix m² médian, démographie, équipements, qualité de l'air. Données publiques officielles.",
+    "Les 9 arrondissements de Lyon comparés : prix au m², population. Climat de Lyon, risques naturels, résultats des municipales 2026. Données publiques officielles.",
   alternates: { canonical: "/commune/lyon" },
   openGraph: {
     type: "article",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/commune/lyon`,
     title: `Lyon — Les 9 arrondissements analysés · ${BRANDING.name}`,
     description:
-      "Comparez prix, démographie et cadre de vie entre les 9 arrondissements de Lyon.",
+      "Prix, population, climat, risques naturels et municipales 2026 — les 9 arrondissements lyonnais et leur ville.",
   },
 };
 

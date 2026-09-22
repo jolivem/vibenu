@@ -107,6 +107,24 @@ function PlainList({ listes }: { listes: MunicipalesListeDto[] }) {
   );
 }
 
+/**
+ * Les listes du scrutin, sans le cadre ni les notes : les pages commune les reprennent
+ * telles quelles.
+ *
+ * L'aiguillage nuancée/non voyage avec elles, pour qu'un second appelant n'ait pas à
+ * réimplémenter la règle — l'État n'attribue de nuance qu'au-delà d'une certaine taille
+ * de commune.
+ */
+export function MunicipalesLists({
+  listes,
+  nuancee,
+}: {
+  listes: MunicipalesListeDto[];
+  nuancee: boolean;
+}) {
+  return nuancee ? <NuancedList listes={listes} /> : <PlainList listes={listes} />;
+}
+
 export function MunicipalesCard({
   municipales,
   insight,
@@ -130,7 +148,7 @@ export function MunicipalesCard({
 
       <CardInsight text={insight} />
 
-      {nuancee ? <NuancedList listes={listes} /> : <PlainList listes={listes} />}
+      <MunicipalesLists listes={listes} nuancee={nuancee} />
 
       {villeEntiere && (
         <p className="elections-footnote">

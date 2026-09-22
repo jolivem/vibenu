@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic";
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
-  title: "Marseille — Tous les arrondissements : prix immobilier, démographie",
+  title: "Marseille — Arrondissements, prix immobilier, climat et risques",
   description:
-    "Hub Marseille : analyse complète des 16 arrondissements. Prix m² médian, démographie, équipements, qualité de l'air. Données publiques officielles.",
+    "Les 16 arrondissements de Marseille comparés : prix au m², population. Climat, risques naturels, municipales 2026. Données publiques.",
   alternates: { canonical: "/commune/marseille" },
   openGraph: {
     type: "article",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/commune/marseille`,
     title: `Marseille — Les 16 arrondissements analysés · ${BRANDING.name}`,
     description:
-      "Comparez prix, démographie et cadre de vie entre les 16 arrondissements de Marseille.",
+      "Prix, population, climat, risques naturels et municipales 2026 — les 16 arrondissements marseillais et leur ville.",
   },
 };
 

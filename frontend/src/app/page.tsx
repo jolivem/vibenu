@@ -115,7 +115,6 @@ export default function HomePage() {
       <>
       <section className="landing-section" id="decouvrez">
         <div className="section-head">
-          <span className="section-num">01</span>
           <h2 className="section-title">
             Ce que vous <i>découvrez</i>
           </h2>
@@ -148,7 +147,6 @@ export default function HomePage() {
 
       <section className="landing-section landing-section--alt">
         <div className="section-head">
-          <span className="section-num">02</span>
           <h2 className="section-title">
             Comment ça <i>marche</i>
           </h2>
@@ -156,17 +154,14 @@ export default function HomePage() {
         </div>
         <div className="steps">
           <div className="step">
-            <div className="step-num">01</div>
             <h4>Saisissez l&apos;adresse</h4>
             <p>N&apos;importe quelle adresse française, du studio parisien à la maison en province.</p>
           </div>
           <div className="step">
-            <div className="step-num">02</div>
             <h4>L&apos;analyse se lance</h4>
             <p>Croisement automatique des bases publiques en quelques secondes.</p>
           </div>
           <div className="step">
-            <div className="step-num">03</div>
             <h4>Décidez sereinement</h4>
             <p>Carte interactive et indicateurs pour louer ou acheter en connaissance de cause.</p>
           </div>
@@ -178,7 +173,6 @@ export default function HomePage() {
       {FEATURES.hasLandingExploreSection && (
       <section className="landing-section" id="explorer">
         <div className="section-head">
-          <span className="section-num">03</span>
           <h2 className="section-title">
             Explorer par <i>commune</i>
           </h2>
@@ -227,7 +221,6 @@ export default function HomePage() {
       {FEATURES.hasLandingFaqSection && (
       <section className="landing-section landing-section--alt" id="faq">
         <div className="section-head">
-          <span className="section-num">04</span>
           <h2 className="section-title">
             Questions <i>fréquentes</i>
           </h2>

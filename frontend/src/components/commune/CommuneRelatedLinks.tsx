@@ -32,13 +32,25 @@ export function CommuneRelatedLinks({ commune }: Props) {
         </ul>
       )}
 
-      {/* L'analyse en mode commune couvre ce que cette page n'a pas encore — climat,
-          risques, municipales — et produit le PDF. Cf. CLAUDE.md, « Commune mode vs SEO
-          commune pages ». */}
+      {/* Climat, risques et municipales se jouent à l'échelle de la ville : ils vivent
+          désormais sur le hub, et non ici — d'où le lien ci-dessous. Ce que l'analyse
+          garde pour elle, c'est la maille de l'adresse et la fiche PDF. */}
+      {commune.parentSlug && commune.parentNom && (
+        <div className="commune-cta">
+          <p>
+            Climat, risques naturels et résultats des municipales 2026 se lisent à
+            l&apos;échelle de la ville : retrouvez-les sur la page {commune.parentNom}.
+          </p>
+          <Link href={`/commune/${commune.parentSlug}`} className="commune-cta-btn">
+            {commune.parentNom} et ses arrondissements →
+          </Link>
+        </div>
+      )}
+
       <div className="commune-cta">
         <p>
-          Climat, risques naturels, élections municipales, fiche PDF : retrouvez
-          l&apos;analyse complète de {commune.nomCourt}.
+          Pour un logement précis — risques à la parcelle, carte scolaire, transports,
+          fiche PDF : lancez l&apos;analyse détaillée de {commune.nomCourt}.
         </p>
         <Link href={analyzeUrlForCommune(commune)} className="commune-cta-btn">
           Analyse détaillée de {commune.nomCourt} →

@@ -1,8 +1,9 @@
 import type { RiskCategory } from "../domain/risk.types";
-import type { RiskProvider } from "./risk.provider";
+import type { RiskProvider, RiskScope } from "./risk.provider";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
+const FIVE_MINUTES = 5 * 60 * 1000;
 
 interface RisqueDto {
   present: boolean;
@@ -55,6 +56,7 @@ interface GeorisquesRapportResponse {
  */
 export class GeorisquesRiskProvider implements RiskProvider {
   private static cache = new InMemoryCache<RiskCategory[]>(ONE_DAY);
+  private static fallbackCache = new InMemoryCache<RiskCategory[]>(FIVE_MINUTES);
   private readonly baseUrl = "https://www.georisques.gouv.fr/api/v1";
 
   private readonly riskLabels: Record<string, string> = {
@@ -78,40 +80,68 @@ export class GeorisquesRiskProvider implements RiskProvider {
     risqueMinier: "Risque minier",
   };
 
-  async getLocationRisks(lat: number, lon: number): Promise<RiskCategory[]> {
-    const cacheKey = buildGeoKey(lat, lon);
+  async getLocationRisks(
+    lat: number,
+    lon: number,
+    scope: RiskScope = "adresse",
+  ): Promise<RiskCategory[]> {
+    // L'échelle entre dans la clé : les deux lectures du même point ne donnent pas la
+    // même liste, et une page de ville ne doit pas servir le cache d'une analyse
+    // d'adresse voisine.
+    const cacheKey = `${buildGeoKey(lat, lon)}:${scope}`;
     const cached = GeorisquesRiskProvider.cache.get(cacheKey);
     if (cached) return cached;
+    const recentFallback = GeorisquesRiskProvider.fallbackCache.get(cacheKey);
+    if (recentFallback) return recentFallback;
 
     try {
       const response = await fetch(
         `${this.baseUrl}/resultats_rapport_risque?latlon=${lon},${lat}`,
-        { headers: { Accept: "application/json" } },
+        {
+          headers: { Accept: "application/json" },
+          // Le Data Cache de Next survit au redéploiement, là où le cache mémoire
+          // ci-dessus est propre au processus — c'est lui qui borne réellement le
+          // nombre d'appels à une API limitée à un par seconde.
+          next: { revalidate: 86400 },
+        },
       );
 
       if (!response.ok) {
         console.warn(`Géorisques API error: ${response.status} ${response.statusText}`);
-        return this.getDefaultRisks();
+        return this.cachedFallback(cacheKey);
       }
 
       const data = (await response.json()) as GeorisquesRapportResponse;
-      const result = this.parseRapport(data);
+      const result = this.parseRapport(data, scope);
       GeorisquesRiskProvider.cache.set(cacheKey, result);
       return result;
     } catch (error) {
       console.warn("Géorisques API error, using fallback:", error);
-      return this.getDefaultRisks();
+      return this.cachedFallback(cacheKey);
     }
   }
 
-  private parseRapport(data: GeorisquesRapportResponse): RiskCategory[] {
+  /**
+   * Le repli, mémorisé quelques minutes seulement.
+   *
+   * Sans cela, une panne prolongée fait refrapper l'API à chaque requête et alimente
+   * elle-même le throttling. Quelques minutes suffisent à casser ce martèlement sans
+   * figer « Non renseigné » comme le ferait le TTL de 24 h des réponses valides.
+   */
+  private cachedFallback(cacheKey: string): RiskCategory[] {
+    const fallback = this.getDefaultRisks();
+    GeorisquesRiskProvider.fallbackCache.set(cacheKey, fallback);
+    return fallback;
+  }
+
+  private parseRapport(data: GeorisquesRapportResponse, scope: RiskScope): RiskCategory[] {
     const entries: Array<{ category: RiskCategory; raw: RisqueDto }> = [];
 
     for (const [code, risque] of Object.entries(data.risquesNaturels)) {
-      entries.push({ category: this.mapRisque(code, risque), raw: risque });
+      entries.push({ category: this.mapRisque(code, risque, scope), raw: risque });
     }
     for (const [code, risque] of Object.entries(data.risquesTechnologiques)) {
-      entries.push({ category: this.mapRisque(code, risque), raw: risque });
+      entries.push({ category: this.mapRisque(code, risque, scope), raw: risque });
     }
 
     // On ne remonte que les risques qui concernent le lieu.
@@ -124,30 +154,33 @@ export class GeorisquesRiskProvider implements RiskProvider {
       .filter(({ category, raw }) => {
         // BRGM marque "Risque non Concerne" quand le risque ne s'applique pas à cette
         // adresse — même motif de retrait que `present: false`, dit autrement.
-        if (this.isNotApplicable(raw)) return false;
+        if (this.isNotApplicable(raw, scope)) return false;
         return category.level !== "absent";
       })
       .map(({ category }) => category);
   }
 
-  private isNotApplicable(risque: RisqueDto): boolean {
+  private isNotApplicable(risque: RisqueDto, scope: RiskScope): boolean {
+    // Même règle de lecture que `resolveLevel` : à l'échelle de la commune, le statut
+    // d'adresse ne décide de rien.
     const statut = (
-      risque.libelleStatutAdresse ??
-      risque.libelleStatutCommune ??
-      ""
-    ).toLowerCase();
+      scope === "commune"
+        ? risque.libelleStatutCommune
+        : (risque.libelleStatutAdresse ?? risque.libelleStatutCommune)
+    ) ?? "";
+    return statut.toLowerCase().includes("non concerne") || statut.toLowerCase().includes("non concerné");
     return statut.includes("non concerne") || statut.includes("non concerné");
   }
 
-  private mapRisque(code: string, risque: RisqueDto): RiskCategory {
+  private mapRisque(code: string, risque: RisqueDto, requested: RiskScope): RiskCategory {
     const name = this.riskLabels[code] ?? code;
-    const { level, scope } = this.resolveLevel(risque);
+    const { level, scope } = this.resolveLevel(risque, requested);
 
     return {
       code,
       name,
       level,
-      message: this.buildMessage(name, level, scope, risque),
+      message: this.buildMessage(name, level, scope, risque, requested),
     };
   }
 
@@ -182,11 +215,23 @@ export class GeorisquesRiskProvider implements RiskProvider {
    * retombe donc sur la commune quand l'adresse ne dit rien, et le message le précise :
    * une gravité communale n'est pas une gravité à la parcelle.
    */
-  private resolveLevel(risque: RisqueDto): {
+  private resolveLevel(
+    risque: RisqueDto,
+    requested: RiskScope,
+  ): {
     level: RiskCategory["level"];
     scope: "adresse" | "commune";
   } {
-    if (!risque.present) return { level: "absent", scope: "adresse" };
+    if (!risque.present) return { level: "absent", scope: requested };
+
+    // Lecture demandée à la commune : le statut d'adresse décrit un point pris au centre
+    // de la ville, il ne dit rien de la ville. On saute donc la branche adresse.
+    if (requested === "commune") {
+      const atCommune = this.gradeFromStatut(risque.libelleStatutCommune);
+      return atCommune !== "inconnu"
+        ? { level: atCommune, scope: "commune" }
+        : { level: "inconnu", scope: "commune" };
+    }
 
     const atAddress = this.gradeFromStatut(risque.libelleStatutAdresse);
     if (atAddress !== "inconnu") return { level: atAddress, scope: "adresse" };
@@ -202,6 +247,7 @@ export class GeorisquesRiskProvider implements RiskProvider {
     level: RiskCategory["level"],
     scope: "adresse" | "commune",
     risque: RisqueDto,
+    requested: RiskScope,
   ): string {
     if (level === "absent") {
       return `Pas de ${name.toLowerCase()} identifié sur ce secteur.`;
@@ -211,9 +257,12 @@ export class GeorisquesRiskProvider implements RiskProvider {
       (scope === "commune" ? risque.libelleStatutCommune : risque.libelleStatutAdresse) ?? "";
     const suffix = detail ? ` (${detail})` : "";
     // Dire d'où vient la gravité : à l'échelle de la commune, elle ne se transpose pas
-    // telle quelle à la parcelle.
+    // telle quelle à la parcelle. Mention inutile quand la commune est justement
+    // l'échelle demandée — sur une page de ville, c'est la bonne portée, pas un pis-aller.
     const portee =
-      scope === "commune" ? ", à l'échelle de la commune — non établi à l'adresse" : "";
+      scope === "commune" && requested === "adresse"
+        ? ", à l'échelle de la commune — non établi à l'adresse"
+        : "";
 
     // Le message ne reprend pas le nom du risque : l'écran comme le PDF l'affichent déjà
     // à côté de la pastille. L'omettre évite au passage un accord impossible à tenir —

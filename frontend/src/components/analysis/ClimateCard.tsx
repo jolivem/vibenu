@@ -1,4 +1,7 @@
 import type { ClimateAnalysisDto } from "@/types/location-analysis";
+
+/** Le profil sur 12 mois d'un lieu et de ses repères — le champ `monthly` du DTO. */
+type ClimateMonthly = NonNullable<ClimateAnalysisDto["monthly"]>;
 import { ClimateChart } from "./ClimateChart";
 import { CLIMATE_METRICS } from "./climateChart";
 import { CardInsight } from "@/components/CardInsight";
@@ -51,14 +54,7 @@ export function ClimateCard({
   insight?: string | null;
 }) {
   const monthly = climate.monthly;
-  if (!monthly) return null;
-
-  // Chaque graphe décide seul de s'afficher : `ClimateChart` rend null quand la série
-  // locale est vide. Si aucune mesure n'est disponible, la card entière n'a rien à dire.
-  const hasAnyMetric = CLIMATE_METRICS.some((m) =>
-    monthly.local[m.key].some((v) => v !== null),
-  );
-  if (!hasAnyMetric) return null;
+  if (!monthly || !hasClimateSeries(monthly)) return null;
 
   const stationLines = climateStationLines(climate);
 
@@ -68,17 +64,7 @@ export function ClimateCard({
 
       <CardInsight text={insight} />
 
-      {CLIMATE_METRICS.map((metric) => (
-        <ClimateChart
-          key={metric.key}
-          metric={metric.key}
-          label={metric.label}
-          unit={metric.unit}
-          format={metric.format}
-          local={monthly.local}
-          references={monthly.references}
-        />
-      ))}
+      <ClimateCharts monthly={monthly} />
 
       <p className="elections-footnote">
         Profil mois par mois, comparé à des villes représentatives des grands climats
@@ -106,5 +92,39 @@ export function ClimateCard({
         )}
       </p>
     </section>
+  );
+}
+
+/** Le profil mensuel porte-t-il au moins une mesure ?
+ *
+ * Extrait du composant parce que deux appelants en dépendent : la card, qui se masque,
+ * et les pages commune, dont le sommaire doit savoir si la rubrique a du contenu **avant**
+ * de la monter — même discipline que `communeSectionContent`.
+ */
+export function hasClimateSeries(monthly: ClimateMonthly): boolean {
+  // Chaque graphe décide seul de s'afficher : `ClimateChart` rend null quand la série
+  // locale est vide. Si aucune mesure n'est disponible, la card entière n'a rien à dire.
+  return CLIMATE_METRICS.some((m) => monthly.local[m.key].some((v) => v !== null));
+}
+
+/**
+ * Les trois graphes de la card, sans son cadre ni ses notes : les pages commune les
+ * reprennent tels quels, avec leurs propres sources.
+ */
+export function ClimateCharts({ monthly }: { monthly: ClimateMonthly }) {
+  return (
+    <>
+      {CLIMATE_METRICS.map((metric) => (
+        <ClimateChart
+          key={metric.key}
+          metric={metric.key}
+          label={metric.label}
+          unit={metric.unit}
+          format={metric.format}
+          local={monthly.local}
+          references={monthly.references}
+        />
+      ))}
+    </>
   );
 }

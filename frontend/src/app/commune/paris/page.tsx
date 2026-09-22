@@ -12,9 +12,9 @@ export const dynamic = "force-dynamic";
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
-  title: "Paris — Tous les arrondissements : prix immobilier, démographie",
+  title: "Paris — Arrondissements, prix immobilier, climat et risques",
   description:
-    "Hub Paris : analyse complète des 20 arrondissements. Prix m² médian, démographie, équipements, qualité de l'air. Données publiques officielles.",
+    "Les 20 arrondissements de Paris comparés : prix au m², population. Climat de Paris, risques naturels, résultats des municipales 2026. Données publiques officielles.",
   alternates: { canonical: "/commune/paris" },
   openGraph: {
     type: "article",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/commune/paris`,
     title: `Paris — Les 20 arrondissements analysés · ${BRANDING.name}`,
     description:
-      "Comparez prix, démographie et cadre de vie entre les 20 arrondissements parisiens.",
+      "Prix, population, climat, risques naturels et municipales 2026 — les 20 arrondissements parisiens et leur ville.",
   },
 };
 

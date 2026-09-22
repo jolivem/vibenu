@@ -1,13 +1,13 @@
 import type { RiskService } from "./risk.service";
 import type { RiskAnalysis } from "../domain/risk.types";
-import type { RiskProvider } from "../infrastructure/risk.provider";
+import type { RiskProvider, RiskScope } from "../infrastructure/risk.provider";
 import type { RiskCategoryLevel } from "../../../server-shared/domain/common.types";
 
 export class RiskServiceImpl implements RiskService {
   constructor(private readonly riskProvider: RiskProvider) {}
 
-  async getRiskData(lat: number, lon: number): Promise<RiskAnalysis> {
-    const categories = await this.riskProvider.getLocationRisks(lat, lon);
+  async getRiskData(lat: number, lon: number, scope?: RiskScope): Promise<RiskAnalysis> {
+    const categories = await this.riskProvider.getLocationRisks(lat, lon, scope);
 
     // « présent » passe devant « faible » : un risque que Géorisques signale sans le
     // graduer n'est pas un risque connu comme faible. « inconnu » passe devant
