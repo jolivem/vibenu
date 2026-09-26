@@ -122,20 +122,44 @@ export function LineChart({
         ))}
 
         {series.map((s) => {
-          // Une valeur manquante coupe la courbe plutôt que de la faire plonger à zéro.
-          const points = s.values
-            .map((v, i) => (v === null ? null : `${x(i)},${y(v)}`))
-            .filter((p): p is string => p !== null)
-            .join(" ");
+          /*
+           * Une valeur manquante interrompt la courbe : un segment par suite continue de
+           * valeurs connues, et non une polyligne unique.
+           *
+           * Écarter les trous puis tout relier en une polyligne — ce que faisait la
+           * version précédente — les enjambe d'un trait droit. Sur la délinquance, la
+           * courbe communale traversait ainsi les quatre années masquées par le secret
+           * statistique comme si elles avaient été mesurées, et passait *sous* la bande
+           * d'incertitude censée les représenter : le graphe affirmait une valeur là où
+           * la source dit justement ne pas en publier.
+           *
+           * Une valeur isolée entre deux trous ne donne aucun segment, mais son point est
+           * tracé plus bas : elle reste visible.
+           */
+          const segments: string[][] = [];
+          let current: string[] = [];
+          s.values.forEach((v, i) => {
+            if (v === null) {
+              if (current.length > 0) segments.push(current);
+              current = [];
+              return;
+            }
+            current.push(`${x(i)},${y(v)}`);
+          });
+          if (current.length > 0) segments.push(current);
+
           return (
             <g key={s.name} opacity={s.opacity}>
-              <polyline
-                points={points}
-                stroke={s.color}
-                strokeWidth={s.strokeWidth}
-                fill="none"
-                className="line-chart-line"
-              />
+              {segments.map((points, segmentIndex) => (
+                <polyline
+                  key={segmentIndex}
+                  points={points.join(" ")}
+                  stroke={s.color}
+                  strokeWidth={s.strokeWidth}
+                  fill="none"
+                  className="line-chart-line"
+                />
+              ))}
               {s.values.map((v, i) =>
                 v === null ? null : (
                   <circle key={i} cx={x(i)} cy={y(v)} r={s.dotRadius} fill={s.color}>

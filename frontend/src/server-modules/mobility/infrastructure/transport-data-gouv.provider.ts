@@ -92,13 +92,40 @@ function sameStop(a: LocatedStop, b: LocatedStop): boolean {
   return ta !== "" && ta === tb;
 }
 
-/** Nombre de lieux distincts : chaque entrée qui ne rejoint aucun lieu déjà vu en ouvre un. */
-function countSites(items: LocatedStop[], same: (a: LocatedStop, b: LocatedStop) => boolean): number {
-  const sites: LocatedStop[] = [];
+/**
+ * Un représentant par lieu : chaque entrée qui ne rejoint aucun lieu déjà vu en ouvre un.
+ *
+ * Sur une liste triée par distance, le représentant retenu est donc **le plus proche** du
+ * point analysé, ce qui est aussi la distance qu'il faut afficher.
+ *
+ * Sert à la fois aux listes et aux comptages, et c'est le point : les deux divisaient
+ * auparavant le même lieu différemment. La card annonçait « 3 gares à moins de 500 m »
+ * au-dessus d'une liste où Montparnasse occupait trois des cinq lignes.
+ */
+function dedupeSites<T extends LocatedStop>(
+  items: T[],
+  same: (a: LocatedStop, b: LocatedStop) => boolean,
+): T[] {
+  const sites: T[] = [];
   for (const item of items) {
-    if (!sites.some((site) => same(site, item))) sites.push(item);
+    const index = sites.findIndex((site) => same(site, item));
+    if (index === -1) {
+      sites.push(item);
+      continue;
+    }
+    // Le lieu garde la distance de son entrée la plus proche — celle déjà retenue, la liste
+    // étant triée — mais prend le plus court des noms du groupe.
+    //
+    // Sans cette reprise, Montparnasse s'affichait sous le nom de son entrée la plus
+    // proche, « Paris-Montparnasse Point Rencontre Groupes », alors que « Gare
+    // Montparnasse » figurait dans le même groupe. La longueur est une heuristique, mais
+    // elle vise juste sur ces données : les variantes longues sont les noms d'exploitation
+    // (hall, point de rencontre, précision de département), la courte est le nom d'usage.
+    if (item.name.length < sites[index].name.length) {
+      sites[index] = { ...sites[index], name: item.name };
+    }
   }
-  return sites.length;
+  return sites;
 }
 
 /**
@@ -108,8 +135,8 @@ function countSites(items: LocatedStop[], same: (a: LocatedStop, b: LocatedStop)
  */
 export class TransportDataGouvProvider implements TransportProvider {
   private static cache = new InMemoryCache<TransportStopsResult>(ONE_DAY);
-  // v2 : le résultat porte les comptages, absents des entrées de l'ancien format.
-  private static readonly CACHE_VERSION = "v2";
+  // v3 : les listes affichées sont désormais regroupées par lieu, comme les comptages.
+  private static readonly CACHE_VERSION = "v4";
   private readonly apiUrl = "https://transport.data.gouv.fr/api";
 
   async findNearbyStops(lat: number, lon: number, radiusMeters: number, countRadiusMeters = 500) {
@@ -165,7 +192,11 @@ export class TransportDataGouvProvider implements TransportProvider {
       };
     });
 
-    // Deduplicate by name+mode (same name can be both a train station and a bus stop)
+    // Premier tri, sur le nom exact et le mode. Il ne suffit pas : la même gare revient
+    // sous plusieurs noms selon le jeu de données GTFS, et sous plusieurs modes selon
+    // l'exploitant — Longueville arrive trois fois près de Mons-en-Montois, en « train »
+    // deux fois et en « métro/RER » une fois, à 24 m d'écart. Le regroupement par lieu
+    // ci-dessous s'en charge.
     const seen = new Map<string, LocatedStop>();
     for (const stop of allStops) {
       const key = `${stop.name.toLowerCase().trim()}|${stop.mode}`;
@@ -178,13 +209,17 @@ export class TransportDataGouvProvider implements TransportProvider {
     const stops = Array.from(seen.values()).sort((a, b) => a.distanceMeters - b.distanceMeters);
 
     const stationModes = new Set(["train", "rer", "metro", "métro/RER"]);
-    const stations = stops.filter((s) => stationModes.has(s.mode));
-    const regularStops = stops.filter((s) => !stationModes.has(s.mode));
 
-    // Comptés sur les listes entières, avant la troncature à 5, et sur la vraie distance :
-    // la requête porte sur un carré, dont les coins dépassent le rayon de 41 %. Les entrées
-    // qui désignent le même lieu sous d'autres noms sont regroupées (`sameStation`,
-    // `sameStop`) ; les listes affichées, elles, restent celles d'avant.
+    // Regroupement par lieu, avant la troncature à 5 : dédupliquer après aurait rendu des
+    // listes de deux ou trois lignes là où cinq lieux distincts existent. Les seuils
+    // diffèrent parce que les objets diffèrent — l'emprise d'une gare, 500 m, contre les
+    // deux poteaux d'un arrêt de bus, 150 m.
+    const stations = dedupeSites(stops.filter((s) => stationModes.has(s.mode)), sameStation);
+    const regularStops = dedupeSites(stops.filter((s) => !stationModes.has(s.mode)), sameStop);
+
+    // Comptés sur les listes entières et sur la vraie distance : la requête porte sur un
+    // carré, dont les coins dépassent le rayon de 41 %. Filtrer après le regroupement donne
+    // le même résultat que l'inverse, le représentant retenu étant le plus proche du lot.
     const withinCount = (list: LocatedStop[]) => list.filter((s) => s.distanceMeters <= countRadiusMeters);
     // Les coordonnées ne servent qu'au regroupement : elles ne sortent pas du provider.
     const toDto = ({ id, name, distanceMeters, mode }: LocatedStop) => ({ id, name, distanceMeters, mode });
@@ -194,8 +229,8 @@ export class TransportDataGouvProvider implements TransportProvider {
       nearestStations: stations.slice(0, 5).map(toDto),
       counts: {
         radiusMeters: countRadiusMeters,
-        stops: countSites(withinCount(regularStops), sameStop),
-        stations: countSites(withinCount(stations), sameStation),
+        stops: withinCount(regularStops).length,
+        stations: withinCount(stations).length,
       },
     };
   }
