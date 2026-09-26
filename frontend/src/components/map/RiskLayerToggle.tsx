@@ -1,5 +1,4 @@
 import { useId } from "react";
-import type { RiskLayerConfig } from "./riskLayers";
 
 export interface OverlayLayerConfig {
   id: string;
@@ -9,7 +8,15 @@ export interface OverlayLayerConfig {
 }
 
 interface LayerToggleProps {
-  riskLayers: RiskLayerConfig[];
+  /**
+   * Les cases du groupe « Risques ».
+   *
+   * Typées comme les autres surcouches, et non par `RiskLayerConfig` : le groupe nomme un
+   * thème, pas un transport. Les aléas du BRGM sont des rasters WMS, les zonages PPR sont
+   * du GeoJSON, et le panneau n'a besoin de connaître que l'identifiant, le libellé et la
+   * couleur — `RiskLayerConfig` reste assignable tel quel.
+   */
+  riskLayers: OverlayLayerConfig[];
   overlayLayers?: OverlayLayerConfig[];
   /** Fonds de carte, en boutons radio : ils se recouvrent au lieu de s'ajouter. */
   baseChoices?: Array<{ id: string; label: string }>;

@@ -30,19 +30,24 @@ export interface RiskLayerConfig {
 const BRGM = "https://geoservices.brgm.fr/risques";
 
 /**
- * Le service de tuiles de Géorisques, **sans son mapfile `risques`**.
+ * Ce que Géorisques ne sert plus — à ne pas retenter sans vérifier.
  *
- * `mapsref.brgm.fr/wxs/georisques/risques` — qui servait les zonages PPR d'inondation et
- * le potentiel radon par commune — est cassé côté BRGM : toute requête, `GetCapabilities`
- * comprise, répond « loadLayer(): Unknown identifier. Parsing error near (ITEMS):(line 666) ».
- * Et comme MapServer renvoie ce message en **HTTP 200 / text/html**, MapLibre le prend pour
- * une tuile et lève `InvalidStateError: The source image could not be decoded.`
+ * `mapsref.brgm.fr/wxs/georisques/risques` servait les zonages PPR d'inondation
+ * (`PPRN_ZONE_INOND`) et le potentiel radon par commune (`RADON_COMMUNE`). Il est cassé
+ * côté BRGM : toute requête, `GetCapabilities` comprise, répond « loadLayer(): Unknown
+ * identifier. Parsing error near (ITEMS):(line 666) ». Et comme MapServer renvoie ce
+ * message en **HTTP 200 / text/html**, MapLibre le prend pour une tuile et lève
+ * `InvalidStateError: The source image could not be decoded.`
  *
- * Le mapfile `rapport`, lui, répond : c'est celui retenu ici. Aucun des deux ne publie plus
- * de couche radon — la case a donc été retirée du panneau, la classe de potentiel radon
- * restant affichée en texte dans la card (elle vient de l'API REST, qui fonctionne).
+ * Les deux couches ont été remplacées différemment :
+ * - **inondation** → les zonages PPR sont repris au Géoportail de l'Urbanisme, en
+ *   vectoriel, par `server-modules/risks/infrastructure/gpu-flood-zone.provider.ts`. Le
+ *   détour par les surfaces inondables des TRI (`DI_COVADIS_ALEA_SYNT`, mapfile `rapport`)
+ *   a été abandonné : les TRI ne couvrent que les agglomérations, et ignoraient par
+ *   exemple tous les PPRI de la vallée de la Bièvre.
+ * - **radon** → aucun service de tuiles ne le publie plus ; la case a disparu du panneau
+ *   et la classe de potentiel reste affichée en texte dans la card, via l'API REST.
  */
-const GEORISQUES_RAPPORT = "https://mapsref.brgm.fr/wxs/georisques/rapport";
 
 export const RISK_LAYERS: RiskLayerConfig[] = [
   {
@@ -55,32 +60,6 @@ export const RISK_LAYERS: RiskLayerConfig[] = [
     // Mesuré à Montauban, en plein aléa argile : plein de z6 à z16, vide dès z17.
     minzoom: 6,
     maxzoom: 16,
-  },
-  /**
-   * Les surfaces inondables des TRI, et non plus les zonages PPR : le mapfile qui servait
-   * ces derniers est mort (voir `GEORISQUES_RAPPORT`).
-   *
-   * `DI_COVADIS_ALEA_SYNT` est la couche groupée — tous aléas (débordement de cours d'eau,
-   * ruissellement, submersion marine) et toutes fréquences confondus. La demander en bloc
-   * évite d'empiler dix sources pour un seul aplat bleu.
-   *
-   * Sa couverture n'est pas nationale : les TRI ne portent que sur les territoires à risque
-   * important d'inondation, c'est-à-dire les agglomérations. Vérifié sur tuile réelle :
-   * données à Bordeaux, Paris, Lyon, Tours, Nevers, Quimper, Arles ; rien à Guéret, Aubusson
-   * ou dans le Cantal rural. D'où le libellé explicite « (TRI) » — une case « zones
-   * inondables » restée vide laisserait croire à l'absence de risque.
-   */
-  {
-    id: "risk-inondation",
-    label: "Surfaces inondables (TRI)",
-    riskCode: "inondation",
-    wmsBaseUrl: GEORISQUES_RAPPORT,
-    wmsLayers: "DI_COVADIS_ALEA_SYNT",
-    color: "#3498db",
-    // Mesuré à Tours, Bordeaux et Lyon : plein de z9 à z14, vide de part et d'autre —
-    // soit exactement les échelles 1 500 000 et 30 000 déclarées par le service.
-    minzoom: 9,
-    maxzoom: 14,
   },
   {
     id: "risk-seisme",

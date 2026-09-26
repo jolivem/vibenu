@@ -14,7 +14,86 @@ import type { SchoolSectorService } from "../../school-sector/application/school
 import type { SecurityService } from "../../security/application/security.service";
 import type { CommuneEquipmentService } from "../../commune-equipment/application/commune-equipment.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
-import type { AnalysisMode, LocationAnalysisDto } from "../../../server-shared/types/location-analysis.dto";
+import type { FloodWindow } from "../../risks/domain/risk.types";
+import type {
+  AnalysisMode,
+  GeoJsonGeometryDto,
+  LocationAnalysisDto,
+} from "../../../server-shared/types/location-analysis.dto";
+
+const METERS_PER_DEGREE_LAT = 111_320;
+
+/**
+ * Rayon de la fenêtre interrogée pour les zonages PPR, en mode adresse.
+ *
+ * 6 km couvrent largement ce que la carte montre au zoom d'arrivée (~5,7 km de large sur
+ * un écran large) et laissent de la marge pour dézoomer d'un cran sans requête nouvelle.
+ */
+const FLOOD_RADIUS_M = 6_000;
+
+/** Demi-côté maximal en mode commune : Arles fait 759 km², la fenêtre doit rester bornée. */
+const FLOOD_COMMUNE_MAX_HALF_SPAN_M = 10_000;
+
+/**
+ * Une fenêtre en degrés autour d'un point, de rayon **métrique**.
+ *
+ * Le facteur `cos(latitude)` n'est pas une coquetterie : une boîte de ±0,035° fait 7,8 km
+ * de haut mais seulement 5,1 km de large à la latitude de Paris. Sans lui, la fenêtre est
+ * un tiers trop étroite là où la France est la plus peuplée.
+ */
+function windowAround(lat: number, lon: number, radiusM: number): FloodWindow {
+  const dLat = radiusM / METERS_PER_DEGREE_LAT;
+  const dLon = radiusM / (METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180));
+  return [lon - dLon, lat - dLat, lon + dLon, lat + dLat];
+}
+
+/**
+ * La fenêtre d'une commune : l'emprise de son contour, élargie au minimum puis bornée.
+ *
+ * Une boîte fixe autour du centroïde laisserait des pans entiers d'une grande commune sans
+ * zonage affiché, alors que le contour est déjà chargé — autant s'en servir.
+ *
+ * Les deux bornes règlent chacune un travers observé :
+ * - **le plancher**, parce que l'emprise d'une petite commune est plus étroite que la
+ *   fenêtre d'une adresse : Saint-Cyr-l'École ne rendait que 2 des 4 zonages que la même
+ *   commune montre en mode adresse. La vue d'ensemble ne doit pas être plus pauvre que la
+ *   vue rapprochée, et une rivière ne s'arrête pas à la limite communale ;
+ * - **le plafond**, pour qu'une commune démesurée — Arles fait 759 km² — ne fasse pas
+ *   exploser la requête.
+ */
+function windowForContour(contour: GeoJsonGeometryDto, lat: number, lon: number): FloodWindow {
+  let west = Infinity;
+  let south = Infinity;
+  let east = -Infinity;
+  let north = -Infinity;
+
+  const visit = (coords: unknown): void => {
+    if (!Array.isArray(coords)) return;
+    if (typeof coords[0] === "number" && typeof coords[1] === "number") {
+      const [x, y] = coords as [number, number];
+      if (x < west) west = x;
+      if (x > east) east = x;
+      if (y < south) south = y;
+      if (y > north) north = y;
+      return;
+    }
+    for (const c of coords) visit(c);
+  };
+  visit(contour.coordinates);
+
+  if (!Number.isFinite(west)) return windowAround(lat, lon, FLOOD_RADIUS_M);
+
+  const midLat = (south + north) / 2;
+  const midLon = (west + east) / 2;
+  const min = windowAround(midLat, midLon, FLOOD_RADIUS_M);
+  const max = windowAround(midLat, midLon, FLOOD_COMMUNE_MAX_HALF_SPAN_M);
+  return [
+    Math.max(Math.min(west, min[0]), max[0]),
+    Math.max(Math.min(south, min[1]), max[1]),
+    Math.min(Math.max(east, min[2]), max[2]),
+    Math.min(Math.max(north, min[3]), max[3]),
+  ];
+}
 
 interface Dependencies {
   addressProvider: AddressProvider;
@@ -84,7 +163,20 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         ? this.dependencies.communeEquipmentService.getCommuneEquipment(contourCitycode)
         : Promise.resolve(null);
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment] =
+    // Les zonages PPR, sur une fenêtre et non sur un point : la carte montre les zones
+    // *autour* de l'adresse, pas seulement celle qui la contient. En mode commune, la
+    // fenêtre suit le contour — d'où le chaînage sur `contourPromise`, créée plus haut.
+    const floodZonesPromise = (
+      mode === "commune"
+        ? contourPromise.then((contour) =>
+            contour
+              ? windowForContour(contour, input.lat, input.lon)
+              : windowAround(input.lat, input.lon, FLOOD_RADIUS_M),
+          )
+        : Promise.resolve(windowAround(input.lat, input.lon, FLOOD_RADIUS_M))
+    ).then((window) => this.dependencies.riskService.getFloodZones(window));
+
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment, floodZones] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
@@ -100,6 +192,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         this.dependencies.securityService.getSecurityData(codeInsee),
         this.dependencies.electionsService.getMunicipalesData(codeInsee),
         communeEquipmentPromise,
+        floodZonesPromise,
       ]);
 
     const address = {
@@ -126,7 +219,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         ...(communeContour ? { communeContour } : {}),
       },
       mobility,
-      risks,
+      risks: { ...risks, floodZones },
       realEstate,
       airQuality,
       neighborhood,

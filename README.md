@@ -65,7 +65,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | Parcelle cadastrale | GeoJSON (polygone) | API Carto IGN | toujours visible |
 | Prix immobiliers (DVF) | GeoJSON (polygones colorés par prix/m²) | DVF (PostgreSQL) | oui |
 | Retrait-gonflement argiles | WMS raster | BRGM (geoservices.brgm.fr) | oui |
-| Surfaces inondables (TRI) | WMS raster | Géorisques (mapsref.brgm.fr, mapfile `rapport`) | oui |
+| Zones inondables (PPR) | GeoJSON (polygones) | Géoportail de l'Urbanisme — SUP `PM1`, via le WFS Géoplateforme | oui, si des zonages sont publiés |
 | Zonage sismique | WMS raster | BRGM | oui |
 | Zone démographique (IRIS) | GeoJSON (polygone) | INSEE IRIS (PostgreSQL) | oui |
 | Contour de commune | GeoJSON (polygone) | API Découpage administratif IGN (geo.api.gouv.fr) | auto si recherche par nom de commune |
@@ -172,6 +172,7 @@ L'interprétation finale est laissée à l'utilisateur, complétée optionnellem
 | `POST /api/location/card-insights` | Mini-synthèses des cards (corps = `LocationAnalysisDto`, réponse = `{ insights, generatedAt, cached }`). Répond **toujours** 200 ou 400 : toute défaillance LLM donne `insights: {}` |
 | `GET /api/health` | Sonde de vivacité |
 | `GET /api/debug/pois` | Inspection des POIs voisins (debug) |
+| `GET /api/debug/flood-zones?lat=...&lon=...` | Sonde des zonages PPR d'inondation : plans retenus, sommets, poids, latence (debug) |
 
 ## Élections (Présidentielle 2022, 1er tour)
 
@@ -419,6 +420,29 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - **Composition par métrique** : pour un point donné, on prend la station la plus proche **disposant de chaque indicateur**. Toutes les stations ne mesurent pas tout (l'héliographe n'équipe que ~30 stations en France) → rayon élargi pour l'ensoleillement (100 km) vs température/précipitations (30 km). La station affichée est celle de la température (la plus proche en général).
 - Cache 30 jours par coordonnées arrondies (~11 km) — en pratique les normales ne bougent jamais donc le cache n'expire utilement qu'au redémarrage du serveur
 - **Setup requis** : appliquer la migration `008-climate-station-normales.sql` puis lancer `python scripts/import_climate_stations.py` (téléchargement + agrégation 30 ans, ~10 min)
+
+### Zones inondables — zonages PPR (Géoportail de l'Urbanisme)
+
+- **Source** : les PPR sont publiés comme **servitudes d'utilité publique de catégorie `PM1`**
+  au Géoportail de l'Urbanisme, servies par le WFS de la Géoplateforme
+  (`data.geopf.fr/wfs/ows`, couches `wfs_sup:assiette_sup_s` et `wfs_sup:generateur_sup_s`)
+- **Pourquoi pas Géorisques** : le mapfile `risques` de `mapsref.brgm.fr`, qui servait
+  `PPRN_ZONE_INOND`, est cassé côté BRGM — toute requête répond une erreur de parsing
+  MapServer en HTTP 200 `text/html`. Les surfaces inondables des TRI (mapfile `rapport`,
+  `DI_COVADIS_ALEA_SYNT`) ont servi d'intérim mais ne couvrent que les agglomérations
+- **Pourquoi pas apicarto** : `apicarto.ign.fr/api/gpu/assiette-sup-s` expose la même
+  donnée, en 11,2 s à Bordeaux contre 1,4 s par le WFS (mesuré, fenêtre de 6 km)
+- **Deux requêtes** : les assiettes portent la géométrie mais **pas** le code d'aléa, qui
+  n'existe que sur le générateur — d'où la jointure par `idgen`. Sans elle, filtrer les PPR
+  d'inondation sur le libellé rate 15 des 17 zonages de Vaison-la-Romaine, nommés d'après
+  leur rivière (`OUVEZE_SEGURET`)
+- **Traitement** : filtrage par `code_alea` (`11` = inondation), rejet des polygones hors
+  fenêtre, simplification Douglas-Peucker à 3 m avec budget de 40 000 sommets — les emprises
+  brutes pèsent 9 Mo à Bordeaux, 480 Ko après traitement
+- Couverture tributaire des SUP effectivement téléversées par chaque département : une
+  couche vide ne signifie pas « pas de PPR », d'où la case masquée et la consigne explicite
+- Licence : Licence Ouverte Etalab 2.0
+- Aucun import : lecture à la volée, cache mémoire 7 jours par maille de ~1 km
 
 ### Élections (Présidentielle 2022 T1)
 - **Source** : Ministère de l'Intérieur — [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/)

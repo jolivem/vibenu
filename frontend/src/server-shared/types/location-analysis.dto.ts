@@ -69,6 +69,20 @@ export interface RiskCategoryDto {
 export interface RiskAnalysisDto {
   level: RiskLevel;
   categories: RiskCategoryDto[];
+  /**
+   * Emprises des PPR d'inondation autour du lieu, pour la carte des risques.
+   *
+   * Optionnel, et pas seulement par prudence : les pages commune SEO construisent un
+   * `RiskAnalysisDto` à partir du seul rapport Géorisques, sans géométrie — elles listent
+   * les risques en texte et n'ont pas de carte où les poser.
+   */
+  floodZones?: FloodZoneDto[];
+}
+
+/** Une assiette de PPR inondation : le nom du plan, et son emprise. */
+export interface FloodZoneDto {
+  label: string;
+  geometry: GeoJsonGeometryDto;
 }
 
 export interface DvfTransactionFeatureDto {

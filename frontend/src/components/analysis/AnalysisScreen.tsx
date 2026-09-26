@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
 import { useCardInsights } from "@/features/location-analysis/useCardInsights";
-import { DVF_LAYER_ID, IRIS_LAYER_ID, SCHOOL_SECTOR_LAYER_ID, Map } from "@/components/map/Map";
+import { DVF_LAYER_ID, FLOOD_ZONES_LAYER_ID, IRIS_LAYER_ID, SCHOOL_SECTOR_LAYER_ID, Map } from "@/components/map/Map";
 import { LazyMap } from "@/components/map/LazyMap";
 import { THEMATIC_BASEMAP } from "@/components/map/basemaps";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
@@ -37,8 +37,9 @@ import { Brand } from "@/components/Brand";
 import { FEATURES } from "@/lib/site-features";
 import { seoPageForCitycode } from "@/lib/commune-routing";
 
-/** Couche d'aléa allumée d'office sur la carte des risques : la seule à couvrir tout le
- *  territoire avec un dégradé lisible. Les trois autres restent derrière leur case. */
+/** Couche d'aléa allumée d'office quand il n'y a pas de zonage inondation à montrer : la
+ *  seule à couvrir tout le territoire avec un dégradé lisible. Les autres restent derrière
+ *  leur case. */
 const DEFAULT_RISK_LAYER = "risk-argile";
 
 const LOCATOR_MAP_HEIGHT = "420px";
@@ -413,10 +414,23 @@ export function AnalysisScreen() {
                           lon={data.map.center.lon}
                           label={data.address.label}
                           risks={data.risks}
+                          floodZones={data.risks.floodZones}
                           communeContour={data.map.communeContour}
                           basemap={THEMATIC_BASEMAP}
-                          initialLayers={[DEFAULT_RISK_LAYER]}
-                          layerToggleHint="Cochez pour afficher les zones sur la carte."
+                          // Le zonage inondation passe devant l'argile quand il existe :
+                          // c'est l'aléa le plus localisé, donc le plus informatif. Deux
+                          // aplats superposés se mélangeraient en bouillie, d'où l'un ou
+                          // l'autre et non les deux.
+                          initialLayers={
+                            data.risks.floodZones?.length
+                              ? [FLOOD_ZONES_LAYER_ID]
+                              : [DEFAULT_RISK_LAYER]
+                          }
+                          layerToggleHint={
+                            data.risks.floodZones?.length
+                              ? "Cochez pour afficher les zones sur la carte."
+                              : "Cochez pour afficher les zones sur la carte. Aucun zonage PPR d'inondation n'est publié ici."
+                          }
                           height={THEMATIC_MAP_HEIGHT}
                         />
                       </LazyMap>

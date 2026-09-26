@@ -1,10 +1,24 @@
 import type { RiskService } from "./risk.service";
-import type { RiskAnalysis } from "../domain/risk.types";
+import type { FloodWindow, FloodZone, RiskAnalysis } from "../domain/risk.types";
 import type { RiskProvider, RiskScope } from "../infrastructure/risk.provider";
+import type { FloodZoneProvider } from "../infrastructure/flood-zone.provider";
 import type { RiskCategoryLevel } from "../../../server-shared/domain/common.types";
 
 export class RiskServiceImpl implements RiskService {
-  constructor(private readonly riskProvider: RiskProvider) {}
+  /**
+   * `floodZoneProvider` est optionnel : les pages commune SEO construisent ce service pour
+   * le seul rapport Géorisques, sans carte à alimenter. Sans provider, `getFloodZones`
+   * rend une liste vide au lieu d'exiger un branchement inutile.
+   */
+  constructor(
+    private readonly riskProvider: RiskProvider,
+    private readonly floodZoneProvider?: FloodZoneProvider,
+  ) {}
+
+  async getFloodZones(window: FloodWindow): Promise<FloodZone[]> {
+    if (!this.floodZoneProvider) return [];
+    return this.floodZoneProvider.getFloodZones(window);
+  }
 
   async getRiskData(lat: number, lon: number, scope?: RiskScope): Promise<RiskAnalysis> {
     const categories = await this.riskProvider.getLocationRisks(lat, lon, scope);

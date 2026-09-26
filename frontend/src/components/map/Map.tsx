@@ -17,14 +17,32 @@ import {
 } from "./basemaps";
 import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
-import type { CadastreParcelDto, DvfTransactionFeatureDto, GeoJsonGeometryDto, RiskAnalysisDto } from "@/types/location-analysis";
+import type { CadastreParcelDto, DvfTransactionFeatureDto, FloodZoneDto, GeoJsonGeometryDto, RiskAnalysisDto } from "@/types/location-analysis";
 import { formatFr } from "@/lib/format";
 
 /** Exportés pour que les cartes thématiques puissent les passer en `initialLayers`. */
 export const DVF_LAYER_ID = "dvf-transactions";
 export const IRIS_LAYER_ID = "iris-boundary";
 export const SCHOOL_SECTOR_LAYER_ID = "school-sector";
+/**
+ * Les zonages PPR d'inondation. Nommé hors de l'espace `risk-*` **exprès** : ces ids sont
+ * réservés aux rasters WMS de `RISK_LAYERS`, sur lesquels `applyLayerVisibility` appelle
+ * `setLayoutProperty` sans garde `getLayer`. Une couche vectorielle qui s'y glisserait
+ * lèverait une erreur au premier clic.
+ */
+export const FLOOD_ZONES_LAYER_ID = "flood-zones";
 const COMMUNE_LAYER_ID = "commune-contour";
+
+/**
+ * Zoom minimal des zonages PPR.
+ *
+ * Ils sont chargés sur une fenêtre de 6 km autour du lieu, donc leur bord est une **coupe
+ * rectiligne** et non une limite réelle. Au zoom d'arrivée (14) la fenêtre dépasse
+ * l'écran, mais en dézoomant la coupe entre dans le cadre : un liseré bleu parfaitement
+ * droit se lit comme un bug de données. Même arbitrage que les créneaux d'échelle des
+ * couches WMS — mieux vaut ne rien montrer que montrer une limite fausse.
+ */
+const FLOOD_ZONES_MINZOOM = 12;
 
 /**
  * Premier calque applicatif de la pile, quelle que soit la configuration : les couches
@@ -74,6 +92,7 @@ function applyLayerVisibility(m: MapLibreMap, visibleLayers: Set<string>): void 
     [DVF_LAYER_ID, DVF_LAYER_ID],
     [IRIS_LAYER_ID, IRIS_LAYER_ID],
     [SCHOOL_SECTOR_LAYER_ID, SCHOOL_SECTOR_LAYER_ID],
+    [FLOOD_ZONES_LAYER_ID, FLOOD_ZONES_LAYER_ID],
   ];
 
   for (const [toggleId, layerPrefix] of pairs) {
@@ -123,6 +142,14 @@ interface MapProps {
   communeContour?: GeoJsonGeometryDto | null;
   schoolSector?: GeoJsonGeometryDto | null;
   risks?: RiskAnalysisDto;
+  /**
+   * Zonages PPR d'inondation, en surcouche de la carte des risques.
+   *
+   * Sans valeur par défaut, et surtout pas `= []` : ce défaut fabriquerait un tableau neuf
+   * à chaque rendu, donc une carte détruite et reconstruite à chaque rendu du parent —
+   * exactement le piège documenté sur `NO_TRANSPORTS`.
+   */
+  floodZones?: FloodZoneDto[];
   onReady?: (map: MapLibreMap) => void;
   height?: string;
   showLayerToggle?: boolean;
@@ -162,7 +189,7 @@ interface MapProps {
   zoom?: number;
 }
 
-export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, onReady, height = "400px", showLayerToggle = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
+export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, floodZones, onReady, height = "400px", showLayerToggle = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -207,13 +234,22 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
 
   // La couche WMS "Zonage sismique" n'apporte rien quand le risque est faible/absent
   // (la France entière est en zone sismique 1+ : Géorisques renvoie toujours "Existant").
-  const availableRiskLayers = useMemo(() => {
+  const availableRiskLayers = useMemo<OverlayLayerConfig[]>(() => {
     const seismeLevel = risks?.categories.find((c) => c.code === "seisme")?.level;
-    return RISK_LAYERS.filter((layer) => {
+    const layers: OverlayLayerConfig[] = RISK_LAYERS.filter((layer) => {
       if (layer.riskCode !== "seisme") return true;
       return seismeLevel === "modéré" || seismeLevel === "élevé";
     });
-  }, [risks]);
+
+    // La case n'existe que s'il y a des zones à montrer. Une case cochable et vide se lit
+    // comme « aucun risque d'inondation », alors que la couverture du Géoportail de
+    // l'Urbanisme dépend des servitudes effectivement téléversées par chaque département.
+    // L'absence est dite par la consigne du panneau, pas par une case morte.
+    if (floodZones?.length) {
+      layers.push({ id: FLOOD_ZONES_LAYER_ID, label: "Zones inondables (PPR)", color: "#3498db" });
+    }
+    return layers;
+  }, [risks, floodZones]);
 
   const overlayLayers = useMemo<OverlayLayerConfig[]>(() => {
     const layers: OverlayLayerConfig[] = [];
@@ -482,6 +518,50 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       );
     }
 
+    // Les zonages PPR d'inondation : une seule source, un `Feature` par assiette, parce
+    // que le nom du plan doit rester attaché à sa géométrie pour la popup. Les fusionner
+    // en une géométrie unique rendrait l'aplat plus léger mais muet.
+    const floodZoneSources: Record<string, maplibregl.SourceSpecification> = {};
+    const floodZoneLayers: maplibregl.LayerSpecification[] = [];
+
+    if (floodZones?.length) {
+      floodZoneSources[FLOOD_ZONES_LAYER_ID] = {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: floodZones.map((zone) => ({
+            type: "Feature" as const,
+            geometry: zone.geometry as GeoJSON.Geometry,
+            properties: { label: zone.label },
+          })),
+        },
+      };
+      floodZoneLayers.push(
+        {
+          id: `${FLOOD_ZONES_LAYER_ID}-fill`,
+          type: "fill",
+          source: FLOOD_ZONES_LAYER_ID,
+          minzoom: FLOOD_ZONES_MINZOOM,
+          paint: {
+            "fill-color": "#3498db",
+            "fill-opacity": 0.3,
+          },
+          layout: { visibility: "none" },
+        },
+        {
+          id: `${FLOOD_ZONES_LAYER_ID}-outline`,
+          type: "line",
+          source: FLOOD_ZONES_LAYER_ID,
+          minzoom: FLOOD_ZONES_MINZOOM,
+          paint: {
+            "line-color": "#1f6fb2",
+            "line-width": 1.5,
+          },
+          layout: { visibility: "none" },
+        },
+      );
+    }
+
     if (irisGeojson) {
       try {
         const geom = JSON.parse(irisGeojson);
@@ -532,6 +612,10 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     const overlaySpecs: maplibregl.LayerSpecification[] = [
       ...baseOverlayLayers,
       ...wmsLayers,
+      // Juste après les aléas raster : les zonages PPR sont de même nature — une emprise
+      // de risque — et doivent donc rester sous les surcouches qui désignent un objet
+      // précis (transaction, quartier, parcelle), lesquelles se liraient mal sous un aplat.
+      ...floodZoneLayers,
       ...dvfLayers,
       ...irisLayers,
       ...schoolSectorLayers,
@@ -559,6 +643,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           ...baseStyle.sources,
           ...baseOverlaySources,
           ...wmsSources,
+          ...floodZoneSources,
           ...dvfSources,
           ...irisSources,
           ...schoolSectorSources,
@@ -675,13 +760,36 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       });
     }
 
+    // Nommer le plan au clic : un aplat bleu ne dit pas *lequel* des PPR concerne le lieu,
+    // et c'est précisément ce que le lecteur doit pouvoir aller vérifier.
+    if (floodZones?.length) {
+      const m = map.current;
+      m.on("click", `${FLOOD_ZONES_LAYER_ID}-fill`, (e) => {
+        if (!e.features?.length) return;
+        const labels = [...new Set(e.features.map((f) => String(f.properties?.label ?? "")))]
+          .filter(Boolean)
+          .map((l) => `<div>${l}</div>`)
+          .join("");
+        new maplibregl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(`<strong>Zone inondable</strong>${labels}`)
+          .addTo(m);
+      });
+      m.on("mouseenter", `${FLOOD_ZONES_LAYER_ID}-fill`, () => {
+        m.getCanvas().style.cursor = "pointer";
+      });
+      m.on("mouseleave", `${FLOOD_ZONES_LAYER_ID}-fill`, () => {
+        m.getCanvas().style.cursor = "";
+      });
+    }
+
     return () => {
       if (map.current) {
         map.current.remove();
         map.current = null;
       }
     };
-  }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, zoom]);
+  }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, floodZones, zoom]);
 
   // Répercute les clics sur les cases. Le cas « la carte n'existe pas encore » est traité par
   // l'effet d'init lui-même, pas ici : cet effet ne se relancerait pas, ses dépendances ne
