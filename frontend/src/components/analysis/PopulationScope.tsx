@@ -51,8 +51,8 @@ export function PopulationScope({ demographics, mode, children }: Props) {
         {nomCommune && <span className="section-scope-kicker"> — {nomCommune}</span>}
       </p>
       <p className="section-scope-text">
-        Toutes les données ci-dessous décrivent ce quartier IRIS, le découpage de
-        l&apos;INSEE en zones d&apos;environ 2 000 habitants
+        Toutes les données ci-dessous décrivent ce quartier IRIS, un découpage statistique
+        en zones d&apos;environ 2 000 habitants
         {children ? ", dont la carte montre les limites." : "."}
       </p>
 

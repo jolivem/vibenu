@@ -42,7 +42,7 @@ const sources = [
   {
     name: "Géorisques",
     issuer: "BRGM · Ministère de la Transition écologique",
-    desc: "Risques naturels et technologiques : inondation, retrait-gonflement des argiles, séisme, radon, sites industriels.",
+    desc: "Dix-huit aléas lus à l'adresse : inondation, retrait-gonflement des argiles, séisme, radon, mouvements de terrain, feu de forêt, installations classées, pollution des sols, rupture de barrage, risque minier…",
   },
   {
     name: "Cadastre & GPU",
@@ -70,6 +70,9 @@ const sources = [
     desc: "Températures, précipitations et ensoleillement mois par mois sur la période de référence 1991-2020, par station.",
   },
   {
+    // Retirée quand `NEXT_PUBLIC_HIDE_AIR_QUALITY` coupe la card : cette liste décrit ce
+    // que le visiteur verra, pas ce que le code sait interroger.
+    id: "air",
     name: "Qualité de l'air",
     issuer: "Atmo France · LCSQA",
     desc: "Indice quotidien de qualité de l'air et stations de mesure les plus proches.",
@@ -83,6 +86,11 @@ const sources = [
     name: "Résultats électoraux",
     issuer: "Ministère de l'Intérieur / data.gouv.fr",
     desc: "Municipales 2026 et présidentielle 2022, agrégés à la commune et à l'arrondissement.",
+  },
+  {
+    name: "Adresses & fonds de carte",
+    issuer: "IGN · Géoplateforme (BAN)",
+    desc: "Recherche d'adresse, géocodage, plans de rue vectoriels, photographies aériennes et ombrage LiDAR du relief.",
   },
   {
     name: "Cartes anciennes",
@@ -100,6 +108,8 @@ export default function AboutPage() {
   // En PRO, la page /a-propos n'a pas de contenu adapté (copy spécifique
   // ClaireAdresse). On 404 jusqu'à ce qu'un contenu PRO soit rédigé.
   if (!FEATURES.hasAboutPage) notFound();
+
+  const shownSources = sources.filter((s) => s.id !== "air" || FEATURES.showAirQuality);
 
   return (
     <main className="landing">
@@ -166,7 +176,7 @@ export default function AboutPage() {
           <span className="section-meta">Données ouvertes</span>
         </div>
         <div className="about-sources">
-          {sources.map((s) => (
+          {shownSources.map((s) => (
             <article key={s.name} className="about-source">
               <h3>{s.name}</h3>
               <span className="about-source-issuer">{s.issuer}</span>
@@ -189,9 +199,16 @@ export default function AboutPage() {
             à une source officielle vérifiable. Les prix au m² proviennent uniquement de
             transactions réelles enregistrées chez les notaires (DVF). Les risques sont ceux
             publiés par les services de l&apos;État. Les zonages d&apos;urbanisme correspondent à
-            ceux téléversés par les communes sur le Géoportail de l&apos;Urbanisme. La synthèse
-            en tête d&apos;analyse est rédigée automatiquement à partir de ces mêmes chiffres : elle
-            les reformule, elle n&apos;en ajoute aucun.
+            ceux téléversés par les communes sur le Géoportail de l&apos;Urbanisme.
+          </p>
+          <p>
+            Les phrases « En bref », sous les titres de rubriques, sont les seules à être
+            rédigées par un modèle de langage. Le partage des rôles y est strict : les
+            tendances, les écarts à la moyenne nationale et les valeurs extrêmes sont calculés
+            par le programme, à partir de seuils explicites ; le modèle ne reçoit que ces
+            conclusions — « en baisse de 31 % », jamais dix nombres bruts — et les met en
+            français. Il reformule, il ne calcule pas et n&apos;ajoute aucun chiffre. Quand il
+            n&apos;est pas disponible, la rubrique s&apos;affiche simplement sans sa phrase.
           </p>
           <p>
             Nous indiquons systématiquement la date de mise à jour de chaque source. Lorsque la

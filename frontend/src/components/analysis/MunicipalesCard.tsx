@@ -163,10 +163,6 @@ export function MunicipalesCard({
           présentées sans étiquette.
         </p>
       )}
-      <p className="elections-footnote">
-        Source : Ministère de l&apos;Intérieur · Résultats des élections municipales des 15
-        et 22 mars 2026.
-      </p>
     </section>
   );
 }

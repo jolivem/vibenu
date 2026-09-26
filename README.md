@@ -65,9 +65,8 @@ L'utilisateur saisit une adresse en France et obtient :
 | Parcelle cadastrale | GeoJSON (polygone) | API Carto IGN | toujours visible |
 | Prix immobiliers (DVF) | GeoJSON (polygones colorés par prix/m²) | DVF (PostgreSQL) | oui |
 | Retrait-gonflement argiles | WMS raster | BRGM (geoservices.brgm.fr) | oui |
-| Zones inondables (PPR) | WMS raster | Géorisques (mapsref.brgm.fr) | oui |
+| Surfaces inondables (TRI) | WMS raster | Géorisques (mapsref.brgm.fr, mapfile `rapport`) | oui |
 | Zonage sismique | WMS raster | BRGM | oui |
-| Potentiel radon | WMS raster | Géorisques | oui |
 | Zone démographique (IRIS) | GeoJSON (polygone) | INSEE IRIS (PostgreSQL) | oui |
 | Contour de commune | GeoJSON (polygone) | API Découpage administratif IGN (geo.api.gouv.fr) | auto si recherche par nom de commune |
 | Époques anciennes (Cassini, état-major, carte de 1950, photos aériennes 1950-65 / 1965-80 / 2000-05) | WMTS raster | Géoplateforme IGN (data.geopf.fr) | frise d'époques, card « Le lieu autrefois » |

@@ -6,6 +6,13 @@ import { FEATURES_COUNT_LABEL, LANDING_FEATURES } from "@/components/landing/fea
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
+/**
+ * La réponse « D'où viennent les données » énumère ce qui s'affiche réellement : la
+ * mention d'Atmo suit donc `showAirQuality`, comme le titre de la section
+ * « Climat & qualité de l'air » dans `components/analysis/sections.ts`. L'annoncer
+ * quand le kill-switch coupe la card serait la promettre pour rien — et cette réponse
+ * part aussi en `FAQPage` JSON-LD, donc potentiellement en extrait de résultat Google.
+ */
 const faqItems = [
   {
     question: `${BRANDING.name} est-il gratuit ?`,
@@ -15,12 +22,22 @@ const faqItems = [
   {
     question: "D'où viennent les données affichées ?",
     answer:
-      "Toutes les informations proviennent de sources publiques officielles : DVF (DGFiP) pour les prix immobiliers, Géorisques pour les risques, le cadastre et le Géoportail de l'Urbanisme pour les parcelles et le PLU, l'INSEE pour la population et les logements, transport.data.gouv.fr pour les transports, Météo-France pour le climat, Atmo pour la qualité de l'air, le SSMSI pour la délinquance, le ministère de l'Intérieur pour les élections et l'IGN pour les cartes anciennes. Chaque chiffre reste rattaché à sa source et à sa date de publication.",
+      "Tous les chiffres proviennent de sources publiques officielles : DVF (DGFiP) pour les prix immobiliers, Géorisques pour les risques naturels et technologiques, l'IGN et le Géoportail de l'Urbanisme pour les parcelles et le PLU, l'INSEE pour la population, les revenus, l'emploi et les logements, la Base Permanente des Équipements de l'INSEE et OpenStreetMap pour les commerces et services de proximité, transport.data.gouv.fr pour les transports, Météo-France pour le climat, " +
+      (FEATURES.showAirQuality ? "Atmo France pour la qualité de l'air, " : "") +
+      "le SSMSI pour la délinquance, le ministère de l'Intérieur pour les élections, la Ville de Paris pour la carte scolaire, et l'IGN pour la recherche d'adresse, les fonds de carte et les vues aériennes anciennes. Chaque chiffre reste rattaché à sa source et à sa date de publication. Seules les phrases « En bref », sous les titres de rubriques, sont rédigées par un modèle de langage : il reformule ces mêmes chiffres, il n'en invente aucun.",
   },
   {
     question: "Quelles adresses puis-je analyser ?",
     answer:
       "N'importe quelle adresse située en France métropolitaine et dans les départements et régions d'outre-mer, du studio parisien à la maison en province.",
+  },
+  {
+    question: "Puis-je analyser une commune entière ?",
+    answer:
+      "Oui : saisissez un nom de commune au lieu d'une adresse. L'analyse passe à l'échelle communale — prix au m² sur toute la commune, population, sécurité, élections, climat et risques naturels. Ce qui n'a de sens qu'en un point précis disparaît alors : parcelle cadastrale, zone PLU, commerces à distance de marche et secteur de collège." +
+      (FEATURES.hasSEOPages
+        ? " Paris, Lyon et Marseille font exception : chercher la ville entière ouvre une page qui liste ses arrondissements, car l'INSEE et les bases d'équipements ne publient leurs chiffres qu'arrondissement par arrondissement — un prix moyen « Paris » n'existe pas dans ces données. Chaque arrondissement a ensuite sa propre page et son analyse détaillée, accessibles depuis « Explorer par commune »."
+        : ""),
   },
   {
     question: "Combien de temps prend une analyse ?",

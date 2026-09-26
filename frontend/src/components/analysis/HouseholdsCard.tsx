@@ -34,12 +34,8 @@ export function HouseholdsCard({ demographics, mode, insight }: Props) {
       <HouseholdsCharts view={view} />
 
       <p className="elections-footnote">
-        La composition des foyers, recensée par l&apos;INSEE en 2021.
-      </p>
-      <p className="elections-footnote">
-        Source : INSEE · Recensement de la population 2021, base couples-familles-ménages
-        à l&apos;IRIS. Un ménage est l&apos;ensemble des personnes d&apos;un même
-        logement, qu&apos;elles aient ou non un lien de parenté.
+        La composition des foyers, recensée en 2021. Un ménage est l&apos;ensemble des
+        personnes d&apos;un même logement, qu&apos;elles aient ou non un lien de parenté.
       </p>
     </section>
   );

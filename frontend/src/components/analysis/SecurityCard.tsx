@@ -155,10 +155,6 @@ export function SecurityCard({
         pas publiés, pour ne pas permettre d&apos;identifier les personnes concernées ; ils
         apparaissent ici en fourchette.
       </p>
-      <p className="elections-footnote">
-        Source : Ministère de l&apos;Intérieur (SSMSI) · Bases statistiques de la délinquance
-        enregistrée.
-      </p>
     </section>
   );
 }

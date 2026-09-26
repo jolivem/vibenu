@@ -30,20 +30,21 @@ export function CommuneEquipmentCard({ equipment }: { equipment: CommuneEquipmen
       ))}
 
       <p className="elections-footnote">
-        Équipements recensés dans la commune ({formatFr(equipment.population)} habitants),
-        et leur densité pour 10 000 habitants comparée à celle de la France entière.
+        Équipements recensés dans la commune en 2025 ({formatFr(equipment.population)}{" "}
+        habitants), et leur densité pour 10 000 habitants comparée à celle de la France
+        entière.
       </p>
-      {/* Paris, Lyon, Marseille : la BPE rattache des équipements à l'adresse de leur
-          gestionnaire, et un arrondissement peut hériter de ceux de toute la ville. */}
+      {/* Paris, Lyon, Marseille : le recensement rattache des équipements à l'adresse de
+          leur gestionnaire, et un arrondissement peut hériter de ceux de toute la ville. */}
       {equipment.isArrondissement && (
         <p className="elections-footnote">
-          La BPE rattache certains équipements à l&apos;adresse de leur gestionnaire : à
-          l&apos;échelle d&apos;un arrondissement, les nombres peuvent être surestimés ou
-          sous-estimés. La comparaison à la France n&apos;est pas affichée quand
-          l&apos;arrondissement concentre plus de la moitié des équipements de sa ville.
+          Le recensement rattache certains équipements à l&apos;adresse de leur
+          gestionnaire : à l&apos;échelle d&apos;un arrondissement, les nombres peuvent être
+          surestimés ou sous-estimés. La comparaison à la France n&apos;est pas affichée
+          quand l&apos;arrondissement concentre plus de la moitié des équipements de sa
+          ville.
         </p>
       )}
-      <p className="elections-footnote">Source : INSEE · Base permanente des équipements 2025.</p>
     </section>
   );
 }

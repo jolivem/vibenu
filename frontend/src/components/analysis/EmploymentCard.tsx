@@ -53,15 +53,11 @@ export function EmploymentCard({ demographics, mode, insight }: Props) {
       <EmploymentCharts view={view} />
 
       <p className="elections-footnote">
-        Le taux de chômage du recensement est <strong>déclaratif</strong> : il compte
+        Le taux de chômage du recensement 2021 est <strong>déclaratif</strong> : il compte
         les personnes qui se déclarent au chômage, et non celles que le Bureau
         international du travail recense comme telles. Il est structurellement d&apos;un
         à deux points au-dessus du taux publié chaque trimestre, et ne s&apos;y compare
         pas.
-      </p>
-      <p className="elections-footnote">
-        Source : INSEE · Recensement de la population 2021, bases activité des résidents
-        et diplômes-formation à l&apos;IRIS.
       </p>
     </section>
   );

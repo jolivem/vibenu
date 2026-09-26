@@ -108,7 +108,7 @@ export function ElectionsCard({
       )}
 
       <p className="elections-footnote">
-        Source : Ministère de l&apos;Intérieur · Comparaison commune ↔ France à la même échelle.
+        Comparaison commune ↔ France à la même échelle.
       </p>
     </section>
   );

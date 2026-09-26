@@ -75,22 +75,19 @@ export function ClimateCard({
       </p>
       {stationLines.length > 0 && (
         <p className="elections-footnote">
-          Stations Météo-France les plus proches — {stationLines.join(" · ")}.
+          Stations de mesure les plus proches — {stationLines.join(" · ")}.
         </p>
       )}
-      <p className="elections-footnote">
-        Source : Météo-France · Normales 1991-2020 par station (licence Etalab 2.0).
-        {monthly.references.some((r) => r.stationName) && (
-          <>
-            {" "}Villes de référence mesurées à{" "}
-            {monthly.references
-              .filter((r) => r.stationName)
-              .map((r) => `${r.stationName} pour ${r.name}`)
-              .join(", ")}
-            .
-          </>
-        )}
-      </p>
+      {monthly.references.some((r) => r.stationName) && (
+        <p className="elections-footnote">
+          Villes de référence mesurées à{" "}
+          {monthly.references
+            .filter((r) => r.stationName)
+            .map((r) => `${r.stationName} pour ${r.name}`)
+            .join(", ")}
+          .
+        </p>
+      )}
     </section>
   );
 }

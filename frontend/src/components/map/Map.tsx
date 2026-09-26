@@ -11,6 +11,7 @@ import {
   LOCATOR_BASEMAP,
   PLAN_CHOICE_ID,
   ignRasterSource,
+  ignTransformRequest,
   loadIgnStyle,
   type IgnStyleName,
 } from "./basemaps";
@@ -26,8 +27,8 @@ export const SCHOOL_SECTOR_LAYER_ID = "school-sector";
 const COMMUNE_LAYER_ID = "commune-contour";
 
 /**
- * Premier calque applicatif de la pile, quelle que soit la configuration : les quatre
- * couches de `RISK_LAYERS` sont ajoutées inconditionnellement, et en tête du bloc de
+ * Premier calque applicatif de la pile, quelle que soit la configuration : les couches
+ * de `RISK_LAYERS` sont ajoutées inconditionnellement, et en tête du bloc de
  * surcouches.
  *
  * Point d'insertion pour toute couche ajoutée après coup qui doit masquer le fond mais
@@ -292,10 +293,15 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     const wmsLayers: maplibregl.LayerSpecification[] = [];
 
     for (const layer of RISK_LAYERS) {
+      // `minzoom` / `maxzoom` : le créneau d'échelle du serveur, cf. `RiskLayerConfig`.
+      // Sans eux l'aplat s'évanouissait en zoom serré, le serveur répondant des tuiles
+      // transparentes en 200 hors de son créneau.
       wmsSources[layer.id] = {
         type: "raster",
         tiles: [buildWmsTileUrl(layer)],
         tileSize: 256,
+        minzoom: layer.minzoom,
+        maxzoom: layer.maxzoom,
       };
       wmsLayers.push({
         id: layer.id,
@@ -546,6 +552,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       preserveDrawingBuffer: true,
+      transformRequest: ignTransformRequest,
       style: {
         ...baseStyle,
         sources: {
@@ -570,6 +577,37 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     {
       const m = map.current;
       m.once("style.load", () => applyLayerVisibility(m, visibleLayersRef.current));
+    }
+
+    /**
+     * Une tuile illisible ne doit pas remonter en dizaines d'erreurs de console.
+     *
+     * Les WMS publics tombent en panne sans prévenir, et MapServer sert ses messages
+     * d'erreur en `HTTP 200 / text/html` : MapLibre les décode comme des images et lève
+     * une `InvalidStateError` **par tuile**, soit des dizaines de lignes pour une seule
+     * case cochée. C'est ainsi que la panne du mapfile `risques` de Géorisques s'est
+     * manifestée (voir `riskLayers.ts`).
+     *
+     * On garde une trace par source — un calque silencieusement vide est un piège pour le
+     * prochain qui le déboguera — mais une seule, en `warn` : la carte continue de
+     * fonctionner sans ce calque.
+     *
+     * Les erreurs sans `sourceId` (style, sprite, glyphs) sont relayées telles quelles :
+     * MapLibre ne les écrit en console que s'il n'a **aucun** écouteur `error`, si bien
+     * qu'installer celui-ci les rendrait muettes.
+     */
+    {
+      const sourcesEnErreur = new Set<string>();
+      map.current.on("error", (e) => {
+        const sourceId = (e as { sourceId?: string }).sourceId;
+        if (!sourceId) {
+          console.error(e.error);
+          return;
+        }
+        if (sourcesEnErreur.has(sourceId)) return;
+        sourcesEnErreur.add(sourceId);
+        console.warn(`Carte : la source « ${sourceId} » ne répond pas correctement.`, e.error);
+      });
     }
 
     // Add navigation controls

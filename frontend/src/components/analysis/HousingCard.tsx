@@ -48,13 +48,9 @@ export function HousingCard({ demographics, mode, insight }: Props) {
       <HousingCharts view={view} />
 
       <p className="elections-footnote">
-        Le parc de logements, recensé par l&apos;INSEE en 2021.
-      </p>
-      <p className="elections-footnote">
-        Source : INSEE · Recensement de la population 2021, base logement à l&apos;IRIS.
-        Les effectifs du recensement sont des estimations pondérées, arrondies à
-        l&apos;unité : sur un petit quartier, les parts peuvent ne pas boucler
-        exactement à 100 %.
+        Le parc de logements, recensé en 2021. Les effectifs du recensement sont des
+        estimations pondérées, arrondies à l&apos;unité : sur un petit quartier, les parts
+        peuvent ne pas boucler exactement à 100 %.
       </p>
     </section>
   );

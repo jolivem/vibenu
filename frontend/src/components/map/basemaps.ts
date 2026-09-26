@@ -1,4 +1,8 @@
-import type { RasterSourceSpecification, StyleSpecification } from "maplibre-gl";
+import type {
+  RasterSourceSpecification,
+  RequestTransformFunction,
+  StyleSpecification,
+} from "maplibre-gl";
 
 /**
  * Fonds de carte de l'application.
@@ -85,6 +89,30 @@ export function loadIgnStyle(name: IgnStyleName): Promise<StyleSpecification> {
 
   return pending.then((style) => structuredClone(style));
 }
+
+/**
+ * Sprites IGN dont la déclinaison « retina » n'existe pas.
+ *
+ * MapLibre suffixe l'URL du sprite par `@2x` dès que `devicePixelRatio >= 2` — donc sur
+ * tout smartphone. Or l'IGN publie `PlanIgn@2x.json` mais pas `PlanIgn-Gris@2x.json`
+ * (404) : les cartes thématiques, qui utilisent le style `gris`, levaient une `AJAXError`
+ * 404 sur mobile et perdaient leurs icônes.
+ */
+const SPRITES_SANS_RETINA = ["PlanIgn-Gris"];
+
+/**
+ * À passer en `transformRequest` de la Map : rabat les sprites sans version retina sur
+ * leur 1x. Les icônes du plan gris sont un peu moins nettes sur écran dense, ce qui vaut
+ * mieux qu'une requête en erreur et un sprite absent.
+ */
+export const ignTransformRequest: RequestTransformFunction = (url) => {
+  for (const name of SPRITES_SANS_RETINA) {
+    if (url.includes(`/sprite/${name}@2x.`)) {
+      return { url: url.replace(`${name}@2x.`, `${name}.`) };
+    }
+  }
+  return { url };
+};
 
 export interface IgnRasterOptions {
   format?: string;
