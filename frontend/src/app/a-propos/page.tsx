@@ -45,9 +45,9 @@ const sources = [
     desc: "Dix-huit aléas lus à l'adresse : inondation, retrait-gonflement des argiles, séisme, radon, mouvements de terrain, feu de forêt, installations classées, pollution des sols, rupture de barrage, risque minier…",
   },
   {
-    name: "Cadastre & GPU",
-    issuer: "IGN · Ministère du Logement",
-    desc: "Parcelles cadastrales et zonages d'urbanisme (PLU, PLUi, cartes communales) consultables sur le Géoportail de l'Urbanisme.",
+    name: "Cadastre & urbanisme",
+    issuer: "IGN · Géoportail de l'Urbanisme",
+    desc: "Parcelles cadastrales, zonages d'urbanisme (PLU, PLUi, cartes communales) et servitudes d'utilité publique — dont les zonages des plans de prévention du risque d'inondation cartographiés sur la carte des risques.",
   },
   {
     name: "Recensement & revenus",
@@ -209,6 +209,14 @@ export default function AboutPage() {
             conclusions — « en baisse de 31 % », jamais dix nombres bruts — et les met en
             français. Il reformule, il ne calcule pas et n&apos;ajoute aucun chiffre. Quand il
             n&apos;est pas disponible, la rubrique s&apos;affiche simplement sans sa phrase.
+          </p>
+          <p>
+            Deux lectures coexistent sur les risques, et elles ne disent pas la même chose.
+            La liste des aléas est lue <strong>à l&apos;adresse</strong> : elle répond
+            « ce logement est-il concerné ». La carte, elle, montre les zonages
+            <strong>autour</strong> du lieu. Un logement hors zone inondable peut donc
+            très bien voir une zone passer à quelques rues — ce n&apos;est pas une
+            contradiction, c&apos;est la différence entre le point et son voisinage.
           </p>
           <p>
             Nous indiquons systématiquement la date de mise à jour de chaque source. Lorsque la

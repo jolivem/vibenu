@@ -22,7 +22,7 @@ const faqItems = [
   {
     question: "D'où viennent les données affichées ?",
     answer:
-      "Tous les chiffres proviennent de sources publiques officielles : DVF (DGFiP) pour les prix immobiliers, Géorisques pour les risques naturels et technologiques, l'IGN et le Géoportail de l'Urbanisme pour les parcelles et le PLU, l'INSEE pour la population, les revenus, l'emploi et les logements, la Base Permanente des Équipements de l'INSEE et OpenStreetMap pour les commerces et services de proximité, transport.data.gouv.fr pour les transports, Météo-France pour le climat, " +
+      "Tous les chiffres proviennent de sources publiques officielles : DVF (DGFiP) pour les prix immobiliers, Géorisques pour les risques naturels et technologiques, l'IGN et le Géoportail de l'Urbanisme pour les parcelles, le PLU et les zonages des plans de prévention du risque d'inondation, l'INSEE pour la population, les revenus, l'emploi et les logements, la Base Permanente des Équipements de l'INSEE et OpenStreetMap pour les commerces et services de proximité, transport.data.gouv.fr pour les transports, Météo-France pour le climat, " +
       (FEATURES.showAirQuality ? "Atmo France pour la qualité de l'air, " : "") +
       "le SSMSI pour la délinquance, le ministère de l'Intérieur pour les élections, la Ville de Paris pour la carte scolaire, et l'IGN pour la recherche d'adresse, les fonds de carte et les vues aériennes anciennes. Chaque chiffre reste rattaché à sa source et à sa date de publication. Seules les phrases « En bref », sous les titres de rubriques, sont rédigées par un modèle de langage : il reformule ces mêmes chiffres, il n'en invente aucun.",
   },
