@@ -38,27 +38,6 @@ services:
       postgres:
         condition: service_healthy
 
-  # Variante PRO — image buildée avec SITE_VARIANT=PRO. Sert pro.claireadresse.fr.
-  # Même base postgres + mêmes credentials Atmo/Mistral.
-  app_pro:
-    image: ghcr.io/jolivem/vibenu:${APP_PRO_IMAGE_TAG:-pro-latest}
-    restart: unless-stopped
-    environment:
-      POSTGRES_URL: postgresql://${POSTGRES_USER:-claireadresse}:${POSTGRES_PASSWORD:-claireadresse}@postgres:5432/${POSTGRES_DB:-claire_adresse}
-      NEXT_PUBLIC_DVF_SOURCE: ${NEXT_PUBLIC_DVF_SOURCE:-database}
-      NEXT_PUBLIC_DEBUG: ${NEXT_PUBLIC_DEBUG:-false}
-      SITE_URL: ${SITE_URL_PRO:-}
-      ATMO_USERNAME: ${ATMO_USERNAME:-}
-      ATMO_PASSWORD: ${ATMO_PASSWORD:-}
-      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
-      MISTRAL_MODEL: ${MISTRAL_MODEL:-}
-      # Bascule vers un autre fournisseur compatible OpenAI, sans rebuild d'image.
-      LLM_BASE_URL: ${LLM_BASE_URL:-}
-      LLM_API_KEY: ${LLM_API_KEY:-}
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   # Analyse d'audience — réutilise le PostgreSQL existant (base dédiée `umami`).
   # La base doit être créée une fois : voir README / commande `CREATE DATABASE umami`.
   umami:
@@ -91,7 +70,6 @@ services:
       - caddy_config:/config
     depends_on:
       - app
-      - app_pro
       - umami
     networks:
       - default

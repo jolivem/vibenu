@@ -42,7 +42,8 @@ Python import scripts live in [scripts/](scripts/) (own venv + `requirements.txt
 the Postgres/PostGIS tables the app reads. Run **migrations first** — several scripts fill tables
 the migrations create. See the README table for per-source details and download sizes.
 
-Deployment: `buildPush.sh` builds and pushes two Docker images (PUBLIC + PRO) to GHCR; `update.sh`
+Deployment: `buildPush.sh` builds and pushes the PUBLIC Docker image to GHCR (PRO is no longer
+deployed; `pro.` redirects to the main domain in the `Caddyfile`); `update.sh`
 runs on the VPS (git pull → docker compose pull → replay migrations → restart).
 
 ## Architecture

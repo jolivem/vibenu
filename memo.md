@@ -25,7 +25,7 @@ Chaque outil cherche ses vars dans **son propre répertoire courant**. D'où la 
 
 | Fichier | Lu par | Rôle | Dans Git ? |
 |---|---|---|---|
-| `.env` (racine) | **Docker Compose** | Env prod : `DOMAIN`, `POSTGRES_*`, `SITE_URL`, `SITE_URL_PRO`, `ATMO_*`, `MISTRAL_*` | ✗ jamais |
+| `.env` (racine) | **Docker Compose** | Env prod : `DOMAIN`, `POSTGRES_*`, `SITE_URL`, `ATMO_*`, `MISTRAL_*` | ✗ jamais |
 | `.env.example` (racine) | template | Copier en `.env` puis remplir | ✓ |
 | `.env.hetzner` (racine) | backup perso | Snapshot du `.env` du VPS — mémo en cas de réinstall | ✗ |
 | `frontend/.env` | **Next.js dev local** | `POSTGRES_URL`, `MISTRAL_API_KEY`, `ATMO_*`, etc. pour `pnpm dev` | ✗ |
@@ -55,11 +55,13 @@ docker login ghcr.io -u jolivem    # PAT avec write:packages
 
 ## Build & push des images
 
-Architecture : 2 images, 2 containers sur le même VPS, dispatch Caddy par sous-domaine.
+Architecture : 1 image, 1 container. La variante PRO n'est plus déployée (container
+`app_pro` et image `vibenu:pro-latest` retirés) ; son sous-domaine redirige vers le site
+principal.
 
 ```
-claireadresse.fr      → container `app`     (image vibenu:latest,    SITE_VARIANT=PUBLIC)
-pro.claireadresse.fr  → container `app_pro` (image vibenu:pro-latest, SITE_VARIANT=PRO)
+claireadresse.fr      → container `app` (image vibenu:latest, SITE_VARIANT=PUBLIC)
+pro.claireadresse.fr  → redirection 301 vers claireadresse.fr (Caddy)
 ```
 
 ### Variante PUBLIC
@@ -68,14 +70,6 @@ pro.claireadresse.fr  → container `app_pro` (image vibenu:pro-latest, SITE_VAR
 docker build --build-arg SITE_URL=https://claireadresse.fr --build-arg SITE_VARIANT=PUBLIC \
   -f frontend/Dockerfile -t ghcr.io/jolivem/vibenu:latest .
 docker push ghcr.io/jolivem/vibenu:latest
-```
-
-### Variante PRO
-
-```bash
-docker build --build-arg SITE_URL=https://pro.claireadresse.fr --build-arg SITE_VARIANT=PRO \
-  -f frontend/Dockerfile -t ghcr.io/jolivem/vibenu:pro-latest .
-docker push ghcr.io/jolivem/vibenu:pro-latest
 ```
 
 ### Tester localement les 2 variantes (sans Docker)
@@ -93,12 +87,12 @@ pnpm run build:all       # les 2 enchaînés (utile en CI pour détecter les ré
 
 ### Prérequis (une fois)
 
-1. **DNS** : enregistrement A `pro.claireadresse.fr` → IP du VPS.
+1. **DNS** : enregistrement A `pro.claireadresse.fr` → IP du VPS. Il ne sert plus qu'à la
+   redirection vers le site principal ; le supprimer fait tomber cette redirection.
 2. **`.env`** du VPS (à côté de `docker-compose.yml`) doit contenir au moins :
    ```env
    DOMAIN=claireadresse.fr
    SITE_URL=https://claireadresse.fr
-   SITE_URL_PRO=https://pro.claireadresse.fr
    POSTGRES_USER=...
    POSTGRES_PASSWORD=...
    POSTGRES_DB=cadb
@@ -114,7 +108,7 @@ Caddy demande automatiquement le cert Let's Encrypt au premier accès HTTPS.
 ```bash
 ssh michel@178.104.51.131
 cd vibenu
-./update.sh             # git pull + pull images + migrations + restart app/app_pro
+./update.sh             # git pull + pull images + migrations + restart app
 ```
 
 ### Update manuel
@@ -122,12 +116,12 @@ cd vibenu
 ```bash
 ssh michel@178.104.51.131
 cd vibenu
-docker compose pull app app_pro
-docker compose up -d
+docker compose pull app
+docker compose up -d --remove-orphans
 
 # Vérification
-curl -I https://claireadresse.fr        # variante PUBLIC
-curl -I https://pro.claireadresse.fr    # variante PRO
+curl -I https://claireadresse.fr        # site
+curl -I https://pro.claireadresse.fr    # 301 vers claireadresse.fr
 ```
 
 ### Tout redémarrer à blanc
@@ -220,8 +214,6 @@ Après chaque deploy, vérifier :
 - [Google Rich Results Test](https://search.google.com/test/rich-results) — JSON-LD valide
 - [Opengraph.xyz](https://www.opengraph.xyz/) — prévisualiser le partage social
 - Soumettre `sitemap.xml` dans **Google Search Console** + Bing Webmaster Tools
-
-Idem pour `pro.claireadresse.fr` (mais pas de pages SEO `/commune/*` en PRO).
 
 ---
 

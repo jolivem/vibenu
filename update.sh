@@ -37,8 +37,8 @@ caddy_changed() {
   grep -qE '^(Caddyfile|docker-compose\.yml)' <<<"$CHANGED_FILES"
 }
 
-echo "==> pull images app + app_pro depuis GHCR"
-docker compose pull app app_pro
+echo "==> pull image app depuis GHCR"
+docker compose pull app
 echo "==> pull image umami"
 docker compose pull umami
 
@@ -64,8 +64,9 @@ if ! docker compose exec -T postgres psql -U "${POSTGRES_USER:-claireadresse}" -
     -c "CREATE DATABASE $UMAMI_DB"
 fi
 
-echo "==> restart app + app_pro + umami"
-docker compose up -d --no-deps app app_pro umami
+echo "==> restart app + umami"
+# --remove-orphans arrête les conteneurs des services retirés du compose (app_pro).
+docker compose up -d --no-deps --remove-orphans app umami
 
 if caddy_changed; then
   echo "==> reload caddy"

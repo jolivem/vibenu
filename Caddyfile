@@ -4,10 +4,9 @@
 	reverse_proxy app:3000
 }
 
-# Variante PRO — pro.claireadresse.fr (sous-domaine)
+# Ancienne variante PRO, retirée du déploiement : ses liens mènent au site principal.
 pro.{$DOMAIN} {
-	encode zstd gzip
-	reverse_proxy app_pro:3000
+	redir https://{$DOMAIN}{uri} permanent
 }
 
 # Redirection www → domaine principal
