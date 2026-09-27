@@ -45,6 +45,16 @@ const COMMUNE_LAYER_ID = "commune-contour";
 const FLOOD_ZONES_MINZOOM = 12;
 
 /**
+ * Les PPR publiés par leur seul périmètre (`kind: "perimeter"`) : un contour en pointillés,
+ * sans aplat. Peints en bleu plein, ils teintaient en « zone inondable » des bassins
+ * versants entiers, collines comprises. Calque à part parce que `line-dasharray` ne se
+ * règle pas par objet.
+ */
+const FLOOD_PERIMETER_LAYER = `${FLOOD_ZONES_LAYER_ID}-perimeter`;
+const IS_FLOOD_PERIMETER: maplibregl.FilterSpecification = ["==", ["get", "kind"], "perimeter"];
+const IS_FLOOD_ZONE: maplibregl.FilterSpecification = ["!=", ["get", "kind"], "perimeter"];
+
+/**
  * Premier calque applicatif de la pile, quelle que soit la configuration : les couches
  * de `RISK_LAYERS` sont ajoutées inconditionnellement, et en tête du bloc de
  * surcouches.
@@ -100,6 +110,15 @@ function applyLayerVisibility(m: MapLibreMap, visibleLayers: Set<string>): void 
     const visibility = visibleLayers.has(toggleId) ? "visible" : "none";
     m.setLayoutProperty(`${layerPrefix}-fill`, "visibility", visibility);
     m.setLayoutProperty(`${layerPrefix}-outline`, "visibility", visibility);
+  }
+
+  // Troisième calque des zonages PPR, sous la même case que leur aplat.
+  if (m.getLayer(FLOOD_PERIMETER_LAYER)) {
+    m.setLayoutProperty(
+      FLOOD_PERIMETER_LAYER,
+      "visibility",
+      visibleLayers.has(FLOOD_ZONES_LAYER_ID) ? "visible" : "none",
+    );
   }
 }
 
@@ -246,7 +265,12 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     // l'Urbanisme dépend des servitudes effectivement téléversées par chaque département.
     // L'absence est dite par la consigne du panneau, pas par une case morte.
     if (floodZones?.length) {
-      layers.push({ id: FLOOD_ZONES_LAYER_ID, label: "Zones inondables (PPR)", color: "#3498db" });
+      const hasZones = floodZones.some((zone) => zone.kind !== "perimeter");
+      layers.push({
+        id: FLOOD_ZONES_LAYER_ID,
+        label: hasZones ? "Zones inondables (PPR)" : "Périmètre PPR inondation",
+        color: "#3498db",
+      });
     }
     return layers;
   }, [risks, floodZones]);
@@ -532,7 +556,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           features: floodZones.map((zone) => ({
             type: "Feature" as const,
             geometry: zone.geometry as GeoJSON.Geometry,
-            properties: { label: zone.label },
+            properties: { label: zone.label, kind: zone.kind },
           })),
         },
       };
@@ -541,6 +565,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           id: `${FLOOD_ZONES_LAYER_ID}-fill`,
           type: "fill",
           source: FLOOD_ZONES_LAYER_ID,
+          filter: IS_FLOOD_ZONE,
           minzoom: FLOOD_ZONES_MINZOOM,
           paint: {
             "fill-color": "#3498db",
@@ -552,10 +577,24 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           id: `${FLOOD_ZONES_LAYER_ID}-outline`,
           type: "line",
           source: FLOOD_ZONES_LAYER_ID,
+          filter: IS_FLOOD_ZONE,
           minzoom: FLOOD_ZONES_MINZOOM,
           paint: {
             "line-color": "#1f6fb2",
             "line-width": 1.5,
+          },
+          layout: { visibility: "none" },
+        },
+        {
+          id: FLOOD_PERIMETER_LAYER,
+          type: "line",
+          source: FLOOD_ZONES_LAYER_ID,
+          filter: IS_FLOOD_PERIMETER,
+          minzoom: FLOOD_ZONES_MINZOOM,
+          paint: {
+            "line-color": "#1f6fb2",
+            "line-width": 2,
+            "line-dasharray": [3, 2],
           },
           layout: { visibility: "none" },
         },
@@ -775,12 +814,25 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           .setHTML(`<strong>Zone inondable</strong>${labels}`)
           .addTo(m);
       });
-      m.on("mouseenter", `${FLOOD_ZONES_LAYER_ID}-fill`, () => {
-        m.getCanvas().style.cursor = "pointer";
+      // Le périmètre n'a pas d'aplat : seul son trait répond au clic.
+      m.on("click", FLOOD_PERIMETER_LAYER, (e) => {
+        const label = String(e.features?.[0]?.properties?.label ?? "");
+        new maplibregl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<strong>Périmètre d'un plan de prévention des risques (PPR) inondation</strong>${label ? `<div>${label}</div>` : ""}` +
+              `<div>Zonage détaillé non publié : ce contour n'indique pas les zones inondables.</div>`,
+          )
+          .addTo(m);
       });
-      m.on("mouseleave", `${FLOOD_ZONES_LAYER_ID}-fill`, () => {
-        m.getCanvas().style.cursor = "";
-      });
+      for (const layerId of [`${FLOOD_ZONES_LAYER_ID}-fill`, FLOOD_PERIMETER_LAYER]) {
+        m.on("mouseenter", layerId, () => {
+          m.getCanvas().style.cursor = "pointer";
+        });
+        m.on("mouseleave", layerId, () => {
+          m.getCanvas().style.cursor = "";
+        });
+      }
     }
 
     return () => {

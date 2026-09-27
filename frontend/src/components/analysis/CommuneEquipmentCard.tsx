@@ -1,6 +1,12 @@
 import type { CommuneEquipmentDto } from "@/types/location-analysis";
 import { formatFr } from "@/lib/format";
-import { equipmentDensity } from "./communeEquipmentFormat";
+import {
+  absentLine,
+  equipmentDensity,
+  equipmentFootnote,
+  showsDensity,
+  splitRubrics,
+} from "./communeEquipmentFormat";
 
 /**
  * Les équipements d'une commune entière, en mode commune — la card Voisinage n'y a pas
@@ -8,32 +14,40 @@ import { equipmentDensity } from "./communeEquipmentFormat";
  *
  * Un nombre seul ne se compare pas d'une commune à l'autre : Rennes aura toujours plus de
  * médecins que Vannes. D'où la densité pour 10 000 habitants, comparée à la France, comme
- * les autres indicateurs de l'écran le sont à leur repère.
+ * les autres indicateurs de l'écran le sont à leur repère — sauf dans une petite commune,
+ * où une seule unité fausse le ratio. Les rubriques absentes tiennent en une ligne par
+ * famille plutôt qu'en une colonne de zéros.
  */
 export function CommuneEquipmentCard({ equipment }: { equipment: CommuneEquipmentDto }) {
+  const withDensity = showsDensity(equipment.population);
   return (
     <section className="card">
       <h2>Équipements de la commune</h2>
 
-      {equipment.families.map((family) => (
-        <div className="poi-family" key={family.title}>
-          <h3>{family.title}</h3>
-          <ul>
-            {family.rubrics.map((rubric) => (
-              <li key={rubric.key}>
-                {rubric.label} : <strong>{formatFr(rubric.count)}</strong>{" "}
-                <span className="poi-distance">— {equipmentDensity(rubric)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      {equipment.families.map((family) => {
+        const { present, absent } = splitRubrics(family.rubrics);
+        return (
+          <div className="poi-family" key={family.title}>
+            <h3>{family.title}</h3>
+            <ul>
+              {present.map((rubric) => (
+                <li key={rubric.key}>
+                  {rubric.label} : <strong>{formatFr(rubric.count)}</strong>
+                  {withDensity && (
+                    <>
+                      {" "}
+                      <span className="poi-distance">— {equipmentDensity(rubric)}</span>
+                    </>
+                  )}
+                </li>
+              ))}
+              {absent.length > 0 && <li className="poi-distance">{absentLine(absent)}</li>}
+            </ul>
+          </div>
+        );
+      })}
 
-      <p className="elections-footnote">
-        Équipements recensés dans la commune en 2025 ({formatFr(equipment.population)}{" "}
-        habitants), et leur densité pour 10 000 habitants comparée à celle de la France
-        entière.
-      </p>
+      <p className="elections-footnote">{equipmentFootnote(equipment)}</p>
       {/* Paris, Lyon, Marseille : le recensement rattache des équipements à l'adresse de
           leur gestionnaire, et un arrondissement peut hériter de ceux de toute la ville. */}
       {equipment.isArrondissement && (

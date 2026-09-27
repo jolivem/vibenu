@@ -1,4 +1,4 @@
-import type { FloodWindow, FloodZone, FloodZoneGeometry } from "../domain/risk.types";
+import type { FloodWindow, FloodZone, FloodZoneGeometry, FloodZoneKind } from "../domain/risk.types";
 import type { FloodZoneProvider } from "./flood-zone.provider";
 import { InMemoryCache } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 
@@ -18,7 +18,7 @@ const WFS = "https://data.geopf.fr/wfs/ows";
 
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 5000;
-const CACHE_VERSION = "v1"; // à incrémenter quand la forme de FloodZone change
+const CACHE_VERSION = "v3"; // à incrémenter quand la forme de FloodZone change
 
 /** Plafond WFS. Au-delà la réponse est tronquée, et on le signale. */
 const MAX_FEATURES = 2000;
@@ -82,6 +82,53 @@ const MAX_TOLERANCE_DOUBLINGS = 4;
 const COORD_DECIMALS = 5;
 
 const METERS_PER_DEGREE_LAT = 111_320;
+
+/**
+ * Reconnaître un PPR publié par son seul périmètre, d'après la forme de son plus grand
+ * polygone.
+ *
+ * Le Géoportail range sous le même `typeass` (« Enveloppe des zonages réglementaires »)
+ * deux objets très différents : l'emprise des zones rouges et bleues, qui suit une
+ * rivière, et le périmètre du plan quand le zonage n'a pas été numérisé. Le PPRNi
+ * Brevenne Turdine est ainsi un seul polygone de 427 km² — deux bassins versants entiers,
+ * qui teintaient en « zone inondable » les collines de Viricelles.
+ *
+ * La compacité (Polsby-Popper, 4πA/P², 1 pour un disque) les sépare : une zone de crue
+ * est longue et découpée, un périmètre est un bloc. Mesuré sur les polygones bruts :
+ *
+ * - zones : Bordeaux 0,02 à 0,13, Ouvèze 0,02 à 0,10, Bièvre 0,06, Drac 0,04,
+ *   Isère 0,07 à 0,10, Grand Lyon 0,09 à 0,17 ;
+ * - périmètres : Brevenne Turdine 0,34, Yzeron 0,36 (141 km²), PPRNP de l'agglomération
+ *   grenobloise découpés sur les limites communales, 0,28 à 0,66.
+ *
+ * Deux garde-fous, parce qu'une zone de crue peut aussi être un bloc :
+ * - un plancher de surface, les petits polygones étant compacts par nature (les îlots du
+ *   PPRi de Paris montent à 0,31 sur quelques hectares) ;
+ * - un périmètre tient d'un seul tenant, son plus grand polygone portant **au moins 90 %**
+ *   de la surface (1,00 sur tous les cas relevés). Le PPRi de la Seine et de la Marne
+ *   (Val-de-Marne) a un polygone de 7,8 km² à 0,29 — la boucle de Saint-Maur, inondable
+ *   d'un bord à l'autre — mais il ne pèse que 19 % de ses 180 polygones.
+ */
+const PERIMETER_MIN_COMPACTNESS = 0.25;
+const PERIMETER_MIN_AREA_KM2 = 5;
+const PERIMETER_MIN_SHARE = 0.9;
+
+/** Surface (km²) et périmètre (km) d'un anneau, en projection locale équirectangulaire. */
+function ringMetrics(ring: number[][]): { areaKm2: number; perimeterKm: number } {
+  if (ring.length < 4) return { areaKm2: 0, perimeterKm: 0 };
+  const lonScale = Math.cos((ring[0][1] * Math.PI) / 180) * METERS_PER_DEGREE_LAT;
+  let twiceArea = 0;
+  let perimeter = 0;
+  for (let i = 0; i < ring.length - 1; i += 1) {
+    const x1 = ring[i][0] * lonScale;
+    const y1 = ring[i][1] * METERS_PER_DEGREE_LAT;
+    const x2 = ring[i + 1][0] * lonScale;
+    const y2 = ring[i + 1][1] * METERS_PER_DEGREE_LAT;
+    twiceArea += x1 * y2 - x2 * y1;
+    perimeter += Math.hypot(x2 - x1, y2 - y1);
+  }
+  return { areaKm2: Math.abs(twiceArea) / 2 / 1e6, perimeterKm: perimeter / 1000 };
+}
 
 interface SupFeature {
   geometry: { type: string; coordinates: unknown } | null;
@@ -269,6 +316,25 @@ function toPolygons(geometry: SupFeature["geometry"]): number[][][][] | null {
   return null;
 }
 
+/** Sur la géométrie brute, avant simplification : les seuils y ont été mesurés. */
+function kindOf(geometry: SupFeature["geometry"]): FloodZoneKind {
+  const polygons = toPolygons(geometry);
+  if (!polygons) return "zone";
+
+  let biggest = { areaKm2: 0, perimeterKm: 0 };
+  let totalKm2 = 0;
+  for (const polygon of polygons) {
+    const metrics = ringMetrics(polygon[0] ?? []);
+    totalKm2 += metrics.areaKm2;
+    if (metrics.areaKm2 > biggest.areaKm2) biggest = metrics;
+  }
+  if (biggest.areaKm2 < PERIMETER_MIN_AREA_KM2 || biggest.perimeterKm === 0) return "zone";
+  if (biggest.areaKm2 / totalKm2 < PERIMETER_MIN_SHARE) return "zone";
+
+  const compactness = (4 * Math.PI * biggest.areaKm2) / biggest.perimeterKm ** 2;
+  return compactness >= PERIMETER_MIN_COMPACTNESS ? "perimeter" : "zone";
+}
+
 interface Reduced {
   geometry: FloodZoneGeometry;
   points: number;
@@ -419,6 +485,7 @@ export class GpuFloodZoneProvider implements FloodZoneProvider {
   ): FloodZone[] {
     const flood = assiettes.filter((f) => this.isFlood(f, aleaByIdgen));
     if (flood.length === 0) return [];
+    const kinds = flood.map((f) => kindOf(f.geometry));
 
     const midLat = (window[1] + window[3]) / 2;
     const lonScale = Math.cos((midLat * Math.PI) / 180);
@@ -428,12 +495,12 @@ export class GpuFloodZoneProvider implements FloodZoneProvider {
       const zones: FloodZone[] = [];
       let points = 0;
 
-      for (const feature of flood) {
+      flood.forEach((feature, index) => {
         const reduced = reduceGeometry(feature.geometry, window, tolerance, lonScale);
-        if (!reduced) continue;
+        if (!reduced) return;
         points += reduced.points;
-        zones.push({ label: this.labelOf(feature), geometry: reduced.geometry });
-      }
+        zones.push({ label: this.labelOf(feature), kind: kinds[index], geometry: reduced.geometry });
+      });
 
       if (points <= POINT_BUDGET || attempt >= MAX_TOLERANCE_DOUBLINGS) {
         if (points > POINT_BUDGET) {

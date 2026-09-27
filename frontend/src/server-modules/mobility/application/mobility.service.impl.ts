@@ -19,8 +19,15 @@ export class MobilityServiceImpl implements MobilityService {
       this.transportProvider.findNearbyStops(lat, lon, 20_000),
     ]);
 
+    // La boîte de 1 km peut ne contenir aucune gare SNCF alors que celle de 20 km en
+    // contient : le provider y a alors deviné des gares d'après leur nom (« Gare » d'un
+    // réseau d'autocars). La recherche large, qui englobe la proche et dispose des vraies
+    // gares, fait foi : ces gares devinées sont écartées.
+    const closeGuessed = wide.railCoverage === true && close.railCoverage === false;
+    const closeStations = closeGuessed ? [] : close.nearestStations;
+
     const nearestStops = close.nearestStops;
-    const nearestStations = mergeStations(close.nearestStations, wide.nearestStations);
+    const nearestStations = mergeStations(closeStations, wide.nearestStations);
 
     const label = deriveLabel({ nearestStops, nearestStations });
 
@@ -29,7 +36,8 @@ export class MobilityServiceImpl implements MobilityService {
       nearestStations,
       label,
       // Comptés sur l'appel à 1 km, dont la boîte couvre largement les 500 m du comptage.
-      counts: close.counts ?? null,
+      // Sans jeu ferroviaire dans la boîte de 1 km, aucune vraie gare à moins de 500 m.
+      counts: close.counts ? { ...close.counts, stations: closeGuessed ? 0 : close.counts.stations } : null,
     };
   }
 }

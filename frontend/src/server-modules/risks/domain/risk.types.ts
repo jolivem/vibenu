@@ -28,8 +28,16 @@ export interface RiskAnalysis {
  */
 export interface FloodZone {
   label: string;
+  /**
+   * `zone` : l'emprise des zones réglementaires, qui suit les cours d'eau. `perimeter` : le
+   * seul périmètre du plan, publié à la place de son zonage — un bassin versant entier,
+   * collines comprises, qu'il serait faux de peindre comme inondable.
+   */
+  kind: FloodZoneKind;
   geometry: FloodZoneGeometry;
 }
+
+export type FloodZoneKind = "zone" | "perimeter";
 
 export interface FloodZoneGeometry {
   type: "Polygon" | "MultiPolygon";

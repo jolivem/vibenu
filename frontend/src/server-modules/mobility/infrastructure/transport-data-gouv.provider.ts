@@ -128,6 +128,19 @@ function dedupeSites<T extends LocatedStop>(
   return sites;
 }
 
+function isRailDatasetTitle(title: string): boolean {
+  return title.includes("sncf") || title.includes("transilien") || /\bter\b/.test(title);
+}
+
+/** Une gare d'un jeu ferroviaire — la règle que `inferMode` applique à ces jeux. */
+function isRailStation(feature: GtfsStopFeature): boolean {
+  return (
+    isRailDatasetTitle(feature.properties.dataset_title.toLowerCase()) &&
+    feature.properties.location_type === 1 &&
+    !feature.properties.stop_name.includes("/")
+  );
+}
+
 /**
  * Transport provider using transport.data.gouv.fr GTFS stops API
  * Endpoint: GET /api/gtfs-stops with bounding box (experimental)
@@ -136,7 +149,8 @@ function dedupeSites<T extends LocatedStop>(
 export class TransportDataGouvProvider implements TransportProvider {
   private static cache = new InMemoryCache<TransportStopsResult>(ONE_DAY);
   // v3 : les listes affichées sont désormais regroupées par lieu, comme les comptages.
-  private static readonly CACHE_VERSION = "v4";
+  // v5 : l'heuristique de nom ne s'applique plus là où un jeu ferroviaire couvre la zone.
+  private static readonly CACHE_VERSION = "v5";
   private readonly apiUrl = "https://transport.data.gouv.fr/api";
 
   async findNearbyStops(lat: number, lon: number, radiusMeters: number, countRadiusMeters = 500) {
@@ -176,12 +190,13 @@ export class TransportDataGouvProvider implements TransportProvider {
   ): TransportStopsResult {
     // Filter out entrances (location_type=2), keep stops (0) and stations (1)
     const filtered = features.filter((f) => f.properties.location_type !== 2);
+    const railCoverage = filtered.some((f) => isRailStation(f));
 
     // Classify each feature first, then deduplicate per mode category
     const allStops: LocatedStop[] = filtered.map((feature) => {
       const [lon, lat] = feature.geometry.coordinates;
       const distance = haversineMeters(centerLat, centerLon, lat, lon);
-      const mode = this.inferMode(feature);
+      const mode = this.inferMode(feature, railCoverage);
       return {
         id: feature.properties.stop_id,
         name: feature.properties.stop_name,
@@ -232,25 +247,32 @@ export class TransportDataGouvProvider implements TransportProvider {
         stops: withinCount(regularStops).length,
         stations: withinCount(stations).length,
       },
+      railCoverage,
     };
   }
 
-  private inferMode(feature: GtfsStopFeature): string {
+  private inferMode(feature: GtfsStopFeature, railCoverage: boolean): string {
     const title = feature.properties.dataset_title.toLowerCase();
     const name = feature.properties.stop_name.toLowerCase();
     const isIdf =
       title.includes("idfm") || title.includes("île-de-france") || title.includes("transilien");
 
-    const isRailDataset =
-      title.includes("sncf") || title.includes("transilien") || /\bter\b/.test(title);
+    const isRailDataset = isRailDatasetTitle(title);
 
     // Détection par nom : couvre les datasets régionaux qui n'ont pas
     // "sncf"/"ter" dans leur titre mais incluent quand même des gares
     // (ex. "Agrégat des réseaux ... de Nouvelle Aquitaine" → "Gare St Jean").
+    //
+    // Seulement faute de jeu ferroviaire dans la zone : quand il est là, il porte déjà les
+    // vraies gares, et l'heuristique n'ajoute que des faux positifs. Les autocars de la
+    // Loire ont une zone d'arrêt « Gare » à Bellegarde-en-Forez, qu'aucun train ne
+    // dessert : elle s'affichait comme la gare la plus proche de Viricelles.
+    //
     // Filtres anti-faux-positifs :
     //  - "gare routière" = gare bus, pas train
     //  - noms de rues / places contenant "gare" (rue de la gare, place de la gare…)
     const looksLikeStation =
+      !railCoverage &&
       feature.properties.location_type === 1 &&
       /\bgare\b/.test(name) &&
       !name.includes("/") &&

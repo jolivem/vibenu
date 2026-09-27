@@ -439,6 +439,11 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - **Traitement** : filtrage par `code_alea` (`11` = inondation), rejet des polygones hors
   fenêtre, simplification Douglas-Peucker à 3 m avec budget de 40 000 sommets — les emprises
   brutes pèsent 9 Mo à Bordeaux, 480 Ko après traitement
+- **Périmètres publiés à la place du zonage** : certains PPR ne sont téléversés que sous
+  leur périmètre — le PPRNi Brevenne Turdine est un seul polygone de 427 km², deux bassins
+  versants entiers. Reconnus à leur forme (plus grand polygone ≥ 5 km², compacité
+  Polsby-Popper ≥ 0,25, ≥ 90 % de la surface), ils sont marqués `kind: "perimeter"` et
+  dessinés en contour pointillé, sans aplat
 - Couverture tributaire des SUP effectivement téléversées par chaque département : une
   couche vide ne signifie pas « pas de PPR », d'où la case masquée et la consigne explicite
 - Licence : Licence Ouverte Etalab 2.0

@@ -244,13 +244,9 @@ export function AnalysisPdfDocument({
 
         {/* Une seule fois pour toute la fiche, là où chaque card portait ses notes. */}
         <View wrap={false} style={pdfStyles.ficheNotes}>
-          {FEATURES.showCardInsights && (
-            <Text style={pdfStyles.ficheNote}>
-              Les «&nbsp;En bref&nbsp;» sont rédigés par une intelligence artificielle, à partir
-              des seules données de l&apos;analyse ; les chiffres viennent directement des
-              fichiers publics.
-            </Text>
-          )}
+          <Text style={pdfStyles.ficheNote}>
+            Les chiffres viennent directement des fichiers publics.
+          </Text>
           <Text style={pdfStyles.ficheNote}>
             Sources : IGN · DVF · Géorisques · INSEE · Ministère de l&apos;Intérieur · Météo-France
             · ATMO · Éducation nationale.

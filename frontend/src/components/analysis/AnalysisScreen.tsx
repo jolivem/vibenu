@@ -121,6 +121,8 @@ export function AnalysisScreen() {
   const isCommune = data?.mode === "commune";
   // L'arrondissement analysé a aussi sa page commune SEO : on la propose, sans l'imposer.
   const seoPage = isCommune ? seoPageForCitycode(citycode) : undefined;
+  // Un vrai zonage d'inondation, et pas seulement le périmètre d'un plan.
+  const hasFloodZoning = !!data?.risks.floodZones?.some((zone) => zone.kind !== "perimeter");
 
   /**
    * Une section n'est rendue que si elle a du contenu. Deux cas la vident :
@@ -420,16 +422,17 @@ export function AnalysisScreen() {
                           // Le zonage inondation passe devant l'argile quand il existe :
                           // c'est l'aléa le plus localisé, donc le plus informatif. Deux
                           // aplats superposés se mélangeraient en bouillie, d'où l'un ou
-                          // l'autre et non les deux.
+                          // l'autre et non les deux. Un simple périmètre de PPR ne dit
+                          // rien du lieu : il ne prend pas la place de l'argile.
                           initialLayers={
-                            data.risks.floodZones?.length
-                              ? [FLOOD_ZONES_LAYER_ID]
-                              : [DEFAULT_RISK_LAYER]
+                            hasFloodZoning ? [FLOOD_ZONES_LAYER_ID] : [DEFAULT_RISK_LAYER]
                           }
                           layerToggleHint={
-                            data.risks.floodZones?.length
-                              ? "Cochez pour afficher les zones sur la carte."
-                              : "Cochez pour afficher les zones sur la carte. Aucun zonage PPR d'inondation n'est publié ici."
+                            hasFloodZoning
+                              ? "Cochez pour afficher les zones sur la carte. PPR : plan de prévention des risques, le document de l'État qui délimite les zones inondables et y encadre la construction."
+                              : data.risks.floodZones?.length
+                                ? "Cochez pour afficher les zones sur la carte. Seul le périmètre du plan de prévention des risques (PPR) d'inondation est publié ici, pas son zonage détaillé."
+                                : "Cochez pour afficher les zones sur la carte. Aucun zonage de plan de prévention des risques (PPR) d'inondation n'est publié ici."
                           }
                           height={THEMATIC_MAP_HEIGHT}
                         />

@@ -227,6 +227,37 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <section className="landing-section landing-section--alt" id="limites">
+        <div className="section-head">
+          <h2 className="section-title">
+            Les <i>limites</i> de l&apos;exercice
+          </h2>
+          <span className="section-meta">À lire avant de décider</span>
+        </div>
+        <div className="about-prose">
+          <p>
+            Les données publiques ne sont pas infaillibles. Elles peuvent être erronées,
+            incomplètes ou en retard sur le terrain : un commerce fermé figure encore dans
+            l&apos;inventaire des équipements, une vente n&apos;apparaît dans DVF que plusieurs
+            mois après la signature, un plan de prévention des risques n&apos;est parfois publié
+            que par son périmètre. Nous corrigeons ce que nous repérons, sans pouvoir garantir
+            l&apos;exactitude de chaque chiffre.
+          </p>
+          <p>
+            La plupart des indicateurs décrivent en outre une zone plus large que le logement :
+            un quartier IRIS, une commune, un rayon autour de l&apos;adresse. Ils disent ce qui
+            entoure un bien, pas l&apos;état du bien lui-même.
+          </p>
+          <p>
+            ClaireAdresse est un point de départ, pas un avis. Avant toute décision — achat,
+            location, travaux —, recoupez ces informations sur place, par une visite, si
+            possible à différentes heures, et auprès des sources locales : la mairie pour le PLU
+            et les projets à venir, l&apos;état des risques annexé à la promesse de vente ou au
+            bail, les diagnostics techniques, le notaire, l&apos;agence, le voisinage.
+          </p>
+        </div>
+      </section>
+
       <footer className="landing-footer">
         <div className="landing-footer-brand">
           <Brand variant="footer" />
@@ -234,6 +265,7 @@ export default function AboutPage() {
         <span>Données ouvertes françaises · Gratuit, sans inscription</span>
         <div className="landing-footer-links">
           <Link href="/">Analyser une adresse</Link>
+          <a href="mailto:jolivet.michel@free.fr">Contact</a>
         </div>
       </footer>
     </main>

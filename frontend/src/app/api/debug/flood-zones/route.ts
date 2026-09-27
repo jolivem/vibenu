@@ -59,6 +59,6 @@ export async function GET(request: NextRequest) {
     count: zones.length,
     totalPoints: zones.reduce((sum, z) => sum + countPoints(z), 0),
     jsonKb: Math.round(JSON.stringify(zones).length / 1024),
-    zones: zones.map((z) => ({ label: z.label, points: countPoints(z) })),
+    zones: zones.map((z) => ({ label: z.label, kind: z.kind, points: countPoints(z) })),
   });
 }

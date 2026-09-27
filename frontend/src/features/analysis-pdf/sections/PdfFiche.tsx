@@ -20,7 +20,12 @@ import { formatFr } from "@/lib/format";
 import { LEVEL_CONFIG, modalLevel } from "@/components/analysis/airQualityModel";
 import { formatSurface } from "@/components/analysis/cadastreFormat";
 import { climateTitle } from "@/components/analysis/climateFormat";
-import { equipmentLine } from "@/components/analysis/communeEquipmentFormat";
+import {
+  absentLine,
+  equipmentFootnote,
+  equipmentLine,
+  splitRubrics,
+} from "@/components/analysis/communeEquipmentFormat";
 import { formatPct } from "@/components/analysis/demographicsFormat";
 import { formatElectionPct } from "@/components/analysis/electionFormat";
 import { NUANCE_LABEL } from "@/components/analysis/electionLabels";
@@ -261,19 +266,21 @@ export function PdfProximiteFiche({
       )}
       {communeEquipment && (
         <>
-          <Fact>
-            {`Équipements recensés dans la commune (${formatFr(communeEquipment.population)} habitants), densités pour 10 000 habitants comparées à la France.`}
-          </Fact>
-          {communeEquipment.families.map((family) => (
-            <View key={family.title} wrap={false}>
-              <Sub>{family.title}</Sub>
-              {family.rubrics.map((rubric) => (
-                <Fact key={rubric.key} label={rubric.label}>
-                  {equipmentLine(rubric)}
-                </Fact>
-              ))}
-            </View>
-          ))}
+          <Fact>{equipmentFootnote(communeEquipment)}</Fact>
+          {communeEquipment.families.map((family) => {
+            const { present, absent } = splitRubrics(family.rubrics);
+            return (
+              <View key={family.title} wrap={false}>
+                <Sub>{family.title}</Sub>
+                {present.map((rubric) => (
+                  <Fact key={rubric.key} label={rubric.label}>
+                    {equipmentLine(rubric, communeEquipment.population)}
+                  </Fact>
+                ))}
+                {absent.length > 0 && <Fact>{absentLine(absent)}</Fact>}
+              </View>
+            );
+          })}
           {communeEquipment.isArrondissement && (
             <Fact>
               La BPE rattache certains équipements à l'adresse de leur gestionnaire : à l'échelle d'un arrondissement, les nombres peuvent être surestimés ou sous-estimés.

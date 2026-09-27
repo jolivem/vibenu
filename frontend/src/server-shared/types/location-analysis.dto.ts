@@ -82,6 +82,8 @@ export interface RiskAnalysisDto {
 /** Une assiette de PPR inondation : le nom du plan, et son emprise. */
 export interface FloodZoneDto {
   label: string;
+  /** `perimeter` : seul le périmètre du plan est publié, pas son zonage (voir `FloodZone`). */
+  kind: "zone" | "perimeter";
   geometry: GeoJsonGeometryDto;
 }
 
