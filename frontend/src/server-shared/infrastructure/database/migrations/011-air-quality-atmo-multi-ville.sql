@@ -6,7 +6,23 @@
 -- table n'existe pas) et un DB déjà peuplé (qu'on migre en place).
 
 -- 1. Renommer l'ancienne table si elle existe encore sous son nom d'avant.
-ALTER TABLE IF EXISTS air_quality_atmo_paris RENAME TO air_quality_atmo;
+--    Seulement si la nouvelle n'existe pas : la 009 recrée air_quality_atmo_paris, vide,
+--    à chaque passage d'update.sh, et un RENAME inconditionnel échouait dès le deuxième
+--    (« relation "air_quality_atmo" already exists »). Ce résidu est alors supprimé —
+--    s'il est vide : une table remplie ne se jette pas sans qu'on regarde.
+DO $$
+BEGIN
+  IF to_regclass('air_quality_atmo_paris') IS NULL THEN
+    RETURN;
+  END IF;
+  IF to_regclass('air_quality_atmo') IS NULL THEN
+    ALTER TABLE air_quality_atmo_paris RENAME TO air_quality_atmo;
+  ELSIF NOT EXISTS (SELECT 1 FROM air_quality_atmo_paris) THEN
+    DROP TABLE air_quality_atmo_paris;
+  ELSE
+    RAISE NOTICE 'air_quality_atmo_paris non vide alors que air_quality_atmo existe : laissée en place';
+  END IF;
+END $$;
 
 -- 2. Cas fresh DB : créer la table avec son nouveau schéma.
 CREATE TABLE IF NOT EXISTS air_quality_atmo (
