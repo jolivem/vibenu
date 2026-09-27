@@ -1,7 +1,36 @@
 # Variante PUBLIC — claireadresse.fr (domaine principal)
 {$DOMAIN} {
 	encode zstd gzip
-	reverse_proxy app:3000
+
+	# Maintenance tant que maintenance/ON existe sur le VPS : le fichier est testé à chaque
+	# requête, donc `touch` / `rm` suffisent, sans reload de Caddy. 503 + Retry-After disent
+	# aux moteurs de recherche que la coupure est temporaire.
+	@maintenance file {
+		root /srv/maintenance
+		try_files /ON
+	}
+	handle @maintenance {
+		header Retry-After 600
+		root * /srv/maintenance
+		rewrite * /index.html
+		file_server {
+			status 503
+		}
+	}
+
+	handle {
+		reverse_proxy app:3000
+	}
+
+	# La même page quand l'app ne répond pas, le temps d'un redémarrage (update.sh).
+	handle_errors 502 503 504 {
+		header Retry-After 60
+		root * /srv/maintenance
+		rewrite * /index.html
+		file_server {
+			status 503
+		}
+	}
 }
 
 # Ancienne variante PRO, retirée du déploiement : ses liens mènent au site principal.

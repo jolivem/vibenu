@@ -66,6 +66,8 @@ services:
       AICORRECT_DOMAIN: ${AICORRECT_DOMAIN:-aicorrect.app}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Page de maintenance, et interrupteur maintenance/ON (voir Caddyfile).
+      - ./maintenance:/srv/maintenance:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:

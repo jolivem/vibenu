@@ -108,8 +108,34 @@ Caddy demande automatiquement le cert Let's Encrypt au premier accès HTTPS.
 ```bash
 ssh michel@178.104.51.131
 cd vibenu
-./update.sh             # git pull + pull images + migrations + restart app
+./update.sh                  # git pull + pull images + migrations + restart app
+./update.sh --maintenance    # idem, site en maintenance pendant l'update
 ```
+
+### Mode maintenance
+
+Géré par Caddy, pas par Hetzner : tant que le fichier `maintenance/ON` existe, toutes les
+requêtes sur `claireadresse.fr` reçoivent `maintenance/index.html` en **503** avec
+`Retry-After` (les moteurs de recherche comprennent que la coupure est temporaire).
+Caddy teste le fichier à chaque requête : ni reload, ni restart.
+
+```bash
+ssh michel@178.104.51.131
+cd vibenu
+touch maintenance/ON     # couper le site (restore de la base, grosse migration…)
+rm maintenance/ON        # le rétablir
+```
+
+- `./update.sh --maintenance` pose et retire le fichier tout seul, **y compris si une étape
+  échoue** — l'ancienne app tourne encore à ce stade. Si l'app est dans un état douteux
+  après un échec, remettre `touch maintenance/ON` à la main.
+- Sans rien faire, la même page s'affiche aussi quand l'app ne répond pas (502/503/504,
+  servis en 503), par exemple les quelques secondes d'un redémarrage.
+- `maintenance/ON` est dans `.gitignore` : ne jamais le committer.
+- Mise en place (une fois) : le dossier `maintenance/` est monté dans le conteneur Caddy
+  (`docker-compose.yml`). Le premier `./update.sh` qui récupère ce changement recrée
+  Caddy ; avant ça, `touch maintenance/ON` n'a aucun effet.
+- Les autres sous-domaines (`stats.`, `pro.`) ne sont pas concernés.
 
 ### Update manuel
 
@@ -161,6 +187,10 @@ ssh michel@178.104.51.131
 cd vibenu
 docker compose exec postgres dropdb -U claireadresse --if-exists --force cadb
 docker compose exec postgres createdb -U claireadresse -O claireadresse cadb
+# PostGIS n'est installé que dans la base créée au premier démarrage du conteneur : une base
+# recréée par createdb ne l'a pas, et un dump fait avec --schema=public ne l'apporte pas.
+# Sans cette ligne, le restore échoue sur « type public.geometry does not exist ».
+docker compose exec postgres psql -U claireadresse -d cadb -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 docker compose cp /tmp/claire_adresse.dump postgres:/tmp/
 docker compose exec -T postgres pg_restore \
   -U claireadresse -d cadb \

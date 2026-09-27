@@ -7,15 +7,35 @@
 #   4. redémarrage de l'app
 #   5. reload de caddy si sa config a changé
 #
-# Usage : ./update.sh            (update classique)
-#         ./update.sh --full     (pull + restart de tout)
+# Usage : ./update.sh                  (update classique)
+#         ./update.sh --full           (pull + restart de tout)
+#         ./update.sh --maintenance    (site en maintenance pendant l'update, cumulable)
+#
+# Maintenance à la main : `touch maintenance/ON` pour couper le site, `rm maintenance/ON`
+# pour le rétablir — Caddy le teste à chaque requête, sans reload.
 
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
 FULL=0
-[[ "${1:-}" == "--full" ]] && FULL=1
+MAINTENANCE=0
+for arg in "$@"; do
+  case "$arg" in
+    --full) FULL=1 ;;
+    --maintenance) MAINTENANCE=1 ;;
+    *) echo "Option inconnue : $arg" >&2; exit 1 ;;
+  esac
+done
+
+if [[ "$MAINTENANCE" -eq 1 ]]; then
+  echo "==> site en maintenance"
+  mkdir -p maintenance && touch maintenance/ON
+  # Rétabli à la sortie, y compris si une étape échoue : un update raté ne doit pas
+  # laisser le site coupé. En cas d'échec, remettre `touch maintenance/ON` à la main
+  # si l'app est dans un état douteux.
+  trap 'rm -f maintenance/ON; echo "==> maintenance levée"' EXIT
+fi
 
 # Charge les variables d'environnement du docker-compose (POSTGRES_USER, POSTGRES_DB, ...)
 if [[ -f .env ]]; then

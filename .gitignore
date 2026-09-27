@@ -28,6 +28,8 @@ yarn-error.log*
 # local env files (on garde les .env.example comme templates versionnés)
 .env
 .env.*
+# Interrupteur de maintenance, posé à la main sur le VPS (voir Caddyfile).
+maintenance/ON
 !.env.example
 
 # vercel
