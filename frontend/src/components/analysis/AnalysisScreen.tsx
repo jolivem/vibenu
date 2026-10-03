@@ -192,7 +192,7 @@ export function AnalysisScreen() {
   );
 
   return (
-    <main className="analysis-layout">
+    <main id="haut" className="analysis-layout">
       <header className="analysis-topbar">
         <div className="analysis-topbar-inner">
           <Link href="/" className="analysis-back">
@@ -473,6 +473,10 @@ export function AnalysisScreen() {
                     <pre>{JSON.stringify(insightsDebug, null, 2)}</pre>
                   </details>
                 )}
+
+                <a href="#haut" className="analysis-back-to-top">
+                  <span aria-hidden>↑</span> Haut de page
+                </a>
               </div>
             </div>
           </>

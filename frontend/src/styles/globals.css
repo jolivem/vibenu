@@ -1598,6 +1598,21 @@ html {
   color: var(--muted);
 }
 
+/* Lien de retour en haut, en fin de page d'analyse (ancre vers `#haut`). */
+.analysis-back-to-top {
+  display: block;
+  width: fit-content;
+  margin: 28px auto 0;
+  font-size: 0.88rem;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 0.5px solid currentColor;
+}
+
+.analysis-back-to-top:hover {
+  color: var(--accent-dark, var(--accent));
+}
+
 .analysis-back {
   color: var(--text);
   text-decoration: none;
