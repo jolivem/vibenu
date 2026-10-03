@@ -258,6 +258,31 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <section className="landing-section" id="presse">
+        <div className="section-head">
+          <h2 className="section-title">
+            <i>Presse</i>
+          </h2>
+          <span className="section-meta">Pour les journalistes</span>
+        </div>
+        <div className="about-prose">
+          <p>
+            ClaireAdresse est un site gratuit et sans inscription qui rassemble sur une carte ce
+            que les données publiques disent d&apos;une adresse ou d&apos;une commune française :
+            prix réels des ventes, risques, urbanisme, transports, équipements, population,
+            délinquance, climat, élections, photographies aériennes anciennes. Chaque indicateur
+            est montré dans son unité et comparé à un repère, sans score global. Le site est
+            développé et édité par un particulier, dans la Loire.
+          </p>
+          <p>
+            Sur demande : l&apos;analyse d&apos;une adresse ou d&apos;un quartier de votre choix,
+            des chiffres calculés sur un territoire à partir des mêmes données, des captures
+            d&apos;écran et le logo. Écrivez à{" "}
+            <a href="mailto:jolivet.michel@free.fr">jolivet.michel@free.fr</a>.
+          </p>
+        </div>
+      </section>
+
       <footer className="landing-footer">
         <div className="landing-footer-brand">
           <Brand variant="footer" />
