@@ -16,7 +16,9 @@ import { AGE_BUCKETS } from "@/components/analysis/ageChart";
 import { CLIMATE_METRICS, MONTH_NAMES } from "@/components/analysis/climateChart";
 import { NUANCE_LABEL, PARTI_LABEL } from "@/components/analysis/electionLabels";
 import { viewForMode } from "@/components/analysis/inseeChart";
+import { hasLocalTaxContent, summarizeFinance } from "@/components/analysis/localTaxModel";
 import { baseLabel, isArrondissement } from "@/components/analysis/securityChart";
+import { FEATURES } from "@/lib/site-features";
 import type { CardInsightKey } from "@/server-shared/types/card-insights";
 import { CARD_INSIGHT_KEYS } from "@/server-shared/types/card-insights";
 import type {
@@ -27,6 +29,7 @@ import type {
   EmploymentStatsDto,
   HousingStatsDto,
   HouseholdsStatsDto,
+  LocalTaxAnalysisDto,
   LocationAnalysisDto,
   MunicipalesAnalysisDto,
   SecurityAnalysisDto,
@@ -38,6 +41,8 @@ import type {
   DemographieInsightInput,
   ElectionsInsightInput,
   EmploiInsightInput,
+  FiscaliteInsightInput,
+  PositionFiscale,
   IndicateurCompare,
   LogementInsightInput,
   MenagesInsightInput,
@@ -143,6 +148,100 @@ function indicateur(
 /** Ne garde que les indicateurs dont la valeur locale existe — le reste est du bruit. */
 function keepMeasured(list: IndicateurCompare[]): IndicateurCompare[] {
   return list.filter((i) => i.valeur_locale !== null);
+}
+
+// --- Fiscalité locale -------------------------------------------------------
+
+/**
+ * Seuils de position face à la médiane des communes de France, en points de taux.
+ *
+ * Calés sur la distribution 2025 du taux global de taxe foncière : médiane 40,33 %,
+ * quartiles 34,86 % et 46,09 %. À 6 points de la médiane, une commune est donc sortie de
+ * la moitié centrale ; à moins de 2, elle ne s'en distingue pas.
+ */
+const FISCALITE_PROCHE_PTS = 2;
+const FISCALITE_NETTEMENT_PTS = 6;
+
+/** En deçà d'un point sur la période, un taux est dit stable. */
+const FISCALITE_STABLE_PTS = 1;
+
+/** Écart relatif de dette à partir duquel elle mérite d'être dite. */
+const DETTE_ECART_NOTABLE_PCT = 20;
+
+function positionFiscale(ecartPts: number | null): PositionFiscale | null {
+  if (ecartPts === null) return null;
+  const abs = Math.abs(ecartPts);
+  if (abs < FISCALITE_PROCHE_PTS) return "proche";
+  const sens = ecartPts > 0 ? "au-dessus" : "en dessous";
+  return abs >= FISCALITE_NETTEMENT_PTS ? `nettement ${sens}` : sens;
+}
+
+function buildFiscalite(localTax: LocalTaxAnalysisDto | null | undefined): FiscaliteInsightInput | undefined {
+  // Garde de LocalTaxCard, drapeau compris : la card peut être coupée par variante.
+  if (!FEATURES.showLocalTax || !hasLocalTaxContent(localTax)) return undefined;
+
+  const { taxeFonciere, residencesSecondaires, dmto, finances } = localTax;
+  const input: FiscaliteInsightInput = { ville_entiere: localTax.villeEntiere };
+
+  const dernier = taxeFonciere ? taxeFonciere.annees.length - 1 : -1;
+  const taux = taxeFonciere && dernier >= 0 ? taxeFonciere.tauxGlobal[dernier] : null;
+  if (taxeFonciere && taux !== null) {
+    const france = taxeFonciere.medianeFrance[dernier];
+    const departement = taxeFonciere.medianeDepartement[dernier];
+    const evolution = ecartPts(taux, firstNumber(taxeFonciere.tauxGlobal));
+
+    input.taxe_fonciere = {
+      annee: taxeFonciere.annees[dernier],
+      taux_pct: taux,
+      mediane_communes_france_pct: france,
+      ecart_mediane_france_pts: ecartPts(taux, france),
+      position_vs_mediane_france: positionFiscale(ecartPts(taux, france)),
+      mediane_communes_departement_pct: departement,
+      ecart_mediane_departement_pts: ecartPts(taux, departement),
+      periode: `${taxeFonciere.annees[0]}–${taxeFonciere.annees[dernier]}`,
+      evolution_pts: dernier > 0 ? evolution : null,
+      tendance:
+        dernier > 0 && evolution !== null
+          ? evolution > FISCALITE_STABLE_PTS
+            ? "en hausse"
+            : evolution < -FISCALITE_STABLE_PTS
+              ? "en baisse"
+              : "stable"
+          : null,
+      ordures_menageres: taxeFonciere.teom ? { taux_pct: taxeFonciere.teom.taux } : "aucune taxe publiée",
+    };
+  }
+
+  const majoration = residencesSecondaires?.majoration;
+  if (majoration?.appliquee && majoration.tauxPct !== null) {
+    input.majoration_residences_secondaires_pct = majoration.tauxPct;
+  }
+  if (residencesSecondaires?.tlv?.soumise) input.zone_taxe_logements_vacants = true;
+
+  // Sous le taux le plus courant, il n'y a plus de taux réduit pour les primo-accédants.
+  if (dmto && dmto.tauxPrimoAccedant === null) {
+    input.droits_mutation = {
+      taux_departemental_pct: dmto.tauxDepartemental,
+      inferieur_au_taux_le_plus_courant: true,
+    };
+  }
+
+  const detteSerie = finances?.indicateurs.find((ind) => ind.cle === "dette");
+  const dette = finances && detteSerie ? summarizeFinance(finances, detteSerie) : null;
+  if (dette && dette.moyenneStrate !== null) {
+    const ecart = ecartPct(dette.parHabitant, dette.moyenneStrate);
+    if (ecart !== null && Math.abs(ecart) >= DETTE_ECART_NOTABLE_PCT) {
+      const relatif = ecartRelatif(dette.parHabitant, dette.moyenneStrate);
+      input.dette_par_habitant = {
+        eur: round(dette.parHabitant, 0),
+        moyenne_communes_comparables_eur: round(dette.moyenneStrate, 0),
+        ecart_pct: relatif.pct,
+        multiple: relatif.multiple,
+      };
+    }
+  }
+
+  return input;
 }
 
 // --- Sécurité ---------------------------------------------------------------
@@ -560,6 +659,7 @@ export function buildCardInsightsInput(
   return {
     mode: data.mode,
     perimetre: buildPerimetre(data),
+    fiscalite: buildFiscalite(data.localTax),
     securite: buildSecurite(data.security, codeInsee),
     demographie: buildDemographie(data.demographics, data.mode),
     logement: buildLogement(data.demographics, data.mode),

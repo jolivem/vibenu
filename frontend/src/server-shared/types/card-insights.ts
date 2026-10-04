@@ -3,7 +3,7 @@
  *
  * Une phrase ou deux par card, qui disent ce qu'il faut comprendre du graphique juste
  * en dessous — pour le lecteur qui n'a ni le temps ni les repères pour lire les courbes.
- * Les huit clés sont produites par un seul appel au modèle, qui répond en JSON.
+ * Les neuf clés sont produites par un seul appel au modèle, qui répond en JSON.
  *
  * Cette liste est la source unique : le type, le format de sortie du prompt, le parseur
  * et le cache en dérivent tous. Ajouter une card revient à ajouter une entrée ici, puis
@@ -14,6 +14,7 @@
  */
 
 export const CARD_INSIGHT_KEYS = [
+  "fiscalite",
   "securite",
   "demographie",
   "logement",

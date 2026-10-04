@@ -2706,6 +2706,43 @@ html {
   margin-inline: 0;
 }
 
+/* Fiscalité locale — blocs de texte et paires de barres commune / strate. Tout est bridé
+   à la mesure des graphes et posé à gauche, comme `.insee-prose`. */
+.local-tax-card .insee-prose + .line-chart {
+  margin-top: 10px;
+}
+
+.local-tax-detail {
+  max-width: var(--line-chart-max);
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.local-tax-facts {
+  max-width: var(--line-chart-max);
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.local-tax-facts li + li {
+  margin-top: 4px;
+}
+
+/* Intertitre d'un poste des comptes de la commune, au-dessus de sa phrase et de sa courbe. */
+.local-tax-finance-label {
+  margin: 16px 0 2px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.local-tax-card .line-chart-legend + .local-tax-finance-label {
+  margin-top: 22px;
+}
+
 /* Ligne d'unité, sous le titre de bloc. Une seule classe pour toute la page : le climat
    et la sécurité mettaient jusqu'ici leur unité entre parenthèses DANS le `h3`, avec
    chacun sa classe — deux structures pour la même information, d'où les marges de titre

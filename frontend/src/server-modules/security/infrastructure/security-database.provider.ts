@@ -1,5 +1,6 @@
 import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache } from "../../../server-shared/infrastructure/cache/in-memory-cache";
+import { departementOf } from "../../../server-shared/domain/commune-code";
 import {
   MASKED_MAX_FACTS,
   MASKED_MIN_FACTS,
@@ -24,15 +25,6 @@ interface ReferenceRow {
   annee: number;
   indicateur: string;
   taux_pour_mille: string;
-}
-
-/**
- * Code département à partir du code commune : les DOM tiennent sur 3 caractères
- * (971-976), la métropole sur 2 — la Corse comprise, dont les codes 2A/2B sont déjà
- * les deux premiers caractères de 2A004, 2B033…
- */
-export function departementOf(codeInsee: string): string {
-  return codeInsee.startsWith("97") ? codeInsee.slice(0, 3) : codeInsee.slice(0, 2);
 }
 
 export class SecurityDatabaseProvider implements SecurityProvider {

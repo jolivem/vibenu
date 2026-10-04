@@ -15,6 +15,7 @@ import type { CardInsights, SecurityRating } from "@/server-shared/types/card-in
  *    synthèse » soit visible à chaque essai plutôt que découvert en production.
  */
 export const CARD_INSIGHTS_FIXTURE: CardInsights = {
+  fiscalite: "Le taux de taxe foncière est nettement en dessous du taux médian des communes de France, malgré une hausse de près de trois points depuis 2021. La commune applique la majoration maximale sur les résidences secondaires.",
   securite: "Les vols sans violence sont l'atteinte la plus fréquente, à un niveau supérieur à la moyenne du département, mais en baisse d'environ un tiers sur dix ans.",
   demographie: "La population est nettement plus jeune que la moyenne française, avec une forte présence des 15-29 ans. Le revenu médian se situe un peu en dessous du niveau national.",
   logement: "Le parc est presque exclusivement collectif et majoritairement locatif, à l'inverse du profil national. Les logements de deux pièces dominent, dans des immeubles construits pour l'essentiel avant 1946.",

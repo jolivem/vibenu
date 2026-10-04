@@ -1,5 +1,6 @@
 import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache } from "../../../server-shared/infrastructure/cache/in-memory-cache";
+import { communeMere } from "../../../server-shared/domain/commune-code";
 import type { MunicipalesAnalysis, MunicipalesListe } from "../domain/municipales.types";
 
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
@@ -10,19 +11,14 @@ export interface MunicipalesProvider {
 
 /**
  * Le fichier du ministère ne connaît que les communes : Paris est `75056`, jamais
- * `75101`. On rabat donc l'arrondissement sur sa ville, et l'écran le signale.
+ * `75101`. On rabat donc l'arrondissement sur sa ville (`communeMere`), et l'écran le
+ * signale.
  *
  * Un fichier « conseils d'arrondissement » existe, mais il est découpé par *secteur* —
  * « Paris Centre » couvre les arrondissements 1 à 4, chaque secteur marseillais en couvre
  * deux — donc sans correspondance bijective avec les codes INSEE. Le conseil municipal se
  * jouant à l'échelle de la ville, le résultat communal reste la bonne réponse.
  */
-export function communeMere(codeInsee: string): { code: string; villeEntiere: boolean } {
-  if (/^751\d\d$/.test(codeInsee)) return { code: "75056", villeEntiere: true };
-  if (/^6938\d$/.test(codeInsee)) return { code: "69123", villeEntiere: true };
-  if (/^132\d\d$/.test(codeInsee)) return { code: "13055", villeEntiere: true };
-  return { code: codeInsee, villeEntiere: false };
-}
 
 interface CommuneRow {
   tour: number;

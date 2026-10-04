@@ -24,6 +24,8 @@ import { MunicipalesDatabaseProvider } from "@/server-modules/elections/infrastr
 import { ElectionsServiceImpl } from "@/server-modules/elections/application/elections.service.impl";
 import { SecurityDatabaseProvider } from "@/server-modules/security/infrastructure/security-database.provider";
 import { SecurityServiceImpl } from "@/server-modules/security/application/security.service.impl";
+import { LocalTaxDatabaseProvider } from "@/server-modules/local-tax/infrastructure/local-tax-database.provider";
+import { LocalTaxServiceImpl } from "@/server-modules/local-tax/application/local-tax.service.impl";
 import { MeteoFranceStationsProvider } from "@/server-modules/climate/infrastructure/meteo-france-stations.provider";
 import { ClimateServiceImpl } from "@/server-modules/climate/application/climate.service.impl";
 import { PostgisSchoolSectorProvider } from "@/server-modules/school-sector/infrastructure/postgis-school-sector.provider";
@@ -54,6 +56,7 @@ const useCase = new LocationAnalysisUseCase({
   demographicsService: new DemographicsServiceImpl(new IrisDemographicsProvider()),
   electionsService: new ElectionsServiceImpl(new ElectionsDatabaseProvider(), new MunicipalesDatabaseProvider()),
   securityService: new SecurityServiceImpl(new SecurityDatabaseProvider()),
+  localTaxService: new LocalTaxServiceImpl(new LocalTaxDatabaseProvider()),
   climateService: new ClimateServiceImpl(new MeteoFranceStationsProvider()),
   schoolSectorService: new SchoolSectorServiceImpl(new PostgisSchoolSectorProvider()),
   communeEquipmentService: new CommuneEquipmentServiceImpl(new PostgisCommuneEquipmentProvider()),

@@ -7,6 +7,7 @@ import type {
 } from "@/types/location-analysis";
 import { formatSurface } from "@/components/analysis/cadastreFormat";
 import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
+import { hasLocalTaxContent } from "@/components/analysis/localTaxModel";
 import { SECTION_ORDER, type SectionId } from "@/components/analysis/sections";
 import "./registerFonts";
 import { pdfStyles } from "./pdfStyles";
@@ -131,6 +132,7 @@ export function AnalysisPdfDocument({
   const showMap = FEATURES.showLocation && Boolean(mapDataUrl);
   const showRealEstate = FEATURES.showRealEstate && Boolean(realEstate);
   const showCadastre = FEATURES.showCadastre && Boolean(data.cadastre);
+  const localTax = FEATURES.showLocalTax && hasLocalTaxContent(data.localTax) ? data.localTax : null;
   const showNeighborhood = FEATURES.showNeighborhood && data.mode !== "commune";
   const showSchoolSector = FEATURES.showSchoolSector && Boolean(data.schoolSector);
   const showCommuneEquipment =
@@ -143,7 +145,7 @@ export function AnalysisPdfDocument({
 
   // Mêmes conditions que `hasContent` dans `AnalysisScreen`, une section par entrée.
   const sections: Record<SectionId, boolean> = {
-    immobilier: showRealEstate || showCadastre,
+    immobilier: showRealEstate || showCadastre || Boolean(localTax),
     proximite: showNeighborhood || showSchoolSector || showCommuneEquipment,
     deplacer: FEATURES.showMobility,
     securite: showSecurity,
@@ -195,6 +197,8 @@ export function AnalysisPdfDocument({
           <PdfImmobilierFiche
             realEstate={showRealEstate ? realEstate : null}
             cadastre={showCadastre ? data.cadastre : null}
+            localTax={localTax}
+            localTaxInsight={insights.fiscalite}
           />
         )}
 
@@ -248,7 +252,7 @@ export function AnalysisPdfDocument({
             Les chiffres viennent directement des fichiers publics.
           </Text>
           <Text style={pdfStyles.ficheNote}>
-            Sources : IGN · DVF · Géorisques · INSEE · Ministère de l&apos;Intérieur · Météo-France
+            Sources : IGN · DVF · DGFiP · Géorisques · INSEE · Ministère de l&apos;Intérieur · Météo-France
             · ATMO · Éducation nationale.
           </Text>
           {pageUrl && (

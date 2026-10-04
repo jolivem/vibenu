@@ -37,14 +37,22 @@ import type { CardInsightsInput } from "../domain/card-insights.types";
  * lieu d'un profil moyen. Les trois repères étant désormais trois extrêmes,
  * `climat_de_reference_le_plus_proche` peut valoir `null` : un tiers des lieux change de
  * repère le plus proche, et le milieu de la France ne ressemble franchement à aucun.
+ *
+ * v9 : nouvelle clé « fiscalite » (taxe foncière face à la médiane des communes, droits de
+ * mutation, dette), avec sa lecture piégeuse — des taux, jamais un montant en euros.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 8;
+export const CARD_INSIGHTS_PROMPT_VERSION = 9;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
 const MAX_LENGTH = 400;
 
 const BRIEFS: Record<CardInsightKey, { titreCard: string; consigne: string }> = {
+  fiscalite: {
+    titreCard: "Fiscalité locale",
+    consigne:
+      "le niveau du taux de taxe foncière face au taux médian des communes de France et le sens de son évolution, puis au plus un autre fait fourni (ordures ménagères, résidences secondaires, droits de mutation ou dette)",
+  },
   securite: {
     titreCard: "Sécurité",
     consigne:
@@ -99,7 +107,7 @@ Pour chaque section demandée, 1 à 2 phrases (25 à 45 mots) qui disent CE QU'I
 RÈGLES DE FOND
 - Tu ne disposes que des données JSON fournies. Tu n'inventes RIEN : ni chiffre, ni évolution, ni comparaison qui n'y figure pas.
 - Aucune explication causale. Pas de « grâce à la proximité du centre », « en raison de la gentrification » : les données ne contiennent pas les causes.
-- Les champs "tendance_…", "ecart_…", "multiple_…", "…_dominant", "…_dominante", "tranche_sur_representee", "climat_de_reference_le_plus_proche" sont DÉJÀ calculés. Reprends-les tels quels, ne les recalcule pas, ne les contredis pas.
+- Les champs "tendance", "tendance_…", "ecart_…", "multiple_…", "position_…", "…_dominant", "…_dominante", "tranche_sur_representee", "climat_de_reference_le_plus_proche" sont DÉJÀ calculés. Reprends-les tels quels, ne les recalcule pas, ne les contredis pas.
 - Chaque phrase situe le lieu par rapport au repère fourni (France, département, ou climats de référence). Un chiffre sans repère n'apprend rien : ne le donne jamais seul.
 - Seuil de saillance : en dessous de 2 points d'écart (ou 5 % en relatif), écris « proche de la moyenne » — ne dramatise pas un écart faible. Au-delà, nomme le sens de l'écart.
 - Au plus DEUX chiffres par phrase. Jamais d'énumération de pourcentages.
@@ -116,6 +124,7 @@ RÈGLES DE FORME
 - mode "commune" → tu décris la commune entière. N'emploie JAMAIS le mot « quartier ».
 
 LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
+- Fiscalité : ce sont des TAUX, en pourcentage d'une base propre à chaque logement. N'avance JAMAIS un montant d'impôt en euros, ni « la taxe foncière coûte… ». Le repère est le taux médian des communes (une commune sur deux a un taux plus bas) : écris « le taux médian des communes de France », jamais « la moyenne ». Reprends "position_vs_mediane_france" tel quel. Quand "ordures_menageres" vaut « aucune taxe publiée », le service est financé autrement : n'écris pas que la taxe est nulle ou gratuite. Quand "ville_entiere" est vrai, les taux sont ceux de la ville entière : dis « la ville », ne les attribue pas au quartier. La dette est celle de la commune, en euros par habitant, comparée aux communes de taille comparable.
 - Sécurité : "annees_masquees" compte les années sous secret statistique, ce qui signifie 1 à 4 faits dans l'année — donc un phénomène RARE, et non une donnée manquante. N'écris jamais « données indisponibles » à ce sujet. Ce sont des faits ENREGISTRÉS : la mesure dépend aussi du dépôt de plainte. Quand "multiple_vs_departement" ou "multiple_vs_france" est renseigné (le taux atteint au moins le double du repère), exprime cet écart en fois — « 13,6 fois plus fréquents qu'en France » — et jamais en pourcentage.
 - Climat : il n'y a pas de moyenne France pertinente ; la comparaison se fait aux types de climat de référence fournis, en t'appuyant sur "climat_de_reference_le_plus_proche". Désigne-les par leur type (continental, méditerranéen, océanique) et ne cite aucune ville.
 - Climat, quand "climat_de_reference_le_plus_proche" vaut null : aucun des trois types ne se détache. Décris alors le climat local par ses extrêmes et sa pluviométrie, sans le rattacher à un type et sans en désigner un « le plus proche » de toi-même.

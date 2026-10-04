@@ -14,6 +14,8 @@ import { RisksCard } from "@/components/analysis/RisksCard";
 import { AirQualityCard } from "@/components/analysis/AirQualityCard";
 import { RealEstateCard } from "@/components/analysis/RealEstateCard";
 import { CadastreCard } from "@/components/analysis/CadastreCard";
+import { LocalTaxCard } from "@/components/analysis/LocalTaxCard";
+import { hasLocalTaxContent } from "@/components/analysis/localTaxModel";
 import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
 import { DemographicsCard } from "@/components/analysis/DemographicsCard";
 import { PopulationScope } from "@/components/analysis/PopulationScope";
@@ -147,7 +149,9 @@ export function AnalysisScreen() {
     }
     return {
       immobilier:
-        (FEATURES.showRealEstate && !!data.realEstate) || (FEATURES.showCadastre && !!data.cadastre),
+        (FEATURES.showRealEstate && !!data.realEstate) ||
+        (FEATURES.showLocalTax && hasLocalTaxContent(data.localTax)) ||
+        (FEATURES.showCadastre && !!data.cadastre),
       deplacer: FEATURES.showMobility,
       proximite:
         (FEATURES.showNeighborhood && data.mode !== "commune") ||
@@ -289,6 +293,9 @@ export function AnalysisScreen() {
                           </LazyMap>
                         ) : null}
                       </RealEstateCard>
+                    )}
+                    {FEATURES.showLocalTax && hasLocalTaxContent(data.localTax) && (
+                      <LocalTaxCard localTax={data.localTax} insight={insights.fiscalite} />
                     )}
                     {FEATURES.showCadastre && data.cadastre && (
                       <CadastreCard cadastre={data.cadastre} />

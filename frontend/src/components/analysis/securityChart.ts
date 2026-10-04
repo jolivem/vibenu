@@ -1,7 +1,7 @@
 import type { SecurityIndicatorDto } from "@/types/location-analysis";
-import { BAND_HALF_WIDTH_RATIO, LINE_CHART_DIMENSIONS } from "./lineChart";
+import { BAND_HALF_WIDTH_RATIO, LINE_CHART_DIMENSIONS, niceStep, yearLabels } from "./lineChart";
 import type { LineChartBand, LineChartSeries } from "./LineChart";
-import { LOCAL_SERIES_COLOR } from "./chartColors";
+import { FRANCE_SERIES_COLOR, LOCAL_SERIES_COLOR, REFERENCE_SERIES_COLOR } from "./chartColors";
 
 /**
  * Couleur de la série communale — la même que la série principale des graphes d'âge et
@@ -9,10 +9,6 @@ import { LOCAL_SERIES_COLOR } from "./chartColors";
  * vous concerne » vaut pour toute la page.
  */
 export { LOCAL_SERIES_COLOR };
-
-/** Repères, dans les teintes désaturées déjà employées par le graphe climatique. */
-const DEPARTEMENT_COLOR = "#7c8ba1";
-const FRANCE_COLOR = "#b08968";
 
 export function formatRate(n: number): string {
   return `${n.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} ‰`;
@@ -93,7 +89,7 @@ export function buildSecurityChartModel(
     },
     ...references.map((reference) => ({
       name: reference.name,
-      color: reference.name === "France" ? FRANCE_COLOR : DEPARTEMENT_COLOR,
+      color: reference.name === "France" ? FRANCE_SERIES_COLOR : REFERENCE_SERIES_COLOR,
       strokeWidth: 1.4,
       dotRadius: 2.5,
       opacity: 0.75,
@@ -151,33 +147,4 @@ export function buildSecurityChartModel(
     xLabels: yearLabels(annees),
     xTitles: annees.map(String),
   };
-}
-
-/**
- * Abscisses : l'année complète aux deux extrémités, deux chiffres entre les deux.
- *
- * « 2016 » répété dix fois se chevaucherait — d'où l'abrégé au départ. Mais une rangée
- * de « 16 17 18 … 25 » ne dit plus de quoi il s'agit : ce sont peut-être des âges, des
- * rangs, des numéros de département. Les deux bornes écrites en clair suffisent à
- * ancrer l'échelle, et le lecteur déduit le reste sans effort.
- *
- * La place existe aux extrémités et nulle part ailleurs : `BAND_HALF_WIDTH_RATIO`
- * réserve un retrait de part et d'autre du tracé, si bien que le premier et le dernier
- * point sont les seuls à n'avoir de voisin que d'un côté.
- *
- * Une seule année → elle est écrite en entier, l'abréger n'économiserait rien.
- */
-function yearLabels(annees: number[]): string[] {
-  return annees.map((annee, i) =>
-    i === 0 || i === annees.length - 1 ? String(annee) : String(annee).slice(2),
-  );
-}
-
-/** Pas d'axe lisible : 1, 2, 5, 10… selon l'amplitude, pour 4 graduations. */
-function niceStep(max: number): number {
-  const target = (max || 1) / 4;
-  const magnitude = 10 ** Math.floor(Math.log10(target));
-  const normalized = target / magnitude;
-  const factor = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
-  return factor * magnitude;
 }

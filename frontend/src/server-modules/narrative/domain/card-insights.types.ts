@@ -195,6 +195,48 @@ export interface ClimatInsightInput {
   climat_de_reference_le_plus_proche: string | null;
 }
 
+// --- Fiscalité locale -------------------------------------------------------
+
+/** Position d'un taux face à la médiane des communes, tranchée en TS sur des seuils en points. */
+export type PositionFiscale =
+  | "nettement en dessous"
+  | "en dessous"
+  | "proche"
+  | "au-dessus"
+  | "nettement au-dessus";
+
+export interface FiscaliteInsightInput {
+  /** Taux de la ville entière alors que l'adresse est dans un arrondissement. */
+  ville_entiere: boolean;
+  taxe_fonciere?: {
+    annee: number;
+    taux_pct: number;
+    mediane_communes_france_pct: number | null;
+    ecart_mediane_france_pts: number | null;
+    position_vs_mediane_france: PositionFiscale | null;
+    mediane_communes_departement_pct: number | null;
+    ecart_mediane_departement_pts: number | null;
+    periode: string;
+    evolution_pts: number | null;
+    tendance: Tendance | null;
+    /** Taux de la taxe d'enlèvement, ou l'absence de taxe — jamais « 0 % ». */
+    ordures_menageres: { taux_pct: number } | "aucune taxe publiée";
+  };
+  /** Présent seulement si une majoration est votée. */
+  majoration_residences_secondaires_pct?: number;
+  /** Présent seulement si la commune est dans le périmètre. */
+  zone_taxe_logements_vacants?: true;
+  /** Présent seulement quand le département est resté sous le taux le plus courant. */
+  droits_mutation?: { taux_departemental_pct: number; inferieur_au_taux_le_plus_courant: true };
+  /** Présent seulement quand la dette s'écarte nettement des communes de taille comparable. */
+  dette_par_habitant?: {
+    eur: number;
+    moyenne_communes_comparables_eur: number;
+    ecart_pct: number | null;
+    multiple: number | null;
+  };
+}
+
 // --- Racine -----------------------------------------------------------------
 
 export interface CardInsightsInput {
@@ -202,6 +244,7 @@ export interface CardInsightsInput {
   mode: AnalysisMode;
   /** « Quartier Belleville — Paris 20e » ou « Commune de Rennes ». */
   perimetre: string;
+  fiscalite?: FiscaliteInsightInput;
   securite?: SecuriteInsightInput;
   demographie?: DemographieInsightInput;
   logement?: LogementInsightInput;

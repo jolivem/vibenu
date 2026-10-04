@@ -12,6 +12,7 @@ import type { ElectionsService } from "../../elections/application/elections.ser
 import type { ClimateService } from "../../climate/application/climate.service";
 import type { SchoolSectorService } from "../../school-sector/application/school-sector.service";
 import type { SecurityService } from "../../security/application/security.service";
+import type { LocalTaxService } from "../../local-tax/application/local-tax.service";
 import type { CommuneEquipmentService } from "../../commune-equipment/application/commune-equipment.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
 import type { FloodWindow } from "../../risks/domain/risk.types";
@@ -110,6 +111,7 @@ interface Dependencies {
   climateService: ClimateService;
   schoolSectorService: SchoolSectorService;
   securityService: SecurityService;
+  localTaxService: LocalTaxService;
   communeEquipmentService: CommuneEquipmentService;
 }
 
@@ -176,7 +178,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         : Promise.resolve(windowAround(input.lat, input.lon, FLOOD_RADIUS_M))
     ).then((window) => this.dependencies.riskService.getFloodZones(window));
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment, floodZones] =
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment, floodZones, localTax] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
@@ -193,6 +195,8 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         this.dependencies.electionsService.getMunicipalesData(codeInsee),
         communeEquipmentPromise,
         floodZonesPromise,
+        // Comme les équipements : la commune cherchée, pas celle où tombe le centroïde.
+        this.dependencies.localTaxService.getLocalTax(mode === "commune" ? contourCitycode : codeInsee),
       ]);
 
     const address = {
@@ -232,6 +236,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       security,
       municipales,
       communeEquipment,
+      localTax,
     };
   }
 }

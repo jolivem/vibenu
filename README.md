@@ -16,6 +16,7 @@ L'utilisateur saisit une adresse en France et obtient :
 - les commerces et services de proximité ;
 - les données socio-démographiques (population, âge, revenus, pauvreté), le parc de logements, l'emploi et les qualifications, la composition des ménages ;
 - la **délinquance enregistrée** (SSMSI) sur dix ans, comparée au département et à la France ;
+- la **fiscalité locale** (DGFiP) : taux de taxe foncière et d'ordures ménagères face à la médiane des communes, résidences secondaires et logements vacants, droits de mutation, comptes de la commune ;
 - les **normales climatiques 1991-2020** (température, pluviométrie, ensoleillement) avec comparaison commune / France ;
 - les **résultats de la dernière élection présidentielle** (1er tour 2022) avec comparaison commune / national ;
 - le **lieu autrefois** : cartes et photographies aériennes anciennes de l'IGN, fondues sur la vue actuelle ;
@@ -51,6 +52,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
 | `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Météo-France — normales par station pré-importées (PostgreSQL/PostGIS) ; moyenne nationale hardcodée |
 | `security` | Délinquance enregistrée, 10 ans, maille communale + repères département/France | SSMSI via data.gouv.fr (PostgreSQL) |
+| `local-tax` | Fiscalité locale : taxe foncière et TEOM (2021-2025), résidences secondaires et vacance, droits de mutation, comptes de la commune | DGFiP via data.economie.gouv.fr (PostgreSQL) ; barème DMTO ressaisi dans `dmto-rates.ts` |
 | `school-sector` | Secteur de collège (donnée disponible pour Paris) | Ville de Paris (PostgreSQL/PostGIS) |
 | `commune-stats` | Agrégats des pages SEO `/commune/*` (prix, démographie, équipements, air, élections) | PostgreSQL/PostGIS |
 | `summary` | Construction du résumé textuel (règles déterministes) — toujours produit dans le DTO, **plus affiché** depuis le passage aux mini-synthèses | - |
@@ -105,6 +107,7 @@ Le serveur utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés 
 | Qualité de l'air (Atmo) | 6 heures | in-memory | quotidien |
 | Climat (Météo-France stations, normales 1991-2020) | 30 jours | in-memory (clé arrondie ~11 km) | données figées (passé) |
 | Élections (Postgres local) | — | — | données figées (scrutin clos) |
+| Fiscalité locale (Postgres local) | 7 jours | in-memory (clé = code commune) | annuel (DGFiP) |
 | Contour commune (geo.api.gouv.fr) | 30 jours | in-memory | quasi-statique |
 | Mini-synthèses « En bref » (Mistral) | 90 jours | **PostgreSQL** (`card_insights_cache`) | sources annuelles (recensement, SSMSI, normales, présidentielle) |
 | Narrative des pages `/commune/*` (Mistral) | version de prompt | **PostgreSQL** (`commune_narrative_cache`) | stable tant que les données sources ne changent pas |
@@ -286,6 +289,9 @@ python import_municipales.py
 # Importer la délinquance SSMSI — COM (~39 Mo, 5,2 M lignes) + DEP, téléchargés si absents
 python import_crime.py
 
+# Importer la fiscalité locale DGFiP — taux, délibérations, comptes (6 CSV, ~25 Mo), téléchargés si absents
+python import_local_tax.py
+
 # Importer les normales climatiques Météo-France 1991-2020 — ~10 min
 # Déposer d'abord les *.csv.gz décadaires dans scripts/data/climate/
 python import_climate_stations.py
@@ -319,6 +325,7 @@ Migrations actuelles :
 - `012-school-sectors.sql` — secteurs de collège
 - `014-drop-climate-national-tables.sql` — nettoyage de deux tables climat obsolètes
 - `015-crime-ssmsi.sql` — délinquance SSMSI (`crime_commune`, `crime_reference`, `crime_indicateur`)
+- `020-local-tax.sql` — fiscalité locale DGFiP (`local_tax_commune`, `local_tax_reference`, `local_tax_deliberation`, `local_tax_deliberation_reference`, `local_tax_finances`)
 - `016-municipales-2026.sql` — municipales 2026
 - `017-insee-iris.sql` — `iris_demographics` (jusque-là créée par le script d'import),
   ses trois tables sœurs `iris_logement` / `iris_emploi` / `iris_menages`, et la vue
@@ -458,6 +465,19 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - Licence : Licence Ouverte Etalab 2.0
 - Mise à jour : à chaque nouveau scrutin national (relancer le script avec le nouveau fichier)
 
+### Fiscalité locale (DGFiP)
+- **Source** : DGFiP — [data.economie.gouv.fr](https://data.economie.gouv.fr/explore/dataset/fiscalite-locale-des-particuliers/), trois jeux exportés en CSV par `scripts/import_local_tax.py` :
+  - « Fiscalité locale des particuliers » (taux votés 2021-2025, une ligne par commune et par exercice) ;
+  - « Délibérations de fiscalité directe locale des communes (hors taux) » 2026 (taxe sur les logements vacants, majoration des résidences secondaires) ;
+  - « Comptes individuels des communes » 2021 à 2025, quatre jeux (euros par habitant et moyenne de la strate).
+- Repères : **médiane des communes** du département et de la France, calculée à l'import (ligne `'FRANCE'`)
+- Aucune ligne par arrondissement de Paris, Lyon ou Marseille : l'application lit la ville entière et le signale
+- TEOM nulle = service financé autrement : stockée `NULL`, jamais affichée « 0 % »
+- **Droits de mutation** : il n'existe qu'un [barème PDF](https://www.impots.gouv.fr/sites/default/files/media/1_metier/3_partenaire/notaires/dmto/dmto_2026-06.pdf), ressaisi à la main dans `server-modules/local-tax/infrastructure/dmto-rates.ts` (taux au 1er juin 2026) — à revoir à chaque nouveau barème
+- Ce sont des taux : le montant d'une taxe dépend de la valeur locative du logement, non publique, et n'est pas estimé
+- Licence : Licence Ouverte Etalab 2.0
+- Mise à jour : annuelle. Les jeux « délibérations » et « comptes » sont millésimés (nouvelle URL chaque année) : mettre à jour les constantes en tête du script, puis le relancer. `update.sh` rejoue les migrations mais **pas** l'import
+
 ## Structure du repository
 
 ```text
@@ -472,6 +492,7 @@ claireadresse/
 │   ├── import_elections.py  # Import Présidentielle 2022 T1 (agrégation par commune)
 │   ├── import_municipales.py         # Import Municipales 2026 (T1 + T2)
 │   ├── import_crime.py               # Import délinquance SSMSI (commune + dept + France)
+│   ├── import_local_tax.py           # Import fiscalité locale DGFiP (taux, délibérations, comptes)
 │   ├── import_climate_stations.py    # Normales Météo-France 1991-2020 par station
 │   ├── import_atmo_*.py              # Indices ATMO annuels (Paris, Lyon, Marseille)
 │   ├── import_school_sectors_paris.py # Secteurs de collège (opendata.paris.fr)
@@ -490,7 +511,7 @@ claireadresse/
         │   ├── location-analysis/  # Hooks (useLocationAnalysis, useCardInsights)
         │   └── analysis-pdf/       # Export PDF (react-pdf) — document, sections, capture carte
         ├── lib/site-features.ts  # Drapeaux de features des variantes PUBLIC / PRO
-        ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, security, school-sector, commune-stats, summary, narrative
+        ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, security, local-tax, school-sector, commune-stats, summary, narrative
         ├── server-shared/
         │   ├── infrastructure/
         │   │   ├── database/     # Pool PostgreSQL + migrations SQL applicatives

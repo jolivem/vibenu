@@ -18,3 +18,10 @@
  * `globals.css` : la bande d'incertitude est la série locale, elle doit suivre.
  */
 export const LOCAL_SERIES_COLOR = "#4B9319";
+
+/**
+ * Repères, dans les teintes désaturées déjà employées par le graphe climatique : la France
+ * garde son brun partout, tout autre repère (département, ville) prend le gris-bleu.
+ */
+export const REFERENCE_SERIES_COLOR = "#7c8ba1";
+export const FRANCE_SERIES_COLOR = "#b08968";

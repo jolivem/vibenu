@@ -28,7 +28,7 @@ export interface Indicator<T> {
 }
 
 /** « 1,5 point », « 2,4 points » — le singulier tient jusqu'à deux exclus. */
-function formatPoints(value: number): string {
+export function formatPoints(value: number): string {
   const rounded = Math.round(value * 10) / 10;
   const number = rounded.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
   return `${number} ${rounded < 2 ? "point" : "points"}`;

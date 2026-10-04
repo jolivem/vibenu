@@ -83,6 +83,11 @@ const sources = [
     desc: "Faits enregistrés par la police et la gendarmerie sur dix ans, à la maille communale — la plus fine qui soit publiée.",
   },
   {
+    name: "Fiscalité locale",
+    issuer: "DGFiP · data.economie.gouv.fr",
+    desc: "Taux de taxe foncière et d'ordures ménagères, résidences secondaires, droits de mutation et comptes des communes.",
+  },
+  {
     name: "Résultats électoraux",
     issuer: "Ministère de l'Intérieur / data.gouv.fr",
     desc: "Municipales 2026 et présidentielle 2022, agrégés à la commune et à l'arrondissement.",

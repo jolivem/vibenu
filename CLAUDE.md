@@ -51,7 +51,7 @@ runs on the VPS (git pull → docker compose pull → replay migrations → rest
 ### Server: DDD modules under `frontend/src/server-modules/<domain>/`
 
 Every data domain (`address`, `mobility`, `risks`, `real-estate`, `cadastre`, `air-quality`,
-`neighborhood`, `demographics`, `elections`, `climate`, `security`, `school-sector`,
+`neighborhood`, `demographics`, `elections`, `climate`, `security`, `local-tax`, `school-sector`,
 `commune-stats`, `commune-equipment`, `summary`, `narrative`) follows the same three-layer shape:
 
 - `domain/` — types only
@@ -170,7 +170,7 @@ debugging a prompt, it burns the API quota.
 Mistral (`mistral-small-latest`) behind an OpenAI-compatible `/chat/completions`, so swapping
 providers is just `LLM_BASE_URL` + `LLM_API_KEY` (falls back to `MISTRAL_API_KEY`).
 
-Two pipelines: `card-insights.*` (eight keys — `securite`, `demographie`, `logement`, `emploi`,
+Two pipelines: `card-insights.*` (nine keys — `fiscalite`, `securite`, `demographie`, `logement`, `emploi`,
 `menages`, `elections`, `municipales`, `climat` — in one call, for the "En bref" lines under card
 titles) and
 `commune-narrative.*` (editorial paragraphs for the `/commune/*` pages).

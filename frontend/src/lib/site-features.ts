@@ -32,6 +32,8 @@ export interface SiteFeatures {
   showNeighborhood: boolean;
   /** Card "Sécurité" — délinquance enregistrée SSMSI, maille communale. */
   showSecurity: boolean;
+  /** Card "Fiscalité locale" — taux DGFiP, droits de mutation, comptes de la commune. */
+  showLocalTax: boolean;
   /** Card "Municipales 2026" — résultats du scrutin local. */
   showMunicipales: boolean;
   /** Card "Transports en commun" — gares, bus, métros à proximité. */
@@ -92,6 +94,7 @@ const PUBLIC_FEATURES: SiteFeatures = {
   showNeighborhood: true,
   showMobility: true,
   showSecurity: true,
+  showLocalTax: true,
   showRealEstate: true,
   showRisks: true,
   showAirQuality: true,
@@ -121,6 +124,7 @@ const PRO_FEATURES: SiteFeatures = {
   showNeighborhood: true,
   showMobility: true,
   showSecurity: false, // usage professionnel : hors périmètre
+  showLocalTax: false,
   showRealEstate: false,
   showRisks: false,
   showAirQuality: false,

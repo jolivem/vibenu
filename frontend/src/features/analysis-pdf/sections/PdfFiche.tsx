@@ -9,6 +9,7 @@ import type {
   CommuneEquipmentDto,
   DemographicsAnalysisDto,
   ElectionsAnalysisDto,
+  LocalTaxAnalysisDto,
   MobilityAnalysisDto,
   MunicipalesAnalysisDto,
   NeighborhoodAnalysisDto,
@@ -31,6 +32,7 @@ import { formatElectionPct } from "@/components/analysis/electionFormat";
 import { NUANCE_LABEL } from "@/components/analysis/electionLabels";
 import { compactIndicator } from "@/components/analysis/indicator";
 import { viewForMode } from "@/components/analysis/inseeChart";
+import { localTaxFacts } from "@/components/analysis/localTaxModel";
 import type { KeyFigure } from "@/components/analysis/KeyFigures";
 import { mobilityView } from "@/components/analysis/mobilityModel";
 import { familyCounts, groupByCategory, presentFamilies } from "@/components/analysis/neighborhoodModel";
@@ -164,9 +166,14 @@ export function PdfKeyFigures({ figures }: { figures: Array<Pick<KeyFigure, "lab
 export function PdfImmobilierFiche({
   realEstate,
   cadastre,
+  localTax,
+  localTaxInsight,
 }: {
   realEstate: RealEstateAnalysisDto | null;
   cadastre: CadastreAnalysisDto | null;
+  /** `null` quand la card « Fiscalité locale » n'est pas rendue. */
+  localTax: LocalTaxAnalysisDto | null;
+  localTaxInsight?: string | null;
 }) {
   const zone = cadastre?.urbanZone ?? null;
   const type = zone ? pluZoneType(zone.type) : null;
@@ -199,6 +206,17 @@ export function PdfImmobilierFiche({
       )}
       {cadastre && cadastre.prescriptions.length > 0 && (
         <Fact label="Prescriptions">{join(cadastre.prescriptions.map((p) => p.label), " ; ")}</Fact>
+      )}
+      {localTax && (
+        <View>
+          <Sub>{`Fiscalité locale${localTax.villeEntiere ? " — ville entière" : ""}`}</Sub>
+          <PdfInsight text={localTaxInsight} />
+          {localTaxFacts(localTax).map((fact) => (
+            <Fact key={fact.label} label={fact.label}>
+              {fact.text}
+            </Fact>
+          ))}
+        </View>
       )}
     </Block>
   );
