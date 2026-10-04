@@ -20,16 +20,17 @@ import type { RasterSourceSpecification } from "maplibre-gl";
  * Marseille). Une pastille qui n'affiche rien une fois sur deux vaut moins que pas de
  * pastille.
  */
+export type EraId =
+  | "cassini"
+  | "etat-major"
+  | "scan50-1950"
+  | "ortho-1950-1965"
+  | "ortho-1965-1980"
+  | "ortho-2000-2005";
+
 export interface HistoricalEra {
-  id: string;
-  /** La pastille de la frise — une date, assez courte pour tenir. */
-  shortLabel: string;
-  /** Le nom du document. */
-  label: string;
-  /** La période couverte, en toutes lettres. */
-  period: string;
-  /** Une phrase de contexte : la valeur éditoriale de la card, et le texte indexable. */
-  context: string;
+  id: EraId;
+  /** Les textes de l'époque (pastille, nom, période, contexte) sont dans les messages. */
   layer: string;
   style?: string;
   format: string;
@@ -42,11 +43,6 @@ export interface HistoricalEra {
 export const HISTORICAL_ERAS: readonly HistoricalEra[] = [
   {
     id: "cassini",
-    shortLabel: "~1750",
-    label: "Carte de Cassini",
-    period: "vers 1750",
-    context:
-      "Le premier levé géométrique de tout le royaume, dressé par quatre générations de Cassini. Elle montre les villages, les chemins et les moulins d'avant la Révolution — mais pas les parcelles : à cette échelle, seul le bâti groupé est représenté.",
     layer: "BNF-IGNF_GEOGRAPHICALGRIDSYSTEMS.CASSINI",
     format: "image/png",
     maxzoom: 14,
@@ -59,11 +55,6 @@ export const HISTORICAL_ERAS: readonly HistoricalEra[] = [
   },
   {
     id: "etat-major",
-    shortLabel: "1820-66",
-    label: "Carte de l'état-major",
-    period: "1820-1866",
-    context:
-      "Levée au 1/40 000 par les officiers du Dépôt de la Guerre, elle décrit la France juste avant l'industrialisation : le parcellaire agricole d'avant le remembrement, les forêts, et les bourgs avant l'arrivée du chemin de fer.",
     layer: "GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR40",
     format: "image/jpeg",
     maxzoom: 15,
@@ -71,11 +62,6 @@ export const HISTORICAL_ERAS: readonly HistoricalEra[] = [
   },
   {
     id: "scan50-1950",
-    shortLabel: "1950",
-    label: "Carte de 1950",
-    period: "vers 1950",
-    context:
-      "La carte topographique de l'après-guerre, avant les grands ensembles, les rocades et l'étalement pavillonnaire. C'est l'état de référence auquel se compare tout ce qui a été construit depuis.",
     layer: "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN50.1950",
     format: "image/jpeg",
     maxzoom: 15,
@@ -83,22 +69,12 @@ export const HISTORICAL_ERAS: readonly HistoricalEra[] = [
   },
   {
     id: "ortho-1950-1965",
-    shortLabel: "1950-65",
-    label: "Photographies aériennes",
-    period: "1950-1965",
-    context:
-      "La première couverture photographique complète du territoire. À la différence des cartes, elle ne représente rien : elle enregistre. On y voit le bâti réel, les jardins, les friches — et souvent une campagne là où il y a aujourd'hui un lotissement.",
     layer: "ORTHOIMAGERY.ORTHOPHOTOS.1950-1965",
     format: "image/png",
     maxzoom: 18,
   },
   {
     id: "ortho-1965-1980",
-    shortLabel: "1965-80",
-    label: "Photographies aériennes",
-    period: "1965-1980",
-    context:
-      "Les deux décennies qui ont le plus transformé le paysage français : grands ensembles, zones industrielles, remembrement agricole et premières rocades.",
     layer: "ORTHOIMAGERY.ORTHOPHOTOS.1965-1980",
     // Cette couche n'expose PAS le style `normal` : le passer renvoie un HTTP 400.
     style: "BDORTHOHISTORIQUE",
@@ -107,11 +83,6 @@ export const HISTORICAL_ERAS: readonly HistoricalEra[] = [
   },
   {
     id: "ortho-2000-2005",
-    shortLabel: "2000-05",
-    label: "Photographies aériennes",
-    period: "2000-2005",
-    context:
-      "Le début des années 2000, assez proche pour reconnaître les lieux et assez ancien pour mesurer ce qui a été construit depuis.",
     layer: "ORTHOIMAGERY.ORTHOPHOTOS2000-2005",
     format: "image/jpeg",
     maxzoom: 18,

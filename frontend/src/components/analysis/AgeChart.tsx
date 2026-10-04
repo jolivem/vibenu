@@ -1,13 +1,16 @@
 import type { AgeDistributionDto } from "@/types/location-analysis";
 import { AGE_BUCKETS, AGE_CHART_DIMENSIONS, buildAgeChartModel } from "./ageChart";
 import { ChartLegend } from "./ChartLegend";
+import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 
 interface Props {
   iris: AgeDistributionDto;
   commune?: AgeDistributionDto | null;
   france?: AgeDistributionDto | null;
   showCommune?: boolean;
+  /** Nom de la série principale ; par défaut « Quartier ». */
   mainSeriesName?: string;
+  m: PopulationMessages;
 }
 
 /**
@@ -20,14 +23,16 @@ export function AgeChart({
   commune = null,
   france = null,
   showCommune = false,
-  mainSeriesName = "Quartier",
+  mainSeriesName,
+  m,
 }: Props) {
   const { series, yTicks, x, y } = buildAgeChartModel({
     iris,
     commune,
     france,
     showCommune,
-    mainSeriesName,
+    mainSeriesName: mainSeriesName ?? m.scale.neighbourhood,
+    names: m.scale,
   });
   const { W, H, padL, padR, padB } = AGE_CHART_DIMENSIONS;
 
@@ -36,7 +41,7 @@ export function AgeChart({
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label="Répartition par âge — comparaison multi-séries"
+        aria-label={m.demographics.ageAria}
         className="line-chart-svg"
       >
         {yTicks.map((t) => (
@@ -76,7 +81,7 @@ export function AgeChart({
                   r={s.dotRadius}
                   fill={s.color}
                 >
-                  <title>{`${s.name} — ${b.label} : ${s.data[b.key]}%`}</title>
+                  <title>{m.demographics.agePoint(s.name, b.label, s.data[b.key])}</title>
                 </circle>
               ))}
             </g>

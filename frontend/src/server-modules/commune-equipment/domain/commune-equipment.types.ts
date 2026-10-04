@@ -15,6 +15,8 @@ export interface EquipmentRubricDefinition {
 }
 
 export interface EquipmentFamilyDefinition {
+  /** Clé technique de la famille : les pages traduites y accrochent leur titre. */
+  key: string;
   title: string;
   rubrics: readonly EquipmentRubricDefinition[];
 }
@@ -22,6 +24,7 @@ export interface EquipmentFamilyDefinition {
 /** Table unique des rubriques affichées : l'écran, le PDF et la requête en dérivent. */
 export const EQUIPMENT_FAMILIES: readonly EquipmentFamilyDefinition[] = [
   {
+    key: "sante",
     title: "Santé",
     rubrics: [
       { key: "generalistes", label: "Médecins généralistes", typequ: ["D265"] },
@@ -36,6 +39,7 @@ export const EQUIPMENT_FAMILIES: readonly EquipmentFamilyDefinition[] = [
     ],
   },
   {
+    key: "enseignement",
     title: "Enseignement",
     rubrics: [
       { key: "ecoles", label: "Écoles maternelles et élémentaires", typequ: ["C107", "C108", "C109"] },
@@ -44,6 +48,7 @@ export const EQUIPMENT_FAMILIES: readonly EquipmentFamilyDefinition[] = [
     ],
   },
   {
+    key: "commerces",
     title: "Commerces",
     rubrics: [
       { key: "supermarches", label: "Supermarchés", typequ: ["B104", "B105", "B201"] },
@@ -52,6 +57,7 @@ export const EQUIPMENT_FAMILIES: readonly EquipmentFamilyDefinition[] = [
     ],
   },
   {
+    key: "services",
     title: "Services",
     rubrics: [
       { key: "poste", label: "Bureaux de poste", typequ: ["A206", "A207", "A208"] },
@@ -59,6 +65,7 @@ export const EQUIPMENT_FAMILIES: readonly EquipmentFamilyDefinition[] = [
     ],
   },
   {
+    key: "loisirs",
     title: "Loisirs",
     rubrics: [
       { key: "bibliotheques", label: "Bibliothèques", typequ: ["F307"] },
@@ -71,6 +78,7 @@ export const EQUIPMENT_FAMILIES: readonly EquipmentFamilyDefinition[] = [
     ],
   },
   {
+    key: "transports",
     title: "Transports",
     rubrics: [{ key: "gares", label: "Gares", typequ: ["E107", "E108", "E109"] }],
   },
@@ -98,5 +106,5 @@ export interface CommuneEquipment {
   population: number;
   /** Arrondissement de Paris, Lyon ou Marseille : les nombres y sont moins sûrs. */
   isArrondissement: boolean;
-  families: Array<{ title: string; rubrics: EquipmentRubric[] }>;
+  families: Array<{ key: string; title: string; rubrics: EquipmentRubric[] }>;
 }

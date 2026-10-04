@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import type { AnalysisMode, DemographicsAnalysisDto } from "@/types/location-analysis";
+import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  m: PopulationMessages;
   /**
    * Carte du quartier, montée par l'appelant — comme le font déjà `RealEstateCard` et
    * `SchoolSectorCard`. Absente en mode commune, et quand le contour IRIS manque.
@@ -35,7 +37,7 @@ interface Props {
  * donc `card`, et sa carte passe en `card-map` — même filet haut, mêmes débords
  * jusqu'aux bords que la carte des prix ou de la carte scolaire.
  */
-export function PopulationScope({ demographics, mode, children }: Props) {
+export function PopulationScope({ demographics, mode, m, children }: Props) {
   const { nomIris, nomCommune, codeIris, communeStats, communeIrisCount } = demographics;
 
   if (mode === "commune") return null;
@@ -47,29 +49,21 @@ export function PopulationScope({ demographics, mode, children }: Props) {
   return (
     <div className="card section-scope">
       <p className="section-scope-zone">
-        <span className="section-scope-kicker">Quartier :</span> {nomIris || codeIris}
+        <span className="section-scope-kicker">{m.scope.kicker}</span> {nomIris || codeIris}
         {nomCommune && <span className="section-scope-kicker"> — {nomCommune}</span>}
       </p>
-      <p className="section-scope-text">
-        Données du quartier IRIS, zone statistique d&apos;environ 2 000 habitants
-        {children ? ", délimitée sur la carte." : "."}
-      </p>
+      <p className="section-scope-text">{m.scope.text(Boolean(children))}</p>
 
       {/* Migrée depuis la card Démographie : elle expliquait pourquoi un tableau n'avait
           pas de colonne « Commune », elle explique maintenant pourquoi les quatre n'en
           ont pas — ce que les trois autres cards masquaient jusqu'ici sans le dire. */}
-      {!showCommune && nomCommune && (
-        <p className="demographics-note">
-          Quartier unique pour cette commune — les chiffres du quartier et de la commune
-          sont identiques.
-        </p>
-      )}
+      {!showCommune && nomCommune && <p className="demographics-note">{m.scope.singleIris}</p>}
 
       {children ? (
         <div
           className="card-map"
           role="group"
-          aria-label={`Limites du quartier ${nomIris || codeIris}`}
+          aria-label={m.scope.mapAria(nomIris || codeIris)}
         >
           {children}
         </div>

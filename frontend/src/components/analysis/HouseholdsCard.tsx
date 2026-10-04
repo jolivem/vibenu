@@ -5,12 +5,12 @@ import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { HOUSEHOLDS_INDICATORS, compositionSegments } from "./populationIndicators";
 import { viewForMode, type InseeView } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
-
-const CHILDREN_LABELS = ["Aucun", "1", "2", "3", "4 et +"] as const;
+import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  m: PopulationMessages;
   /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
   insight?: string | null;
 }
@@ -21,22 +21,19 @@ interface Props {
  * C'est ce qui distingue le mieux un quartier de familles d'un quartier de jeunes
  * actifs — deux profils qu'un revenu médian identique masquerait entièrement.
  */
-export function HouseholdsCard({ demographics, mode, insight }: Props) {
-  const view = viewForMode(demographics.households, mode, demographics);
+export function HouseholdsCard({ demographics, mode, m, insight }: Props) {
+  const view = viewForMode(demographics.households, mode, demographics, m);
   if (!view) return null;
 
   return (
     <section className="card">
-      <h2>Ménages et familles</h2>
+      <h2>{m.households.title}</h2>
 
       <CardInsight text={insight} />
 
       <HouseholdsCharts view={view} />
 
-      <p className="elections-footnote">
-        La composition des foyers, recensée en 2021. Un ménage est l&apos;ensemble des
-        personnes d&apos;un même logement, qu&apos;elles aient ou non un lien de parenté.
-      </p>
+      <p className="elections-footnote">{m.households.footnote}</p>
     </section>
   );
 }
@@ -46,6 +43,7 @@ export function HouseholdsCard({ demographics, mode, insight }: Props) {
  * notes de la card : les pages commune les reprennent tels quels.
  */
 export function HouseholdsCharts({ view }: { view: InseeView<HouseholdsStatsDto> }) {
+  const m = view.m.households;
   return (
     <>
       {HOUSEHOLDS_INDICATORS.map((indicator) => (
@@ -53,17 +51,17 @@ export function HouseholdsCharts({ view }: { view: InseeView<HouseholdsStatsDto>
       ))}
 
       <div className="insee-metric">
-        <h3>Composition des ménages</h3>
-        <p className="metric-unit">en % des ménages</p>
-        <StackedBarGroup rows={scopedBarRows(view, compositionSegments)} />
+        <h3>{m.compositionTitle}</h3>
+        <p className="metric-unit">{m.compositionUnit}</p>
+        <StackedBarGroup rows={scopedBarRows(view, compositionSegments)} m={view.m} />
       </div>
 
       <DistributionChart
-        title="Enfants par famille"
-        unit="en % des familles, enfants de moins de 25 ans"
+        title={m.childrenTitle}
+        unit={m.childrenUnit}
         view={view}
         pick={(s) => s.enfantsParFamille}
-        labels={CHILDREN_LABELS}
+        labels={m.childrenLabels}
       />
     </>
   );

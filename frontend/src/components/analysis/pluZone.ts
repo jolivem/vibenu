@@ -1,3 +1,5 @@
+import type { CadastreMessages, PluZoneKey } from "@/i18n/messages/fr/analysis/cadastre";
+
 /**
  * Les types de zone d'un PLU — la seule partie nationale du zonage.
  *
@@ -39,42 +41,16 @@ export interface PluZoneType {
  * PLU (`AUs`). Pour un acheteur, ce n'est pas un détail — c'est la différence entre un
  * terrain constructible et un terrain qui ne le sera peut-être jamais.
  */
-const ZONE_TYPES: Record<string, PluZoneType> = {
-  U: {
-    label: "Urbain",
-    gloss:
-      "secteur déjà urbanisé, ou dont les équipements suffisent à desservir de nouvelles constructions",
-    className: "zone-badge zone-badge--u",
-  },
-  AUc: {
-    label: "À urbaniser",
-    gloss:
-      "destiné à être urbanisé, les équipements en périphérie immédiate ayant une capacité suffisante",
-    className: "zone-badge zone-badge--au",
-  },
-  AUs: {
-    label: "À urbaniser à terme",
-    gloss:
-      "destiné à être urbanisé, mais son ouverture suppose d'abord une modification ou une révision du PLU",
-    className: "zone-badge zone-badge--au",
-  },
-  A: {
-    label: "Agricole",
-    gloss:
-      "terres protégées en raison de leur potentiel agronomique, biologique ou économique",
-    className: "zone-badge zone-badge--a",
-  },
-  N: {
-    label: "Naturel",
-    gloss:
-      "espaces naturels ou forestiers protégés — qualité des sites, ressources naturelles, ou prévention des risques",
-    className: "zone-badge zone-badge--n",
-  },
+const ZONE_CLASSES: Record<PluZoneKey, string> = {
+  U: "zone-badge zone-badge--u",
+  AUc: "zone-badge zone-badge--au",
+  AUs: "zone-badge zone-badge--au",
+  A: "zone-badge zone-badge--a",
+  N: "zone-badge zone-badge--n",
 };
 
-/** Type inconnu : on affiche le code brut, sans glose. */
-function unknown(typezone: string): PluZoneType {
-  return { label: typezone, gloss: "", className: "zone-badge" };
+function isZoneKey(key: string): key is PluZoneKey {
+  return key in ZONE_CLASSES;
 }
 
 /**
@@ -82,13 +58,13 @@ function unknown(typezone: string): PluZoneType {
  *
  * La correspondance exacte d'abord, puis le préfixe `AU` : un document qui écrirait
  * `AU` tout court, ou une variante non prévue, vaut mieux rangé sous « à urbaniser »
- * que rendu tel quel. Au-delà, on ne devine pas.
+ * que rendu tel quel. Au-delà, on ne devine pas : le code brut s'affiche, sans glose.
  */
-export function pluZoneType(typezone: string): PluZoneType {
-  const key = typezone.trim();
-  if (ZONE_TYPES[key]) return ZONE_TYPES[key];
-  if (key.toUpperCase().startsWith("AU")) return ZONE_TYPES.AUc;
-  return unknown(key);
+export function pluZoneType(typezone: string, m: CadastreMessages): PluZoneType {
+  const raw = typezone.trim();
+  const key = isZoneKey(raw) ? raw : raw.toUpperCase().startsWith("AU") ? "AUc" : null;
+  if (!key) return { label: raw, gloss: "", className: "zone-badge" };
+  return { ...m.zoneTypes[key], className: ZONE_CLASSES[key] };
 }
 
 /**

@@ -3,6 +3,7 @@ import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-
 import { CITIES } from "@/lib/commune-slugs";
 import { CardInsight } from "@/components/CardInsight";
 import { SecurityIndicatorChart } from "@/components/analysis/SecurityCard";
+import { security } from "@/i18n/messages/fr/analysis/security";
 
 interface Props {
   /** Légende IA de la section, rendue côté serveur. */
@@ -40,8 +41,9 @@ export function CommuneSecurityCard({ stats, securite, legendes }: Props) {
               maille="arrondissement"
               references={[
                 ...(villeIndicator ? [{ name: cityDef.nomAffiche, values: villeIndicator.commune }] : []),
-                { name: "France", values: indicator.france },
+                { name: "France", values: indicator.france, france: true },
               ]}
+              m={security}
             />
           );
         })}

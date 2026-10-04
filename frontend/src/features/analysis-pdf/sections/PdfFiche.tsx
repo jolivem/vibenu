@@ -17,25 +17,23 @@ import type {
   RiskAnalysisDto,
   SchoolSectorDto,
 } from "@/types/location-analysis";
-import { formatFr } from "@/lib/format";
-import { LEVEL_CONFIG, modalLevel } from "@/components/analysis/airQualityModel";
-import { formatSurface } from "@/components/analysis/cadastreFormat";
+import { modalLevel } from "@/components/analysis/airQualityModel";
+import type { ClimateMetric } from "@/components/analysis/climateChart";
 import { climateTitle } from "@/components/analysis/climateFormat";
 import {
   absentLine,
+  familyTitle,
+  rubricLabel,
   equipmentFootnote,
   equipmentLine,
   splitRubrics,
 } from "@/components/analysis/communeEquipmentFormat";
-import { formatPct } from "@/components/analysis/demographicsFormat";
-import { formatElectionPct } from "@/components/analysis/electionFormat";
-import { NUANCE_LABEL } from "@/components/analysis/electionLabels";
 import { compactIndicator } from "@/components/analysis/indicator";
 import { viewForMode } from "@/components/analysis/inseeChart";
 import { localTaxFacts } from "@/components/analysis/localTaxModel";
 import type { KeyFigure } from "@/components/analysis/KeyFigures";
 import { mobilityView } from "@/components/analysis/mobilityModel";
-import { familyCounts, groupByCategory, presentFamilies } from "@/components/analysis/neighborhoodModel";
+import { familyCounts, groupByCategory, presentFamilies, poiName } from "@/components/analysis/neighborhoodModel";
 import { pluZoneLongLabel, pluZoneType } from "@/components/analysis/pluZone";
 import {
   DEMOGRAPHICS_INDICATORS,
@@ -45,12 +43,15 @@ import {
   demographicsScoped,
 } from "@/components/analysis/populationIndicators";
 import { formatProximity } from "@/components/analysis/proximityFormat";
-import { RISK_LEVEL_BADGES, splitRisks } from "@/components/analysis/riskLevels";
-import { SECTION_TITLES } from "@/components/analysis/sections";
-import { SCHOOL_LEVEL_LABEL } from "@/components/analysis/sectorSchool";
+import { RISK_LEVEL_BADGES, riskName, splitRisks } from "@/components/analysis/riskLevels";
+import { sectionTitles } from "@/components/analysis/sections";
 import { COLORS, FONTS } from "../pdfStyles";
 import { PdfBadge, PdfCardBox, PdfCardTitle, pdfSafe } from "./PdfCard";
 import { PdfInsight } from "./PdfInsight";
+import { FEATURES } from "@/lib/site-features";
+import { usePdfMessages } from "../pdfMessages";
+import type { NearbyMessages } from "@/i18n/messages/fr/analysis/nearby";
+import type { PdfMessages } from "@/i18n/messages/fr/analysis/pdf";
 
 /**
  * La fiche de synthèse : un bloc par section de l'écran, avec son « En bref » et quelques
@@ -110,10 +111,16 @@ function join(parts: Array<string | null | false | undefined>, separator = " · 
 
 /** Une ligne de faits : « Libellé : valeur ». Rien si la valeur est vide. */
 function Fact({ label, children }: { label?: string; children: string }) {
+  const { pdf } = usePdfMessages();
   if (!children) return null;
   return (
     <Text style={s.fact}>
-      {label && <Text style={s.label}>{label} : </Text>}
+      {label && (
+        <Text style={s.label}>
+          {label}
+          {pdf.labelSeparator}
+        </Text>
+      )}
       {pdfSafe(children)}
     </Text>
   );
@@ -175,8 +182,22 @@ export function PdfImmobilierFiche({
   localTax: LocalTaxAnalysisDto | null;
   localTaxInsight?: string | null;
 }) {
+  const {
+    cadastre: cadastreMessages,
+    climate: climateMessages,
+    air: airMessages,
+    elections: electionsMessages,
+    localTax: localTaxMessages,
+    mobility: mobilityMessages,
+    nearby: nearbyMessages,
+    population,
+    risks: risksMessages,
+    sections,
+    pdf,
+  } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
   const zone = cadastre?.urbanZone ?? null;
-  const type = zone ? pluZoneType(zone.type) : null;
+  const type = zone ? pluZoneType(zone.type, cadastreMessages) : null;
   const longLabel = zone ? pluZoneLongLabel(zone.label) : null;
   const median = realEstate?.medianPricePerSquareMeter;
   const transactions = realEstate?.nearbyTransactionsCount ?? 0;
@@ -184,34 +205,38 @@ export function PdfImmobilierFiche({
   return (
     <Block title={SECTION_TITLES.immobilier}>
       {realEstate && (
-        <Fact label="Marché">
+        <Fact label={pdf.property.marketLabel}>
           {join([
-            median != null && median > 0 && `prix médian ${formatFr(Math.round(median))} €/m²`,
-            Boolean(transactions) && `${transactions} transaction${transactions > 1 ? "s" : ""} proche${transactions > 1 ? "s" : ""}`,
-          ]) || "aucune vente récente recensée"}
+            median != null && median > 0 && pdf.property.median(median),
+            Boolean(transactions) && pdf.property.transactions(transactions),
+          ]) || pdf.property.noSale}
         </Fact>
       )}
       {cadastre?.parcel && (
-        <Fact label="Parcelle">
-          {`${formatSurface(cadastre.parcel.contenance)} · section ${cadastre.parcel.section} n° ${cadastre.parcel.numero}`}
+        <Fact label={pdf.property.parcelLabel}>
+          {pdf.property.parcel(
+            cadastreMessages.surface(cadastre.parcel.contenance),
+            cadastre.parcel.section,
+            cadastre.parcel.numero,
+          )}
         </Fact>
       )}
       {zone && type && (
         <View style={s.badgeLine}>
-          <Text style={[s.fact, s.label, { marginTop: 0 }]}>Zone PLU :</Text>
+          <Text style={[s.fact, s.label, { marginTop: 0 }]}>{pdf.property.zoneLabel}</Text>
           <PdfBadge label={type.label} {...(ZONE_BADGE_COLORS[type.className] ?? DEFAULT_ZONE_BADGE)} />
           <Text style={s.badgeText}>{zone.code}</Text>
           {longLabel && <Text style={s.badgeMuted}>{longLabel}</Text>}
         </View>
       )}
       {cadastre && cadastre.prescriptions.length > 0 && (
-        <Fact label="Prescriptions">{join(cadastre.prescriptions.map((p) => p.label), " ; ")}</Fact>
+        <Fact label={pdf.property.prescriptionsLabel}>{join(cadastre.prescriptions.map((p) => p.label), " ; ")}</Fact>
       )}
       {localTax && (
         <View>
-          <Sub>{`Fiscalité locale${localTax.villeEntiere ? " — ville entière" : ""}`}</Sub>
+          <Sub>{localTaxMessages.pdf.heading(localTax.villeEntiere)}</Sub>
           <PdfInsight text={localTaxInsight} />
-          {localTaxFacts(localTax).map((fact) => (
+          {localTaxFacts(localTax, localTaxMessages).map((fact) => (
             <Fact key={fact.label} label={fact.label}>
               {fact.text}
             </Fact>
@@ -223,15 +248,16 @@ export function PdfImmobilierFiche({
 }
 
 /** « 23 », « 1 », « aucun » — suivi, s'il existe, de l'équipement le plus proche. */
-function countLine(count: number | null, nearest: { name: string; distanceMeters: number } | null): string {
-  const closest = nearest ? `${nearest.name} (${formatProximity(nearest.distanceMeters)})` : "";
-  if (count === null) return closest;
-  if (count === 0) return closest ? `aucun dans le rayon — le plus proche : ${closest}` : "aucun dans le rayon";
-  return closest ? `${count} — le plus proche : ${closest}` : String(count);
-}
-
-function plural(count: number, zero: string, one: string, many: string): string {
-  return count === 0 ? zero : `${count} ${count > 1 ? many : one}`;
+function countLine(
+  count: number | null,
+  nearest: { name: string; category: string; distanceMeters: number } | null,
+  nearby: NearbyMessages,
+  pdf: PdfMessages,
+): string {
+  const closest = nearest
+    ? pdf.nearby.closest(poiName(nearest, nearby.neighborhood), formatProximity(nearest.distanceMeters, nearby))
+    : "";
+  return pdf.nearby.count(count, closest);
 }
 
 export function PdfProximiteFiche({
@@ -245,6 +271,20 @@ export function PdfProximiteFiche({
   /** Mode commune : les équipements de la commune entière, à la place du voisinage. */
   communeEquipment?: CommuneEquipmentDto | null;
 }) {
+  const {
+    cadastre: cadastreMessages,
+    climate: climateMessages,
+    air: airMessages,
+    elections: electionsMessages,
+    localTax: localTaxMessages,
+    mobility: mobilityMessages,
+    nearby: nearbyMessages,
+    population,
+    risks: risksMessages,
+    sections,
+    pdf,
+  } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
   const groups = neighborhood ? groupByCategory(neighborhood.pois) : {};
   // Les restaurants à part : 177 à 500 m d'une adresse du 15e, ils faisaient de « Culture
   // & loisirs » une famille de 194 équipements, et son « plus proche » était un restaurant.
@@ -256,7 +296,7 @@ export function PdfProximiteFiche({
   // (« une école ? un médecin ? ») tient en une ligne par famille.
   const nearestByFamily = new Map(
     presentFamilies(daily).map((family) => [
-      family.title,
+      nearbyMessages.neighborhood.families[family.key],
       nearestOf(family.categories.flatMap((category) => daily[category])),
     ]),
   );
@@ -265,51 +305,46 @@ export function PdfProximiteFiche({
   const counts = neighborhood?.counts ?? null;
   const rows = counts
     ? [
-        ...familyCounts({ ...counts.byCategory, restaurant: 0 }).map(({ title, count }) => ({
-          title,
-          count,
-          nearest: nearestByFamily.get(title) ?? null,
-        })),
-        { title: "Restaurants", count: counts.byCategory.restaurant ?? 0, nearest: nearestOf(restaurants) },
+        ...familyCounts({ ...counts.byCategory, restaurant: 0 }).map(({ key, count }) => {
+          const title = nearbyMessages.neighborhood.families[key];
+          return { title, count, nearest: nearestByFamily.get(title) ?? null };
+        }),
+        { title: pdf.nearby.restaurants, count: counts.byCategory.restaurant ?? 0, nearest: nearestOf(restaurants) },
       ]
     : [
         ...[...nearestByFamily].map(([title, nearest]) => ({ title, count: null, nearest })),
-        ...(restaurants.length ? [{ title: "Restaurants", count: null, nearest: nearestOf(restaurants) }] : []),
+        ...(restaurants.length ? [{ title: pdf.nearby.restaurants, count: null, nearest: nearestOf(restaurants) }] : []),
       ];
 
   return (
     <Block title={SECTION_TITLES.proximite}>
       {schoolSector && (
-        <Fact label={SCHOOL_LEVEL_LABEL[schoolSector.niveau]}>{schoolSector.nomEtablissement}</Fact>
+        <Fact label={nearbyMessages.school.levels[schoolSector.niveau]}>{schoolSector.nomEtablissement}</Fact>
       )}
       {communeEquipment && (
         <>
-          <Fact>{equipmentFootnote(communeEquipment)}</Fact>
+          <Fact>{equipmentFootnote(communeEquipment, nearbyMessages.communeEquipment)}</Fact>
           {communeEquipment.families.map((family) => {
             const { present, absent } = splitRubrics(family.rubrics);
             return (
-              <View key={family.title} wrap={false}>
-                <Sub>{family.title}</Sub>
+              <View key={family.key} wrap={false}>
+                <Sub>{familyTitle(family, nearbyMessages.communeEquipment)}</Sub>
                 {present.map((rubric) => (
-                  <Fact key={rubric.key} label={rubric.label}>
-                    {equipmentLine(rubric, communeEquipment.population)}
+                  <Fact key={rubric.key} label={rubricLabel(rubric, nearbyMessages.communeEquipment)}>
+                    {equipmentLine(rubric, communeEquipment.population, nearbyMessages.communeEquipment)}
                   </Fact>
                 ))}
-                {absent.length > 0 && <Fact>{absentLine(absent)}</Fact>}
+                {absent.length > 0 && <Fact>{absentLine(absent, nearbyMessages.communeEquipment)}</Fact>}
               </View>
             );
           })}
-          {communeEquipment.isArrondissement && (
-            <Fact>
-              La BPE rattache certains équipements à l'adresse de leur gestionnaire : à l'échelle d'un arrondissement, les nombres peuvent être surestimés ou sous-estimés.
-            </Fact>
-          )}
+          {communeEquipment.isArrondissement && <Fact>{pdf.nearby.arrondissementNote}</Fact>}
         </>
       )}
-      {counts && <Sub>{`Dans un rayon de ${counts.radiusMeters} m`}</Sub>}
+      {counts && <Sub>{pdf.nearby.radius(counts.radiusMeters)}</Sub>}
       {rows.map(({ title, count, nearest }) => (
         <Fact key={title} label={title}>
-          {countLine(count, nearest)}
+          {countLine(count, nearest, nearbyMessages, pdf)}
         </Fact>
       ))}
     </Block>
@@ -317,26 +352,49 @@ export function PdfProximiteFiche({
 }
 
 export function PdfDeplacerFiche({ mobility, mode }: { mobility: MobilityAnalysisDto; mode: AnalysisMode }) {
-  const { isCommune, stops, stations, stationsTitle } = mobilityView(mobility, mode);
+  const {
+    cadastre: cadastreMessages,
+    climate: climateMessages,
+    air: airMessages,
+    elections: electionsMessages,
+    localTax: localTaxMessages,
+    mobility: mobilityMessages,
+    nearby: nearbyMessages,
+    population,
+    risks: risksMessages,
+    sections,
+    pdf,
+  } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
+  const { isCommune, stops, stations, stationsHeading } = mobilityView(mobility, mode);
+  const stationsTitle = stationsHeading
+    ? mobilityMessages.stationsTitle(stationsHeading.kind, stationsHeading.nearestOnly)
+    : "";
   const stop = stops[0];
   const station = stations[0];
-  const distance = (meters: number) => (isCommune ? "" : ` (${formatProximity(meters)})`);
+  const proximity = (meters: number) => (isCommune ? null : formatProximity(meters, nearbyMessages));
   // Pas de comptage en mode commune : le rayon partirait du centre de la commune.
   const counts = isCommune ? null : (mobility.counts ?? null);
 
   return (
     <Block title={SECTION_TITLES.deplacer}>
       {counts && (
-        <Fact label={`Dans un rayon de ${counts.radiusMeters} m`}>
+        <Fact label={pdf.nearby.radius(counts.radiusMeters)}>
           {join([
-            plural(counts.stops, "aucun arrêt de bus ou tram", "arrêt de bus ou tram", "arrêts de bus ou tram"),
-            plural(counts.stations, "aucune gare ou station", "gare ou station", "gares ou stations"),
+            pdf.transport.stops(counts.stops),
+            pdf.transport.stations(counts.stations),
           ])}
         </Fact>
       )}
-      {stop && <Fact label="Bus ou tram le plus proche">{`${stop.name}${distance(stop.distanceMeters)}`}</Fact>}
-      {station && <Fact label={stationsTitle}>{`${station.name}${distance(station.distanceMeters)}`}</Fact>}
-      {!stop && !station && <Fact>Aucun arrêt trouvé à proximité.</Fact>}
+      {stop && (
+        <Fact label={pdf.transport.nearestBusLabel}>
+          {pdf.transport.stop(stop.name, proximity(stop.distanceMeters))}
+        </Fact>
+      )}
+      {station && (
+        <Fact label={stationsTitle}>{pdf.transport.stop(station.name, proximity(station.distanceMeters))}</Fact>
+      )}
+      {!stop && !station && <Fact>{pdf.transport.none}</Fact>}
     </Block>
   );
 }
@@ -346,6 +404,20 @@ export function PdfDeplacerFiche({ mobility, mode }: { mobility: MobilityAnalysi
  * courbes par indicateur ni la note de méthode, qui restent sur la page en ligne.
  */
 export function PdfSecuriteFiche({ insight }: { insight?: string | null }) {
+  const {
+    cadastre: cadastreMessages,
+    climate: climateMessages,
+    air: airMessages,
+    elections: electionsMessages,
+    localTax: localTaxMessages,
+    mobility: mobilityMessages,
+    nearby: nearbyMessages,
+    population,
+    risks: risksMessages,
+    sections,
+    pdf,
+  } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
   if (!insight?.trim()) return null;
   return <Block title={SECTION_TITLES.securite} insight={insight}>{null}</Block>;
 }
@@ -361,17 +433,31 @@ export function PdfPopulationFiche({
   insights: CardInsights;
   show: { demographics: boolean; employment: boolean; households: boolean; housing: boolean };
 }) {
-  const demo = show.demographics ? viewForMode(demographicsScoped(demographics), mode, demographics) : null;
-  const employment = show.employment ? viewForMode(demographics.employment, mode, demographics) : null;
-  const households = show.households ? viewForMode(demographics.households, mode, demographics) : null;
-  const housing = show.housing ? viewForMode(demographics.housing, mode, demographics) : null;
+  const {
+    cadastre: cadastreMessages,
+    climate: climateMessages,
+    air: airMessages,
+    elections: electionsMessages,
+    localTax: localTaxMessages,
+    mobility: mobilityMessages,
+    nearby: nearbyMessages,
+    population,
+    risks: risksMessages,
+    sections,
+    pdf,
+  } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
+  const demo = show.demographics ? viewForMode(demographicsScoped(demographics), mode, demographics, population) : null;
+  const employment = show.employment ? viewForMode(demographics.employment, mode, demographics, population) : null;
+  const households = show.households ? viewForMode(demographics.households, mode, demographics, population) : null;
+  const housing = show.housing ? viewForMode(demographics.housing, mode, demographics, population) : null;
   const local = housing?.scoped.iris;
   const france = housing?.scoped.france;
 
   return (
     // Le seul bloc autorisé à se couper : quatre « En bref » et leurs indicateurs.
     <Block title={SECTION_TITLES.population} wrap>
-      <Fact label={mode === "commune" ? "Commune" : "Quartier IRIS"}>
+      <Fact label={pdf.population.scopeLabel(mode === "commune")}>
         {mode === "commune"
           ? demographics.nomCommune || demographics.codeIris
           : join([demographics.nomIris || demographics.codeIris, demographics.nomCommune], " — ")}
@@ -379,33 +465,37 @@ export function PdfPopulationFiche({
 
       {demo && (
         <View wrap={false}>
-          <Sub>Démographie</Sub>
+          <Sub>{population.demographics.title}</Sub>
           <PdfInsight text={insights.demographie} />
           <Fact>{join(DEMOGRAPHICS_INDICATORS.map((i) => compactIndicator(i, demo)))}</Fact>
         </View>
       )}
       {employment && (
         <View wrap={false}>
-          <Sub>Emploi et qualifications</Sub>
+          <Sub>{population.employment.title}</Sub>
           <PdfInsight text={insights.emploi} />
           <Fact>{join(EMPLOYMENT_INDICATORS.map((i) => compactIndicator(i, employment)))}</Fact>
         </View>
       )}
       {households && (
         <View wrap={false}>
-          <Sub>Ménages et familles</Sub>
+          <Sub>{population.households.title}</Sub>
           <PdfInsight text={insights.menages} />
           <Fact>{join(HOUSEHOLDS_INDICATORS.map((i) => compactIndicator(i, households)))}</Fact>
         </View>
       )}
       {housing && (
         <View wrap={false}>
-          <Sub>Logement</Sub>
+          <Sub>{population.housing.title}</Sub>
           <PdfInsight text={insights.logement} />
           <Fact>
             {join([
               local?.pctProprietaires != null &&
-                `Propriétaires ${formatPct(local.pctProprietaires)}${france?.pctProprietaires != null ? ` (France ${formatPct(france.pctProprietaires)})` : ""}`,
+                population.compact(
+                  population.segments.owners,
+                  population.format.pct(local.pctProprietaires),
+                  france?.pctProprietaires != null ? population.format.pct(france.pctProprietaires) : null,
+                ),
               ...HOUSING_INDICATORS.map((i) => compactIndicator(i, housing)),
             ])}
           </Fact>
@@ -424,6 +514,20 @@ export function PdfElectionsFiche({
   elections: ElectionsAnalysisDto | null;
   insights: CardInsights;
 }) {
+  const {
+    cadastre: cadastreMessages,
+    climate: climateMessages,
+    air: airMessages,
+    elections: electionsMessages,
+    localTax: localTaxMessages,
+    mobility: mobilityMessages,
+    nearby: nearbyMessages,
+    population,
+    risks: risksMessages,
+    sections,
+    pdf,
+  } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
   const topListe = municipales?.listes.length
     ? [...municipales.listes].sort((a, b) => b.pctExprimes - a.pctExprimes)[0]
     : null;
@@ -433,33 +537,38 @@ export function PdfElectionsFiche({
     <Block title={SECTION_TITLES.elections}>
       {municipales && topListe && (
         <View>
-          <Sub>{`Municipales 2026 — ${municipales.tour === 1 ? "1er" : "2e"} tour`}</Sub>
+          <Sub>{electionsMessages.municipal.title(municipales.tour)}</Sub>
           <PdfInsight text={insights.municipales} />
-          <Fact label="En tête">
+          <Fact label={pdf.elections.leadingLabel}>
             {join([
-              `${topListe.nuance ? (NUANCE_LABEL[topListe.nuance] ?? topListe.nuance) : topListe.libelle}${topListe.teteDeListe ? ` (${topListe.teteDeListe})` : ""} ${formatElectionPct(topListe.pctExprimes)}`,
-              `participation ${formatElectionPct(municipales.participationPct)}`,
+              pdf.elections.leadingList(
+                topListe.nuance ? (electionsMessages.nuances[topListe.nuance] ?? topListe.nuance) : topListe.libelle,
+                topListe.teteDeListe ?? null,
+                electionsMessages.pct(topListe.pctExprimes),
+              ),
+              pdf.elections.participation(electionsMessages.pct(municipales.participationPct)),
             ])}
           </Fact>
         </View>
       )}
       {elections && podium.length > 0 && (
         <View>
-          <Sub>Présidentielle 2022 — 1er tour</Sub>
+          <Sub>{electionsMessages.presidential.title}</Sub>
           <PdfInsight text={insights.elections} />
-          <Fact label="En tête">{join(podium.map((c) => `${c.candidat} ${formatElectionPct(c.pctCommune)}`))}</Fact>
-          <Fact label="Participation">
-            {`${formatElectionPct(elections.participationPct)} (France ${formatElectionPct(elections.nationalParticipationPct)})`}
+          <Fact label={pdf.elections.leadingLabel}>
+            {join(podium.map((c) => pdf.elections.candidate(c.candidat, electionsMessages.pct(c.pctCommune))))}
+          </Fact>
+          <Fact label={pdf.elections.participationLabel}>
+            {pdf.elections.participationVsFrance(
+              electionsMessages.pct(elections.participationPct),
+              electionsMessages.pct(elections.nationalParticipationPct),
+            )}
           </Fact>
         </View>
       )}
     </Block>
   );
 }
-
-const fmtTemp = (n: number) => `${n.toFixed(1).replace(".", ",")} °C`;
-const fmtMm = (n: number) => `${Math.round(n).toLocaleString("fr-FR")} mm`;
-const fmtHours = (n: number) => `${Math.round(n).toLocaleString("fr-FR")} h`;
 
 export function PdfEnvironnementFiche({
   climate,
@@ -470,38 +579,68 @@ export function PdfEnvironnementFiche({
   airQuality: AirQualityAnalysisDto | null;
   insight?: string | null;
 }) {
+  const {
+    cadastre: cadastreMessages,
+    climate: climateMessages,
+    air: airMessages,
+    elections: electionsMessages,
+    localTax: localTaxMessages,
+    mobility: mobilityMessages,
+    nearby: nearbyMessages,
+    population,
+    risks: risksMessages,
+    sections,
+    pdf,
+  } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
   const monthly = airQuality?.monthly;
   const airLevel =
     monthly && monthly.daysCovered > 0 ? monthly.level : airQuality ? modalLevel(airQuality.recentDays) : null;
   const airDays = monthly && monthly.daysCovered > 0 ? monthly.daysCovered : airQuality?.recentDays.length ?? 0;
-  const measure = (label: string, value: number | null, reference: number, format: (n: number) => string) =>
-    value != null ? `${label} ${format(value)} (France ${format(reference)})` : null;
+  const measure = (metric: ClimateMetric, value: number | null, reference: number) => {
+    const format = climateMessages.pdfFormat[metric];
+    return value != null
+      ? climateMessages.pdfMeasure(climateMessages.metrics[metric].label, format(value), format(reference))
+      : null;
+  };
 
   return (
     <Block title={SECTION_TITLES.environnement}>
       {climate && (
         <View>
-          <Sub>{climateTitle(climate)}</Sub>
+          <Sub>{climateTitle(climate, climateMessages)}</Sub>
           <PdfInsight text={insight} />
           <Fact>
             {join([
-              measure("Température", climate.temperatureC, climate.national.temperatureC, fmtTemp),
-              measure("Précipitations", climate.precipitationMm, climate.national.precipitationMm, fmtMm),
-              measure("Ensoleillement", climate.sunshineHours, climate.national.sunshineHours, fmtHours),
+              measure("temperatureC", climate.temperatureC, climate.national.temperatureC),
+              measure("precipitationMm", climate.precipitationMm, climate.national.precipitationMm),
+              measure("sunshineHours", climate.sunshineHours, climate.national.sunshineHours),
             ])}
           </Fact>
         </View>
       )}
       {airLevel && (
-        <Fact label="Qualité de l'air">
-          {`niveau ${LEVEL_CONFIG[airLevel].label.toLowerCase()} sur les ${airDays} derniers jours`}
-        </Fact>
+        <Fact label={airMessages.pdfLabel}>{airMessages.pdfLine(airLevel, airDays)}</Fact>
       )}
     </Block>
   );
 }
 
 export function PdfRisquesFiche({ risks }: { risks: RiskAnalysisDto }) {
+  const {
+    cadastre: cadastreMessages,
+    climate: climateMessages,
+    air: airMessages,
+    elections: electionsMessages,
+    localTax: localTaxMessages,
+    mobility: mobilityMessages,
+    nearby: nearbyMessages,
+    population,
+    risks: risksMessages,
+    sections,
+    pdf,
+  } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
   const { highlighted, minor } = splitRisks(risks.categories);
 
   return (
@@ -510,17 +649,17 @@ export function PdfRisquesFiche({ risks }: { risks: RiskAnalysisDto }) {
         const badge = RISK_LEVEL_BADGES[risk.level];
         return (
           <View key={risk.code} style={s.badgeLine}>
-            <PdfBadge label={badge.label} background={badge.background} color={badge.color} dashed={badge.dashed} />
-            <Text style={s.badgeText}>{risk.name}</Text>
+            <PdfBadge label={risksMessages.levels[risk.level]} background={badge.background} color={badge.color} dashed={badge.dashed} />
+            <Text style={s.badgeText}>{riskName(risk, risksMessages)}</Text>
           </View>
         );
       })}
       {minor.length > 0 && (
-        <Fact label="Autres risques">
-          {join(minor.map((risk) => `${risk.name} (${RISK_LEVEL_BADGES[risk.level].label.toLowerCase()})`))}
+        <Fact label={risksMessages.pdf.othersLabel}>
+          {join(minor.map((risk) => risksMessages.pdf.other(riskName(risk, risksMessages), risksMessages.levels[risk.level])))}
         </Fact>
       )}
-      {highlighted.length === 0 && minor.length === 0 && <Fact>Aucun risque naturel recensé.</Fact>}
+      {highlighted.length === 0 && minor.length === 0 && <Fact>{risksMessages.pdf.none}</Fact>}
     </Block>
   );
 }

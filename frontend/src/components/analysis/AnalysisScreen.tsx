@@ -33,11 +33,14 @@ import { KeyFigures, type KeyFigure } from "@/components/analysis/KeyFigures";
 import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
 import { SectionNav } from "@/components/analysis/SectionNav";
 import { ShareLinks } from "@/components/analysis/ShareLinks";
-import { SECTION_ORDER, SECTION_TITLES, type SectionId } from "@/components/analysis/sections";
+import { SECTION_ORDER, sectionTitles, type SectionId } from "@/components/analysis/sections";
 import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
 import { Brand } from "@/components/Brand";
 import { FEATURES } from "@/lib/site-features";
 import { seoPageForCitycode } from "@/lib/commune-routing";
+import { useAnalysisI18n, useI18n } from "@/i18n/client";
+import { localizedHref } from "@/i18n/locales";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 /** Couche d'aléa allumée d'office quand il n'y a pas de zonage inondation à montrer : la
  *  seule à couvrir tout le territoire avec un dégradé lisible. Les autres restent derrière
@@ -66,9 +69,11 @@ function AnalysisSection({
   lead?: ReactNode;
   children: ReactNode;
 }) {
+  const { sections } = useAnalysisI18n();
+  const title = sectionTitles(sections, FEATURES.showAirQuality)[id];
   return (
     <section id={id} className="page-section">
-      <h2 className="page-section-title">{SECTION_TITLES[id]}</h2>
+      <h2 className="page-section-title">{title}</h2>
       <div className="page-section-body">
         {lead}
         {children}
@@ -79,6 +84,8 @@ function AnalysisSection({
 
 export function AnalysisScreen() {
   const searchParams = useSearchParams();
+  const m = useAnalysisI18n();
+  const { locale } = useI18n();
   const lat = searchParams.get("lat");
   const lon = searchParams.get("lon");
   const label = searchParams.get("label") ?? undefined;
@@ -110,7 +117,7 @@ export function AnalysisScreen() {
     securityRating,
     isLoading: insightsLoading,
     debugInput: insightsDebug,
-  } = useCardInsights(insightsInput, citycode);
+  } = useCardInsights(insightsInput, citycode, locale);
 
   // Le PDF ne capture qu'une carte : celle de localisation, la seule montée d'emblée.
   // Les trois cartes thématiques sont en montage différé — leur canvas peut ne pas exister.
@@ -184,30 +191,35 @@ export function AnalysisScreen() {
 
   /** Le sommaire ne connaît pas la taxonomie de l'analyse : on lui passe les titres. */
   const navSections = useMemo(
-    () => activeSections.map((id) => ({ id, title: SECTION_TITLES[id] })),
-    [activeSections],
+    () => {
+      const titles = sectionTitles(m.sections, FEATURES.showAirQuality);
+      return activeSections.map((id) => ({ id, title: titles[id] }));
+    },
+    [activeSections, m],
   );
 
   /** Une tuile par section, chacune ancrant vers la sienne — calcul partagé avec l'en-tête
    *  de la fiche PDF (`buildKeyFigures`). */
   const keyFigures = useMemo<KeyFigure<SectionId>[]>(
-    () => (data ? buildKeyFigures(data, securityRating, activeSections) : []),
-    [data, activeSections, securityRating],
+    () => (data ? buildKeyFigures(data, securityRating, activeSections, m.keyFigures) : []),
+    [data, activeSections, securityRating, m],
   );
 
   return (
     <main id="haut" className="analysis-layout">
       <header className="analysis-topbar">
         <div className="analysis-topbar-inner">
-          <Link href="/" className="analysis-back">
+          <Link href={localizedHref(locale, "home")} className="analysis-back">
             <span aria-hidden>←</span>
             <span className="analysis-brand">
               <Brand />
             </span>
           </Link>
+          <div className="analysis-actions">
+            <LanguageSwitcher route="analyze" className="analysis-language" />
           {data && (
-            <div className="analysis-actions">
-              {FEATURES.hasShareLinks && <ShareLinks label={data.address.label} />}
+            <>
+              {FEATURES.hasShareLinks && <ShareLinks label={data.address.label} m={m.screen.share} />}
               {FEATURES.hasPdfExport && (
                 <DownloadPdfButton
                   data={data}
@@ -218,20 +230,21 @@ export function AnalysisScreen() {
                   getMap={getMap}
                 />
               )}
-            </div>
+            </>
           )}
+          </div>
         </div>
       </header>
 
       <div className="analysis-hero-strip">
         <div className="analysis-hero-inner">
           <p className="analysis-hero-eyebrow">
-            Analyse{city ? ` · ${city}` : ""}{postcode ? ` · ${postcode}` : ""}
+            {m.screen.eyebrow(city, postcode)}
           </p>
-          <h1 className="analysis-hero-title">{label ?? "Adresse à analyser"}</h1>
+          <h1 className="analysis-hero-title">{label ?? m.screen.titleFallback}</h1>
           {seoPage && (
-            <Link href={`/commune/${seoPage.slug}`} className="analysis-hero-seo-link">
-              Voir la page {seoPage.nomCourt} →
+            <Link href={`/commune/${seoPage.slug}`} hrefLang="fr" className="analysis-hero-seo-link">
+              {m.screen.communePageLink(seoPage.nomCourt)}
             </Link>
           )}
         </div>
@@ -241,18 +254,18 @@ export function AnalysisScreen() {
         {isLoading && (
           <div className="analysis-loader">
             <div className="spinner" />
-            <p>Analyse en cours...</p>
+            <p>{m.screen.loading}</p>
           </div>
         )}
-        {error && <p className="analysis-error">{error}</p>}
+        {error && <p className="analysis-error">{m.screen.failed}</p>}
 
         {data && (
           <>
-            <KeyFigures figures={keyFigures} />
+            <KeyFigures figures={keyFigures} ariaLabel={m.keyFigures.ariaLabel} />
 
             {FEATURES.showLocation && (
               <section className="card map-section page-locator">
-                <h2>Localisation</h2>
+                <h2>{m.screen.locationTitle}</h2>
                 <Map
                   lat={data.map.center.lat}
                   lon={data.map.center.lon}
@@ -276,7 +289,7 @@ export function AnalysisScreen() {
                 {hasContent.immobilier && (
                   <AnalysisSection id="immobilier">
                     {FEATURES.showRealEstate && realEstate && (
-                      <RealEstateCard realEstate={realEstate}>
+                      <RealEstateCard realEstate={realEstate} m={m.realEstate}>
                         {realEstate.transactionFeatures?.length ? (
                           <LazyMap height={THEMATIC_MAP_HEIGHT}>
                             <Map
@@ -295,10 +308,10 @@ export function AnalysisScreen() {
                       </RealEstateCard>
                     )}
                     {FEATURES.showLocalTax && hasLocalTaxContent(data.localTax) && (
-                      <LocalTaxCard localTax={data.localTax} insight={insights.fiscalite} />
+                      <LocalTaxCard localTax={data.localTax} m={m.localTax} insight={insights.fiscalite} />
                     )}
                     {FEATURES.showCadastre && data.cadastre && (
-                      <CadastreCard cadastre={data.cadastre} />
+                      <CadastreCard cadastre={data.cadastre} m={m.cadastre} />
                     )}
                   </AnalysisSection>
                 )}
@@ -308,14 +321,15 @@ export function AnalysisScreen() {
                     {FEATURES.showNeighborhood && !isCommune && (
                       <NeighborhoodCard
                         neighborhood={data.neighborhood}
+                        m={m.nearby}
                         sectorSchool={FEATURES.showSchoolSector ? data.schoolSector : null}
                       />
                     )}
                     {FEATURES.showCommuneEquipment && isCommune && data.communeEquipment && (
-                      <CommuneEquipmentCard equipment={data.communeEquipment} />
+                      <CommuneEquipmentCard equipment={data.communeEquipment} m={m.nearby.communeEquipment} />
                     )}
                     {FEATURES.showSchoolSector && data.schoolSector && (
-                      <SchoolSectorCard schoolSector={data.schoolSector}>
+                      <SchoolSectorCard schoolSector={data.schoolSector} m={m.nearby.school}>
                         {data.schoolSector.geometry ? (
                           <LazyMap height={THEMATIC_MAP_HEIGHT}>
                             <Map
@@ -337,7 +351,7 @@ export function AnalysisScreen() {
 
                 {hasContent.deplacer && (
                   <AnalysisSection id="deplacer">
-                    <MobilityCard mobility={data.mobility} mode={data.mode} />
+                    <MobilityCard mobility={data.mobility} mode={data.mode} m={m.mobility} nearby={m.nearby} />
                   </AnalysisSection>
                 )}
 
@@ -347,6 +361,7 @@ export function AnalysisScreen() {
                       security={data.security}
                       codeInsee={citycode}
                       ville={data.address.city}
+                      m={m.security}
                       insight={insights.securite}
                     />
                   </AnalysisSection>
@@ -360,7 +375,7 @@ export function AnalysisScreen() {
                     // nommerait la zone qu'elle décrit.
                     lead={
                       data.demographics ? (
-                        <PopulationScope demographics={data.demographics} mode={data.mode}>
+                        <PopulationScope demographics={data.demographics} mode={data.mode} m={m.population}>
                           {!isCommune && data.demographics.irisGeojson ? (
                             <LazyMap height={THEMATIC_MAP_HEIGHT}>
                               <Map
@@ -380,16 +395,16 @@ export function AnalysisScreen() {
                     }
                   >
                     {FEATURES.showDemographics && data.demographics && (
-                      <DemographicsCard demographics={data.demographics} mode={data.mode} insight={insights.demographie} />
+                      <DemographicsCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.demographie} />
                     )}
                     {FEATURES.showEmployment && data.demographics && (
-                      <EmploymentCard demographics={data.demographics} mode={data.mode} insight={insights.emploi} />
+                      <EmploymentCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.emploi} />
                     )}
                     {FEATURES.showHouseholds && data.demographics && (
-                      <HouseholdsCard demographics={data.demographics} mode={data.mode} insight={insights.menages} />
+                      <HouseholdsCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.menages} />
                     )}
                     {FEATURES.showHousing && data.demographics && (
-                      <HousingCard demographics={data.demographics} mode={data.mode} insight={insights.logement} />
+                      <HousingCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.logement} />
                     )}
                   </AnalysisSection>
                 )}
@@ -397,26 +412,26 @@ export function AnalysisScreen() {
                 {hasContent.elections && (
                   <AnalysisSection id="elections">
                     {FEATURES.showMunicipales && data.municipales && (
-                      <MunicipalesCard municipales={data.municipales} insight={insights.municipales} />
+                      <MunicipalesCard municipales={data.municipales} m={m.elections} insight={insights.municipales} />
                     )}
                     {FEATURES.showElections && data.elections && (
-                      <ElectionsCard elections={data.elections} insight={insights.elections} />
+                      <ElectionsCard elections={data.elections} m={m.elections} insight={insights.elections} />
                     )}
                   </AnalysisSection>
                 )}
 
                 {hasContent.environnement && (
                   <AnalysisSection id="environnement">
-                    {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} insight={insights.climat} />}
+                    {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} m={m.climate} insight={insights.climat} />}
                     {FEATURES.showAirQuality && data.airQuality.available && (
-                      <AirQualityCard airQuality={data.airQuality} />
+                      <AirQualityCard airQuality={data.airQuality} m={m.air} />
                     )}
                   </AnalysisSection>
                 )}
 
                 {hasContent.risques && (
                   <AnalysisSection id="risques">
-                    <RisksCard risks={data.risks}>
+                    <RisksCard risks={data.risks} m={m.risks}>
                       <LazyMap height={THEMATIC_MAP_HEIGHT}>
                         <Map
                           lat={data.map.center.lat}
@@ -436,10 +451,10 @@ export function AnalysisScreen() {
                           }
                           layerToggleHint={
                             hasFloodZoning
-                              ? "Cochez pour afficher les zones sur la carte. PPR : plan de prévention des risques, le document de l'État qui délimite les zones inondables et y encadre la construction."
+                              ? m.screen.floodHint.zoning
                               : data.risks.floodZones?.length
-                                ? "Cochez pour afficher les zones sur la carte. Seul le périmètre du plan de prévention des risques (PPR) d'inondation est publié ici, pas son zonage détaillé."
-                                : "Cochez pour afficher les zones sur la carte. Aucun zonage de plan de prévention des risques (PPR) d'inondation n'est publié ici."
+                                ? m.screen.floodHint.perimeterOnly
+                                : m.screen.floodHint.none
                           }
                           height={THEMATIC_MAP_HEIGHT}
                         />
@@ -458,31 +473,26 @@ export function AnalysisScreen() {
                       cadastreParcel={data.cadastre?.parcel ?? null}
                       communeContour={data.map.communeContour ?? null}
                       height={HISTORY_MAP_HEIGHT}
+                      title={m.screen.historyTitle}
                     />
                   </AnalysisSection>
                 )}
 
                 {FEATURES.showCardInsights && (
-                  <p className="analysis-ai-notice">
-                    Les synthèses «&nbsp;En bref&nbsp;» sont rédigées par une intelligence
-                    artificielle à partir des seules données affichées sur cette page. Les
-                    chiffres et les sources qui les entourent, eux, proviennent directement
-                    des fichiers publics cités.
-                  </p>
+                  <p className="analysis-ai-notice">{m.screen.aiNotice}</p>
                 )}
 
                 {insightsDebug !== undefined && (
                   <details className="card-insight-debug">
                     <summary>
-                      Données envoyées au modèle (debug) — ~
-                      {Math.round(JSON.stringify(insightsDebug).length / 4)} tokens
+                      {m.screen.debugSummary(Math.round(JSON.stringify(insightsDebug).length / 4))}
                     </summary>
                     <pre>{JSON.stringify(insightsDebug, null, 2)}</pre>
                   </details>
                 )}
 
                 <a href="#haut" className="analysis-back-to-top">
-                  <span aria-hidden>↑</span> Haut de page
+                  <span aria-hidden>↑</span> {m.screen.backToTop}
                 </a>
               </div>
             </div>

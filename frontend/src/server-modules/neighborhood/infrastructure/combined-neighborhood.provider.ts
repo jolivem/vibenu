@@ -6,22 +6,6 @@ import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructur
 
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
-const DEFAULT_NAMES: Record<string, string> = {
-  school: "École",
-  supermarket: "Supermarché",
-  bakery: "Boulangerie",
-  pharmacy: "Pharmacie",
-  doctor: "Médecin",
-  park: "Parc",
-  sport: "Équipement sportif",
-  restaurant: "Restaurant",
-  post_office: "Bureau de poste",
-  bank: "Banque",
-  library: "Bibliothèque",
-  hospital: "Hôpital",
-  emergency: "Service d'urgences",
-};
-
 const VALID_CATEGORIES = new Set<string>([
   "school", "supermarket", "bakery", "pharmacy", "doctor",
   "park", "sport", "restaurant", "post_office", "bank", "library",
@@ -275,9 +259,9 @@ function dedupePois(rows: PoiRow[], caps: DedupeCaps | null, trace?: string[]): 
       }
     }
 
-    const name = row.name
-      ? toDisplayName(row.name)
-      : DEFAULT_NAMES[row.category] || row.category;
+    // Sans nom dans la source : chaîne vide, que l'affichage remplace par le nom
+    // générique de la catégorie dans la langue de la page.
+    const name = row.name ? toDisplayName(row.name) : "";
     const dist = Math.round(Number(row.distance_meters));
     const normalized = row.name ? normalizeName(row.name) : "";
 
@@ -560,7 +544,7 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
 
           taken.set(row.category, (taken.get(row.category) ?? 0) + 1);
           out.push({
-            name: row.name ? toDisplayName(row.name) : DEFAULT_NAMES[row.category] || row.category,
+            name: row.name ? toDisplayName(row.name) : "",
             category: row.category as PoiCategory,
             distanceMeters: Math.round(Number(row.distance_meters)),
           });
@@ -600,7 +584,7 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
           const best = pickClearestName(atLevel, level);
           if (!best) continue;
           out.push({
-            name: best.name ? toDisplayName(best.name) : DEFAULT_NAMES.school,
+            name: best.name ? toDisplayName(best.name) : "",
             category: "school",
             distanceMeters: Math.round(Number(best.distance_meters)),
           });

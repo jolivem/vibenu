@@ -3,6 +3,7 @@ import { query } from "@/server-shared/infrastructure/database/postgres";
 import type { CardInsightsPayload } from "@/server-shared/types/card-insights";
 import type { AnalysisMode } from "@/server-shared/types/location-analysis.dto";
 import { CARD_INSIGHTS_PROMPT_VERSION } from "./card-insights.prompt";
+import type { Locale } from "@/i18n/locales";
 
 /**
  * 90 jours : les sources commentées sont annuelles (recensement INSEE, SSMSI, normales
@@ -28,16 +29,21 @@ export interface CachedCardInsights {
  * régénération, jamais la page. C'est la convention des autres caches du module.
  */
 export class CardInsightsCacheProvider {
-  async get(geoKey: string, mode: AnalysisMode, model: string): Promise<CachedCardInsights | null> {
+  async get(
+    geoKey: string,
+    mode: AnalysisMode,
+    model: string,
+    lang: Locale,
+  ): Promise<CachedCardInsights | null> {
     if (isCacheDisabled()) return null;
 
     try {
       const rows = await query<CacheRow>(
         `SELECT content, generated_at
            FROM card_insights_cache
-          WHERE geo_key = $1 AND mode = $2 AND model = $3 AND version = $4
+          WHERE geo_key = $1 AND mode = $2 AND model = $3 AND version = $4 AND lang = $5
           LIMIT 1`,
-        [geoKey, mode, model, CARD_INSIGHTS_PROMPT_VERSION],
+        [geoKey, mode, model, CARD_INSIGHTS_PROMPT_VERSION, lang],
       );
       if (rows.length === 0) return null;
 
@@ -71,17 +77,18 @@ export class CardInsightsCacheProvider {
     geoKey: string,
     mode: AnalysisMode,
     model: string,
+    lang: Locale,
     payload: CardInsightsPayload,
   ): Promise<void> {
     if (isCacheDisabled()) return;
 
     try {
       await query(
-        `INSERT INTO card_insights_cache (geo_key, mode, model, version, content, generated_at)
-              VALUES ($1, $2, $3, $4, $5::jsonb, NOW())
-         ON CONFLICT (geo_key, mode, model, version)
+        `INSERT INTO card_insights_cache (geo_key, mode, model, version, lang, content, generated_at)
+              VALUES ($1, $2, $3, $4, $5, $6::jsonb, NOW())
+         ON CONFLICT (geo_key, mode, model, version, lang)
          DO UPDATE SET content = EXCLUDED.content, generated_at = EXCLUDED.generated_at`,
-        [geoKey, mode, model, CARD_INSIGHTS_PROMPT_VERSION, JSON.stringify(payload)],
+        [geoKey, mode, model, CARD_INSIGHTS_PROMPT_VERSION, lang, JSON.stringify(payload)],
       );
     } catch (err) {
       console.warn("[card-insights] cache write failed:", err);

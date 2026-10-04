@@ -1,5 +1,5 @@
 import type { RiskAnalysisDto, RiskCategoryDto } from "@/types/location-analysis";
-import { RISK_EXPLANATIONS } from "./riskExplanations";
+import type { RisksMessages } from "@/i18n/messages/fr/analysis/risks";
 
 /**
  * « Signalé » et « Non renseigné » ne sont pas des degrés : le premier dit qu'un risque
@@ -10,14 +10,14 @@ import { RISK_EXPLANATIONS } from "./riskExplanations";
  */
 export const RISK_LEVEL_BADGES: Record<
   RiskCategoryDto["level"],
-  { label: string; className: string; background: string; color: string; dashed?: boolean }
+  { className: string; background: string; color: string; dashed?: boolean }
 > = {
-  élevé:   { label: "Élevé",         className: "risk-badge risk-badge--eleve",   background: "#fde8e8", color: "#991b1b" },
-  modéré:  { label: "Modéré",        className: "risk-badge risk-badge--modere",  background: "#fff3cd", color: "#92400e" },
-  présent: { label: "Signalé",       className: "risk-badge risk-badge--present", background: "#e6edfa", color: "#1e429f" },
-  faible:  { label: "Faible",        className: "risk-badge risk-badge--faible",  background: "#e8f5e9", color: "#166534" },
-  inconnu: { label: "Non renseigné", className: "risk-badge risk-badge--inconnu", background: "transparent", color: "#9ca3af", dashed: true },
-  absent:  { label: "Absent",        className: "risk-badge risk-badge--absent",  background: "#f3f4f6", color: "#6b7280" },
+  élevé:   { className: "risk-badge risk-badge--eleve",   background: "#fde8e8", color: "#991b1b" },
+  modéré:  { className: "risk-badge risk-badge--modere",  background: "#fff3cd", color: "#92400e" },
+  présent: { className: "risk-badge risk-badge--present", background: "#e6edfa", color: "#1e429f" },
+  faible:  { className: "risk-badge risk-badge--faible",  background: "#e8f5e9", color: "#166534" },
+  inconnu: { className: "risk-badge risk-badge--inconnu", background: "transparent", color: "#9ca3af", dashed: true },
+  absent:  { className: "risk-badge risk-badge--absent",  background: "#f3f4f6", color: "#6b7280" },
 };
 
 /**
@@ -43,7 +43,23 @@ export function splitRisks(categories: RiskAnalysisDto["categories"]) {
  * n'affichait jusqu'ici qu'une pastille, et c'est précisément le risque que personne ne
  * sait lire. Un risque absent, lui, n'a rien à faire expliquer.
  */
-export function riskExplanation(risk: RiskCategoryDto): string | null {
+export function riskExplanation(risk: RiskCategoryDto, m: RisksMessages): string | null {
   if (risk.level === "absent") return null;
-  return RISK_EXPLANATIONS[risk.code] ?? null;
+  return m.explanations[risk.code] ?? null;
+}
+
+/** Nom du risque dans la langue de la page ; à défaut, celui que le serveur envoie. */
+export function riskName(risk: RiskCategoryDto, m: RisksMessages): string {
+  return m.names[risk.code] ?? risk.name;
+}
+
+/** Message du risque, recomposé à partir des faits du DTO. */
+export function riskMessage(risk: RiskCategoryDto, m: RisksMessages): string {
+  return m.message({
+    name: riskName(risk, m),
+    level: risk.level,
+    detail: risk.statusDetail ?? null,
+    communeFallback: Boolean(risk.communeFallback),
+    unavailable: Boolean(risk.unavailable),
+  });
 }

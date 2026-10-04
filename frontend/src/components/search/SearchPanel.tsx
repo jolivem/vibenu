@@ -4,17 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAddressSearch } from "@/features/address-search/useAddressSearch";
 import type { AddressSuggestionDto } from "@/types/location-analysis";
+import { useI18n } from "@/i18n/client";
+import { localizedHref } from "@/i18n/locales";
 import { seoHubForCitycode } from "@/lib/commune-routing";
-
-const TYPE_LABEL: Record<string, string> = {
-  housenumber: "Adresse précise",
-  street: "Rue",
-  locality: "Lieu-dit",
-  municipality: "Commune",
-};
 
 export function SearchPanel() {
   const router = useRouter();
+  const { locale, search: m } = useI18n();
   const [query, setQuery] = useState("");
   const { results, isLoading, error } = useAddressSearch(query);
 
@@ -40,25 +36,25 @@ export function SearchPanel() {
     if (address.type) params.set("type", address.type);
     if (address.citycode) params.set("citycode", address.citycode);
 
-    router.push(`/analyze?${params.toString()}`);
+    router.push(localizedHref(locale, "analyze", { query: params.toString() }));
   };
 
   return (
     <div className="search-panel">
       <input
         className="input"
-        placeholder="Adresse, ou nom de commune (ex. Paris 11e, Bordeaux…)"
+        placeholder={m.placeholder}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
 
       {query.trim().length >= 3 && (
         <div className="search-results">
-          {isLoading && <p>Recherche en cours...</p>}
-          {error && <p>{error}</p>}
-          {!isLoading && !error && results.length === 0 && <p>Aucune adresse trouvée.</p>}
+          {isLoading && <p>{m.searching}</p>}
+          {error && <p>{m.failed}</p>}
+          {!isLoading && !error && results.length === 0 && <p>{m.noResult}</p>}
           {results.map((result) => {
-            const typeLabel = result.type ? TYPE_LABEL[result.type] : null;
+            const typeLabel = result.type ? m.typeLabels[result.type] : null;
             return (
               <button
                 key={result.id}

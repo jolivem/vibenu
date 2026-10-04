@@ -5,11 +5,12 @@ import type {
   RealEstateAnalysisDto,
   SecurityRating,
 } from "@/types/location-analysis";
-import { formatSurface } from "@/components/analysis/cadastreFormat";
+import type { AnalysisMessages } from "@/i18n/messages/fr/analysis";
 import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
 import { hasLocalTaxContent } from "@/components/analysis/localTaxModel";
 import { SECTION_ORDER, type SectionId } from "@/components/analysis/sections";
 import "./registerFonts";
+import { PdfMessagesProvider } from "./pdfMessages";
 import { pdfStyles } from "./pdfStyles";
 import { PdfMap } from "./sections/PdfMap";
 import {
@@ -35,6 +36,8 @@ interface Props {
   securityRating?: SecurityRating;
   /** Adresse de la page d'analyse, citée en pied de fiche pour le détail. */
   pageUrl?: string;
+  /** Messages de l'analyse dans la langue de la page : le PDF est rendu hors du DOM. */
+  m: AnalysisMessages;
 }
 
 function splitAddress(label: string, city: string, postcode: string) {
@@ -62,14 +65,14 @@ function Brand({ small = false }: { small?: boolean }) {
 }
 
 /** En-tête répété à partir de la deuxième page : la première porte l'en-tête de la fiche. */
-function RunningHeader({ place }: { place: string }) {
+function RunningHeader({ place, eyebrow }: { place: string; eyebrow: string }) {
   return (
     <View
       fixed
       render={({ pageNumber }) =>
         pageNumber === 1 ? null : (
           <View style={pdfStyles.runningHeader}>
-            <Text style={pdfStyles.runningHeaderLabel}>Fiche de synthèse</Text>
+            <Text style={pdfStyles.runningHeaderLabel}>{eyebrow}</Text>
             <Brand small />
             <Text style={pdfStyles.runningHeaderLabelRight}>{place}</Text>
           </View>
@@ -116,12 +119,9 @@ export function AnalysisPdfDocument({
   generatedAt,
   securityRating,
   pageUrl,
+  m,
 }: Props) {
-  const formattedDate = generatedAt.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  const formattedDate = m.pdf.date(generatedAt);
 
   const { street, locality } = splitAddress(
     data.address.label,
@@ -164,20 +164,26 @@ export function AnalysisPdfDocument({
 
   // Les tuiles du bandeau de l'écran, et la surface de la parcelle juste après le prix :
   // les deux chiffres qu'on compare d'une adresse à l'autre.
-  const figures: Array<{ label: string; value: string }> = buildKeyFigures(data, securityRating, activeSections);
+  const figures: Array<{ section: string; label: string; value: string }> = buildKeyFigures(
+    data,
+    securityRating,
+    activeSections,
+    m.keyFigures,
+  );
   if (showCadastre && data.cadastre?.parcel) {
-    const afterPrice = figures.findIndex((f) => f.label === "Prix médian") + 1;
-    figures.splice(afterPrice, 0, { label: "Surface", value: formatSurface(data.cadastre.parcel.contenance) });
+    // La surface suit la tuile de prix, repérée par sa section et non par son libellé.
+    const afterPrice = figures.findIndex((f) => f.section === "immobilier") + 1;
+    figures.splice(afterPrice, 0, { section: "immobilier", label: m.keyFigures.surfaceLabel, value: m.cadastre.surface(data.cadastre.parcel.contenance) });
   }
 
   return (
     <Document
-      title={`Fiche · ${data.address.label}`}
+      title={m.pdf.documentTitle(data.address.label)}
       author={BRANDING.name}
-      subject="Fiche de synthèse d'une adresse"
+      subject={m.pdf.subject}
     >
       <Page size="A4" style={pdfStyles.page}>
-        <RunningHeader place={locality} />
+        <RunningHeader place={locality} eyebrow={m.pdf.eyebrow} />
         <RunningFooter date={formattedDate} address={street} />
 
         <View wrap={false}>
@@ -185,7 +191,7 @@ export function AnalysisPdfDocument({
             <Brand />
             <Text style={pdfStyles.coverStamp}>{formattedDate}</Text>
           </View>
-          <Text style={pdfStyles.coverEyebrow}>Fiche de synthèse</Text>
+          <Text style={pdfStyles.coverEyebrow}>{m.pdf.eyebrow}</Text>
           <View style={pdfStyles.coverEyebrowRule} />
           <Text style={pdfStyles.coverTitle}>{street}</Text>
           <Text style={pdfStyles.coverSubtitle}>{locality}</Text>
@@ -193,6 +199,7 @@ export function AnalysisPdfDocument({
           {showMap && mapDataUrl && <PdfMap mapDataUrl={mapDataUrl} />}
         </View>
 
+        <PdfMessagesProvider value={m}>
         {sections.immobilier && (
           <PdfImmobilierFiche
             realEstate={showRealEstate ? realEstate : null}
@@ -245,19 +252,16 @@ export function AnalysisPdfDocument({
         )}
 
         {sections.risques && <PdfRisquesFiche risks={data.risks} />}
+        </PdfMessagesProvider>
 
         {/* Une seule fois pour toute la fiche, là où chaque card portait ses notes. */}
         <View wrap={false} style={pdfStyles.ficheNotes}>
-          <Text style={pdfStyles.ficheNote}>
-            Les chiffres viennent directement des fichiers publics.
-          </Text>
-          <Text style={pdfStyles.ficheNote}>
-            Sources : IGN · DVF · DGFiP · Géorisques · INSEE · Ministère de l&apos;Intérieur · Météo-France
-            · ATMO · Éducation nationale.
-          </Text>
+          <Text style={pdfStyles.ficheNote}>{m.pdf.notes.origin}</Text>
+          <Text style={pdfStyles.ficheNote}>{m.pdf.notes.sources}</Text>
           {pageUrl && (
             <Text style={pdfStyles.ficheNote}>
-              Détail, graphes et cartes : <Text style={pdfStyles.ficheLink}>{pageUrl}</Text>
+              {m.pdf.notes.onlineLead}
+              <Text style={pdfStyles.ficheLink}>{pageUrl}</Text>
             </Text>
           )}
         </View>

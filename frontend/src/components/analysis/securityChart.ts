@@ -10,15 +10,6 @@ import { FRANCE_SERIES_COLOR, LOCAL_SERIES_COLOR, REFERENCE_SERIES_COLOR } from 
  */
 export { LOCAL_SERIES_COLOR };
 
-export function formatRate(n: number): string {
-  return `${n.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} ‰`;
-}
-
-/** Étiquette de l'axe et des infobulles, selon le dénominateur de l'indicateur. */
-export function baseLabel(base: SecurityIndicatorDto["base"]): string {
-  return base === "logements" ? "pour 1 000 logements" : "pour 1 000 habitants";
-}
-
 /**
  * Arrondissements de Paris, Lyon et Marseille : la commune INSEE y est l'arrondissement,
  * donc la maille de la donnée est bien celle d'un quartier — ce qui mérite d'être dit, à
@@ -54,29 +45,23 @@ export interface SecurityChartModel {
 export interface SecurityChartReference {
   name: string;
   values: (number | null)[];
+  /** La France garde son brun partout ; tout autre repère prend le gris-bleu. */
+  france?: boolean;
 }
 
 export function buildSecurityChartModel(
   indicator: SecurityIndicatorDto,
   annees: number[],
   /**
-   * Nom de la série locale — « Cette commune » ou « Cet arrondissement ».
-   *
-   * En paramètre et non en dur : la maille dépend du code INSEE, et le nom était
-   * jusqu'ici figé à « Cette commune ». La légende de la card le corrigeait de son côté,
-   * mais pas les infobulles du graphe, qui annonçaient donc « Cette commune » sur une
-   * adresse parisienne. Un seul porteur du nom, désormais.
+   * Nom de la série locale — « Cette commune » ou « Cet arrondissement ». En paramètre :
+   * la maille dépend du code INSEE, et la langue de l'appelant.
    */
   localName: string,
   /**
-   * Repères, dans l'ordre de la légende. Par défaut le département et la France, ceux de la
-   * card d'analyse ; les pages commune SEO passent la ville et la France. La France garde
-   * son brun partout, tout autre repère prend le gris-bleu.
+   * Repères, dans l'ordre de la légende : département et France pour la card d'analyse,
+   * ville et France pour les pages commune.
    */
-  references: SecurityChartReference[] = [
-    { name: "Département", values: indicator.departement },
-    { name: "France", values: indicator.france },
-  ],
+  references: SecurityChartReference[],
 ): SecurityChartModel {
   const series: LineChartSeries[] = [
     {
@@ -89,7 +74,7 @@ export function buildSecurityChartModel(
     },
     ...references.map((reference) => ({
       name: reference.name,
-      color: reference.name === "France" ? FRANCE_SERIES_COLOR : REFERENCE_SERIES_COLOR,
+      color: reference.france ? FRANCE_SERIES_COLOR : REFERENCE_SERIES_COLOR,
       strokeWidth: 1.4,
       dotRadius: 2.5,
       opacity: 0.75,

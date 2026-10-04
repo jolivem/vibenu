@@ -176,11 +176,18 @@ export class GeorisquesRiskProvider implements RiskProvider {
     const name = this.riskLabels[code] ?? code;
     const { level, scope } = this.resolveLevel(risque, requested);
 
+    const statusDetail =
+      level === "absent"
+        ? null
+        : ((scope === "commune" ? risque.libelleStatutCommune : risque.libelleStatutAdresse) ?? null) || null;
+
     return {
       code,
       name,
       level,
       message: this.buildMessage(name, level, scope, risque, requested),
+      statusDetail,
+      communeFallback: level !== "absent" && scope === "commune" && requested === "adresse",
     };
   }
 
@@ -295,14 +302,16 @@ export class GeorisquesRiskProvider implements RiskProvider {
     const message =
       "Données Géorisques indisponibles — vérifier manuellement sur georisques.gouv.fr.";
     return [
-      { code: "inondation", name: "Risque d'inondation", level: "inconnu", message },
-      { code: "seisme", name: "Risque sismique", level: "inconnu", message },
-      {
-        code: "retraitGonflementArgile",
-        name: "Retrait-gonflement des argiles",
-        level: "inconnu",
-        message,
-      },
-    ];
+      { code: "inondation", name: "Risque d'inondation" },
+      { code: "seisme", name: "Risque sismique" },
+      { code: "retraitGonflementArgile", name: "Retrait-gonflement des argiles" },
+    ].map((risk) => ({
+      ...risk,
+      level: "inconnu" as const,
+      message,
+      statusDetail: null,
+      communeFallback: false,
+      unavailable: true,
+    }));
   }
 }

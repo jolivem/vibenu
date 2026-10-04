@@ -30,6 +30,10 @@ interface Props {
   /** Libellés longs pour les infobulles, quand `xLabels` est abrégé (« J » = janvier). */
   xTitles?: readonly string[];
   formatValue: (n: number) => string;
+  /** Rendu d'une graduation de l'ordonnée, selon la langue (séparateur de milliers, virgule). */
+  formatTick: (n: number) => string;
+  /** Infobulle d'un point : série, abscisse, valeur déjà formatée. */
+  pointTitle: (series: string, x: string, value: string) => string;
   ariaLabel: string;
   bands?: LineChartBand[];
   /** Décrit ce que représente une bande, dans l'infobulle. */
@@ -55,6 +59,8 @@ export function LineChart({
   y,
   xTitles,
   formatValue,
+  formatTick,
+  pointTitle,
   ariaLabel,
   bands = [],
   bandTitle,
@@ -106,7 +112,7 @@ export function LineChart({
             y={y(t)}
             className="line-chart-axis line-chart-axis--y"
           >
-            {t.toLocaleString("fr-FR")}
+            {formatTick(t)}
           </text>
         ))}
 
@@ -163,7 +169,7 @@ export function LineChart({
               {s.values.map((v, i) =>
                 v === null ? null : (
                   <circle key={i} cx={x(i)} cy={y(v)} r={s.dotRadius} fill={s.color}>
-                    <title>{`${s.name} — ${xTitles?.[i] ?? xLabels[i]} : ${formatValue(v)}`}</title>
+                    <title>{pointTitle(s.name, xTitles?.[i] ?? xLabels[i], formatValue(v))}</title>
                   </circle>
                 ),
               )}

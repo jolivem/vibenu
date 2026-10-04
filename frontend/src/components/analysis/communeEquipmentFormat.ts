@@ -1,22 +1,13 @@
+import type { NearbyMessages } from "@/i18n/messages/fr/analysis/nearby";
 import type { CommuneEquipmentDto } from "@/types/location-analysis";
-import { formatFr } from "@/lib/format";
 
 type Rubric = CommuneEquipmentDto["families"][number]["rubrics"][number];
+type Messages = NearbyMessages["communeEquipment"];
 
-/**
- * Décimales d'une paire de densités, fixées par la plus petite des deux : deux sous 1, une
- * sous 10, aucune au-delà.
- *
- * Commune et France partagent la même précision, pour se comparer d'un coup d'œil : chaque
- * valeur réglée sur sa propre taille donnait « 11 (France 9,1) » et « 0,09 (France 0,1) ».
- */
+/** Assez de décimales pour que la plus petite des valeurs comparées ne s'affiche pas « 0 ». */
 function densityDigits(...values: number[]): number {
   const smallest = Math.min(...values);
   return smallest < 1 ? 2 : smallest < 10 ? 1 : 0;
-}
-
-function formatDensity(value: number, digits: number): string {
-  return value.toLocaleString("fr-FR", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 
 /**
@@ -30,26 +21,21 @@ export function showsDensity(population: number): boolean {
   return population >= MIN_POPULATION_FOR_DENSITY;
 }
 
-/**
- * « 11,2 pour 10 000 hab. (France 9,1) » — partagé par la card et le PDF.
- *
- * Sans comparaison quand la localisation est incertaine : comparer à la France un nombre
- * faussé par la BPE (les bibliothèques de toute une ville rattachées à un arrondissement)
- * en amplifierait l'erreur.
- */
-export function equipmentDensity(rubric: Rubric): string {
-  const france = rubric.francePer10k;
-  if (rubric.locationUncertain || france == null) {
-    return `${formatDensity(rubric.per10k, densityDigits(rubric.per10k))} pour 10 000 hab.${rubric.locationUncertain ? " (localisation incertaine)" : ""}`;
-  }
-  const digits = densityDigits(rubric.per10k, france);
-  return `${formatDensity(rubric.per10k, digits)} pour 10 000 hab. (France ${formatDensity(france, digits)})`;
+/** Densité pour 10 000 habitants, comparée à la France quand la localisation est sûre. */
+export function equipmentDensity(rubric: Rubric, m: Messages): string {
+  const france = rubric.francePer10k ?? null;
+  const compared = !rubric.locationUncertain && france !== null;
+  return m.density({
+    per10k: rubric.per10k,
+    france,
+    digits: compared ? densityDigits(rubric.per10k, france) : densityDigits(rubric.per10k),
+    uncertain: Boolean(rubric.locationUncertain),
+  });
 }
 
-/** « 246 — 11,2 pour 10 000 hab. (France 9,1) », ou « 1 » seul sous le seuil de population. */
-export function equipmentLine(rubric: Rubric, population: number): string {
-  const count = formatFr(rubric.count);
-  return showsDensity(population) ? `${count} — ${equipmentDensity(rubric)}` : count;
+/** Fiche PDF : nombre, puis densité quand la commune est assez peuplée pour la calculer. */
+export function equipmentLine(rubric: Rubric, population: number, m: Messages): string {
+  return m.line(m.count(rubric.count), showsDensity(population) ? equipmentDensity(rubric, m) : null);
 }
 
 /**
@@ -63,16 +49,23 @@ export function splitRubrics(rubrics: readonly Rubric[]): { present: Rubric[]; a
   };
 }
 
-/** « Absents de la commune : pharmacies, services d'urgences ». */
-export function absentLine(absent: readonly Rubric[]): string {
-  const labels = absent.map((rubric) => rubric.label.charAt(0).toLocaleLowerCase("fr-FR") + rubric.label.slice(1));
-  return `Absents de la commune : ${labels.join(", ")}`;
+/** Libellé d'une rubrique dans la langue de la page ; à défaut, celui du serveur. */
+export function rubricLabel(rubric: Pick<Rubric, "key" | "label">, m: Messages): string {
+  return m.rubrics[rubric.key] ?? rubric.label;
 }
 
-/** Note de bas de card, commune à l'écran et au PDF. */
-export function equipmentFootnote(equipment: Pick<CommuneEquipmentDto, "population">): string {
-  const population = formatFr(equipment.population);
-  return showsDensity(equipment.population)
-    ? `Équipements recensés dans la commune en 2025 (${population} habitants), et leur densité pour 10 000 habitants comparée à celle de la France entière.`
-    : `Équipements recensés dans la commune en 2025 (${population} habitants). Sous ${formatFr(MIN_POPULATION_FOR_DENSITY)} habitants, les densités ne sont pas calculées : une seule unité suffit à les fausser.`;
+export function familyTitle(family: { key: string; title: string }, m: Messages): string {
+  return m.families[family.key] ?? family.title;
+}
+
+export function absentLine(absent: readonly Rubric[], m: Messages): string {
+  return m.absent(absent.map((rubric) => rubricLabel(rubric, m)));
+}
+
+export function equipmentFootnote(equipment: Pick<CommuneEquipmentDto, "population">, m: Messages): string {
+  return m.footnote({
+    population: equipment.population,
+    withDensity: showsDensity(equipment.population),
+    minPopulation: MIN_POPULATION_FOR_DENSITY,
+  });
 }

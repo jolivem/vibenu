@@ -78,6 +78,11 @@ export interface SiteFeatures {
   hasLandingFaqSection: boolean;
   /** Page /a-propos (mission + sources). Contenu PUBLIC-specific. */
   hasAboutPage: boolean;
+  /**
+   * Version anglaise lancée : indexable, au sitemap, avec sélecteur de langue. Tant que
+   * c'est faux, les routes `/en/*` répondent mais restent cachées (`noindex`).
+   */
+  englishLaunched: boolean;
 
   // --- Export PDF ---
   /** Bouton "Télécharger PDF" + génération du PDF. */
@@ -115,6 +120,8 @@ const PUBLIC_FEATURES: SiteFeatures = {
   hasLandingMarketingSections: true,
   hasLandingFaqSection: true,
   hasAboutPage: true,
+  // À passer à `true` une fois la traduction anglaise relue : c'est ce qui la rend publique.
+  englishLaunched: true,
   hasPdfExport: true,
   hasShareLinks: true,
 };
@@ -145,6 +152,7 @@ const PRO_FEATURES: SiteFeatures = {
   hasLandingMarketingSections: false,
   hasLandingFaqSection: false,
   hasAboutPage: false,
+  englishLaunched: false, // PRO : pas de version anglaise
   hasPdfExport: true, // PDF simplifié (Voisinage + Mobilité uniquement)
   hasShareLinks: false, // usage professionnel : pas de partage « à des proches »
 };

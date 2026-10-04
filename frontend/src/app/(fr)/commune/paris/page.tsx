@@ -2,6 +2,7 @@ import { CityHubPage } from "@/components/commune/CityHubPage";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { BRANDING, FEATURES } from "@/lib/site-features";
+import { SITE_URL } from "@/lib/site-url";
 
 // Rendu serveur à chaque requête : évite la mise en cache de pages prerendues
 // au build Docker (où POSTGRES_URL n'est pas disponible) avec un meta vide.
@@ -9,7 +10,6 @@ import { BRANDING, FEATURES } from "@/lib/site-features";
 // côté provider, donc le coût runtime reste minimal.
 export const dynamic = "force-dynamic";
 
-const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   title: "Paris — Arrondissements, prix immobilier, climat et risques",

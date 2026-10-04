@@ -18,7 +18,7 @@ import {
 import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
 import type { CadastreParcelDto, DvfTransactionFeatureDto, FloodZoneDto, GeoJsonGeometryDto, RiskAnalysisDto } from "@/types/location-analysis";
-import { formatFr } from "@/lib/format";
+import { useI18n } from "@/i18n/client";
 
 /** Exportés pour que les cartes thématiques puissent les passer en `initialLayers`. */
 export const DVF_LAYER_ID = "dvf-transactions";
@@ -209,6 +209,11 @@ interface MapProps {
 }
 
 export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, floodZones, onReady, height = "400px", showLayerToggle = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
+  const { map: m } = useI18n();
+  // Les infobulles sont construites dans des gestionnaires posés une fois à la création
+  // de la carte : ils lisent les messages par cette ref, sans dépendre du rendu.
+  const messagesRef = useRef(m);
+  messagesRef.current = m;
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -258,7 +263,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     const layers: OverlayLayerConfig[] = RISK_LAYERS.filter((layer) => {
       if (layer.riskCode !== "seisme") return true;
       return seismeLevel === "modéré" || seismeLevel === "élevé";
-    });
+    }).map((layer) => ({ id: layer.id, label: m.riskLayers[layer.id] ?? layer.id, color: layer.color }));
 
     // La case n'existe que s'il y a des zones à montrer. Une case cochable et vide se lit
     // comme « aucun risque d'inondation », alors que la couverture du Géoportail de
@@ -268,26 +273,26 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       const hasZones = floodZones.some((zone) => zone.kind !== "perimeter");
       layers.push({
         id: FLOOD_ZONES_LAYER_ID,
-        label: hasZones ? "Zones inondables (PPR)" : "Périmètre PPR inondation",
+        label: hasZones ? m.floodZonesLayer : m.floodPerimeterLayer,
         color: "#3498db",
       });
     }
     return layers;
-  }, [risks, floodZones]);
+  }, [risks, floodZones, m]);
 
   const overlayLayers = useMemo<OverlayLayerConfig[]>(() => {
     const layers: OverlayLayerConfig[] = [];
     if (dvfTransactions?.length) {
-      layers.push({ id: DVF_LAYER_ID, label: "Prix immobiliers (DVF)", color: "#eab308" });
+      layers.push({ id: DVF_LAYER_ID, label: m.overlays.dvf, color: "#eab308" });
     }
     if (irisGeojson) {
-      layers.push({ id: IRIS_LAYER_ID, label: "Quartier démographique", color: "#8b5cf6" });
+      layers.push({ id: IRIS_LAYER_ID, label: m.overlays.iris, color: "#8b5cf6" });
     }
     if (schoolSector) {
-      layers.push({ id: SCHOOL_SECTOR_LAYER_ID, label: "Secteur collège", color: "#d97706" });
+      layers.push({ id: SCHOOL_SECTOR_LAYER_ID, label: m.overlays.schoolSector, color: "#d97706" });
     }
     return layers;
-  }, [dvfTransactions, irisGeojson, schoolSector]);
+  }, [dvfTransactions, irisGeojson, schoolSector, m]);
 
   // Le style IGN est chargé à part : c'est un fetch (~288 Ko), mutualisé entre les cartes
   // de la page par le cache de `loadIgnStyle`. Tant qu'il n'est pas là, la carte n'est pas
@@ -675,6 +680,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       preserveDrawingBuffer: true,
+      locale: messagesRef.current.controls,
       transformRequest: ignTransformRequest,
       style: {
         ...baseStyle,
@@ -779,13 +785,14 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       m.on("click", `${DVF_LAYER_ID}-fill`, (e) => {
         if (!e.features?.length) return;
         const props = e.features[0].properties;
-        const html = `
-          <strong>${formatFr(Number(props.pricePerSqm))} €/m²</strong><br/>
-          Prix : ${formatFr(Number(props.price))} €<br/>
-          Surface : ${props.surface} m²<br/>
-          Date : ${props.date}<br/>
-          ${props.propertyType}
-        `;
+        const popup = messagesRef.current.dvfPopup({
+          pricePerSqm: Number(props.pricePerSqm),
+          price: Number(props.price),
+          surface: String(props.surface),
+          date: String(props.date),
+          propertyType: String(props.propertyType),
+        });
+        const html = `<strong>${popup.title}</strong><br/>${popup.lines.join("<br/>")}`;
         new maplibregl.Popup()
           .setLngLat(e.lngLat)
           .setHTML(html)
@@ -811,7 +818,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           .join("");
         new maplibregl.Popup()
           .setLngLat(e.lngLat)
-          .setHTML(`<strong>Zone inondable</strong>${labels}`)
+          .setHTML(`<strong>${messagesRef.current.floodZonePopupTitle}</strong>${labels}`)
           .addTo(m);
       });
       // Le périmètre n'a pas d'aplat : seul son trait répond au clic.
@@ -820,8 +827,8 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         new maplibregl.Popup()
           .setLngLat(e.lngLat)
           .setHTML(
-            `<strong>Périmètre d'un plan de prévention des risques (PPR) inondation</strong>${label ? `<div>${label}</div>` : ""}` +
-              `<div>Zonage détaillé non publié : ce contour n'indique pas les zones inondables.</div>`,
+            `<strong>${messagesRef.current.floodPerimeterPopup.title}</strong>${label ? `<div>${label}</div>` : ""}` +
+              `<div>${messagesRef.current.floodPerimeterPopup.note}</div>`,
           )
           .addTo(m);
       });
@@ -877,7 +884,10 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         <LayerTogglePanel
           riskLayers={showLayerToggle ? availableRiskLayers : []}
           overlayLayers={showLayerToggle ? overlayLayers : []}
-          baseChoices={showBaseLayers ? BASE_CHOICES : []}
+          baseChoices={
+            showBaseLayers ? BASE_CHOICES.map((c) => ({ id: c.id, label: m.basemaps[c.id] ?? c.id })) : []
+          }
+          titles={m.layerPanel}
           baseChoice={baseChoice}
           onBaseChoice={handleBaseChoice}
           visibleLayers={visibleLayers}

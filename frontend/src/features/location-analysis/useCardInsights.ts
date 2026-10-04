@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { backendApi } from "@/lib/api/backend-api";
 import type { CardInsights, LocationAnalysisDto, SecurityRating } from "@/types/location-analysis";
+import type { Locale } from "@/i18n/locales";
 
 /**
  * Charge les mini-synthèses une fois l'analyse arrivée.
@@ -20,7 +21,7 @@ import type { CardInsights, LocationAnalysisDto, SecurityRating } from "@/types/
  * après les autres tuiles, qui sont tirées du DTO d'analyse : la tuile « Sécurité »
  * s'insère à sa place dans la rangée quand la réponse arrive.
  */
-export function useCardInsights(data: LocationAnalysisDto | null, citycode?: string) {
+export function useCardInsights(data: LocationAnalysisDto | null, citycode: string | undefined, locale: Locale) {
   const [insights, setInsights] = useState<CardInsights>({});
   /** `undefined` tant que l'appel n'a pas rendu, et définitivement si le modèle n'a pas
    *  produit de note exploitable : la tuile du bandeau n'apparaît alors pas. */
@@ -35,7 +36,7 @@ export function useCardInsights(data: LocationAnalysisDto | null, citycode?: str
     setIsLoading(true);
 
     backendApi
-      .generateCardInsights(data, citycode)
+      .generateCardInsights(data, citycode, locale)
       .then((result) => {
         if (cancelled) return;
         setInsights(result.insights);
@@ -52,7 +53,7 @@ export function useCardInsights(data: LocationAnalysisDto | null, citycode?: str
     return () => {
       cancelled = true;
     };
-  }, [data, citycode]);
+  }, [data, citycode, locale]);
 
   return { insights, securityRating, isLoading, debugInput };
 }

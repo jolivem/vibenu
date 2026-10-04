@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { RiskAnalysisDto } from "@/types/location-analysis";
 import { RiskList } from "@/components/analysis/RisksCard";
+import { risks as risksMessages } from "@/i18n/messages/fr/analysis/risks";
 
 /**
  * Les risques naturels et technologiques de la ville.
@@ -20,7 +21,7 @@ export function CityHubRisksCard({
     <section className="card">
       <h2>Risques naturels et technologiques à {nomAffiche}</h2>
 
-      <RiskList risks={risks} />
+      <RiskList risks={risks} m={risksMessages} />
 
       <p className="elections-footnote">
         Statuts relevés à l&apos;échelle de la commune : ils disent quels risques

@@ -1,4 +1,4 @@
-import { formatDistance } from "@/lib/format";
+import type { NearbyMessages } from "@/i18n/messages/fr/analysis/nearby";
 
 /**
  * Au-delà de cette distance, on ne propose plus de temps de marche.
@@ -12,12 +12,11 @@ import { formatDistance } from "@/lib/format";
 export const WALKABLE_LIMIT_METERS = 2000;
 
 // Vitesse de marche moyenne ≈ 4,5 km/h (75 m/min)
-export function formatWalkingTime(meters: number): string {
+export function formatWalkingTime(meters: number, m: NearbyMessages): string {
   const minutes = Math.max(1, Math.round(meters / 75));
-  if (minutes < 60) return `${minutes} min à pied`;
+  if (minutes < 60) return m.walking(minutes);
   const h = Math.floor(minutes / 60);
-  const m = Math.round((minutes - h * 60) / 5) * 5;
-  return m === 0 ? `${h} h à pied` : `${h} h ${String(m).padStart(2, "0")} à pied`;
+  return m.walkingHours(h, Math.round((minutes - h * 60) / 5) * 5);
 }
 
 /**
@@ -27,6 +26,6 @@ export function formatWalkingTime(meters: number): string {
  * à 20 km se lit « 20 km », pas « 4 h 25 à pied » : le temps de marche y est exact et
  * sans usage, puisque personne ne rejoint sa gare à pied à cette distance.
  */
-export function formatProximity(meters: number): string {
-  return meters <= WALKABLE_LIMIT_METERS ? formatWalkingTime(meters) : formatDistance(meters);
+export function formatProximity(meters: number, m: NearbyMessages): string {
+  return meters <= WALKABLE_LIMIT_METERS ? formatWalkingTime(meters, m) : m.distance(meters);
 }

@@ -1167,7 +1167,7 @@ html {
 
 .landing-footer-brand i {
   color: var(--accent);
-  font-style: italic;
+  font-style: normal;
 }
 
 /* Shared */
@@ -1316,6 +1316,17 @@ html {
 }
 
 /* Actions de la barre du haut — partage + PDF */
+/* Lien vers la même analyse dans l'autre langue, à gauche des actions. */
+.analysis-language {
+  font-size: 14px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.analysis-language:hover {
+  color: var(--accent);
+}
+
 .analysis-actions {
   display: flex;
   align-items: center;

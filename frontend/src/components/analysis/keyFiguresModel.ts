@@ -1,13 +1,7 @@
-import { SECURITY_RATING_LABELS, type LocationAnalysisDto, type SecurityRating } from "@/types/location-analysis";
-import { formatFr } from "@/lib/format";
+import type { KeyFiguresMessages } from "@/i18n/messages/fr/analysis/keyFigures";
+import type { LocationAnalysisDto, SecurityRating } from "@/types/location-analysis";
 import type { KeyFigure } from "./KeyFigures";
 import type { SectionId } from "./sections";
-
-/** Les niveaux du DTO sont en minuscules (« très bon », « modéré ») : ils se lisent au fil
- *  d'une phrase dans les cards, mais isolés dans une tuile ils veulent une capitale. */
-function capitalizeFirst(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
 
 /**
  * Les chiffres clés d'une analyse, une tuile par section — partagés par le bandeau de
@@ -21,6 +15,7 @@ export function buildKeyFigures(
   data: LocationAnalysisDto,
   securityRating: SecurityRating | undefined,
   activeSections: readonly SectionId[],
+  m: KeyFiguresMessages,
 ): KeyFigure<SectionId>[] {
   const figures: Partial<Record<SectionId, KeyFigure<SectionId>>> = {};
 
@@ -30,15 +25,15 @@ export function buildKeyFigures(
   if (medianPrice != null && medianPrice > 0) {
     figures.immobilier = {
       section: "immobilier",
-      label: "Prix médian",
-      value: `${formatFr(Math.round(medianPrice))} €/m²`,
+      label: m.priceLabel,
+      value: m.price(medianPrice),
     };
   }
 
   figures.deplacer = {
     section: "deplacer",
-    label: "Transports",
-    value: capitalizeFirst(data.mobility.label),
+    label: m.transportLabel,
+    value: m.transportLevels[data.mobility.label],
   };
 
   // Sur les comptages dédoublonnés et non sur la liste : plafonnée à 50, celle-ci
@@ -52,8 +47,8 @@ export function buildKeyFigures(
       .reduce((sum, [, count]) => sum + (count ?? 0), 0);
     figures.proximite = {
       section: "proximite",
-      label: `À moins de ${counts.radiusMeters} m`,
-      value: `${total} équipement${total > 1 ? "s" : ""}`,
+      label: m.nearbyLabel(counts.radiusMeters),
+      value: m.nearbyValue(total),
     };
   }
 
@@ -62,8 +57,8 @@ export function buildKeyFigures(
   if (securityRating) {
     figures.securite = {
       section: "securite",
-      label: "Sécurité",
-      value: SECURITY_RATING_LABELS[securityRating],
+      label: m.securityLabel,
+      value: m.securityRatings[securityRating],
     };
   }
 

@@ -1,6 +1,5 @@
 export interface RiskLayerConfig {
   id: string;
-  label: string;
   riskCode: string;
   wmsBaseUrl: string;
   wmsLayers: string;
@@ -52,7 +51,6 @@ const BRGM = "https://geoservices.brgm.fr/risques";
 export const RISK_LAYERS: RiskLayerConfig[] = [
   {
     id: "risk-argile",
-    label: "Retrait-gonflement argiles",
     riskCode: "retraitGonflementArgile",
     wmsBaseUrl: BRGM,
     wmsLayers: "ALEARG",
@@ -63,7 +61,6 @@ export const RISK_LAYERS: RiskLayerConfig[] = [
   },
   {
     id: "risk-seisme",
-    label: "Zonage sismique",
     riskCode: "seisme",
     wmsBaseUrl: BRGM,
     wmsLayers: "SIS",

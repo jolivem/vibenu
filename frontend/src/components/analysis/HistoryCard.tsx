@@ -9,6 +9,7 @@ interface Props {
   cadastreParcel: CadastreParcelDto | null;
   communeContour: GeoJsonGeometryDto | null;
   height: string;
+  title: string;
 }
 
 /**
@@ -23,12 +24,12 @@ interface Props {
  * l'agrandir ×2 alors qu'une photographie aérienne de 1950 y est nette — et beaucoup
  * plus parlante sur ce qu'est devenue la parcelle.
  */
-export function HistoryCard({ lat, lon, label, mode, cadastreParcel, communeContour, height }: Props) {
+export function HistoryCard({ lat, lon, label, mode, cadastreParcel, communeContour, height, title }: Props) {
   const isCommune = mode === "commune";
 
   return (
     <section className="card">
-      <h2>Le lieu autrefois</h2>
+      <h2>{title}</h2>
 
       <div className="card-map">
         <HistoricalMap

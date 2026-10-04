@@ -1,4 +1,5 @@
 import { Text, View } from "@react-pdf/renderer";
+import { usePdfMessages } from "../pdfMessages";
 import { pdfStyles } from "../pdfStyles";
 
 /**
@@ -9,11 +10,12 @@ import { pdfStyles } from "../pdfStyles";
  * `wrap={false}` pour que le libellé ne se retrouve pas seul en bas de page.
  */
 export function PdfInsight({ text }: { text?: string | null }) {
+  const { pdf } = usePdfMessages();
   const value = text?.trim();
   if (!value) return null;
   return (
     <View wrap={false}>
-      <Text style={pdfStyles.insightTag}>EN BREF</Text>
+      <Text style={pdfStyles.insightTag}>{pdf.insightTag}</Text>
       <Text style={pdfStyles.insight}>{value}</Text>
     </View>
   );

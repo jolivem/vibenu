@@ -27,8 +27,8 @@ import {
   cityHubSectionContent,
   type CityHubSectionId,
 } from "./hubSections";
+import { SITE_URL } from "@/lib/site-url";
 
-const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
 interface ArrondissementSummary {
   slug: string;
@@ -252,7 +252,7 @@ export async function CityHubPage({ city }: Props) {
       </section>
 
       <div className="page-shell">
-        <KeyFigures figures={figures} />
+        <KeyFigures figures={figures} ariaLabel="Chiffres clés" />
 
         <div className="page-body">
           <aside className="page-sidebar">

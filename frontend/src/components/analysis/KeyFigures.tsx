@@ -27,11 +27,11 @@ export interface KeyFigure<Id extends string = string> {
  * La clé React joint la section au libellé : la section seule ne suffit pas dès que deux
  * tuiles ancrent au même endroit.
  */
-export function KeyFigures({ figures }: { figures: KeyFigure<string>[] }) {
+export function KeyFigures({ figures, ariaLabel }: { figures: KeyFigure<string>[]; ariaLabel: string }) {
   if (figures.length === 0) return null;
 
   return (
-    <nav className="key-figures" aria-label="Chiffres clés">
+    <nav className="key-figures" aria-label={ariaLabel}>
       {figures.map((figure) => (
         <a
           key={`${figure.section}-${figure.label}`}

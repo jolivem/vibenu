@@ -1,3 +1,4 @@
+import type { Locale } from "@/i18n/locales";
 import type { AddressSuggestionDto, CardInsightsDto, LocationAnalysisDto } from "@/types/location-analysis";
 
 export const backendApi = {
@@ -50,10 +51,12 @@ export const backendApi = {
    */
   async generateCardInsights(
     data: LocationAnalysisDto,
-    citycode?: string,
+    citycode: string | undefined,
+    locale: Locale,
   ): Promise<CardInsightsDto> {
-    const suffix = citycode ? `?citycode=${encodeURIComponent(citycode)}` : "";
-    const response = await fetch(`/api/location/card-insights${suffix}`, {
+    const params = new URLSearchParams({ lang: locale });
+    if (citycode) params.set("citycode", citycode);
+    const response = await fetch(`/api/location/card-insights?${params.toString()}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

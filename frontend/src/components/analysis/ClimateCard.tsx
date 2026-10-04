@@ -1,42 +1,11 @@
 import type { ClimateAnalysisDto } from "@/types/location-analysis";
-
-/** Le profil sur 12 mois d'un lieu et de ses repères — le champ `monthly` du DTO. */
-type ClimateMonthly = NonNullable<ClimateAnalysisDto["monthly"]>;
+import { CardInsight } from "@/components/CardInsight";
+import type { ClimateMessages } from "@/i18n/messages/fr/analysis/climate";
 import { ClimateChart } from "./ClimateChart";
 import { CLIMATE_METRICS } from "./climateChart";
-import { CardInsight } from "@/components/CardInsight";
 import { climateStationLines, climateTitle } from "./climateFormat";
 
-/** « le continental », mais « l'océanique » — élision devant voyelle. */
-function withArticle(type: string): string {
-  return /^[aeiouyàâäéèêëîïôöùûü]/i.test(type) ? `l'${type}` : `le ${type}`;
-}
-
-/**
- * « Strasbourg pour le climat continental, Marseille pour le méditerranéen, Brest
- * pour l'océanique. »
- *
- * Construite depuis les références effectivement reçues, et non écrite en dur : la table
- * `REFERENCE_CLIMATES` du serveur peut changer de villes, et une ville dont aucune mesure
- * n'est disponible n'arrive pas jusqu'ici.
- *
- * Cette phrase porte désormais la correspondance ville ↔ climat que les légendes
- * répétaient sous chacun des trois graphes. Dite une fois, en pied de card, elle allège trois
- * légendes — et elle a la place d'être explicite là où la légende devait abréger.
- */
-function referenceSentence(
-  references: ReadonlyArray<{ name: string; climateType?: string }>,
-): string | null {
-  const typed = references.filter(
-    (r): r is { name: string; climateType: string } => Boolean(r.climateType),
-  );
-  if (typed.length === 0) return null;
-  return typed
-    .map(({ name, climateType }, i) =>
-      i === 0 ? `${name} pour le climat ${climateType}` : `${name} pour ${withArticle(climateType)}`,
-    )
-    .join(", ");
-}
+type ClimateMonthly = NonNullable<ClimateAnalysisDto["monthly"]>;
 
 /**
  * Climat de l'adresse, mois par mois, comparé à trois villes de climats types.
@@ -47,46 +16,39 @@ function referenceSentence(
  */
 export function ClimateCard({
   climate,
+  m,
   insight,
 }: {
   climate: ClimateAnalysisDto;
+  m: ClimateMessages;
   /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
   insight?: string | null;
 }) {
   const monthly = climate.monthly;
   if (!monthly || !hasClimateSeries(monthly)) return null;
 
-  const stationLines = climateStationLines(climate);
+  // Le fournisseur nomme la série locale en français : le nom affiché vient des messages.
+  const named = { ...monthly, local: { ...monthly.local, name: m.localSeries } };
+  const stationLines = climateStationLines(climate, m);
+  const typedReferences = monthly.references.filter(
+    (r): r is typeof r & { climateType: string } => Boolean(r.climateType),
+  );
+  const referenceStations = monthly.references.flatMap((r) =>
+    r.stationName ? [{ station: r.stationName, city: r.name }] : [],
+  );
 
   return (
     <section className="card climate-card">
-      <h2>{climateTitle(climate)}</h2>
+      <h2>{climateTitle(climate, m)}</h2>
 
       <CardInsight text={insight} />
 
-      <ClimateCharts monthly={monthly} />
+      <ClimateCharts monthly={named} m={m} />
 
-      <p className="elections-footnote">
-        Profil mois par mois, comparé à des villes représentatives des grands climats
-        français
-        {referenceSentence(monthly.references)
-          ? ` : ${referenceSentence(monthly.references)}.`
-          : "."}
-      </p>
-      {stationLines.length > 0 && (
-        <p className="elections-footnote">
-          Stations de mesure les plus proches — {stationLines.join(" · ")}.
-        </p>
-      )}
-      {monthly.references.some((r) => r.stationName) && (
-        <p className="elections-footnote">
-          Villes de référence mesurées à{" "}
-          {monthly.references
-            .filter((r) => r.stationName)
-            .map((r) => `${r.stationName} pour ${r.name}`)
-            .join(", ")}
-          .
-        </p>
+      <p className="elections-footnote">{m.referencesNote(typedReferences)}</p>
+      {stationLines.length > 0 && <p className="elections-footnote">{m.stationsNote(stationLines)}</p>}
+      {referenceStations.length > 0 && (
+        <p className="elections-footnote">{m.referenceStationsNote(referenceStations)}</p>
       )}
     </section>
   );
@@ -108,16 +70,14 @@ export function hasClimateSeries(monthly: ClimateMonthly): boolean {
  * Les trois graphes de la card, sans son cadre ni ses notes : les pages commune les
  * reprennent tels quels, avec leurs propres sources.
  */
-export function ClimateCharts({ monthly }: { monthly: ClimateMonthly }) {
+export function ClimateCharts({ monthly, m }: { monthly: ClimateMonthly; m: ClimateMessages }) {
   return (
     <>
       {CLIMATE_METRICS.map((metric) => (
         <ClimateChart
           key={metric.key}
           metric={metric.key}
-          label={metric.label}
-          unit={metric.unit}
-          format={metric.format}
+          m={m}
           local={monthly.local}
           references={monthly.references}
         />

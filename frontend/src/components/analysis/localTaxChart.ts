@@ -60,15 +60,15 @@ function buildYearChart(annees: number[], series: LineChartSeries[]): LocalTaxCh
 /** Évolution du taux global de taxe foncière, face aux médianes du département et de la France. */
 export function buildLocalTaxChartModel(
   taxeFonciere: LocalTaxPropertyTaxDto,
-  localName: string,
+  names: { local: string; department: string; france: string },
 ): LocalTaxChartModel {
   return buildYearChart(taxeFonciere.annees, [
-    localSeries(localName, taxeFonciere.tauxGlobal),
+    localSeries(names.local, taxeFonciere.tauxGlobal),
     // Le repère départemental est vide quand le département compte trop peu de communes.
     ...(taxeFonciere.medianeDepartement.some((v) => v !== null)
-      ? [referenceSeries("Médiane du département", REFERENCE_SERIES_COLOR, taxeFonciere.medianeDepartement)]
+      ? [referenceSeries(names.department, REFERENCE_SERIES_COLOR, taxeFonciere.medianeDepartement)]
       : []),
-    referenceSeries("Médiane France", FRANCE_SERIES_COLOR, taxeFonciere.medianeFrance),
+    referenceSeries(names.france, FRANCE_SERIES_COLOR, taxeFonciere.medianeFrance),
   ]);
 }
 
@@ -76,13 +76,13 @@ export function buildLocalTaxChartModel(
 export function buildLocalFinanceChartModel(
   finances: LocalTaxFinancesDto,
   indicateur: LocalTaxFinancesDto["indicateurs"][number],
-  localName: string,
+  names: { local: string; comparable: string },
 ): LocalTaxChartModel {
   return buildYearChart(finances.annees, [
-    localSeries(localName, indicateur.parHabitant),
+    localSeries(names.local, indicateur.parHabitant),
     // Sans strate comparable (Paris), la courbe de la commune reste seule.
     ...(indicateur.moyenneStrate.some((v) => v !== null)
-      ? [referenceSeries("Communes comparables", REFERENCE_SERIES_COLOR, indicateur.moyenneStrate)]
+      ? [referenceSeries(names.comparable, REFERENCE_SERIES_COLOR, indicateur.moyenneStrate)]
       : []),
   ]);
 }

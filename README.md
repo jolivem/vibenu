@@ -326,6 +326,7 @@ Migrations actuelles :
 - `014-drop-climate-national-tables.sql` — nettoyage de deux tables climat obsolètes
 - `015-crime-ssmsi.sql` — délinquance SSMSI (`crime_commune`, `crime_reference`, `crime_indicateur`)
 - `020-local-tax.sql` — fiscalité locale DGFiP (`local_tax_commune`, `local_tax_reference`, `local_tax_deliberation`, `local_tax_deliberation_reference`, `local_tax_finances`)
+- `021-card-insights-lang.sql` — colonne `lang` du cache des mini-synthèses (une phrase par langue)
 - `016-municipales-2026.sql` — municipales 2026
 - `017-insee-iris.sql` — `iris_demographics` (jusque-là créée par le script d'import),
   ses trois tables sœurs `iris_logement` / `iris_emploi` / `iris_menages`, et la vue
@@ -477,6 +478,20 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - Ce sont des taux : le montant d'une taxe dépend de la valeur locative du logement, non publique, et n'est pas estimé
 - Licence : Licence Ouverte Etalab 2.0
 - Mise à jour : annuelle. Les jeux « délibérations » et « comptes » sont millésimés (nouvelle URL chaque année) : mettre à jour les constantes en tête du script, puis le relancer. `update.sh` rejoue les migrations mais **pas** l'import
+
+## Langues
+
+Le site existe en français (langue d'origine, URL inchangées) et en anglais sous `/en`
+(`/en`, `/en/about`, `/en/analyze`). Les pages `/commune/*` restent en français seulement.
+
+- Les textes vivent dans `frontend/src/i18n/messages/fr/` et `en/` ; le type se déduit du français,
+  donc une clé absente en anglais ne compile pas.
+- **L'anglais est en ligne mais caché** tant que `englishLaunched` vaut `false` dans
+  `frontend/src/lib/site-features.ts` : pages `noindex`, absentes du sitemap, sans `hreflang` ni
+  sélecteur de langue. Le passer à `true` le rend public — à faire après relecture de la traduction.
+- Les phrases « En bref » sont générées et mises en cache par langue (migration `021`).
+- `NEXT_PUBLIC_I18N_PSEUDO=1 pnpm dev` entoure de `⟦ ⟧` tout texte issu d'un dictionnaire : ce qui
+  s'affiche sans crochets est resté en dur.
 
 ## Structure du repository
 

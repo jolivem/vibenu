@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Map as MapLibreMap } from "maplibre-gl";
+import { useAnalysisI18n } from "@/i18n/client";
 import type {
   CardInsights,
   LocationAnalysisDto,
@@ -31,7 +32,7 @@ function slugify(label: string): string {
     .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 60) || "analyse";
+    .slice(0, 60);
 }
 
 export function DownloadPdfButton({
@@ -42,6 +43,9 @@ export function DownloadPdfButton({
   securityRating,
   getMap,
 }: Props) {
+  // Le PDF est rendu hors du DOM : sa langue lui est passée en prop, lue ici.
+  const messages = useAnalysisI18n();
+  const m = messages.screen.pdfButton;
   const [loading, setLoading] = useState(false);
   /** Clic reçu pendant la génération des « En bref » : le PDF part dès leur arrivée. */
   const [pending, setPending] = useState(false);
@@ -94,13 +98,14 @@ export function DownloadPdfButton({
           mapDataUrl={mapDataUrl}
           insights={insights}
           generatedAt={new Date()}
+          m={messages}
         />,
       ).toBlob();
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `fiche-${slugify(data.address.label)}.pdf`;
+      a.download = `${messages.pdf.filePrefix}-${slugify(data.address.label) || messages.pdf.fileFallback}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -117,7 +122,7 @@ export function DownloadPdfButton({
       onClick={handleClick}
       disabled={loading || pending}
     >
-      {pending ? "Préparation des synthèses..." : loading ? "Génération..." : "Télécharger PDF"}
+      {pending ? m.waitingForInsights : loading ? m.generating : m.idle}
     </button>
   );
 }

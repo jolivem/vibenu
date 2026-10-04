@@ -13,6 +13,7 @@ import type {
 } from "@/server-modules/demographics/domain/insee-profile.types";
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { viewForMode, type InseeView } from "@/components/analysis/inseeChart";
+import { population } from "@/i18n/messages/fr/analysis/population";
 import { FEATURES } from "@/lib/site-features";
 
 export interface CommuneInseeViews {
@@ -24,8 +25,8 @@ export interface CommuneInseeViews {
 export function communeInseeViews(stats: CommuneStats, nomCourt: string): CommuneInseeViews {
   const scale = { nomCommune: nomCourt, communeIrisCount: 1 };
   return {
-    employment: FEATURES.showEmployment ? viewForMode(stats.employment, "commune", scale) : null,
-    households: FEATURES.showHouseholds ? viewForMode(stats.households, "commune", scale) : null,
-    housing: FEATURES.showHousing ? viewForMode(stats.housing, "commune", scale) : null,
+    employment: FEATURES.showEmployment ? viewForMode(stats.employment, "commune", scale, population) : null,
+    households: FEATURES.showHouseholds ? viewForMode(stats.households, "commune", scale, population) : null,
+    housing: FEATURES.showHousing ? viewForMode(stats.housing, "commune", scale, population) : null,
   };
 }

@@ -51,18 +51,7 @@ export const NUANCE_COLOR: Record<string, string> = {
   LUXD: "#16233a",
 };
 
-export function formatElectionPct(v: number): string {
-  return `${v.toFixed(1).replace(".", ",")} %`;
-}
-
-export function electionDeltaLabel(delta: number): string {
-  const rounded = Math.round(delta * 10) / 10;
-  if (rounded === 0) return "= national";
-  const sign = rounded > 0 ? "+" : "−";
-  return `${sign}${Math.abs(rounded).toFixed(1).replace(".", ",")} pts`;
-}
-
-export function siegesLabel(liste: MunicipalesListeDto): string | null {
-  if (liste.siegesCm === null || liste.siegesCm === 0) return null;
-  return `${liste.siegesCm} siège${liste.siegesCm > 1 ? "s" : ""}`;
+/** Sièges obtenus au conseil municipal, ou `null` quand la liste n'en a aucun. */
+export function seatCount(liste: MunicipalesListeDto): number | null {
+  return liste.siegesCm === null || liste.siegesCm === 0 ? null : liste.siegesCm;
 }

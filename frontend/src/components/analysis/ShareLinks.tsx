@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BRANDING } from "@/lib/site-features";
+import type { ScreenMessages } from "@/i18n/messages/fr/analysis/screen";
 
 /**
  * Partage de l'analyse courante.
@@ -16,7 +16,7 @@ import { BRANDING } from "@/lib/site-features";
  * l'API `clipboard` exige un contexte sécurisé (HTTPS ou localhost) et peut être refusée par
  * l'utilisateur. Le lien reste alors sélectionnable à la main.
  */
-export function ShareLinks({ label }: { label: string }) {
+export function ShareLinks({ label, m }: { label: string; m: ScreenMessages["share"] }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
@@ -66,8 +66,8 @@ export function ShareLinks({ label }: { label: string }) {
     return () => window.clearTimeout(timer);
   }, [copied]);
 
-  const shareTitle = `${label} — analyse ${BRANDING.name}`;
-  const shareText = `Voici l'analyse de ${label} sur ${BRANDING.name} :`;
+  const shareTitle = m.title(label);
+  const shareText = m.text(label);
 
   async function handleCopy() {
     try {
@@ -112,7 +112,7 @@ export function ShareLinks({ label }: { label: string }) {
     },
     {
       key: "email",
-      label: "E-mail",
+      label: m.emailLabel,
       href: `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(`${shareText}\n\n${url}`)}`,
       icon: <MailIcon />,
     },
@@ -120,14 +120,14 @@ export function ShareLinks({ label }: { label: string }) {
 
   return (
     <details className="share-menu" ref={detailsRef}>
-      <summary className="share-trigger">Partager</summary>
+      <summary className="share-trigger">{m.trigger}</summary>
       <div className="share-panel">
-        <p className="share-panel-title">Partager cette analyse</p>
+        <p className="share-panel-title">{m.panelTitle}</p>
 
         <div className="share-copy">
-          <input type="text" readOnly value={url} aria-label="Lien de l'analyse" />
+          <input type="text" readOnly value={url} aria-label={m.linkAria} />
           <button type="button" onClick={handleCopy}>
-            {copied ? "Copié" : "Copier"}
+            {copied ? m.copied : m.copy}
           </button>
         </div>
 
@@ -139,7 +139,7 @@ export function ShareLinks({ label }: { label: string }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`share-icon share-icon-${target.key}`}
-                aria-label={`Partager par ${target.label}`}
+                aria-label={m.targetAria(target.label)}
                 title={target.label}
               >
                 {target.icon}
@@ -152,8 +152,8 @@ export function ShareLinks({ label }: { label: string }) {
                 type="button"
                 onClick={handleNativeShare}
                 className="share-icon share-icon-native"
-                aria-label="Partager via une autre application"
-                title="Autre application…"
+                aria-label={m.nativeAria}
+                title={m.nativeTitle}
               >
                 <ShareIcon />
               </button>

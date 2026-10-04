@@ -13,11 +13,13 @@
  */
 
 import { AGE_BUCKETS } from "@/components/analysis/ageChart";
-import { CLIMATE_METRICS, MONTH_NAMES } from "@/components/analysis/climateChart";
-import { NUANCE_LABEL, PARTI_LABEL } from "@/components/analysis/electionLabels";
+import { CLIMATE_METRICS } from "@/components/analysis/climateChart";
 import { viewForMode } from "@/components/analysis/inseeChart";
 import { hasLocalTaxContent, summarizeFinance } from "@/components/analysis/localTaxModel";
-import { baseLabel, isArrondissement } from "@/components/analysis/securityChart";
+import { isArrondissement } from "@/components/analysis/securityChart";
+import type { Locale } from "@/i18n/locales";
+import type { AnalysisMessages } from "@/i18n/messages/fr/analysis";
+import { getAnalysisMessages } from "@/i18n/server";
 import { FEATURES } from "@/lib/site-features";
 import type { CardInsightKey } from "@/server-shared/types/card-insights";
 import { CARD_INSIGHT_KEYS } from "@/server-shared/types/card-insights";
@@ -249,6 +251,7 @@ function buildFiscalite(localTax: LocalTaxAnalysisDto | null | undefined): Fisca
 function buildSecurite(
   security: SecurityAnalysisDto | null | undefined,
   codeInsee: string | undefined,
+  m: AnalysisMessages,
 ): SecuriteInsightInput | undefined {
   // Garde de SecurityCard : sans indicateur, pas de card.
   if (!security || security.indicateurs.length === 0) return undefined;
@@ -266,7 +269,7 @@ function buildSecurite(
 
       return {
         indicateur: ind.indicateur,
-        unite: `faits ${baseLabel(ind.base)}`,
+        unite: m.security.insightUnit(m.security.base[ind.base]),
         taux_derniere_annee: roundOrNull(fin, 2),
         tendance_10ans: tendance(evolution),
         evolution_10ans_pct: evolution,
@@ -344,9 +347,10 @@ function buildDemographie(
 function buildLogement(
   demographics: DemographicsAnalysisDto | null,
   mode: LocationAnalysisDto["mode"],
+  m: AnalysisMessages,
 ): LogementInsightInput | undefined {
   if (!demographics) return undefined;
-  const view = viewForMode<HousingStatsDto>(demographics.housing, mode, demographics);
+  const view = viewForMode<HousingStatsDto>(demographics.housing, mode, demographics, m.population);
   if (!view) return undefined;
 
   const local = view.scoped.iris;
@@ -379,9 +383,10 @@ function buildLogement(
 function buildEmploi(
   demographics: DemographicsAnalysisDto | null,
   mode: LocationAnalysisDto["mode"],
+  m: AnalysisMessages,
 ): EmploiInsightInput | undefined {
   if (!demographics) return undefined;
-  const view = viewForMode<EmploymentStatsDto>(demographics.employment, mode, demographics);
+  const view = viewForMode<EmploymentStatsDto>(demographics.employment, mode, demographics, m.population);
   if (!view) return undefined;
 
   const local = view.scoped.iris;
@@ -404,9 +409,10 @@ function buildEmploi(
 function buildMenages(
   demographics: DemographicsAnalysisDto | null,
   mode: LocationAnalysisDto["mode"],
+  m: AnalysisMessages,
 ): MenagesInsightInput | undefined {
   if (!demographics) return undefined;
-  const view = viewForMode<HouseholdsStatsDto>(demographics.households, mode, demographics);
+  const view = viewForMode<HouseholdsStatsDto>(demographics.households, mode, demographics, m.population);
   if (!view) return undefined;
 
   const local = view.scoped.iris;
@@ -433,6 +439,7 @@ function buildMenages(
 
 function buildElections(
   elections: ElectionsAnalysisDto | null | undefined,
+  m: AnalysisMessages,
 ): ElectionsInsightInput | undefined {
   if (!elections) return undefined;
 
@@ -446,7 +453,7 @@ function buildElections(
       // Le libellé, pas le code : « Rassemblement national » et non « RN ». Le modèle ne
       // peut pas développer un sigle qu'il ne reçoit pas, et le prompt lui interdit d'en
       // écrire.
-      parti: PARTI_LABEL[c.parti] ?? c.parti,
+      parti: m.elections.parties[c.parti] ?? c.parti,
       pct_local: round(c.pctCommune),
       pct_national: round(c.pctNational),
       ecart_pts: round(c.pctCommune - c.pctNational),
@@ -465,6 +472,7 @@ function buildElections(
 
 function buildMunicipales(
   municipales: MunicipalesAnalysisDto | null | undefined,
+  m: AnalysisMessages,
 ): MunicipalesInsightInput | undefined {
   // Garde de MunicipalesCard : sans liste, pas de card.
   if (!municipales || municipales.listes.length === 0) return undefined;
@@ -479,7 +487,7 @@ function buildMunicipales(
       // sous lequel la card la présente.
       liste: l.teteDeListe ?? l.libelle,
       // Idem : « Divers droite » et non « LDVD ».
-      nuance: l.nuance ? (NUANCE_LABEL[l.nuance] ?? l.nuance) : null,
+      nuance: l.nuance ? (m.elections.nuances[l.nuance] ?? l.nuance) : null,
       pct_local: round(l.pctExprimes),
       pct_national: l.pctNational === null ? null : round(l.pctNational),
       ecart_pts: l.pctNational === null ? null : round(l.pctExprimes - l.pctNational),
@@ -497,7 +505,7 @@ function buildMunicipales(
 
 // --- Climat -----------------------------------------------------------------
 
-function extremum(values: (number | null)[], direction: "max" | "min") {
+function extremum(values: (number | null)[], direction: "max" | "min", monthNames: readonly string[]) {
   let bestIndex = -1;
   let best = direction === "max" ? -Infinity : Infinity;
   values.forEach((v, i) => {
@@ -507,7 +515,7 @@ function extremum(values: (number | null)[], direction: "max" | "min") {
       bestIndex = i;
     }
   });
-  return bestIndex === -1 ? null : { mois: MONTH_NAMES[bestIndex], valeur: best };
+  return bestIndex === -1 ? null : { mois: monthNames[bestIndex], valeur: best };
 }
 
 function sum(values: (number | null)[]): number | null {
@@ -591,7 +599,7 @@ function climatLePlusProche(
     : null;
 }
 
-function buildClimat(climate: ClimateAnalysisDto | null | undefined): ClimatInsightInput | undefined {
+function buildClimat(climate: ClimateAnalysisDto | null | undefined, m: AnalysisMessages): ClimatInsightInput | undefined {
   // Gardes de ClimateCard, dans le même ordre.
   const monthly = climate?.monthly;
   if (!climate || !monthly) return undefined;
@@ -599,11 +607,11 @@ function buildClimat(climate: ClimateAnalysisDto | null | undefined): ClimatInsi
   if (!hasAnyMetric) return undefined;
 
   const local = monthly.local;
-  const tempMax = extremum(local.temperatureC, "max");
-  const tempMin = extremum(local.temperatureC, "min");
+  const tempMax = extremum(local.temperatureC, "max", m.climate.monthNames);
+  const tempMin = extremum(local.temperatureC, "min", m.climate.monthNames);
   const tempMoy = mean(local.temperatureC);
-  const precipMax = extremum(local.precipitationMm, "max");
-  const precipMin = extremum(local.precipitationMm, "min");
+  const precipMax = extremum(local.precipitationMm, "max", m.climate.monthNames);
+  const precipMin = extremum(local.precipitationMm, "min", m.climate.monthNames);
   const precipTotal = sum(local.precipitationMm);
   const soleilTotal = sum(local.sunshineHours);
 
@@ -652,22 +660,29 @@ function buildPerimetre(data: LocationAnalysisDto): string {
   return quartier ? `Quartier ${quartier} — ${ville}` : `Adresse : ${data.address.label}`;
 }
 
+/**
+ * `lang` : langue dans laquelle le modèle rédigera. Les noms de champs restent français —
+ * c'est le protocole du prompt — mais les libellés que le modèle recopie (noms de mois,
+ * étiquettes politiques, unités) sont donnés dans la langue de sortie.
+ */
 export function buildCardInsightsInput(
   data: LocationAnalysisDto,
   codeInsee?: string,
+  lang: Locale = "fr",
 ): CardInsightsInput {
+  const m = getAnalysisMessages(lang);
   return {
     mode: data.mode,
     perimetre: buildPerimetre(data),
     fiscalite: buildFiscalite(data.localTax),
-    securite: buildSecurite(data.security, codeInsee),
+    securite: buildSecurite(data.security, codeInsee, m),
     demographie: buildDemographie(data.demographics, data.mode),
-    logement: buildLogement(data.demographics, data.mode),
-    emploi: buildEmploi(data.demographics, data.mode),
-    menages: buildMenages(data.demographics, data.mode),
-    elections: buildElections(data.elections),
-    municipales: buildMunicipales(data.municipales),
-    climat: buildClimat(data.climate),
+    logement: buildLogement(data.demographics, data.mode, m),
+    emploi: buildEmploi(data.demographics, data.mode, m),
+    menages: buildMenages(data.demographics, data.mode, m),
+    elections: buildElections(data.elections, m),
+    municipales: buildMunicipales(data.municipales, m),
+    climat: buildClimat(data.climate, m),
   };
 }
 

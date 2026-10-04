@@ -3,14 +3,17 @@
 import { useState } from "react";
 import type { ElectionsAnalysisDto } from "@/types/location-analysis";
 import { CardInsight } from "@/components/CardInsight";
-import { NEUTRAL_COLOR, PARTI_COLOR, electionDeltaLabel, formatElectionPct } from "./electionFormat";
+import type { ElectionsMessages } from "@/i18n/messages/fr/analysis/elections";
+import { NEUTRAL_COLOR, PARTI_COLOR } from "./electionFormat";
 
 
 export function ElectionsCard({
   elections,
+  m,
   insight,
 }: {
   elections: ElectionsAnalysisDto;
+  m: ElectionsMessages;
   /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
   insight?: string | null;
 }) {
@@ -32,10 +35,9 @@ export function ElectionsCard({
 
   return (
     <section className="card elections-card">
-      <h2>Présidentielle 2022 — 1er tour</h2>
+      <h2>{m.presidential.title}</h2>
       <p className="muted">
-        Participation : {formatElectionPct(elections.participationPct)} ·{" "}
-        France : {formatElectionPct(elections.nationalParticipationPct)}
+        {m.presidential.participation(elections.participationPct, elections.nationalParticipationPct)}
       </p>
 
       <CardInsight text={insight} />
@@ -62,23 +64,23 @@ export function ElectionsCard({
                         : "elections-delta-pill"
                   }
                 >
-                  {electionDeltaLabel(delta)}
+                  {m.delta(delta)}
                 </span>
               </div>
 
               <div className="elections-bar-row">
-                <span className="elections-bar-label">Commune</span>
+                <span className="elections-bar-label">{m.communeBar}</span>
                 <div className="elections-bar">
                   <div
                     className="elections-bar-fill"
                     style={{ width: `${wCommune}%`, background: color }}
                   />
                 </div>
-                <span className="elections-bar-pct">{formatElectionPct(c.pctCommune)}</span>
+                <span className="elections-bar-pct">{m.pct(c.pctCommune)}</span>
               </div>
 
               <div className="elections-bar-row">
-                <span className="elections-bar-label">France</span>
+                <span className="elections-bar-label">{m.franceBar}</span>
                 <div className="elections-bar">
                   <div
                     className="elections-bar-fill elections-bar-fill--national"
@@ -86,7 +88,7 @@ export function ElectionsCard({
                   />
                 </div>
                 <span className="elections-bar-pct elections-bar-pct--national">
-                  {formatElectionPct(c.pctNational)}
+                  {m.pct(c.pctNational)}
                 </span>
               </div>
             </li>
@@ -101,15 +103,11 @@ export function ElectionsCard({
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
         >
-          {expanded
-            ? "Masquer les autres candidats"
-            : `Voir les ${hiddenCount} autres candidats`}
+          {expanded ? m.presidential.hideOthers : m.presidential.showOthers(hiddenCount)}
         </button>
       )}
 
-      <p className="elections-footnote">
-        Comparaison commune ↔ France à la même échelle.
-      </p>
+      <p className="elections-footnote">{m.presidential.footnote}</p>
     </section>
   );
 }

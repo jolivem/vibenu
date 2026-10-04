@@ -4,7 +4,17 @@ export interface RiskCategory {
   code: string;
   name: string;
   level: RiskCategoryLevel;
+  /** Message rédigé en français, pour le périmètre resté en français et le prompt. */
   message: string;
+  /**
+   * Statut tel que Géorisques le publie (« Risque Existant - important »), à l'échelle
+   * retenue. Texte source, en français : il se cite, il ne se traduit pas. `null` si absent.
+   */
+  statusDetail?: string | null;
+  /** Vrai quand la gravité vient de la commune alors que la lecture demandée était l'adresse. */
+  communeFallback?: boolean;
+  /** Vrai quand l'appel à Géorisques a échoué : le niveau « inconnu » est alors un repli. */
+  unavailable?: boolean;
 }
 
 export interface RiskAnalysis {

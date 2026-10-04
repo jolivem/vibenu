@@ -1,6 +1,7 @@
 import type { CommuneStats, DemographicsStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import type { AgeDistributionDto } from "@/types/location-analysis";
 import { AgeChart } from "@/components/analysis/AgeChart";
+import { population } from "@/i18n/messages/fr/analysis/population";
 import { formatEur, formatInt, formatPct } from "./format";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
@@ -82,6 +83,7 @@ export function CommuneAgeCard({ stats, nomCourt, legendes }: Props) {
           france={ageFrance}
           showCommune={false}
           mainSeriesName={nomCourt}
+          m={population}
         />
       </div>
 

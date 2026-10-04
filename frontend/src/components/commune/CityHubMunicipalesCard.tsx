@@ -1,5 +1,6 @@
 import type { MunicipalesAnalysisDto } from "@/types/location-analysis";
 import { MunicipalesLists } from "@/components/analysis/MunicipalesCard";
+import { elections } from "@/i18n/messages/fr/analysis/elections";
 import { formatPct } from "./format";
 
 /**
@@ -25,7 +26,7 @@ export function CityHubMunicipalesCard({
       </h2>
       <p className="muted">Participation : {formatPct(participationPct / 100, 1)}</p>
 
-      <MunicipalesLists listes={listes} nuancee={nuancee} />
+      <MunicipalesLists listes={listes} nuancee={nuancee} m={elections} />
 
       <p className="elections-footnote">
         Le conseil municipal est élu à l&apos;échelle de la ville entière : ce résultat

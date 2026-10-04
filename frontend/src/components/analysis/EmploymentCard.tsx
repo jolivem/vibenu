@@ -4,31 +4,13 @@ import { IndicatorBlock } from "./IndicatorBlock";
 import { EMPLOYMENT_INDICATORS } from "./populationIndicators";
 import { viewForMode, type InseeView } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
-
-const CSP_LABELS = ["Agri.", "Artis.", "Cadres", "Interm.", "Employés", "Ouvriers"] as const;
-const CSP_TITLES = [
-  "Agriculteurs exploitants",
-  "Artisans, commerçants, chefs d'entreprise",
-  "Cadres et professions intellectuelles supérieures",
-  "Professions intermédiaires",
-  "Employés",
-  "Ouvriers",
-] as const;
-
-const DIPLOMA_LABELS = ["Aucun", "BEPC", "CAP-BEP", "Bac", "+2", "+3/4", "+5"] as const;
-const DIPLOMA_TITLES = [
-  "Sans diplôme ou certificat d'études primaires",
-  "BEPC, brevet des collèges",
-  "CAP ou BEP",
-  "Baccalauréat",
-  "Bac + 2",
-  "Bac + 3 ou + 4",
-  "Bac + 5 ou plus",
-] as const;
+import { RichText } from "@/components/RichText";
+import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  m: PopulationMessages;
   /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
   insight?: string | null;
 }
@@ -41,23 +23,19 @@ interface Props {
  * ayant fini leurs études. Même exigence que le « faits enregistrés » de la card
  * Sécurité — un chiffre présenté sans sa définition se compare de travers.
  */
-export function EmploymentCard({ demographics, mode, insight }: Props) {
-  const view = viewForMode(demographics.employment, mode, demographics);
+export function EmploymentCard({ demographics, mode, m, insight }: Props) {
+  const view = viewForMode(demographics.employment, mode, demographics, m);
   if (!view) return null;
 
   return (
     <section className="card">
-      <h2>Emploi et qualifications</h2>
+      <h2>{m.employment.title}</h2>
       <CardInsight text={insight} />
 
       <EmploymentCharts view={view} />
 
       <p className="elections-footnote">
-        Le taux de chômage du recensement 2021 est <strong>déclaratif</strong> : il compte
-        les personnes qui se déclarent au chômage, et non celles que le Bureau
-        international du travail recense comme telles. Il est structurellement d&apos;un
-        à deux points au-dessus du taux publié chaque trimestre, et ne s&apos;y compare
-        pas.
+        <RichText text={m.employment.footnote} />
       </p>
     </section>
   );
@@ -68,6 +46,7 @@ export function EmploymentCard({ demographics, mode, insight }: Props) {
  * commune les reprennent tels quels, avec leurs propres sources.
  */
 export function EmploymentCharts({ view }: { view: InseeView<EmploymentStatsDto> }) {
+  const m = view.m.employment;
   return (
     <>
       {EMPLOYMENT_INDICATORS.map((indicator) => (
@@ -75,22 +54,22 @@ export function EmploymentCharts({ view }: { view: InseeView<EmploymentStatsDto>
       ))}
 
       <DistributionChart
-        title="Catégories socioprofessionnelles"
-        unit="en % des actifs occupés"
+        title={m.cspTitle}
+        unit={m.cspUnit}
         view={view}
         pick={(s) => s.csp}
-        labels={CSP_LABELS}
-        titles={CSP_TITLES}
-        note="Les actifs occupés seuls : la catégorie d'un chômeur est celle de son dernier emploi, elle redirait ce que dit déjà le taux de chômage."
+        labels={m.cspLabels}
+        titles={m.cspTitles}
+        note={m.cspNote}
       />
 
       <DistributionChart
-        title="Niveau de diplôme"
-        unit="en % des 15 ans et plus non scolarisés"
+        title={m.diplomaTitle}
+        unit={m.diplomaUnit}
         view={view}
         pick={(s) => s.diplomes}
-        labels={DIPLOMA_LABELS}
-        titles={DIPLOMA_TITLES}
+        labels={m.diplomaLabels}
+        titles={m.diplomaTitles}
       />
     </>
   );

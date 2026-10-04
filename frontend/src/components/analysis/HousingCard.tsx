@@ -9,22 +9,12 @@ import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { HOUSING_INDICATORS, dwellingSegments, occupancySegments } from "./populationIndicators";
 import { viewForMode, type InseeView } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
-
-const ROOM_LABELS = ["1 p.", "2 p.", "3 p.", "4 p.", "5 p. et +"] as const;
-
-const EPOCH_LABELS = ["<1919", "19-45", "46-70", "71-90", "91-05", "06-18"] as const;
-const EPOCH_TITLES = [
-  "Avant 1919",
-  "1919-1945",
-  "1946-1970",
-  "1971-1990",
-  "1991-2005",
-  "2006-2018",
-] as const;
+import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  m: PopulationMessages;
   /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
   insight?: string | null;
 }
@@ -35,23 +25,19 @@ interface Props {
  * Complément direct de la card Marché immobilier — celle-ci dit à quel prix on achète,
  * celle-là ce qui se loue, ce qui reste vide et ce qui a été bâti quand.
  */
-export function HousingCard({ demographics, mode, insight }: Props) {
-  const view = viewForMode(demographics.housing, mode, demographics);
+export function HousingCard({ demographics, mode, m, insight }: Props) {
+  const view = viewForMode(demographics.housing, mode, demographics, m);
   if (!view) return null;
 
   return (
     <section className="card">
-      <h2>Logement</h2>
+      <h2>{m.housing.title}</h2>
 
       <CardInsight text={insight} />
 
       <HousingCharts view={view} />
 
-      <p className="elections-footnote">
-        Le parc de logements, recensé en 2021. Les effectifs du recensement sont des
-        estimations pondérées, arrondies à l&apos;unité : sur un petit quartier, les parts
-        peuvent ne pas boucler exactement à 100 %.
-      </p>
+      <p className="elections-footnote">{m.housing.footnote}</p>
     </section>
   );
 }
@@ -61,6 +47,7 @@ export function HousingCard({ demographics, mode, insight }: Props) {
  * commune les reprennent tels quels, avec leurs propres sources.
  */
 export function HousingCharts({ view }: { view: InseeView<HousingStatsDto> }) {
+  const m = view.m.housing;
   return (
     <>
       {HOUSING_INDICATORS.map((indicator) => (
@@ -68,37 +55,34 @@ export function HousingCharts({ view }: { view: InseeView<HousingStatsDto> }) {
       ))}
 
       <div className="insee-metric">
-        <h3>Statut d&apos;occupation</h3>
-        <p className="metric-unit">en % des résidences principales</p>
-        <StackedBarGroup rows={scopedBarRows(view, occupancySegments)} />
+        <h3>{m.occupancyTitle}</h3>
+        <p className="metric-unit">{m.occupancyUnit}</p>
+        <StackedBarGroup rows={scopedBarRows(view, occupancySegments)} m={view.m} />
       </div>
 
       <div className="insee-metric">
-        <h3>Type de logement</h3>
-        <p className="metric-unit">en % du parc total</p>
-        <StackedBarGroup rows={scopedBarRows(view, dwellingSegments)} />
-        <p className="demographics-note">
-          Les deux parts ne bouclent pas toujours à 100 % : l&apos;INSEE compte à part
-          les logements qui ne sont ni maison ni appartement.
-        </p>
+        <h3>{m.dwellingTitle}</h3>
+        <p className="metric-unit">{m.dwellingUnit}</p>
+        <StackedBarGroup rows={scopedBarRows(view, dwellingSegments)} m={view.m} />
+        <p className="demographics-note">{m.dwellingNote}</p>
       </div>
 
       <DistributionChart
-        title="Nombre de pièces"
-        unit="en % des résidences principales"
+        title={m.roomsTitle}
+        unit={m.roomsUnit}
         view={view}
         pick={(s) => s.pieces}
-        labels={ROOM_LABELS}
+        labels={m.roomLabels}
       />
 
       <DistributionChart
-        title="Époque de construction"
-        unit="en % des résidences principales achevées avant 2019"
+        title={m.epochTitle}
+        unit={m.epochUnit}
         view={view}
         pick={(s) => s.epoques}
-        labels={EPOCH_LABELS}
-        titles={EPOCH_TITLES}
-        note="L'INSEE ne ventile par période que les logements achevés avant 2019 : les plus récents ne figurent dans aucune tranche."
+        labels={m.epochLabels}
+        titles={m.epochTitles}
+        note={m.epochNote}
       />
     </>
   );

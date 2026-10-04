@@ -1,9 +1,12 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { AnalysisScreen } from "@/components/analysis/AnalysisScreen";
+import { AnalysisFrProvider } from "@/i18n/AnalysisFrProvider";
+import { screen } from "@/i18n/messages/fr/analysis/screen";
+import { common } from "@/i18n/messages/fr/common";
 
 export const metadata: Metadata = {
-  title: "Analyse d'une adresse",
+  title: screen.metaTitle,
   robots: {
     index: false,
     follow: false,
@@ -12,8 +15,10 @@ export const metadata: Metadata = {
 
 export default function AnalyzePage() {
   return (
-    <Suspense fallback={<p>Chargement...</p>}>
-      <AnalysisScreen />
+    <Suspense fallback={<p>{common.loading}</p>}>
+      <AnalysisFrProvider>
+        <AnalysisScreen />
+      </AnalysisFrProvider>
     </Suspense>
   );
 }

@@ -1,13 +1,14 @@
 import type { AirQualityAnalysisDto } from "@/types/location-analysis";
-import { LEVEL_CONFIG, LEVEL_ORDER, modalLevel, shortDay } from "./airQualityModel";
+import type { AirMessages } from "@/i18n/messages/fr/analysis/air";
+import { LEVEL_CONFIG, LEVEL_ORDER, modalLevel } from "./airQualityModel";
 
-export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisDto }) {
+export function AirQualityCard({ airQuality, m }: { airQuality: AirQualityAnalysisDto; m: AirMessages }) {
   const past = airQuality.recentDays;
   const avgLevel = modalLevel(past);
 
   return (
     <section className="card air-card">
-      <h2>Qualité de l&apos;air</h2>
+      <h2>{m.title}</h2>
 
       {/* Échelle visuelle 5 niveaux — sert de légende pour l'historique */}
       <div className="air-scale">
@@ -18,9 +19,9 @@ export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisD
               key={lvl}
               className="air-scale-step"
               style={{ background: cfg.color }}
-              title={cfg.label}
+              title={m.levels[lvl]}
             >
-              <span className="air-scale-step-label">{cfg.label}</span>
+              <span className="air-scale-step-label">{m.levels[lvl]}</span>
             </div>
           );
         })}
@@ -29,24 +30,22 @@ export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisD
       {past.length >= 2 && (
         <div className="air-history">
           <p className="air-history-title">
-            Sur les {past.length} derniers jours
+            {m.recentDays(past.length)}
             {avgLevel && (
               <>
-                {" "}— en moyenne{" "}
-                <span className={LEVEL_CONFIG[avgLevel].className}>
-                  {LEVEL_CONFIG[avgLevel].label}
-                </span>
+                {m.averageLead}
+                <span className={LEVEL_CONFIG[avgLevel].className}>{m.levels[avgLevel]}</span>
               </>
             )}
           </p>
           <div className="air-history-strip">
             {past.map((d) => (
-              <div key={d.date} className="air-history-day" title={`${d.date} : ${LEVEL_CONFIG[d.level].label}`}>
+              <div key={d.date} className="air-history-day" title={m.dayTitle(d.date, d.level)}>
                 <div
                   className="air-history-dot"
                   style={{ background: LEVEL_CONFIG[d.level].color }}
                 />
-                <span className="air-history-date">{shortDay(d.date)}</span>
+                <span className="air-history-date">{m.shortDay(d.date)}</span>
               </div>
             ))}
           </div>
@@ -56,9 +55,9 @@ export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisD
       {airQuality.monthly && airQuality.monthly.daysCovered > 0 && (
         <div className="air-monthly">
           <p className="air-monthly-title">
-            Sur les {airQuality.monthly.daysCovered} derniers jours — qualité moyenne{" "}
+            {m.monthlyLead(airQuality.monthly.daysCovered)}
             <span className={LEVEL_CONFIG[airQuality.monthly.level].className}>
-              {LEVEL_CONFIG[airQuality.monthly.level].label}
+              {m.levels[airQuality.monthly.level]}
             </span>
           </p>
           {airQuality.monthly.pollutants.length > 0 && (
@@ -69,8 +68,8 @@ export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisD
                     className="air-monthly-dot"
                     style={{ background: LEVEL_CONFIG[p.level].color }}
                   />
-                  {p.label}{" "}
-                  <span className="poi-distance">— {LEVEL_CONFIG[p.level].label}</span>
+                  {m.pollutants[p.code] ?? p.label}{" "}
+                  <span className="poi-distance">{m.pollutantLevel(p.level)}</span>
                 </li>
               ))}
             </ul>
@@ -80,7 +79,7 @@ export function AirQualityCard({ airQuality }: { airQuality: AirQualityAnalysisD
 
       {airQuality.debugRaw !== undefined && (
         <details className="narrative-debug">
-          <summary>Données reçues d&apos;Atmo (debug)</summary>
+          <summary>{m.debugSummary}</summary>
           <pre>{JSON.stringify(airQuality.debugRaw, null, 2)}</pre>
         </details>
       )}

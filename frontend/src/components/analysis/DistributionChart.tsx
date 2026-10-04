@@ -1,6 +1,6 @@
 import { ChartLegend } from "./ChartLegend";
 import { LineChart } from "./LineChart";
-import { buildDistributionModel, formatPercent, type InseeView } from "./inseeChart";
+import { buildDistributionModel, type InseeView } from "./inseeChart";
 
 interface Props<T> {
   title: string;
@@ -36,7 +36,9 @@ export function DistributionChart<T>({ title, unit, view, pick, labels, titles, 
         yTicks={model.yTicks}
         x={model.x}
         y={model.y}
-        formatValue={formatPercent}
+        formatValue={view.m.format.percent}
+        formatTick={view.m.axisTick}
+        pointTitle={view.m.pointTitle}
         ariaLabel={`${title} — ${unit}`}
       />
       <ChartLegend items={model.series.map((s) => ({ name: s.name, color: s.color }))} />

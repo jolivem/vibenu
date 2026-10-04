@@ -1,29 +1,25 @@
+import type { StationsKind } from "@/i18n/messages/fr/analysis/mobility";
 import type { AnalysisMode, MobilityAnalysisDto } from "@/types/location-analysis";
 
-function stationLabel(mode: string): string {
+function stationKind(mode: string): StationsKind {
   switch (mode) {
-    case "métro/RER": return "Métro / RER";
-    case "metro": return "Métro";
-    case "rer": return "RER";
-    case "train": return "Gare";
-    default: return "Station";
+    case "métro/RER": return "metroRer";
+    case "metro": return "metro";
+    case "rer": return "rer";
+    case "train": return "train";
+    default: return "station";
   }
 }
 
-/** Titre de section : reflète les modes présents dans la liste. */
-function stationsHeading(stations: { mode: string }[]): string {
+/** Ce que regroupe la liste : un seul mode, ou le mélange le plus parlant. */
+function stationsKind(stations: { mode: string }[]): StationsKind {
   const modes = new Set(stations.map((s) => s.mode));
-  if (modes.size === 1) {
-    return stationLabel(stations[0].mode);
-  }
-  // Mix de plusieurs modes (ex. métro + RER + train) → titre générique
+  if (modes.size === 1) return stationKind(stations[0].mode);
   if (modes.has("train") && (modes.has("metro") || modes.has("rer") || modes.has("métro/RER"))) {
-    return "Gare, métro & RER";
+    return "trainMetroRer";
   }
-  if (modes.has("rer") || modes.has("métro/RER")) {
-    return "Métro & RER";
-  }
-  return "Stations";
+  if (modes.has("rer") || modes.has("métro/RER")) return "metroAndRer";
+  return "stations";
 }
 
 /**
@@ -42,9 +38,10 @@ export function mobilityView(mobility: MobilityAnalysisDto, mode: AnalysisMode) 
     isCommune,
     stops: isCommune ? mobility.nearestStops.slice(0, 3) : mobility.nearestStops,
     stations: isCommune ? allStations.slice(0, 1) : allStations,
-    stationsTitle:
+    /** `null` sans gare ni station. Le titre du bloc se compose avec `m.stationsTitle`. */
+    stationsHeading:
       allStations.length > 0
-        ? `${stationsHeading(allStations)}${!isCommune && !closestStationIsNear ? " la plus proche" : ""}`
-        : "",
+        ? { kind: stationsKind(allStations), nearestOnly: !isCommune && !closestStationIsNear }
+        : null,
   };
 }

@@ -10,6 +10,8 @@ import { HISTORICAL_ERAS_BY_ID } from "./historicalLayers";
 import { coveredEras, missingEras, nearestCoveredEraId } from "./historicalCoverage";
 import { useHistoricalCoverage } from "./useHistoricalCoverage";
 import { useHistoricalLayer } from "./useHistoricalLayer";
+import { RichText } from "@/components/RichText";
+import { useI18n } from "@/i18n/client";
 
 /**
  * Zoom d'arrivée à l'échelle d'une adresse.
@@ -69,6 +71,7 @@ export function HistoricalMap({
   communeContour,
   defaultEraId = null,
 }: Props) {
+  const m = useI18n().map.history;
   const [eraId, setEraId] = useState<string | null>(defaultEraId);
   // Reste nommé `opacity` ici, et pas `blend` : c'est la valeur brute passée à
   // `raster-opacity`. Le mot juste à l'écran n'est pas le mot juste à la frontière de
@@ -132,17 +135,11 @@ export function HistoricalMap({
         <p className="era-context">
           {era ? (
             <>
-              <strong>
-                {era.label} — {era.period}.
-              </strong>{" "}
-              {era.context}
+              <strong>{m.eraHeading(m.eras[era.id].label, m.eras[era.id].period)}</strong>{" "}
+              {m.eras[era.id].context}
             </>
           ) : (
-            <>
-              <strong>Vue actuelle.</strong> Photographies aériennes les plus récentes de
-              l&apos;IGN. Choisissez une époque dans la frise pour la superposer, puis
-              faites glisser le curseur pour passer de l&apos;une à l&apos;autre.
-            </>
+            <RichText text={m.currentContext} />
           )}
         </p>
 
@@ -150,8 +147,7 @@ export function HistoricalMap({
             partout, et son absence à cet endroit est une information sur le lieu. */}
         {missing.length > 0 && (
           <p className="era-coverage-note">
-            Sans couverture IGN à cet endroit :{" "}
-            {missing.map((absent) => `${absent.label.toLowerCase()} ${absent.period}`).join(", ")}.
+            {m.missingCoverage(missing.map((absent) => m.eras[absent.id]))}
           </p>
         )}
       </div>

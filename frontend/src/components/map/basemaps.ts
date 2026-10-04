@@ -215,7 +215,6 @@ export const IGN_ORTHO_RASTER_STYLE = ignRasterStyle("ORTHOIMAGERY.ORTHOPHOTOS",
  */
 export interface BaseOverlayConfig {
   id: string;
-  label: string;
   layer: string;
   format: string;
   maxzoom: number;
@@ -228,7 +227,6 @@ export const RELIEF_OVERLAY_ID = "fond-relief";
 export const BASE_OVERLAYS: BaseOverlayConfig[] = [
   {
     id: ORTHO_OVERLAY_ID,
-    label: "Photo aérienne",
     layer: "ORTHOIMAGERY.ORTHOPHOTOS",
     format: "image/jpeg",
     maxzoom: 19,
@@ -236,7 +234,6 @@ export const BASE_OVERLAYS: BaseOverlayConfig[] = [
   },
   {
     id: RELIEF_OVERLAY_ID,
-    label: "Relief (LiDAR HD)",
     layer: "IGNF_LIDAR-HD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW",
     format: "image/png",
     maxzoom: 18,
@@ -252,7 +249,7 @@ export const PLAN_CHOICE_ID = "fond-plan";
  * recouvrent, pas des calques qui s'ajoutent. Des cases à cocher laisseraient croire
  * qu'on peut les cumuler, alors que la dernière allumée masquerait simplement l'autre.
  */
-export const BASE_CHOICES: Array<{ id: string; label: string }> = [
-  { id: PLAN_CHOICE_ID, label: "Plan" },
-  ...BASE_OVERLAYS.map((o) => ({ id: o.id, label: o.label })),
+export const BASE_CHOICES: Array<{ id: string }> = [
+  { id: PLAN_CHOICE_ID },
+  ...BASE_OVERLAYS.map((o) => ({ id: o.id })),
 ];

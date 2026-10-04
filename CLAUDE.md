@@ -9,10 +9,13 @@ cartographic, plain-language read of its surroundings before renting or buying: 
 urbanism, transport, neighbourhood amenities, demographics, crime, climate, elections, historical
 imagery, plus AI-written one-liners per card and a client-side PDF export.
 
-The codebase, comments, commit messages and docs are **in French**. Keep new comments and
-user-facing strings in French.
+The codebase, comments, commit messages and docs are **in French**. Keep new comments in French.
+User-facing strings are **never hard-coded** in the translated perimeter (landing, About, analysis,
+maps, PDF): they live in `frontend/src/i18n/messages/<locale>/` — see "Languages" below. The
+`/commune/*` SEO pages stay French-only and keep their strings inline.
 
-There is **no test suite** and no linter configured. `pnpm typecheck` is the only automated check.
+There is **no test suite** and no linter configured. `pnpm typecheck` is the only automated check;
+`pnpm build` additionally catches a context hook used in a server-rendered component.
 
 ## Commands
 
@@ -128,7 +131,7 @@ text:
 
 ### Client
 
-- `app/` — App Router. `api/` routes (`address/search`, `location/analyze`,
+- `app/` — App Router, split into the `(fr)` and `(en)/en` route groups (see "Languages"). `api/` routes (`address/search`, `location/analyze`,
   `location/card-insights`, `health`, `debug/pois`), `analyze/`, and prerendered SEO pages
   under `commune/` (`paris`, `lyon`, `marseille` hubs + `[slug]` arrondissements).
 - `components/analysis/` — one card per theme plus `AnalysisScreen`. Section order and labels are
@@ -142,6 +145,48 @@ text:
   `analysis-pdf/` (`@react-pdf/renderer`, dynamically imported; the map is captured as PNG from
   the MapLibre canvas, which is why `preserveDrawingBuffer: true` is set).
 - Styling is one hand-written `styles/globals.css` (~3k lines) — no Tailwind, no CSS modules.
+
+### Languages (French + English)
+
+French is the original language and keeps its unprefixed URLs; English lives under `/en`
+(`/en`, `/en/about`, `/en/analyze`). No middleware, no `Accept-Language` detection: each language
+has its **own root layout** in a route group — `app/(fr)/` and `app/(en)/en/` — over a shared
+`components/layout/RootDocument.tsx`, so `<html lang>` is exact and static pages stay static.
+`/commune/*` exists only under `(fr)`.
+
+- **Dictionaries** — plain TypeScript in `src/i18n/messages/fr/` and `en/`, one file per domain
+  (`landing`, `about`, `search`, `map`, `site`, `analysis/<card>`). The **type is derived from the
+  French file** (`export type XMessages = typeof x`) and the English file must satisfy it: a missing
+  key does not compile. A label is a string, a sentence with variables is a **function**, an
+  enumeration is a `Record<Code, string>`. Changing a French message means changing the English one
+  in the same commit.
+- **Sentences live in messages, facts in models.** Modules such as `indicator.ts` or
+  `localTaxModel.ts` compute facts and contain no text; plurals, elisions and "1er" are the
+  dictionary's job. Bold fragments use `Rich` / `Emphasis` (`i18n/types.ts`, rendered by
+  `components/RichText.tsx`). Number and date formatting goes through `createFormat(locale)`
+  (`i18n/format.ts`) — no `"fr-FR"` literal anywhere else.
+- **How a component gets its language** — two mechanisms, on purpose:
+  - cards and pure `.ts` modules receive their message slice **as a prop / first parameter** (`m`),
+    never from context: the `/commune/*` pages render the same sub-components on the server and pass
+    them the French slice directly;
+  - true client components (`AnalysisScreen`, `SearchPanel`, `Map`, `CardInsight`, `SectionNav`…)
+    use `useI18n()` (base: common, search, map) or `useAnalysisI18n()` (analysis). Providers
+    (`FrProvider`, `EnProvider`, `Analysis*Provider`) each import **one** dictionary, so only one
+    language ships to the browser. `i18n/server.ts` is the only module allowed to import all
+    languages, and must never be imported from a client component.
+  - the PDF is rendered outside the DOM: `DownloadPdfButton` reads the hook and passes the messages
+    to `AnalysisPdfDocument`, which re-exposes them through `usePdfMessages()`.
+- **The DTO carries codes, text is made at display time.** Risk names and messages, pollutants,
+  equipment families and rubrics, unnamed POIs are resolved client-side from codes (with the
+  server's French label as fallback). French enum values in the DTO (`"élevé"`, `"très bon"`…) are
+  technical codes, mapped per language. Source texts that only exist in French (Géorisques status,
+  PLU wording, proper nouns) are shown as-is, tagged `lang="fr"`.
+- **Links** — `localizedHref(locale, route, { query, hash })` for translated pages; links to
+  `/commune/*` stay literal and carry `hrefLang="fr"`.
+- **Launch flag** — `FEATURES.englishLaunched`. While false, `/en/*` answers but is `noindex`, absent
+  from the sitemap, without `hreflang` and without the language switcher.
+- **Pseudo-locale** — `NEXT_PUBLIC_I18N_PSEUDO=1` wraps every dictionary string in `⟦ ⟧`: anything
+  displayed without brackets is still hard-coded. It is the main tool to check an extraction.
 
 ### Site variants (PUBLIC / PRO)
 
@@ -160,7 +205,7 @@ Two tiers. `InMemoryCache` per source with source-appropriate TTLs (6 h for Atmo
 climate normals), keyed on coordinates rounded to ~10 m (`buildGeoKey`), capped at 500 entries;
 `DISABLE_CACHE=1` disables all of it. LLM text is cached in Postgres (`card_insights_cache`,
 `commune_narrative_cache`) so it survives redeploys — the cache key includes the model and prompt
-version, so bumping either retires old rows without any delete.
+version (and, for card insights, the language), so bumping either retires old rows without any delete.
 
 `NEXT_PUBLIC_DEBUG=true` bypasses the LLM cache on read *and* write — leave it off unless
 debugging a prompt, it burns the API quota.
@@ -184,6 +229,9 @@ Non-negotiable invariants:
 - **TypeScript computes, the model verbalises.** Trends, deltas vs. national, extrema and dominant
   classes are decided in TS against explicit thresholds; the model receives "down 31 %", never ten
   raw numbers.
+- **One sentence set per language.** The system prompt stays French; for another language an
+  output-language block is appended (`buildCardInsightsSystemPrompt(lang)`). JSON keys and
+  `securite_note` are protocol and never translated. The route takes `?lang=`.
 - **The service never throws.** Missing key, exhausted quota, unparseable JSON or a dead DB all
   yield `insights: {}` and a 200 response; cards simply render without a sentence.
 - `CARD_INSIGHTS_FIXTURE=1` (or `=slow`) serves fake sentences with no API call — use it to develop

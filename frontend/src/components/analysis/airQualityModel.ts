@@ -6,21 +6,14 @@ export const LEVEL_ORDER: AirQualityLevel[] = ["bon", "moyen", "dégradé", "mau
 /** Le DTO porte `très_mauvais` avec un underscore, qu'on ne peut pas afficher tel quel. */
 export const LEVEL_CONFIG: Record<
   AirQualityLevel,
-  { label: string; className: string; color: string }
+  { className: string; color: string }
 > = {
-  bon: { label: "Bon", className: "air-badge air-badge--bon", color: "#16a34a" },
-  moyen: { label: "Moyen", className: "air-badge air-badge--moyen", color: "#eab308" },
-  dégradé: { label: "Dégradé", className: "air-badge air-badge--degrade", color: "#f97316" },
-  mauvais: { label: "Mauvais", className: "air-badge air-badge--mauvais", color: "#dc2626" },
-  très_mauvais: { label: "Très mauvais", className: "air-badge air-badge--tres-mauvais", color: "#7c1d6f" },
+  bon: { className: "air-badge air-badge--bon", color: "#16a34a" },
+  moyen: { className: "air-badge air-badge--moyen", color: "#eab308" },
+  dégradé: { className: "air-badge air-badge--degrade", color: "#f97316" },
+  mauvais: { className: "air-badge air-badge--mauvais", color: "#dc2626" },
+  très_mauvais: { className: "air-badge air-badge--tres-mauvais", color: "#7c1d6f" },
 };
-
-const WEEKDAY_FR = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"];
-
-export function shortDay(iso: string): string {
-  const d = new Date(iso);
-  return `${WEEKDAY_FR[d.getDay()]} ${String(d.getDate()).padStart(2, "0")}`;
-}
 
 /** Niveau dominant sur une période. Si égalité, retourne le pire (logique précautionneuse). */
 export function modalLevel(days: AirQualityAnalysisDto["recentDays"]): AirQualityLevel | null {

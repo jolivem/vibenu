@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import type { HistoricalEra } from "./historicalLayers";
+import { useI18n } from "@/i18n/client";
 
 /** La pastille « Aujourd'hui » : pas une époque, l'absence de surcouche. */
 const TODAY_VALUE = "";
@@ -27,21 +28,22 @@ interface TimelineProps {
  * d'écran. Les réimplémenter en JavaScript serait plus de code pour moins bien.
  */
 export function EraTimeline({ value, onChange, eras }: TimelineProps) {
+  const m = useI18n().map.history;
   // Deux frises sur une même page se piloteraient l'une l'autre sans nom distinct.
   const name = useId();
   const selected = value ?? TODAY_VALUE;
 
   const chips = [
     ...eras.map((era) => ({
-      value: era.id,
-      year: era.shortLabel,
-      label: era.label,
+      value: era.id as string,
+      year: m.eras[era.id].shortLabel,
+      label: m.eras[era.id].label,
     })),
-    { value: TODAY_VALUE, year: "Aujourd'hui", label: "Vue actuelle" },
+    { value: TODAY_VALUE, year: m.today, label: m.currentView },
   ];
 
   return (
-    <fieldset className="era-timeline" aria-label="Époque affichée">
+    <fieldset className="era-timeline" aria-label={m.timelineAria}>
       <div className="era-timeline-track">
         {chips.map((chip) => (
           <label
@@ -95,10 +97,12 @@ interface EraBlendProps {
  * renversement là où il est visible, à côté des deux pôles qu'il fait correspondre.
  */
 export function EraBlendSlider({ value, onChange, era }: EraBlendProps) {
+  const m = useI18n().map.history;
   // Sans époque il n'y a rien à mélanger. Le curseur reste affiché, inactif : le retirer
   // ferait sauter la mise en page à chaque passage par « Aujourd'hui ».
   const disabled = era === null;
-  const oldView = era ? era.shortLabel : "Vue ancienne";
+  const texts = era ? m.eras[era.id] : null;
+  const oldView = texts ? texts.shortLabel : m.oldView;
 
   return (
     <label className={disabled ? "era-blend is-disabled" : "era-blend"}>
@@ -114,17 +118,13 @@ export function EraBlendSlider({ value, onChange, era }: EraBlendProps) {
         // droite) ; `value` compte l'inverse, la part de la vue ancienne.
         value={100 - value}
         disabled={disabled}
-        aria-label={
-          era
-            ? `Fondu entre ${era.label.toLowerCase()} ${era.period} et la vue actuelle`
-            : "Fondu entre la vue ancienne et la vue actuelle"
-        }
+        aria-label={m.blendAria(texts)}
         // Annonce la part de l'époque, et non la position : c'est ce que l'écran montre.
-        aria-valuetext={era ? `${era.period} à ${value} %` : `${value} %`}
+        aria-valuetext={m.blendValue(texts ? texts.period : null, value)}
         onChange={(event) => onChange(100 - Number(event.target.value))}
       />
       <span className="era-blend-pole" aria-hidden="true">
-        Aujourd&apos;hui
+        {m.today}
       </span>
     </label>
   );

@@ -16,6 +16,7 @@ import type {
 } from "@/server-shared/types/card-insights";
 import { CARD_INSIGHT_KEYS, SECURITY_RATINGS } from "@/server-shared/types/card-insights";
 import type { CardInsightsInput } from "../domain/card-insights.types";
+import type { Locale } from "@/i18n/locales";
 
 /**
  * Version du prompt. À incrémenter dès que le prompt **ou la forme de l'input** change :
@@ -152,6 +153,32 @@ ${OUTPUT_BLOCK}
 }
 
 Réponds uniquement avec le JSON, sans préambule ni commentaire.`;
+
+/**
+ * Consigne ajoutée au prompt système quand la page n'est pas en français.
+ *
+ * Le prompt reste rédigé en français : il a été réglé sur neuf versions, et le tenir en
+ * deux langues obligerait à garder deux textes d'accord à chaque retouche. Seule la langue
+ * de SORTIE change. Les clés du JSON et `securite_note` sont du protocole : elles ne se
+ * traduisent pas.
+ */
+const OUTPUT_LANGUAGE_BLOCKS: Record<Exclude<Locale, "fr">, string> = {
+  en: `
+
+LANGUE DE SORTIE — PRIORITAIRE SUR LES RÈGLES DE FORME CI-DESSUS
+- Rédige TOUTES les phrases en anglais britannique. Aucun mot de la réponse ne reste en français, hormis les exceptions ci-dessous.
+- Les clés du JSON restent EXACTEMENT celles de "cles_attendues" (en français), et "securite_note" garde ses valeurs françaises : ce sont des identifiants, pas du texte.
+- Traduis les formules imposées : « proche de la moyenne » → "close to the average" ; « dans ce quartier » → "in this neighbourhood" ; « ici » → "here" ; « le taux médian des communes de France » → "the median rate for French communes" ; « N fois plus fréquents qu'en France » → "N times more frequent than in France".
+- Mode "commune" : n'emploie jamais "neighbourhood".
+- Garde tels quels les mots "commune", "arrondissement" et "département", les noms de lieux, de candidats et de partis. Les étiquettes politiques te sont fournies en anglais : reprends-les telles quelles.
+- Nombres à l'anglaise : point décimal ("12.5%"), pas d'espace avant "%".
+- Traduis les libellés français des données que tu cites (unités, catégories, tranches d'âge : « 15-29 ans » → "15-29 year-olds").
+- Types de climat : "continental", "Mediterranean", "oceanic".`,
+};
+
+export function buildCardInsightsSystemPrompt(lang: Locale): string {
+  return lang === "fr" ? CARD_INSIGHTS_SYSTEM_PROMPT : CARD_INSIGHTS_SYSTEM_PROMPT + OUTPUT_LANGUAGE_BLOCKS[lang];
+}
 
 export function buildCardInsightsUserPrompt(
   input: CardInsightsInput,

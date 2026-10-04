@@ -1,6 +1,6 @@
 import type { InseeView } from "./inseeChart";
 import { ChartLegend } from "./ChartLegend";
-import { formatPct } from "./demographicsFormat";
+import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 
 export interface StackedBarSegment {
   label: string;
@@ -27,14 +27,27 @@ export interface StackedBarSegment {
  * un résidu, et forcer la somme à 100 % inventerait de la donnée. La barre se remplit
  * donc à hauteur de ce que la source décrit, le reste laissant voir le fond.
  */
-function Bar({ rowLabel, segments }: { rowLabel: string; segments: StackedBarSegment[] }) {
-  const drawn = segments.filter((s) => s.value !== null && s.value > 0);
-  const summary = drawn.map((s) => `${s.label} ${formatPct(s.value)}`).join(", ");
+function Bar({
+  rowLabel,
+  segments,
+  m,
+}: {
+  rowLabel: string;
+  segments: StackedBarSegment[];
+  m: PopulationMessages;
+}) {
+  const drawn = segments.filter(
+    (s): s is StackedBarSegment & { value: number } => s.value !== null && s.value > 0,
+  );
+  const summary = m.barSummary(
+    rowLabel,
+    drawn.map((s) => `${s.label} ${m.format.pct(s.value)}`),
+  );
 
   return (
     <div className="stacked-bar-row">
       <span className="stacked-bar-label">{rowLabel}</span>
-      <span className="stacked-bar" role="img" aria-label={`${rowLabel} : ${summary}`}>
+      <span className="stacked-bar" role="img" aria-label={summary}>
         {drawn.map((s) => (
           // `title` en attribut, pas en élément : <title> n'existe qu'en SVG, et le
           // navigateur le sortirait du <span> en HTML.
@@ -42,7 +55,7 @@ function Bar({ rowLabel, segments }: { rowLabel: string; segments: StackedBarSeg
             key={s.label}
             className={s.residual ? "stacked-bar-seg stacked-bar-seg--residual" : "stacked-bar-seg"}
             style={{ width: `${s.value}%`, background: s.color }}
-            title={`${s.label} — ${formatPct(s.value)}`}
+            title={m.segmentTitle(s.label, m.format.pct(s.value))}
           />
         ))}
       </span>
@@ -61,16 +74,16 @@ export interface StackedBarRow {
  */
 export function scopedBarRows<T>(
   view: InseeView<T>,
-  segments: (stats: T) => StackedBarSegment[],
+  segments: (stats: T, m: PopulationMessages) => StackedBarSegment[],
 ): StackedBarRow[] {
   const scales: [string, T | null][] = [
     [view.localName, view.scoped.iris],
     ...(view.showCommune ? ([[view.communeName, view.scoped.commune]] as [string, T | null][]) : []),
-    ["France", view.scoped.france],
+    [view.m.scale.france, view.scoped.france],
   ];
   return scales
     .filter((entry): entry is [string, T] => entry[1] !== null)
-    .map(([label, stats]) => ({ label, segments: segments(stats) }));
+    .map(([label, stats]) => ({ label, segments: segments(stats, view.m) }));
 }
 
 /**
@@ -81,7 +94,7 @@ export function scopedBarRows<T>(
  * qu'à l'infobulle au survol — invisible à l'impression, au clavier et pour un
  * lecteur d'écran.
  */
-export function StackedBarGroup({ rows }: { rows: StackedBarRow[] }) {
+export function StackedBarGroup({ rows, m }: { rows: StackedBarRow[]; m: PopulationMessages }) {
   // Les libellés sont identiques d'une ligne à l'autre : la première suffit à décrire
   // la légende, y compris les segments qu'une échelle donnée n'a pas.
   const legend = rows[0]?.segments ?? [];
@@ -89,7 +102,7 @@ export function StackedBarGroup({ rows }: { rows: StackedBarRow[] }) {
   return (
     <div className="stacked-bar-group">
       {rows.map((row) => (
-        <Bar key={row.label} rowLabel={row.label} segments={row.segments} />
+        <Bar key={row.label} rowLabel={row.label} segments={row.segments} m={m} />
       ))}
       <ChartLegend
         className="stacked-bar-legend"

@@ -1,117 +1,20 @@
 import type { ReactNode } from "react";
-import type { Metadata } from "next";
-import { Manrope, JetBrains_Mono, Fraunces } from "next/font/google";
-import "../styles/globals.css";
-import { BRANDING } from "@/lib/site-features";
+import { RootDocument } from "@/components/layout/RootDocument";
+import { FrProvider } from "@/i18n/FrProvider";
+import { site } from "@/i18n/messages/fr/site";
+import { rootMetadata } from "@/lib/root-metadata";
 
-const sans = Manrope({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
-const serif = Fraunces({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
-  variable: "--font-serif",
-  display: "swap",
-});
-
-const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
-const UMAMI_SRC = process.env.NEXT_PUBLIC_UMAMI_SRC;
-const UMAMI_WEBSITE_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
-const SITE_NAME = BRANDING.name;
-const SITE_TITLE = `${BRANDING.name} · ${BRANDING.tagline}`;
-const SITE_DESCRIPTION = BRANDING.description;
-
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: SITE_TITLE,
-    template: `%s · ${SITE_NAME}`,
-  },
-  description: SITE_DESCRIPTION,
-  applicationName: SITE_NAME,
-  keywords: [
-    "analyse adresse",
-    "immobilier",
-    "prix immobilier",
-    "DVF",
-    "cadastre",
-    "PLU",
-    "risques naturels",
-    "transports",
-    "quartier",
-    "France",
-  ],
-  authors: [{ name: SITE_NAME }],
-  openGraph: {
-    type: "website",
-    locale: "fr_FR",
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-  },
-  alternates: {
-    canonical: "/",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-};
-
-const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: SITE_NAME,
-  url: SITE_URL,
-  logo: `${SITE_URL}/icon.svg`,
-  description: SITE_DESCRIPTION,
-};
-
-const websiteJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: SITE_NAME,
-  url: SITE_URL,
-  inLanguage: "fr-FR",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: `${SITE_URL}/?q={search_term_string}`,
-    },
-    "query-input": "required name=search_term_string",
-  },
-};
+/**
+ * Layout racine du français, langue d'origine du site : ses URL n'ont pas de préfixe. Le
+ * groupe de routes `(fr)` n'apparaît pas dans l'URL ; les pages `/commune/*`, qui
+ * n'existent qu'en français, y vivent aussi.
+ */
+export const metadata = rootMetadata("fr", site);
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr" className={`${sans.variable} ${mono.variable} ${serif.variable}`}>
-      <body>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
-        />
-        {UMAMI_SRC && UMAMI_WEBSITE_ID && (
-          <script defer src={UMAMI_SRC} data-website-id={UMAMI_WEBSITE_ID} />
-        )}
-        {children}
-      </body>
-    </html>
+    <RootDocument locale="fr" description={site.description}>
+      <FrProvider>{children}</FrProvider>
+    </RootDocument>
   );
 }

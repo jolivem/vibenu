@@ -1,23 +1,7 @@
+import type { NearbyMessages, PoiFamilyKey } from "@/i18n/messages/fr/analysis/nearby";
 import type { NeighborhoodAnalysisDto } from "@/types/location-analysis";
 
 type Poi = NeighborhoodAnalysisDto["pois"][number];
-
-/** Partagé par `NeighborhoodCard` et `PdfNeighborhood`, pour que les deux listent pareil. */
-export const CATEGORY_LABELS: Record<string, string> = {
-  school: "Enseignement",
-  supermarket: "Supermarché",
-  bakery: "Boulangerie",
-  pharmacy: "Pharmacie",
-  doctor: "Médecin",
-  park: "Parc",
-  sport: "Sport",
-  restaurant: "Restaurant",
-  post_office: "Poste",
-  bank: "Banque",
-  library: "Bibliothèque",
-  hospital: "Hôpital ou clinique",
-  emergency: "Urgences",
-};
 
 /**
  * Les 11 catégories de POI se lisaient en liste plate, sans hiérarchie. Elles se regroupent
@@ -27,11 +11,11 @@ export const CATEGORY_LABELS: Record<string, string> = {
  * L'ordre à l'intérieur d'une famille est celui de ce tableau, pas celui du DTO — le plus
  * structurant d'abord (l'école avant la bibliothèque, la pharmacie avant le médecin).
  */
-const FAMILIES: Array<{ title: string; categories: string[] }> = [
-  { title: "Enseignement", categories: ["school"] },
-  { title: "Soins", categories: ["pharmacy", "doctor", "hospital", "emergency"] },
-  { title: "Commerces & services", categories: ["supermarket", "bakery", "post_office", "bank"] },
-  { title: "Culture & loisirs", categories: ["library", "park", "sport", "restaurant"] },
+const FAMILIES: Array<{ key: PoiFamilyKey; categories: string[] }> = [
+  { key: "education", categories: ["school"] },
+  { key: "care", categories: ["pharmacy", "doctor", "hospital", "emergency"] },
+  { key: "shops", categories: ["supermarket", "bakery", "post_office", "bank"] },
+  { key: "leisure", categories: ["library", "park", "sport", "restaurant"] },
 ];
 
 const DEFAULT_PER_CATEGORY_LIMIT = 3;
@@ -60,9 +44,9 @@ export function groupByCategory(pois: Poi[]): Record<string, Poi[]> {
  * rayon de 500 m ». Toutes les familles sont rendues, même à zéro : « aucun » se compare
  * d'une adresse à l'autre aussi bien qu'un nombre.
  */
-export function familyCounts(byCategory: Partial<Record<string, number>>): Array<{ title: string; count: number }> {
+export function familyCounts(byCategory: Partial<Record<string, number>>): Array<{ key: PoiFamilyKey; count: number }> {
   return FAMILIES.map((family) => ({
-    title: family.title,
+    key: family.key,
     count: family.categories.reduce((sum, category) => sum + (byCategory[category] ?? 0), 0),
   }));
 }
@@ -78,14 +62,22 @@ export function isTruncated(groups: Record<string, Poi[]>): boolean {
  * Une catégorie absente du tableau des familles resterait invisible : on la rattache à
  * « Autres » plutôt que de la perdre silencieusement si le back en ajoute une.
  */
-export function presentFamilies(groups: Record<string, Poi[]>): Array<{ title: string; categories: string[] }> {
+export function presentFamilies(groups: Record<string, Poi[]>): Array<{ key: PoiFamilyKey; categories: string[] }> {
   const known = new Set(FAMILIES.flatMap((family) => family.categories));
   const others = Object.keys(groups).filter((category) => !known.has(category));
-  const families = others.length ? [...FAMILIES, { title: "Autres", categories: others }] : FAMILIES;
+  const families = others.length ? [...FAMILIES, { key: "other" as const, categories: others }] : FAMILIES;
   return families
     .map((family) => ({
-      title: family.title,
+      key: family.key,
       categories: family.categories.filter((category) => groups[category]?.length),
     }))
     .filter((family) => family.categories.length > 0);
+}
+
+/**
+ * Nom à afficher : celui de la source, ou le nom générique de la catégorie quand la source
+ * n'en donne pas (le serveur envoie alors une chaîne vide).
+ */
+export function poiName(poi: Pick<Poi, "name" | "category">, m: NearbyMessages["neighborhood"]): string {
+  return poi.name || m.unnamed[poi.category] || poi.category;
 }

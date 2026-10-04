@@ -3,6 +3,9 @@
 import type { GeoJsonGeometryDto } from "@/types/location-analysis";
 import { HistoricalMap } from "@/components/map/HistoricalMap";
 import { HISTORICAL_ERAS } from "@/components/map/historicalLayers";
+import { map } from "@/i18n/messages/fr/map";
+
+const eras = map.history.eras;
 
 interface Props {
   commune: { nomAffiche: string; nomCourt: string; lat: number; lon: number };
@@ -42,9 +45,9 @@ export function CommuneHistoryCard({ commune, contour }: Props) {
         {HISTORICAL_ERAS.map((era) => (
           <li key={era.id}>
             <strong>
-              {era.label}, {era.period}
+              {eras[era.id].label}, {eras[era.id].period}
             </strong>{" "}
-            — {era.context}
+            — {eras[era.id].context}
           </li>
         ))}
       </ul>

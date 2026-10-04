@@ -13,10 +13,11 @@ import {
 } from "../infrastructure/card-insights.fixture";
 import {
   buildCardInsightsUserPrompt,
-  CARD_INSIGHTS_SYSTEM_PROMPT,
+  buildCardInsightsSystemPrompt,
   parseCardInsightsJson,
 } from "../infrastructure/card-insights.prompt";
 import { buildCardInsightsInput, expectedKeys } from "./card-insights.input";
+import type { Locale } from "@/i18n/locales";
 
 const DEFAULT_MODEL = "mistral-small-latest";
 const DEFAULT_BASE_URL = "https://api.mistral.ai/v1";
@@ -43,6 +44,8 @@ export interface GenerateOptions {
   debug?: boolean;
   /** Code INSEE de l'URL — sert à distinguer un arrondissement d'une commune. */
   codeInsee?: string;
+  /** Langue de la page : les phrases sont rédigées et mises en cache dans cette langue. */
+  lang?: Locale;
 }
 
 function emptyResult(debugInput?: unknown): CardInsightsDto {
@@ -76,7 +79,8 @@ export class CardInsightsService {
   }
 
   async generate(data: LocationAnalysisDto, options: GenerateOptions = {}): Promise<CardInsightsDto> {
-    const input = buildCardInsightsInput(data, options.codeInsee);
+    const lang = options.lang ?? "fr";
+    const input = buildCardInsightsInput(data, options.codeInsee, lang);
     const expected = expectedKeys(input);
     const debugInput = options.debug ? input : undefined;
 
@@ -90,7 +94,7 @@ export class CardInsightsService {
       if (fixture === "slow") await new Promise((resolve) => setTimeout(resolve, 1200));
       const insights: CardInsights = {};
       for (const key of expected) {
-        const text = CARD_INSIGHTS_FIXTURE[key];
+        const text = CARD_INSIGHTS_FIXTURE[lang][key];
         if (text) insights[key] = text;
       }
       return {
@@ -107,7 +111,7 @@ export class CardInsightsService {
     const geoKey = buildGeoKey(data.map.center.lat, data.map.center.lon);
 
     if (!options.debug) {
-      const cached = await this.cache.get(geoKey, data.mode, this.model);
+      const cached = await this.cache.get(geoKey, data.mode, this.model, lang);
       if (cached) {
         return { ...cached.payload, generatedAt: cached.generatedAt, cached: true };
       }
@@ -121,14 +125,14 @@ export class CardInsightsService {
 
     let payload: CardInsightsPayload;
     try {
-      payload = await this.callModel(apiKey, buildCardInsightsUserPrompt(input, expected), expected);
+      payload = await this.callModel(apiKey, lang, buildCardInsightsUserPrompt(input, expected), expected);
     } catch (err) {
       console.warn("[card-insights] generation failed:", err);
       return emptyResult(debugInput);
     }
 
     if (!options.debug) {
-      await this.cache.set(geoKey, data.mode, this.model, payload);
+      await this.cache.set(geoKey, data.mode, this.model, lang, payload);
     }
 
     return {
@@ -141,6 +145,7 @@ export class CardInsightsService {
 
   private async callModel(
     apiKey: string,
+    lang: Locale,
     userPrompt: string,
     expected: readonly CardInsightKey[],
   ): Promise<CardInsightsPayload> {
@@ -153,7 +158,7 @@ export class CardInsightsService {
       body: JSON.stringify({
         model: this.model,
         messages: [
-          { role: "system", content: CARD_INSIGHTS_SYSTEM_PROMPT },
+          { role: "system", content: buildCardInsightsSystemPrompt(lang) },
           { role: "user", content: userPrompt },
         ],
         temperature: TEMPERATURE,

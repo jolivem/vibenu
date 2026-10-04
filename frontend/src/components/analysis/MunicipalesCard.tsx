@@ -1,11 +1,11 @@
 import type { MunicipalesAnalysisDto, MunicipalesListeDto } from "@/types/location-analysis";
 import { CardInsight } from "@/components/CardInsight";
-import { NUANCE_LABEL } from "./electionLabels";
-import { NEUTRAL_COLOR, NUANCE_COLOR, electionDeltaLabel, formatElectionPct, siegesLabel } from "./electionFormat";
+import type { ElectionsMessages } from "@/i18n/messages/fr/analysis/elections";
+import { NEUTRAL_COLOR, NUANCE_COLOR, seatCount } from "./electionFormat";
 
 
 /** Mode nuancé : barres commune / France, comme la card présidentielle. */
-function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
+function NuancedList({ listes, m }: { listes: MunicipalesListeDto[]; m: ElectionsMessages }) {
   const max = Math.max(
     ...listes.flatMap((l) => [l.pctExprimes, l.pctNational ?? 0]),
     1,
@@ -15,9 +15,9 @@ function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
     <ul className="elections-list">
       {listes.map((liste) => {
         const color = liste.nuance ? (NUANCE_COLOR[liste.nuance] ?? NEUTRAL_COLOR) : NEUTRAL_COLOR;
-        const label = liste.nuance ? (NUANCE_LABEL[liste.nuance] ?? liste.nuance) : "Sans étiquette";
+        const label = liste.nuance ? (m.nuances[liste.nuance] ?? liste.nuance) : m.noNuance;
         const delta = liste.pctNational === null ? null : liste.pctExprimes - liste.pctNational;
-        const nbSieges = siegesLabel(liste);
+        const seats = seatCount(liste);
         // Sans tête de liste publiée, le libellé officiel tient ce rang plutôt que de
         // laisser la ligne réduite à sa seule nuance.
         const teteDeListe = liste.teteDeListe ?? liste.libelle;
@@ -42,25 +42,25 @@ function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
                         : "elections-delta-pill"
                   }
                 >
-                  {electionDeltaLabel(delta)}
+                  {m.delta(delta)}
                 </span>
               )}
             </div>
 
             <div className="elections-bar-row">
-              <span className="elections-bar-label">Commune</span>
+              <span className="elections-bar-label">{m.communeBar}</span>
               <div className="elections-bar">
                 <div
                   className="elections-bar-fill"
                   style={{ width: `${(liste.pctExprimes / max) * 100}%`, background: color }}
                 />
               </div>
-              <span className="elections-bar-pct">{formatElectionPct(liste.pctExprimes)}</span>
+              <span className="elections-bar-pct">{m.pct(liste.pctExprimes)}</span>
             </div>
 
             {liste.pctNational !== null && (
               <div className="elections-bar-row">
-                <span className="elections-bar-label">France</span>
+                <span className="elections-bar-label">{m.franceBar}</span>
                 <div className="elections-bar">
                   <div
                     className="elections-bar-fill elections-bar-fill--national"
@@ -68,12 +68,12 @@ function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
                   />
                 </div>
                 <span className="elections-bar-pct elections-bar-pct--national">
-                  {formatElectionPct(liste.pctNational)}
+                  {m.pct(liste.pctNational)}
                 </span>
               </div>
             )}
 
-            {nbSieges && <p className="municipales-sieges">{nbSieges} au conseil municipal</p>}
+            {seats !== null && <p className="municipales-sieges">{m.municipal.seatsOnCouncil(seats)}</p>}
           </li>
         );
       })}
@@ -88,21 +88,17 @@ function NuancedList({ listes }: { listes: MunicipalesListeDto[] }) {
  * 100 % se lirait comme un plébiscite alors qu'elle ne traduit qu'une absence
  * d'adversaire.
  */
-function PlainList({ listes }: { listes: MunicipalesListeDto[] }) {
+function PlainList({ listes, m }: { listes: MunicipalesListeDto[]; m: ElectionsMessages }) {
   return (
     <ul className="municipales-plain">
-      {listes.map((liste) => {
-        const nbSieges = siegesLabel(liste);
-        return (
-          <li key={liste.panneau}>
-            <span className="municipales-plain-name">{liste.libelle}</span>
-            <span className="municipales-plain-meta">
-              {liste.voix.toLocaleString("fr-FR")} voix · {formatElectionPct(liste.pctExprimes)}
-              {nbSieges ? ` · ${nbSieges}` : ""}
-            </span>
-          </li>
-        );
-      })}
+      {listes.map((liste) => (
+        <li key={liste.panneau}>
+          <span className="municipales-plain-name">{liste.libelle}</span>
+          <span className="municipales-plain-meta">
+            {m.municipal.plainLine({ votes: liste.voix, pct: liste.pctExprimes, seats: seatCount(liste) })}
+          </span>
+        </li>
+      ))}
     </ul>
   );
 }
@@ -118,18 +114,22 @@ function PlainList({ listes }: { listes: MunicipalesListeDto[] }) {
 export function MunicipalesLists({
   listes,
   nuancee,
+  m,
 }: {
   listes: MunicipalesListeDto[];
   nuancee: boolean;
+  m: ElectionsMessages;
 }) {
-  return nuancee ? <NuancedList listes={listes} /> : <PlainList listes={listes} />;
+  return nuancee ? <NuancedList listes={listes} m={m} /> : <PlainList listes={listes} m={m} />;
 }
 
 export function MunicipalesCard({
   municipales,
+  m,
   insight,
 }: {
   municipales: MunicipalesAnalysisDto;
+  m: ElectionsMessages;
   /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
   insight?: string | null;
 }) {
@@ -140,29 +140,15 @@ export function MunicipalesCard({
 
   return (
     <section className="card elections-card">
-      <h2>Municipales 2026 — {tour === 1 ? "1er" : "2e"} tour</h2>
-      <p className="muted">
-        Participation : {formatElectionPct(participationPct)}
-        {listeUnique && " · Une seule liste était en lice."}
-      </p>
+      <h2>{m.municipal.title(tour)}</h2>
+      <p className="muted">{m.municipal.participation(participationPct, listeUnique)}</p>
 
       <CardInsight text={insight} />
 
-      <MunicipalesLists listes={listes} nuancee={nuancee} />
+      <MunicipalesLists listes={listes} nuancee={nuancee} m={m} />
 
-      {villeEntiere && (
-        <p className="elections-footnote">
-          Résultat de la ville entière : le scrutin municipal ne se décline pas par
-          arrondissement.
-        </p>
-      )}
-      {!nuancee && (
-        <p className="elections-footnote">
-          Aucune nuance politique n&apos;est publiée pour cette commune : l&apos;État ne
-          l&apos;attribue qu&apos;au-delà d&apos;une certaine taille. Les listes sont donc
-          présentées sans étiquette.
-        </p>
-      )}
+      {villeEntiere && <p className="elections-footnote">{m.municipal.wholeCity}</p>}
+      {!nuancee && <p className="elections-footnote">{m.municipal.noNuances}</p>}
     </section>
   );
 }

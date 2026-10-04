@@ -56,6 +56,7 @@ export class CommuneEquipmentServiceImpl implements CommuneEquipmentService {
         population,
         isArrondissement: cityPattern !== null,
         families: EQUIPMENT_FAMILIES.map((family) => ({
+          key: family.key,
           title: family.title,
           rubrics: family.rubrics.map((rubric) => {
             const count = sum(counts, rubric.typequ);

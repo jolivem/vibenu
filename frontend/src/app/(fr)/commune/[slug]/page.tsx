@@ -41,13 +41,13 @@ import {
   type CommuneSectionId,
 } from "@/components/commune/sections";
 import { communeInseeViews } from "@/components/commune/inseeViews";
+import { SITE_URL } from "@/lib/site-url";
 
 export const revalidate = 86400; // 24h ISR
 // dynamicParams = true (défaut) : permet la génération à la demande quand la liste
 // retournée par generateStaticParams est vide (cas du build Docker sans DB).
 // Les slugs invalides sont rejetés par le notFound() ci-dessous.
 
-const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
 export async function generateStaticParams() {
   // En variante PRO, pas de pages SEO du tout (notFound dans la page).
@@ -248,7 +248,7 @@ export default async function CommunePage({
       <CommuneHero commune={commune} />
 
       <div className="page-shell">
-        <KeyFigures figures={keyFigures} />
+        <KeyFigures figures={keyFigures} ariaLabel="Chiffres clés" />
 
         {/* Zone chapeau, hors sommaire : la carte situe ce qui suit, la synthèse
             l'introduit. Ni l'une ni l'autre n'est une rubrique. */}

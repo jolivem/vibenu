@@ -1,6 +1,7 @@
 import type { DemographicsAnalysisDto } from "@/types/location-analysis";
 import type { AnalysisMode } from "@/server-shared/types/location-analysis.dto";
 import { CardInsight } from "@/components/CardInsight";
+import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 import { AgeChart } from "./AgeChart";
 import { IndicatorBlock } from "./IndicatorBlock";
 import { viewForMode } from "./inseeChart";
@@ -9,6 +10,7 @@ import { DEMOGRAPHICS_INDICATORS, demographicsScoped } from "./populationIndicat
 interface Props {
   demographics: DemographicsAnalysisDto;
   mode: AnalysisMode;
+  m: PopulationMessages;
   /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
   insight?: string | null;
 }
@@ -20,10 +22,10 @@ interface Props {
  * d'habitants de la France ne sont pas un repère pour un quartier de 2 000 — et
  * `PopulationScope` nomme déjà la zone en tête de section, pour les quatre cards.
  */
-export function DemographicsCard({ demographics, mode, insight }: Props) {
+export function DemographicsCard({ demographics, mode, m, insight }: Props) {
   const scoped = demographicsScoped(demographics);
 
-  const view = viewForMode(scoped, mode, demographics);
+  const view = viewForMode(scoped, mode, demographics, m);
   if (!view) return null;
 
   const local = view.scoped.iris;
@@ -31,7 +33,7 @@ export function DemographicsCard({ demographics, mode, insight }: Props) {
 
   return (
     <section className="card">
-      <h2>Démographie</h2>
+      <h2>{m.demographics.title}</h2>
 
       <CardInsight text={insight} />
 
@@ -46,26 +48,20 @@ export function DemographicsCard({ demographics, mode, insight }: Props) {
           comme un titre de section. */}
       {local?.ageDistribution && (
         <div className="insee-metric">
-          <h3>Répartition par âge</h3>
-          <p className="metric-unit">en % de la population</p>
+          <h3>{m.demographics.ageTitle}</h3>
+          <p className="metric-unit">{m.demographics.ageUnit}</p>
           <AgeChart
             iris={local.ageDistribution}
             commune={communeAges ?? null}
             france={view.scoped.france?.ageDistribution ?? null}
             showCommune={view.showCommune}
             mainSeriesName={view.localName}
+            m={m}
           />
         </div>
       )}
 
-      <p className="demographics-footnote">
-        {mode === "commune"
-          ? "Moyennes pondérées par population, agrégées à partir des quartiers IRIS de la commune."
-          : "Commune et France : moyennes pondérées par population, calculées à partir des quartiers."}{" "}
-        Le revenu médian et le taux de pauvreté ne sont publiés que pour les quartiers
-        assez peuplés, plutôt urbains : ils manquent souvent à l&apos;échelle du quartier,
-        et le repère France s&apos;en trouve un peu plus élevé que le taux national.
-      </p>
+      <p className="demographics-footnote">{m.demographics.footnote(mode === "commune")}</p>
     </section>
   );
 }

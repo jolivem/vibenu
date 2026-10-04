@@ -1,4 +1,6 @@
 import type { AnalysisMode, MobilityAnalysisDto } from "@/types/location-analysis";
+import type { MobilityMessages } from "@/i18n/messages/fr/analysis/mobility";
+import type { NearbyMessages } from "@/i18n/messages/fr/analysis/nearby";
 import { mobilityView } from "./mobilityModel";
 import { formatProximity } from "./proximityFormat";
 
@@ -6,18 +8,21 @@ interface Props {
   mobility: MobilityAnalysisDto;
   /** Mode d'analyse — en "commune", on masque distances/temps (mesurés depuis le centroïde). */
   mode: AnalysisMode;
+  m: MobilityMessages;
+  /** Temps de marche et distances, partagés avec la section « À proximité ». */
+  nearby: NearbyMessages;
 }
 
-export function MobilityCard({ mobility, mode }: Props) {
-  const { isCommune, stops, stations, stationsTitle } = mobilityView(mobility, mode);
+export function MobilityCard({ mobility, mode, m, nearby }: Props) {
+  const { isCommune, stops, stations, stationsHeading } = mobilityView(mobility, mode);
 
   return (
     <section className="card">
-      <h2>Transports en commun</h2>
+      <h2>{m.title}</h2>
 
       {stops.length > 0 && (
         <>
-          <h3>Bus</h3>
+          <h3>{m.busTitle}</h3>
           <ul>
             {stops.map((stop) => (
               <li key={stop.id}>
@@ -25,9 +30,7 @@ export function MobilityCard({ mobility, mode }: Props) {
                 {!isCommune && (
                   <>
                     {" "}
-                    <span className="poi-distance">
-                      — {formatProximity(stop.distanceMeters)}
-                    </span>
+                    <span className="poi-distance">{nearby.after(formatProximity(stop.distanceMeters, nearby))}</span>
                   </>
                 )}
               </li>
@@ -36,9 +39,9 @@ export function MobilityCard({ mobility, mode }: Props) {
         </>
       )}
 
-      {stations.length > 0 && (
+      {stationsHeading && (
         <>
-          <h3>{stationsTitle}</h3>
+          <h3>{m.stationsTitle(stationsHeading.kind, stationsHeading.nearestOnly)}</h3>
           <ul>
             {stations.map((s) => (
               <li key={s.id}>
@@ -46,9 +49,7 @@ export function MobilityCard({ mobility, mode }: Props) {
                 {!isCommune && (
                   <>
                     {" "}
-                    <span className="poi-distance">
-                      — {formatProximity(s.distanceMeters)}
-                    </span>
+                    <span className="poi-distance">{nearby.after(formatProximity(s.distanceMeters, nearby))}</span>
                   </>
                 )}
               </li>

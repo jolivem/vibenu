@@ -1,3 +1,7 @@
+"use client";
+
+import { useI18n } from "@/i18n/client";
+
 interface Props {
   /**
    * Absent tant que la génération n'a pas rendu, ou définitivement quand le modèle
@@ -25,6 +29,7 @@ interface Props {
  * au lecteur d'écran. Le texte entre dans le DOM et se lit normalement.
  */
 export function CardInsight({ text, animate = true, className }: Props) {
+  const { common } = useI18n();
   const value = text?.trim();
   if (!value) return null;
 
@@ -38,7 +43,7 @@ export function CardInsight({ text, animate = true, className }: Props) {
           dans le même paragraphe : c'est une seule phrase du point de vue du texte, et
           l'espace explicite évite « En brefLe prix » au copier-coller comme à la lecture
           par un lecteur d'écran. */}
-      <span className="card-insight-tag">En bref</span>{" "}
+      <span className="card-insight-tag">{common.insightTag}</span>{" "}
       {value}
     </p>
   );

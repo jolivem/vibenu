@@ -1,16 +1,24 @@
 import type {
-  LocalFinanceKeyDto,
+  FinanceComparison,
+  LocalTaxMessages,
+  MedianGap,
+} from "@/i18n/messages/fr/analysis/localTax";
+import type {
   LocalTaxAnalysisDto,
   LocalTaxFinancesDto,
   LocalTaxPropertyTaxDto,
-  LocalTaxSecondHomesDto,
 } from "@/types/location-analysis";
-import { formatPoints } from "./indicator";
 
 /**
- * Garde d'affichage de la card « Fiscalité locale », partagée par l'écran, la fiche PDF
- * et l'entrée de la mini-synthèse IA : une clé « En bref » n'est produite que si la card
- * s'affiche, et les trois doivent donc répondre d'une seule voix.
+ * Les faits de la card « Fiscalité locale », calculés une fois pour l'écran, la fiche PDF
+ * et l'entrée de la mini-synthèse IA. Aucun texte ici : les phrases sont dans les messages
+ * (`i18n/messages/<langue>/analysis/localTax.ts`).
+ */
+
+/**
+ * Garde d'affichage de la card, partagée par l'écran, la fiche PDF et l'entrée de la
+ * mini-synthèse IA : une clé « En bref » n'est produite que si la card s'affiche, et les
+ * trois doivent donc répondre d'une seule voix.
  */
 export function hasLocalTaxContent(
   localTax: LocalTaxAnalysisDto | null | undefined,
@@ -21,63 +29,29 @@ export function hasLocalTaxContent(
   );
 }
 
-export function formatTaux(n: number): string {
-  return `${n.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %`;
-}
-
-export function formatEurosParHabitant(n: number): string {
-  return `${Math.round(n).toLocaleString("fr-FR")} €`;
-}
-
-/** « 1er juin 2026 » à partir d'une date ISO. */
-export function formatDateLongue(iso: string): string {
-  const text = new Date(`${iso}T00:00:00Z`).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-  return text.replace(/^1 /, "1er ");
-}
-
 /** En dessous, un taux est dit « au niveau » de son repère : l'écart ne se lit pas. */
 const ECART_NEGLIGEABLE_PTS = 0.05;
 
-/**
- * La clause de comparaison d'un taux à son repère, écrite comme partout dans la page :
- * « soit 7,5 points de moins que la médiane des communes de France (40,33 %) ».
- */
-export function compareToMedian(taux: number, mediane: number | null, repere: string): string | null {
+/** Écart d'un taux à sa médiane de référence, ou `null` sans médiane. */
+export function medianGap(
+  taux: number,
+  mediane: number | null,
+): { gap: MedianGap; median: number } | null {
   if (mediane === null) return null;
   const ecart = taux - mediane;
-  return Math.abs(ecart) < ECART_NEGLIGEABLE_PTS
-    ? `au niveau de ${repere} (${formatTaux(mediane)})`
-    : `soit ${formatPoints(Math.abs(ecart))} ${ecart > 0 ? "de plus" : "de moins"} que ${repere} (${formatTaux(mediane)})`;
-}
-
-/** « 11 % » : part entière, sans décimale — un ordre de grandeur, pas une mesure. */
-export function formatPart(nb: number, total: number): string {
-  return `${Math.round((nb / total) * 100)} %`;
-}
-
-/**
- * Ce que couvre le périmètre de la taxe sur les logements vacants, à la suite de « Commune
- * dans / hors du périmètre… en 2026 » : part des communes de France, décompte du département.
- */
-export function describeTlvReach(tlv: NonNullable<LocalTaxSecondHomesDto["tlv"]>): string {
-  if (!tlv.france) return "";
-  const france = `${formatPart(tlv.france.nb, tlv.france.total)} des communes de France (${tlv.france.nb.toLocaleString("fr-FR")})`;
-  const departement = tlv.departement
-    ? ` et ${tlv.departement.nb === 0 ? "aucune" : tlv.departement.nb} des ${tlv.departement.total} communes du département`
-    : "";
-  return tlv.soumise ? `, comme ${france}${departement}` : ` ; il couvre ${france}${departement}`;
+  return {
+    gap:
+      Math.abs(ecart) < ECART_NEGLIGEABLE_PTS
+        ? "same"
+        : { points: Math.abs(ecart), more: ecart > 0 },
+    median: mediane,
+  };
 }
 
 export interface PropertyTaxSummary {
   annee: number;
   taux: number;
-  /** « soit 7,5 points de moins que la médiane des communes de France (40,33 %) ». */
-  comparaisonFrance: string | null;
+  france: { gap: MedianGap; median: number } | null;
   medianeDepartement: number | null;
 }
 
@@ -90,25 +64,16 @@ export function summarizePropertyTax(taxeFonciere: LocalTaxPropertyTaxDto): Prop
   return {
     annee: taxeFonciere.annees[i],
     taux,
-    comparaisonFrance: compareToMedian(taux, taxeFonciere.medianeFrance[i], "la médiane des communes de France"),
+    france: medianGap(taux, taxeFonciere.medianeFrance[i]),
     medianeDepartement: taxeFonciere.medianeDepartement[i],
   };
 }
-
-/** Libellés des comptes de la commune, dans l'ordre d'affichage. */
-export const FINANCE_LABELS: Record<LocalFinanceKeyDto, string> = {
-  dette: "Dette",
-  impots: "Impôts locaux",
-  equipement: "Dépenses d'équipement",
-  caf: "Épargne brute",
-};
 
 export interface FinanceSummary {
   annee: number;
   parHabitant: number;
   moyenneStrate: number | null;
-  /** « soit 37 % de moins que les communes de taille comparable (1 149 €) ». */
-  comparaison: string | null;
+  comparison: FinanceComparison | null;
 }
 
 /** Sous ce seuil relatif, un poste est dit « au niveau » des communes comparables. */
@@ -126,64 +91,63 @@ export function summarizeFinance(
   const parHabitant = indicateur.parHabitant[i] as number;
   const moyenneStrate = indicateur.moyenneStrate[i];
 
-  let comparaison: string | null = null;
+  let comparison: FinanceComparison | null = null;
   if (moyenneStrate !== null) {
-    const repere = `les communes de taille comparable (${formatEurosParHabitant(moyenneStrate)})`;
     // Un pourcentage n'a de sens qu'entre deux montants positifs : une épargne négative
     // se compare en donnant les deux chiffres.
     if (moyenneStrate > 0 && parHabitant >= 0) {
       const pct = Math.round(((parHabitant - moyenneStrate) / moyenneStrate) * 100);
-      comparaison =
+      comparison =
         Math.abs(pct) < ECART_NEGLIGEABLE_PCT
-          ? `au niveau de ${repere.replace(/^les /, "celui des ")}`
-          : `soit ${Math.abs(pct)} % ${pct > 0 ? "de plus" : "de moins"} que ${repere}`;
+          ? { kind: "same", ref: moyenneStrate }
+          : { kind: "pct", pct: Math.abs(pct), more: pct > 0, ref: moyenneStrate };
     } else {
-      comparaison = `contre ${formatEurosParHabitant(moyenneStrate)} pour les communes de taille comparable`;
+      comparison = { kind: "versus", ref: moyenneStrate };
     }
   }
 
-  return { annee: finances.annees[i], parHabitant, moyenneStrate, comparaison };
+  return { annee: finances.annees[i], parHabitant, moyenneStrate, comparison };
 }
 
 /**
  * Les faits de la fiche PDF : une ligne par bloc, sans graphe. Mêmes chiffres et mêmes
  * gardes que la card — une TEOM absente n'y devient pas « 0 % ».
  */
-export function localTaxFacts(localTax: LocalTaxAnalysisDto): Array<{ label: string; text: string }> {
+export function localTaxFacts(
+  localTax: LocalTaxAnalysisDto,
+  m: LocalTaxMessages,
+): Array<{ label: string; text: string }> {
   const facts: Array<{ label: string; text: string }> = [];
   const { taxeFonciere, residencesSecondaires, dmto, finances } = localTax;
 
   const summary = taxeFonciere ? summarizePropertyTax(taxeFonciere) : null;
   if (taxeFonciere && summary) {
-    const reperes = [
-      taxeFonciere.medianeFrance.at(-1) != null &&
-        `médiane des communes de France ${formatTaux(taxeFonciere.medianeFrance.at(-1) as number)}`,
-      summary.medianeDepartement !== null && `du département ${formatTaux(summary.medianeDepartement)}`,
-    ].filter(Boolean);
     facts.push({
-      label: `Taxe foncière ${summary.annee}`,
-      text: `taux global ${formatTaux(summary.taux)}${reperes.length ? ` (${reperes.join(", ")})` : ""}`,
+      label: m.pdf.propertyTaxLabel(summary.annee),
+      text: m.pdf.propertyTax({
+        rate: summary.taux,
+        franceMedian: summary.france?.median ?? null,
+        departmentMedian: summary.medianeDepartement,
+      }),
     });
-    facts.push({
-      label: "Ordures ménagères",
-      text: taxeFonciere.teom
-        ? `taxe d'enlèvement ${formatTaux(taxeFonciere.teom.taux)}, en plus`
-        : "pas de taxe d'enlèvement publiée (redevance ou budget général)",
-    });
+    facts.push({ label: m.pdf.wasteLabel, text: m.pdf.waste(taxeFonciere.teom?.taux ?? null) });
   }
 
-  const secondaires = [
-    residencesSecondaires?.majoration?.appliquee &&
-      `majoration${residencesSecondaires.majoration.tauxPct !== null ? ` de ${formatTaux(residencesSecondaires.majoration.tauxPct)}` : ""}`,
-    residencesSecondaires?.majoration && !residencesSecondaires.majoration.appliquee && "pas de majoration",
-    residencesSecondaires?.tlv?.soumise && "commune soumise à la taxe sur les logements vacants",
-  ].filter(Boolean);
-  if (secondaires.length) facts.push({ label: "Résidences secondaires", text: secondaires.join(" · ") });
+  const majoration = residencesSecondaires?.majoration ?? null;
+  const secondHomes = m.pdf.secondHomes({
+    surcharge: majoration ? { applied: majoration.appliquee, rate: majoration.tauxPct } : null,
+    vacancyTax: Boolean(residencesSecondaires?.tlv?.soumise),
+  });
+  if (secondHomes) facts.push({ label: m.pdf.secondHomesLabel, text: secondHomes });
 
   if (dmto) {
     facts.push({
-      label: "Droits de mutation",
-      text: `part départementale ${formatTaux(dmto.tauxDepartemental)}${dmto.tauxPrimoAccedant !== null ? ` (${formatTaux(dmto.tauxPrimoAccedant)} pour un premier achat)` : ""}, au ${formatDateLongue(dmto.valableAu)}`,
+      label: m.pdf.transferDutyLabel,
+      text: m.pdf.transferDuty({
+        rate: dmto.tauxDepartemental,
+        firstTimeBuyerRate: dmto.tauxPrimoAccedant,
+        validFrom: dmto.valableAu,
+      }),
     });
   }
 
@@ -191,8 +155,8 @@ export function localTaxFacts(localTax: LocalTaxAnalysisDto): Array<{ label: str
   const dette = finances && detteSerie ? summarizeFinance(finances, detteSerie) : null;
   if (dette) {
     facts.push({
-      label: `Dette de la ${localTax.villeEntiere ? "ville" : "commune"} ${dette.annee}`,
-      text: `${formatEurosParHabitant(dette.parHabitant)} par habitant${dette.moyenneStrate !== null ? ` (communes de taille comparable : ${formatEurosParHabitant(dette.moyenneStrate)})` : ""}`,
+      label: m.pdf.debtLabel(localTax.villeEntiere, dette.annee),
+      text: m.pdf.debt(dette.parHabitant, dette.moyenneStrate),
     });
   }
 

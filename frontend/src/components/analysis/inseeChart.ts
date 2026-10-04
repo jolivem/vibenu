@@ -1,6 +1,7 @@
 import { LINE_CHART_DIMENSIONS } from "./lineChart";
 import type { LineChartSeries } from "./LineChart";
 import type { AnalysisMode, DemographicsAnalysisDto, ScopedStatsDto } from "@/types/location-analysis";
+import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 import { LOCAL_SERIES_COLOR } from "./chartColors";
 
 /**
@@ -57,6 +58,8 @@ export interface InseeView<T> {
   localName: string;
   communeName: string;
   showCommune: boolean;
+  /** Textes de la rubrique dans la langue de la vue : tout ce qui la rend les lit ici. */
+  m: PopulationMessages;
 }
 
 /**
@@ -74,9 +77,10 @@ export function viewForMode<T>(
   scoped: ScopedStatsDto<T> | null | undefined,
   mode: AnalysisMode,
   demographics: Pick<DemographicsAnalysisDto, "nomCommune" | "communeIrisCount">,
+  m: PopulationMessages,
 ): InseeView<T> | null {
   if (!scoped) return null;
-  const communeName = demographics.nomCommune || "Commune";
+  const communeName = demographics.nomCommune || m.scale.commune;
 
   if (mode === "commune") {
     if (!scoped.commune) return null;
@@ -85,15 +89,17 @@ export function viewForMode<T>(
       localName: communeName,
       communeName,
       showCommune: false,
+      m,
     };
   }
 
   if (!scoped.iris) return null;
   return {
     scoped,
-    localName: "Quartier",
+    localName: m.scale.neighbourhood,
     communeName,
     showCommune: demographics.communeIrisCount > 1 && scoped.commune !== null,
+    m,
   };
 }
 
@@ -102,10 +108,6 @@ export interface DistributionModel {
   yTicks: number[];
   x: (i: number) => number;
   y: (v: number) => number;
-}
-
-export function formatPercent(n: number): string {
-  return `${n.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
 }
 
 /** Les échelles d'un graphe de parts : ordonnée toujours ancrée à zéro. */
@@ -140,6 +142,7 @@ export function buildDistributionModel<T>({
   communeName,
   showCommune,
   localName,
+  m,
 }: InseeView<T> & {
   pick: (stats: T) => (number | null)[] | null;
 }): DistributionModel | null {
@@ -164,7 +167,7 @@ export function buildDistributionModel<T>({
   }
   if (france) {
     series.push({
-      name: "France",
+      name: m.scale.france,
       color: FRANCE_COLOR,
       strokeWidth: 1.4,
       dotRadius: 2.5,

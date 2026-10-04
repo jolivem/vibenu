@@ -53,23 +53,6 @@ export const SECURITY_RATINGS = ["excellent", "bon", "moyen", "mediocre", "mauva
 export type SecurityRating = (typeof SECURITY_RATINGS)[number];
 
 /**
- * Libellés affichés dans la tuile « Sécurité ». Les clés restent sans accent : ce sont des
- * clés de protocole, partagées avec le prompt, le parseur et le cache.
- *
- * Comparatifs, parce que la note l'est : « Moyen », « Bon » ou « Mauvais » se lisaient dans
- * l'absolu, et « Moyen » laissait croire à une sécurité médiocre là où le lieu est
- * simplement dans la moyenne. Le repère est nommé — la France, seul repère sur lequel le
- * prompt fonde la note (cf. `card-insights.prompt.ts`).
- */
-export const SECURITY_RATING_LABELS: Record<SecurityRating, string> = {
-  excellent: "Bien meilleure que la moyenne France",
-  bon: "Meilleure que la moyenne France",
-  moyen: "Dans la moyenne France",
-  mediocre: "Moins bonne que la moyenne France",
-  mauvais: "Nettement moins bonne que la moyenne France",
-};
-
-/**
  * Ce qu'un appel au modèle produit, et ce que le cache Postgres stocke tel quel.
  *
  * Le passage de `CardInsights` nu à cet objet enveloppe change la forme de la colonne

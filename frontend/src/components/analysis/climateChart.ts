@@ -2,13 +2,8 @@ import type { ClimateMonthlySeriesDto } from "@/types/location-analysis";
 import { LINE_CHART_DIMENSIONS } from "./lineChart";
 import { LOCAL_SERIES_COLOR } from "./chartColors";
 
-export const MONTH_LABELS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"] as const;
-
-/** Nom complet, pour les infobulles — « M » et « J » sont ambigus à eux seuls. */
-export const MONTH_NAMES = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
-] as const;
+/** Douze mois : le nombre de points en abscisse. */
+const MONTH_COUNT = 12;
 
 /** Géométrie partagée avec le graphe de répartition par âge — voir lineChart.ts. */
 export const CLIMATE_CHART_DIMENSIONS = LINE_CHART_DIMENSIONS;
@@ -16,32 +11,11 @@ export const CLIMATE_CHART_DIMENSIONS = LINE_CHART_DIMENSIONS;
 /** Les trois mesures affichables, avec la couleur de la série locale. */
 export type ClimateMetric = "temperatureC" | "precipitationMm" | "sunshineHours";
 
-export const CLIMATE_METRICS: ReadonlyArray<{
-  key: ClimateMetric;
-  label: string;
-  unit: string;
-  format: (n: number) => string;
-}> = [
-  {
-    key: "temperatureC",
-    label: "Température",
-    // Phrasé comme une ligne d'unité, puisque c'en est une depuis que l'unité a quitté
-    // le titre : elle dit aussi ce que la courbe agrège, moyenne ou cumul.
-    unit: "moyenne mensuelle, en °C",
-    format: (n) => `${n.toFixed(1).replace(".", ",")} °C`,
-  },
-  {
-    key: "precipitationMm",
-    label: "Précipitations",
-    unit: "cumul mensuel, en mm",
-    format: (n) => `${Math.round(n)} mm`,
-  },
-  {
-    key: "sunshineHours",
-    label: "Ensoleillement",
-    unit: "cumul mensuel, en heures",
-    format: (n) => `${Math.round(n)} h`,
-  },
+/** Les mesures, dans l'ordre d'affichage. Libellés, unités et formats sont dans les messages. */
+export const CLIMATE_METRICS: ReadonlyArray<{ key: ClimateMetric }> = [
+  { key: "temperatureC" },
+  { key: "precipitationMm" },
+  { key: "sunshineHours" },
 ];
 
 /**
@@ -173,7 +147,7 @@ export function buildClimateChartModel(params: {
   const plotW = W - padL - padR;
   const plotH = H - padT - padB;
 
-  const x = (i: number) => padL + (i * plotW) / (MONTH_LABELS.length - 1);
+  const x = (i: number) => padL + (i * plotW) / (MONTH_COUNT - 1);
   const y = (v: number) => padT + plotH - ((v - minY) / (maxY - minY || 1)) * plotH;
 
   const yTicks: number[] = [];

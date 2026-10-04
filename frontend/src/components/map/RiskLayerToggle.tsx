@@ -33,6 +33,8 @@ interface LayerToggleProps {
    * calques.
    */
   hint?: string;
+  /** Titres des trois groupes, dans la langue de la page. */
+  titles: { basemap: string; risks: string; overlays: string };
 }
 
 function LayerCheckbox({
@@ -51,7 +53,7 @@ function LayerCheckbox({
 
 export function LayerTogglePanel({
   riskLayers, overlayLayers = [], baseChoices = [], baseChoice, onBaseChoice,
-  visibleLayers, onToggle, hint,
+  visibleLayers, onToggle, hint, titles,
 }: LayerToggleProps) {
   // Un nom de groupe propre à l'instance : plusieurs cartes cohabitent sur la page
   // d'analyse, et des radios partageant un `name` se désélectionneraient l'une l'autre.
@@ -61,7 +63,7 @@ export function LayerTogglePanel({
     <div className="layer-toggle-panel">
       {baseChoices.length > 0 && (
         <div className="layer-toggle-group">
-          <span className="layer-toggle-title">Fond de carte</span>
+          <span className="layer-toggle-title">{titles.basemap}</span>
           {baseChoices.map((c) => (
             <label key={c.id}>
               <input
@@ -79,7 +81,7 @@ export function LayerTogglePanel({
       {riskLayers.length > 0 && (
       <div className="layer-toggle-group">
         <span className="layer-toggle-title">
-          Risques
+          {titles.risks}
           {hint && <span className="layer-toggle-hint">{hint}</span>}
         </span>
         {riskLayers.map((l) => (
@@ -90,7 +92,7 @@ export function LayerTogglePanel({
       )}
       {overlayLayers.length > 0 && (
         <div className="layer-toggle-group">
-          <span className="layer-toggle-title">Calques</span>
+          <span className="layer-toggle-title">{titles.overlays}</span>
           {overlayLayers.map((l) => (
             <LayerCheckbox key={l.id} id={l.id} label={l.label} color={l.color}
               checked={visibleLayers.has(l.id)} onToggle={onToggle} />

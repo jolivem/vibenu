@@ -1,6 +1,7 @@
 import type { ClimateAnalysisDto } from "@/types/location-analysis";
 import { ClimateCharts } from "@/components/analysis/ClimateCard";
 import { climateStationLines } from "@/components/analysis/climateFormat";
+import { climate as climateMessages } from "@/i18n/messages/fr/analysis/climate";
 
 /**
  * Le climat de la ville — les graphes de la card d'analyse, à l'échelle où ils sont
@@ -26,7 +27,7 @@ export function CityHubClimateCard({
   // le libellé juste — et le réécrire ici évite de faire traverser un libellé d'affichage
   // à trois couches serveur.
   const named = { ...monthly, local: { ...monthly.local, name: nomAffiche } };
-  const stationLines = climateStationLines(climate);
+  const stationLines = climateStationLines(climate, climateMessages);
 
   return (
     <section className="card climate-card">
@@ -34,7 +35,7 @@ export function CityHubClimateCard({
         Climat de {nomAffiche} : températures, pluie et ensoleillement
       </h2>
 
-      <ClimateCharts monthly={named} />
+      <ClimateCharts monthly={named} m={climateMessages} />
 
       <p className="elections-footnote">
         Profil mois par mois sur les normales 1991-2020, comparé à trois climats de

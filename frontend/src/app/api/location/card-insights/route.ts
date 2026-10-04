@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCardInsightsService } from "@/server-modules/narrative/application/card-insights.service";
+import { parseLocale } from "@/i18n/server";
 import type { LocationAnalysisDto } from "@/server-shared/types/location-analysis.dto";
 
 /**
@@ -30,6 +31,9 @@ export async function POST(request: NextRequest) {
   const debug = process.env.NEXT_PUBLIC_DEBUG === "true";
   const codeInsee = request.nextUrl.searchParams.get("citycode") ?? undefined;
 
-  const result = await getCardInsightsService().generate(body, { debug, codeInsee });
+  // Langue de la page ; le français pour tout appelant qui ne la précise pas.
+  const lang = parseLocale(request.nextUrl.searchParams.get("lang"));
+
+  const result = await getCardInsightsService().generate(body, { debug, codeInsee, lang });
   return NextResponse.json(result);
 }

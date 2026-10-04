@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/i18n/client";
 
 /** Une entrée du sommaire : l'ancre et son libellé. */
 export interface NavSection {
@@ -31,6 +32,7 @@ export function SectionNav({
   sections: NavSection[];
   topOffset?: number;
 }) {
+  const { common } = useI18n();
   const [active, setActive] = useState<string | null>(sections[0]?.id ?? null);
 
   // `sections` est reconstruit à chaque rendu du parent : on dépend de son contenu et non
@@ -63,8 +65,8 @@ export function SectionNav({
   }, [key, topOffset]);
 
   return (
-    <nav className="section-nav" aria-label="Sommaire">
-      <p className="section-nav-title">Sommaire</p>
+    <nav className="section-nav" aria-label={common.sectionNav}>
+      <p className="section-nav-title">{common.sectionNav}</p>
       <ol>
         {sections.map((section) => (
           <li key={section.id}>

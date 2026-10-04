@@ -6,8 +6,8 @@ import type {
   HousingStatsDto,
   ScopedStatsDto,
 } from "@/types/location-analysis";
-import { absoluteComparison, ratioComparison, type Indicator } from "./indicator";
-import { formatDensity, formatPct, formatRevenu } from "./demographicsFormat";
+import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
+import type { Indicator } from "./indicator";
 import { STACK_COLORS } from "./inseeChart";
 import type { StackedBarSegment } from "./StackedBar";
 
@@ -26,28 +26,22 @@ import type { StackedBarSegment } from "./StackedBar";
 export const DEMOGRAPHICS_INDICATORS: Array<Indicator<AggregateStatsDto>> = [
   {
     key: "densite",
-    title: "Densité",
-    unit: "habitants au km²",
     pick: (s) => s.density,
-    format: formatDensity,
+    format: "density",
     // En rapport et non en écart : « 479 fois la moyenne française » se lit, « 50 615
     // hab./km² de plus » ne dit rien à l'œil.
-    comparison: ratioComparison(formatDensity),
+    comparison: "ratio",
   },
   {
     key: "revenu",
-    title: "Revenu médian",
-    unit: "revenu disponible médian par unité de consommation",
     pick: (s) => s.revenuMedian,
-    format: formatRevenu,
-    comparison: absoluteComparison(formatRevenu),
+    format: "revenu",
+    comparison: "absolute",
   },
   {
     key: "pauvrete",
-    title: "Taux de pauvreté",
-    unit: "part de la population sous le seuil de 60 % du niveau de vie médian",
     pick: (s) => s.tauxPauvrete,
-    format: formatPct,
+    format: "pct",
   },
 ];
 
@@ -77,31 +71,20 @@ export function demographicsScoped(demographics: DemographicsAnalysisDto): Scope
 export const EMPLOYMENT_INDICATORS: Array<Indicator<EmploymentStatsDto>> = [
   {
     key: "chomage",
-    title: "Taux de chômage",
-    unit: "en % des actifs de 15-64 ans",
     pick: (s) => s.tauxChomage,
-    format: formatPct,
+    format: "pct",
   },
   {
     key: "activite",
-    title: "Taux d'activité",
-    unit: "en % des 15-64 ans",
     pick: (s) => s.tauxActivite,
-    format: formatPct,
+    format: "pct",
   },
   {
     key: "diplomes",
-    title: "Diplômés du supérieur",
-    unit: "en % des 15 ans et plus non scolarisés",
     pick: (s) => s.pctDiplomesSuperieur,
-    format: formatPct,
+    format: "pct",
   },
 ];
-
-/** « 1,81 pers. » — deux décimales, comme les publications INSEE sur la taille des ménages. */
-function formatPersonnes(value: number): string {
-  return `${value.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pers.`;
-}
 
 /**
  * Les trois mesures scalaires de la card Ménages, chacune dans son bloc titré.
@@ -113,39 +96,33 @@ function formatPersonnes(value: number): string {
 export const HOUSEHOLDS_INDICATORS: Array<Indicator<HouseholdsStatsDto>> = [
   {
     key: "taille",
-    title: "Taille moyenne des ménages",
-    unit: "personnes par ménage",
     pick: (s) => s.tailleMoyenne,
-    format: formatPersonnes,
+    format: "persons",
     // Une taille de ménage s'écarte en personnes, pas en points de pourcentage.
-    comparison: absoluteComparison(formatPersonnes),
+    comparison: "absolute",
   },
   {
     key: "seules",
-    title: "Personnes seules",
-    unit: "en % des ménages",
     pick: (s) => s.pctPersonnesSeules,
-    format: formatPct,
+    format: "pct",
   },
   {
     key: "monoparentales",
-    title: "Familles monoparentales",
-    unit: "en % des ménages",
     pick: (s) => s.pctFamillesMonoparentales,
-    format: formatPct,
+    format: "pct",
   },
 ];
 
 /** Du foyer d'une personne à la famille nombreuse ; le reste est hachuré. */
 const [ALONE, COUPLE, FAMILY, SINGLE_PARENT] = STACK_COLORS;
 
-export function compositionSegments(s: HouseholdsStatsDto): StackedBarSegment[] {
+export function compositionSegments(s: HouseholdsStatsDto, m: PopulationMessages): StackedBarSegment[] {
   return [
-    { label: "Personne seule", color: ALONE, value: s.pctPersonnesSeules },
-    { label: "Couple sans enfant", color: COUPLE, value: s.pctCouplesSansEnfant },
-    { label: "Couple avec enfants", color: FAMILY, value: s.pctCouplesAvecEnfants },
-    { label: "Famille monoparentale", color: SINGLE_PARENT, value: s.pctFamillesMonoparentales },
-    { label: "Autres ménages", value: s.pctAutresMenages, residual: true },
+    { label: m.segments.alone, color: ALONE, value: s.pctPersonnesSeules },
+    { label: m.segments.coupleNoChild, color: COUPLE, value: s.pctCouplesSansEnfant },
+    { label: m.segments.coupleWithChildren, color: FAMILY, value: s.pctCouplesAvecEnfants },
+    { label: m.segments.singleParent, color: SINGLE_PARENT, value: s.pctFamillesMonoparentales },
+    { label: m.segments.otherHouseholds, value: s.pctAutresMenages, residual: true },
   ];
 }
 
@@ -160,35 +137,31 @@ export function compositionSegments(s: HouseholdsStatsDto): StackedBarSegment[] 
 export const HOUSING_INDICATORS: Array<Indicator<HousingStatsDto>> = [
   {
     key: "vacants",
-    title: "Logements vacants",
-    unit: "en % du parc total",
     pick: (s) => s.pctVacants,
-    format: formatPct,
+    format: "pct",
   },
   {
     key: "secondaires",
-    title: "Résidences secondaires",
-    unit: "en % du parc total",
     pick: (s) => s.pctResidencesSecondaires,
-    format: formatPct,
+    format: "pct",
   },
 ];
 
 const [OWNER, PRIVATE_RENT, SOCIAL_RENT, FREE] = STACK_COLORS;
 const [HOUSE, FLAT] = STACK_COLORS;
 
-export function occupancySegments(s: HousingStatsDto): StackedBarSegment[] {
+export function occupancySegments(s: HousingStatsDto, m: PopulationMessages): StackedBarSegment[] {
   return [
-    { label: "Propriétaires", color: OWNER, value: s.pctProprietaires },
-    { label: "Locataires du privé", color: PRIVATE_RENT, value: s.pctLocatairesPrives },
-    { label: "Locataires HLM", color: SOCIAL_RENT, value: s.pctHlm },
-    { label: "Logés gratuitement", color: FREE, value: s.pctLogesGratuitement },
+    { label: m.segments.owners, color: OWNER, value: s.pctProprietaires },
+    { label: m.segments.privateTenants, color: PRIVATE_RENT, value: s.pctLocatairesPrives },
+    { label: m.segments.socialTenants, color: SOCIAL_RENT, value: s.pctHlm },
+    { label: m.segments.freeOfCharge, color: FREE, value: s.pctLogesGratuitement },
   ];
 }
 
-export function dwellingSegments(s: HousingStatsDto): StackedBarSegment[] {
+export function dwellingSegments(s: HousingStatsDto, m: PopulationMessages): StackedBarSegment[] {
   return [
-    { label: "Maisons", color: HOUSE, value: s.pctMaisons },
-    { label: "Appartements", color: FLAT, value: s.pctAppartements },
+    { label: m.segments.houses, color: HOUSE, value: s.pctMaisons },
+    { label: m.segments.flats, color: FLAT, value: s.pctAppartements },
   ];
 }

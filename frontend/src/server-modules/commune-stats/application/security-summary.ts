@@ -1,4 +1,4 @@
-import { baseLabel } from "@/components/analysis/securityChart";
+import { security } from "@/i18n/messages/fr/analysis/security";
 import {
   ecartPct,
   ecartRelatif,
@@ -53,7 +53,7 @@ export function summarizeSecurity(securite: SecurityStats): SecurityIndicatorSum
 
     return {
       indicateur: ind.indicateur,
-      unite: baseLabel(ind.base),
+      unite: security.base[ind.base],
       annee,
       tauxLocal,
       masque: tauxLocal === null && ind.borneBasse[last] != null,

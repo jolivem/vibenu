@@ -1,18 +1,12 @@
 import type { ClimateMonthlySeriesDto } from "@/types/location-analysis";
 import { ChartLegend } from "./ChartLegend";
 import { LineChart } from "./LineChart";
-import {
-  MONTH_LABELS,
-  MONTH_NAMES,
-  buildClimateChartModel,
-  type ClimateMetric,
-} from "./climateChart";
+import type { ClimateMessages } from "@/i18n/messages/fr/analysis/climate";
+import { buildClimateChartModel, type ClimateMetric } from "./climateChart";
 
 interface Props {
   metric: ClimateMetric;
-  label: string;
-  unit: string;
-  format: (n: number) => string;
+  m: ClimateMessages;
   local: ClimateMonthlySeriesDto;
   references: ClimateMonthlySeriesDto[];
 }
@@ -23,7 +17,8 @@ interface Props {
  *
  * Rend `null` si la série locale est vide — voir `buildClimateChartModel`.
  */
-export function ClimateChart({ metric, label, unit, format, local, references }: Props) {
+export function ClimateChart({ metric, m, local, references }: Props) {
+  const { label, unit } = m.metrics[metric];
   const model = buildClimateChartModel({ metric, local, references });
   if (!model) return null;
 
@@ -33,13 +28,15 @@ export function ClimateChart({ metric, label, unit, format, local, references }:
       <p className="metric-unit">{unit}</p>
       <LineChart
         series={model.series}
-        xLabels={MONTH_LABELS}
-        xTitles={MONTH_NAMES}
+        xLabels={m.monthInitials}
+        xTitles={m.monthNames}
         yTicks={model.yTicks}
         x={model.x}
         y={model.y}
-        formatValue={format}
-        ariaLabel={`${label} mois par mois — comparaison avec trois climats types`}
+        formatValue={m.format[metric]}
+        formatTick={m.axisTick}
+        pointTitle={m.pointTitle}
+        ariaLabel={m.chartAria(label)}
       />
       {/* Dérivée du modèle de CE graphe : une ville de référence dont la mesure manque
           n'y figure pas. La légende de card, unique, les annonçait toutes les trois pour
