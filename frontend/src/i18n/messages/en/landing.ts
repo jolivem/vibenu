@@ -142,7 +142,7 @@ export const landing: LandingMessages = {
         question: "Where does the data come from?",
         answer:
           "Every figure comes from an official public source: DVF (the tax authority's register of property sales) for prices, Géorisques for natural and technological risks, IGN and the Géoportail de l'Urbanisme for plots, the local plan (PLU) and flood-risk prevention zoning, INSEE for population, income, employment and housing, INSEE's permanent database of facilities and OpenStreetMap for shops and local services, transport.data.gouv.fr for transport, Météo-France for climate, " +
-          (showAirQuality ? "Atmo France for air quality, " : "") +
+          (showAirQuality ? "the European Environment Agency for air quality, " : "") +
           "SSMSI (the Interior Ministry's statistical service) for crime, the Interior Ministry for elections, the City of Paris for school catchment areas, and IGN for address search, base maps and historical aerial views. Each figure stays tied to its source and publication date. Only the “In brief” sentences under the section titles are written by a language model: it rewords those same figures and invents none.",
       },
       {

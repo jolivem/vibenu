@@ -11,8 +11,8 @@ import { SummaryBuilderService } from "@/server-modules/summary/application/summ
 import { MobilityServiceImpl } from "@/server-modules/mobility/application/mobility.service.impl";
 import { RiskServiceImpl } from "@/server-modules/risks/application/risk.service.impl";
 import { RealEstateServiceImpl } from "@/server-modules/real-estate/application/real-estate.service.impl";
-import { AtmoAirQualityProvider } from "@/server-modules/air-quality/infrastructure/atmo-air-quality.provider";
 import { AirQualityServiceImpl } from "@/server-modules/air-quality/application/air-quality.service";
+import { EeaAirStationsProvider } from "@/server-modules/air-quality/infrastructure/eea-air-stations.provider";
 import { CombinedNeighborhoodProvider } from "@/server-modules/neighborhood/infrastructure/combined-neighborhood.provider";
 import { NeighborhoodServiceImpl } from "@/server-modules/neighborhood/application/neighborhood.service.impl";
 import { ApiCartoCadastreProvider } from "@/server-modules/cadastre/infrastructure/apicarto-cadastre.provider";
@@ -49,7 +49,7 @@ const useCase = new LocationAnalysisUseCase({
   mobilityService: new MobilityServiceImpl(new TransportDataGouvProvider()),
   riskService: new RiskServiceImpl(new GeorisquesRiskProvider(), new GpuFloodZoneProvider()),
   realEstateService: new RealEstateServiceImpl(new DvfDatabaseProvider()),
-  airQualityService: new AirQualityServiceImpl(new AtmoAirQualityProvider()),
+  airQualityService: new AirQualityServiceImpl(new EeaAirStationsProvider()),
   neighborhoodService: new NeighborhoodServiceImpl(new CombinedNeighborhoodProvider()),
   summaryService: new SummaryBuilderService(),
   cadastreService: new CadastreServiceImpl(new ApiCartoCadastreProvider()),

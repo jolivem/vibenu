@@ -4,10 +4,10 @@ export interface ChartLegendItem {
   color?: string;
   /**
    * `band` rend le motif des zones d'incertitude, `hatch` celui d'un segment
-   * résiduel : la légende doit distinguer « une courbe » d'« un encadrement » et
-   * d'« un reste ».
+   * résiduel, `dash` un seuil tracé en tireté : la légende doit distinguer « une
+   * courbe » d'« un encadrement », d'« un reste » et d'« une valeur de référence ».
    */
-  swatch?: "dot" | "band" | "hatch";
+  swatch?: "dot" | "band" | "hatch" | "dash";
 }
 
 /**
@@ -48,7 +48,10 @@ export function ChartLegend({
           {item.swatch === "hatch" && (
             <span className="line-chart-legend-dot stacked-bar-seg--residual" />
           )}
-          {item.swatch !== "band" && item.swatch !== "hatch" && (
+          {item.swatch === "dash" && (
+            <span className="line-chart-legend-dash" style={{ borderTopColor: item.color }} />
+          )}
+          {(item.swatch === undefined || item.swatch === "dot") && (
             <span className="line-chart-legend-dot" style={{ background: item.color }} />
           )}
           {item.name}

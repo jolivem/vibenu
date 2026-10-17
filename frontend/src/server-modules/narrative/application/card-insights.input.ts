@@ -13,6 +13,7 @@
  */
 
 import { AGE_BUCKETS } from "@/components/analysis/ageChart";
+import { EU_LIMITS, airTrend } from "@/components/analysis/airQualityModel";
 import { CLIMATE_METRICS } from "@/components/analysis/climateChart";
 import { viewForMode } from "@/components/analysis/inseeChart";
 import { hasLocalTaxContent, summarizeFinance } from "@/components/analysis/localTaxModel";
@@ -24,6 +25,8 @@ import { FEATURES } from "@/lib/site-features";
 import type { CardInsightKey } from "@/server-shared/types/card-insights";
 import { CARD_INSIGHT_KEYS } from "@/server-shared/types/card-insights";
 import type {
+  AirQualityAnalysisDto,
+  AnnualPollutantStatDto,
   ClimateAnalysisDto,
   ClimateMonthlySeriesDto,
   DemographicsAnalysisDto,
@@ -37,7 +40,10 @@ import type {
   SecurityAnalysisDto,
 } from "@/server-shared/types/location-analysis.dto";
 import type {
+  AirInsightInput,
+  AirPolluantInput,
   CardInsightsInput,
+  PositionAir,
   ClasseDominante,
   ClimatInsightInput,
   DemographieInsightInput,
@@ -648,6 +654,112 @@ function buildClimat(climate: ClimateAnalysisDto | null | undefined, m: Analysis
   };
 }
 
+// --- Qualité de l'air -------------------------------------------------------
+
+/**
+ * Seuils de position face à la moyenne des stations de fond françaises, en relatif. ±15 %
+ * reste dans l'écart d'une station à sa voisine ; à +50 %, une valeur sort franchement du
+ * lot (Paris 7e en NO₂ : le double de la France).
+ */
+const AIR_PROCHE_PCT = 15;
+const AIR_NETTEMENT_PCT = 50;
+
+/** À moins de 10 % du seuil, une valeur est « au niveau » : la mesure est en µg entiers. */
+const AIR_SEUIL_TOLERANCE = 0.1;
+
+function positionAir(ecart: number | null): PositionAir {
+  if (ecart === null || Math.abs(ecart) < AIR_PROCHE_PCT) return "proche";
+  const sens = ecart > 0 ? "au-dessus" : "en dessous";
+  return Math.abs(ecart) >= AIR_NETTEMENT_PCT ? `nettement ${sens}` : sens;
+}
+
+function airPolluant(stat: AnnualPollutantStatDto, m: AnalysisMessages): AirPolluantInput {
+  const ratio = stat.value / stat.reference;
+  const trend = airTrend(stat.history);
+  const enJours = stat.unit === "days";
+  const limit = EU_LIMITS[stat.code];
+
+  return {
+    polluant: m.air.insightPollutants[stat.code],
+    unite: enJours ? m.air.insightDaysUnit : "µg/m³",
+    valeur: stat.value,
+    annee: stat.year,
+    moyenne_france: stat.nationalMean,
+    position_vs_france: positionAir(ecartPct(stat.value, stat.nationalMean)),
+    ...(() => {
+      const { multiple } = ecartRelatif(stat.value, stat.nationalMean);
+      return multiple !== null ? { multiple_vs_france: multiple } : {};
+    })(),
+    seuil_reference: {
+      nature: stat.referenceKind === "who" ? m.air.insightWhoGuideline : m.air.insightEuTarget,
+      valeur: stat.reference,
+      // « 1,2 fois la cible » ne se dit pas sur des jours : le multiple est réservé à l'OMS.
+      ...(stat.referenceKind === "who" && ratio > 1 + AIR_SEUIL_TOLERANCE ? { multiple: round(ratio) } : {}),
+      position:
+        ratio < 1 - AIR_SEUIL_TOLERANCE ? "sous" : ratio <= 1 + AIR_SEUIL_TOLERANCE ? "au niveau" : "au-dessus",
+    },
+    // L'ozone n'a qu'une cible : sa « limite » serait le même seuil, déjà donné.
+    ...(stat.referenceKind === "who" ? { limite_ue: { valeur: limit, depassee: stat.value > limit } } : {}),
+    ...(trend
+      ? {
+          tendance: {
+            depuis: trend.from,
+            tendance: trend.direction === "down" ? "en baisse" : trend.direction === "up" ? "en hausse" : "stable",
+            // Sur des jours, un pourcentage exagère : 7 → 20 jours ferait « +173 % ».
+            ...(enJours
+              ? {
+                  evolution_jours: round(trend.endMean - trend.startMean, 0),
+                  evolution_france_jours: round(trend.nationalEndMean - trend.nationalStartMean, 0),
+                }
+              : { evolution_pct: trend.change, evolution_france_pct: trend.nationalChange }),
+          },
+        }
+      : {}),
+  };
+}
+
+/**
+ * Le polluant qui ressort. Un dépassement européen passe d'abord ; entre deux dépassements,
+ * l'écart à la France départage — à Paris, le NO₂ au double de la France l'emporte sur des
+ * PM2,5 à peine au-dessus de leur limite.
+ */
+function polluantASignaler(annual: AnnualPollutantStatDto[], m: AnalysisMessages): string | null {
+  const byEcart = annual
+    .map((s) => ({ s, ecart: ecartPct(s.value, s.nationalMean) ?? 0 }))
+    .sort((a, b) => b.ecart - a.ecart);
+  const overLimit = byEcart.find((x) => x.s.value > EU_LIMITS[x.s.code]);
+  if (overLimit) return m.air.insightPollutants[overLimit.s.code];
+  const aboveFrance = byEcart.find((x) => x.ecart >= AIR_PROCHE_PCT);
+  return aboveFrance ? m.air.insightPollutants[aboveFrance.s.code] : null;
+}
+
+function buildAir(airQuality: AirQualityAnalysisDto | null | undefined, m: AnalysisMessages): AirInsightInput | undefined {
+  // Garde d'AirQualityCard, drapeau compris.
+  if (!FEATURES.showAirQuality || !airQuality?.available || airQuality.annual.length === 0) return undefined;
+
+  const { annual } = airQuality;
+  const position = (code: string) => {
+    const s = annual.find((a) => a.code === code);
+    return s ? positionAir(ecartPct(s.value, s.nationalMean)) : null;
+  };
+  const ozone = position("o3");
+  const no2 = position("no2");
+
+  const fallback = annual.filter((s) => s.ruralFallback);
+  return {
+    ...(fallback.length > 0
+      ? { provenance_mesures: m.air.insightRuralSource(Math.round(Math.max(...fallback.map((s) => s.distanceKm)))) }
+      : {}),
+    polluants: annual.map((s) => airPolluant(s, m)),
+    polluant_a_signaler: polluantASignaler(annual, m),
+    ozone_plus_eleve_hors_villes:
+      (ozone === "au-dessus" || ozone === "nettement au-dessus") &&
+      no2 !== null &&
+      no2 !== "au-dessus" &&
+      no2 !== "nettement au-dessus",
+  };
+}
+
 // --- Racine -----------------------------------------------------------------
 
 /** Le périmètre décrit, nommé pour le modèle : il commande le sujet des phrases. */
@@ -683,6 +795,7 @@ export function buildCardInsightsInput(
     elections: buildElections(data.elections, m),
     municipales: buildMunicipales(data.municipales, m),
     climat: buildClimat(data.climate, m),
+    air: buildAir(data.airQuality, m),
   };
 }
 

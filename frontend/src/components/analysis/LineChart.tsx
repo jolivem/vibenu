@@ -20,6 +20,16 @@ export interface LineChartBand {
   high: number;
 }
 
+/**
+ * Seuil horizontal (valeur guide, limite réglementaire). Son libellé va dans la légende
+ * (`swatch: "dash"`) : posé au bout du trait, il masquait les derniers points de la série.
+ */
+export interface LineChartThreshold {
+  value: number;
+  label: string;
+  color: string;
+}
+
 interface Props {
   series: LineChartSeries[];
   /** Libellés d'abscisse — mois, années, tranches d'âge… */
@@ -38,6 +48,8 @@ interface Props {
   bands?: LineChartBand[];
   /** Décrit ce que représente une bande, dans l'infobulle. */
   bandTitle?: (index: number, low: number, high: number) => string;
+  /** Le modèle doit avoir inclus ces valeurs dans l'échelle (`buildYearChart`, `include`). */
+  thresholds?: LineChartThreshold[];
 }
 
 /**
@@ -64,6 +76,7 @@ export function LineChart({
   ariaLabel,
   bands = [],
   bandTitle,
+  thresholds = [],
 }: Props) {
   const { W, H, padL, padR, padB } = LINE_CHART_DIMENSIONS;
   const halfStep = xLabels.length > 1 ? (x(1) - x(0)) / 2 : 8;
@@ -102,6 +115,21 @@ export function LineChart({
           >
             {bandTitle && <title>{bandTitle(b.index, b.low, b.high)}</title>}
           </rect>
+        ))}
+
+        {/* Seuils : tiretés, pour ne pas se lire comme une série mesurée ; sous les courbes. */}
+        {thresholds.map((t) => (
+          <line
+            key={t.label}
+            x1={padL}
+            x2={W - padR}
+            y1={y(t.value)}
+            y2={y(t.value)}
+            stroke={t.color}
+            className="line-chart-threshold"
+          >
+            <title>{t.label}</title>
+          </line>
         ))}
 
         {/* Après les bandes : les graduations restent lisibles quoi qu'il arrive. */}

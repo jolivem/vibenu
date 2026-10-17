@@ -27,8 +27,6 @@ services:
       NEXT_PUBLIC_DVF_SOURCE: ${NEXT_PUBLIC_DVF_SOURCE:-database}
       NEXT_PUBLIC_DEBUG: ${NEXT_PUBLIC_DEBUG:-false}
       SITE_URL: ${SITE_URL:-}
-      ATMO_USERNAME: ${ATMO_USERNAME:-}
-      ATMO_PASSWORD: ${ATMO_PASSWORD:-}
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
       MISTRAL_MODEL: ${MISTRAL_MODEL:-}
       # Bascule vers un autre fournisseur compatible OpenAI, sans rebuild d'image.

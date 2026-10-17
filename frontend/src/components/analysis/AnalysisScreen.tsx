@@ -424,7 +424,7 @@ export function AnalysisScreen() {
                   <AnalysisSection id="environnement">
                     {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} m={m.climate} insight={insights.climat} />}
                     {FEATURES.showAirQuality && data.airQuality.available && (
-                      <AirQualityCard airQuality={data.airQuality} m={m.air} />
+                      <AirQualityCard airQuality={data.airQuality} m={m.air} insight={insights.air} />
                     )}
                   </AnalysisSection>
                 )}

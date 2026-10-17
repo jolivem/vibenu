@@ -25,6 +25,7 @@ export const CARD_INSIGHTS_FIXTURE: Record<Locale, CardInsights> = {
     elections: "La participation a dépassé de trois points la moyenne nationale. Le vote s'est porté nettement plus à gauche qu'en France, l'écart le plus marqué atteignant une quinzaine de points.",
     municipales: "La liste arrivée en tête réunit un peu plus du tiers des voix, dans un scrutin où la participation est restée sous la moitié des inscrits. Sa nuance dépasse de quelques points son score national.",
     climat: "Le climat est proche de celui de Rennes : des hivers doux, un mois de juillet qui culmine autour de 19 °C et une amplitude annuelle modérée. Les précipitations, réparties sur toute l'année, sont un peu supérieures à celles des villes de référence les plus sèches, avec un maximum en novembre et un minimum estival marqué.",
+    air: "Le dioxyde d'azote et les particules sont proches de la moyenne française dans le secteur, et en nette baisse depuis 2016. L'ozone dépasse en revanche la valeur cible européenne, avec 29 jours de dépassement par an.",
   },
   en: {
     fiscalite: "The property tax rate is well below the median rate for French communes, despite a rise of nearly three points since 2021. The commune applies the maximum surcharge on second homes.",
@@ -35,6 +36,7 @@ export const CARD_INSIGHTS_FIXTURE: Record<Locale, CardInsights> = {
     elections: "Turnout was three points above the national average. The vote leaned markedly further left than in France, the widest gap reaching about fifteen points.",
     municipales: "The leading list won just over a third of the votes, in an election where turnout stayed below half of registered voters. Its political label scored a few points above its national result.",
     climat: "The climate is close to that of Rennes: mild winters, a July that peaks at around 19 °C and a moderate annual range. Rainfall, spread across the whole year, is slightly higher than in the driest reference cities, with a maximum in November and a marked summer minimum.",
+    air: "Nitrogen dioxide and particles are close to the French average in the area, and down markedly since 2016. Ozone, however, exceeds the EU target value, with 29 days of exceedance per year.",
   },
 };
 

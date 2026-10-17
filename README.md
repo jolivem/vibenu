@@ -46,7 +46,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `risks` | Risques naturels/technologiques | Géorisques (georisques.gouv.fr) |
 | `real-estate` | Contexte immobilier et prix | DVF géolocalisé (PostgreSQL/PostGIS) |
 | `cadastre` | Parcelle, zone PLU, prescriptions | API Carto IGN (apicarto.ign.fr) |
-| `air-quality` | Qualité de l'air | Atmo France (admindata.atmo-france.org) |
+| `air-quality` | Qualité de l'air | EEA, indicateurs annuels des stations de fond (Postgres local) |
 | `neighborhood` | Commerces et services proches | OSM + BPE INSEE (PostgreSQL/PostGIS) |
 | `demographics` | Données socio-démographiques (population, revenus, âge) | INSEE IRIS (PostgreSQL/PostGIS) |
 | `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
@@ -104,7 +104,7 @@ Le serveur utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés 
 | Géorisques (risques) | 24 heures | in-memory | mensuel à trimestriel |
 | Transport (GTFS) | 24 heures | in-memory | hebdomadaire à mensuel |
 | Voisinage (OSM) | 7 jours | in-memory | quotidien (Geofabrik) |
-| Qualité de l'air (Atmo) | 6 heures | in-memory | quotidien |
+| Qualité de l'air (stations EEA, Postgres local) | 30 jours | in-memory | annuel (statistiques validées) |
 | Climat (Météo-France stations, normales 1991-2020) | 30 jours | in-memory (clé arrondie ~11 km) | données figées (passé) |
 | Élections (Postgres local) | — | — | données figées (scrutin clos) |
 | Fiscalité locale (Postgres local) | 7 jours | in-memory (clé = code commune) | annuel (DGFiP) |
@@ -296,6 +296,9 @@ python import_local_tax.py
 # Déposer d'abord les *.csv.gz décadaires dans scripts/data/climate/
 python import_climate_stations.py
 
+# Importer les indicateurs annuels des stations françaises sur 10 ans — moyennes NO2 / PM2.5 / PM10, jours de pic d'ozone (EEA, ~2 min, API publique)
+python import_air_quality_eea.py
+
 # Importer les indices ATMO annuels (une ville par script)
 python import_atmo_paris.py
 python import_atmo_lyon.py
@@ -327,6 +330,7 @@ Migrations actuelles :
 - `015-crime-ssmsi.sql` — délinquance SSMSI (`crime_commune`, `crime_reference`, `crime_indicateur`)
 - `020-local-tax.sql` — fiscalité locale DGFiP (`local_tax_commune`, `local_tax_reference`, `local_tax_deliberation`, `local_tax_deliberation_reference`, `local_tax_finances`)
 - `021-card-insights-lang.sql` — colonne `lang` du cache des mini-synthèses (une phrase par langue)
+- `022-air-quality-stations.sql` — indicateurs annuels par station de mesure (`air_quality_station_annual`, source EEA)
 - `016-municipales-2026.sql` — municipales 2026
 - `017-insee-iris.sql` — `iris_demographics` (jusque-là créée par le script d'import),
   ses trois tables sœurs `iris_logement` / `iris_emploi` / `iris_menages`, et la vue
@@ -360,8 +364,6 @@ pnpm dev
 | Variable | Description | Défaut |
 |----------|-------------|--------|
 | `POSTGRES_URL` | URL de connexion PostgreSQL (OSM + DVF + IRIS + caches LLM) | - |
-| `ATMO_USERNAME` | Email du compte Atmo France (optionnel) | - |
-| `ATMO_PASSWORD` | Mot de passe du compte Atmo France (optionnel) | - |
 | `MISTRAL_API_KEY` | Clé API Mistral. Sans elle, les phrases « En bref » n'apparaissent simplement pas : cards et graphiques restent identiques | - |
 | `MISTRAL_MODEL` | Modèle à utiliser (optionnel) | `mistral-small-latest` |
 | `LLM_BASE_URL` | Base d'une API `/chat/completions` compatible OpenAI (autre fournisseur, modèle local) | `https://api.mistral.ai/v1` |
@@ -369,7 +371,7 @@ pnpm dev
 | `CARD_INSIGHTS_FIXTURE` | Phrases factices sans appel au LLM. `slow` ajoute 1,2 s de latence | - |
 | `COMMUNE_LEGENDS_FIXTURE` | Idem pour les légendes des pages `/commune/*`. À poser **au build** (pages prérendues) | - |
 | `DISABLE_CACHE` | Désactive tous les caches in-memory (`1`, `true`, `yes`) | - |
-| `NEXT_PUBLIC_DEBUG` | Données brutes Atmo dans la card, payload envoyé au modèle sous les cards — et **court-circuite le cache des mini-synthèses** | `false` |
+| `NEXT_PUBLIC_DEBUG` | Payload envoyé au modèle sous les cards — et **court-circuite le cache des mini-synthèses** | `false` |
 | `NEXT_PUBLIC_HIDE_AIR_QUALITY` | Coupe la rubrique « Qualité de l'air » partout (card, pages `/commune/*`, PDF, landing). Le titre de section redevient « Climat » | - |
 | `NEXT_PUBLIC_SITE_VARIANT` | Variante du site : `PUBLIC` (complet) ou `PRO` (voisinage + mobilité). Relu au démarrage seulement | `PUBLIC` |
 
@@ -383,12 +385,15 @@ pnpm dev
 - **Dernier import** : millésime DVF 2024 (transactions jusqu'au 2024-12-31), importé en DB le 2026-05-02
 - Mise à jour : semestrielle (avril et octobre) — relancer `python scripts/import_dvf.py` pour récupérer le nouveau millésime data.gouv.fr
 
-### Atmo France (qualité de l'air)
-- **Inscription** : [admindata.atmo-france.org/inscription-api](https://admindata.atmo-france.org/inscription-api)
-- Remplir le formulaire → validation par un administrateur → email avec lien d'activation
-- **Configuration** : renseigner `ATMO_USERNAME` et `ATMO_PASSWORD` dans le `.env`. Le provider fait `POST https://admindata.atmo-france.org/api/login`, récupère un JWT et le met en cache ~55 min avant de le renouveler
-- **Endpoint data** : `GET https://admindata.atmo-france.org/api/data/112/<filter_json>?withGeom=false` avec `Authorization: Bearer <token>` (`112` = indices pollution)
-- Gratuit, licence ODbL (attribution obligatoire : "Source : Atmo France / AASQA")
+### EEA — indicateurs annuels par station (qualité de l'air)
+- L'indice quotidien Atmo France a été retiré (octobre 2026) : « moyen » presque partout, l'API ne gardait que J-1 / J / J+1 et ne couvrait pas l'Occitanie
+- **Source** : service ArcGIS public de l'Agence européenne de l'environnement, [`AQ_Statistics_WM`](https://forest.discomap.eea.europa.eu/arcgis/rest/services/AirQuality/AQ_Statistics_WM/MapServer/0) — statistiques annuelles calculées par l'EEA sur les séries transmises par la France (Geod'air / LCSQA). Sans compte
+- **Import** : `scripts/import_air_quality_eea.py` (10 dernières années validées, `Preliminary='0'`, ~12 000 lignes ; écarte les statistiques couvrant moins de 75 % de l'année, ou moins de 2 années sur 3 pour l'ozone ; chaque import remplace toute la fenêtre) → table `air_quality_station_annual`
+- **Tendance** : moyenne des 3 premières années mesurées de la station face aux 3 dernières (≥ 6 ans d'écart, ±10 % = stable), comparée au même calcul sur la moyenne France ; courbe station / France sous chaque polluant. La moyenne France d'une année porte sur les stations présentes cette année-là (196 stations PM2,5 en 2025 contre 109 en 2016) : la composition du réseau change, à garder en tête pour lire sa pente. Seules les stations ayant mesuré l'une des 3 dernières années sont retenues
+- **Indicateurs** : NO₂, PM2,5, PM10 en moyenne annuelle (`Annual mean / average`, µg/m³) ; ozone en jours de dépassement de 120 µg/m³ sur 8 h, moyennés sur 3 ans (`Days in exceedance averaged over 3 calendar years`), comparés à la valeur cible européenne de 25 jours — l'OMS n'a pas de seuil en jours, et la moyenne annuelle d'ozone, polluant de pics estivaux, ne distingue presque rien. Les autres polluants publiés (SO₂, benzène, métaux…) sont quasi nuls partout ou mesurés par trop peu de stations, surtout industrielles
+- **Usage** : par polluant, station de **fond** la plus proche dans un rayon de 20 km, à défaut station de fond **rurale** la plus proche dans un rayon de 80 km (≈ 90 % de la population couverte, contre ≈ 72 % avec 20 km seuls) ; comparée à la moyenne des stations de fond françaises de la même année et aux valeurs guides OMS 2021 (10 / 5 / 15 µg/m³) ou, pour l'ozone, à la cible UE. Les stations trafic sont exclues : elles mesurent le bord de l'axe, pas le quartier
+- Licence : réutilisation EEA, CC BY 4.0 (attribution « Agence européenne de l'environnement »)
+- À relancer une fois par an, quand l'EEA publie l'année validée suivante
 
 ### OpenStreetMap + BPE (voisinage)
 Les deux sources sont combinées et dédupliquées pour un résultat complet :

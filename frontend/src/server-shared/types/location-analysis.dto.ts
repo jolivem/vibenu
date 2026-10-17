@@ -115,43 +115,41 @@ export interface RealEstateAnalysisDto {
   transactionFeatures?: DvfTransactionFeatureDto[];
 }
 
-export type AirQualityLevel = "bon" | "moyen" | "dégradé" | "mauvais" | "très_mauvais";
+export type AnnualPollutantCode = "no2" | "pm25" | "pm10" | "o3";
 
-export interface AirQualityDayDto {
-  /** ISO date (YYYY-MM-DD). */
-  date: string;
-  level: AirQualityLevel;
-}
+/** `ugm3` : moyenne annuelle. `days` : jours de dépassement par an (ozone). */
+export type AnnualUnit = "ugm3" | "days";
 
-export interface MonthlyPollutantDto {
-  code: "no2" | "o3" | "pm10" | "pm25" | "so2";
-  label: string;
-  level: AirQualityLevel;
-  daysCovered: number;
-}
+/** `who` : valeur guide OMS 2021. `euTarget` : valeur cible européenne (ozone). */
+export type AnnualReferenceKind = "who" | "euTarget";
 
-export interface MonthlyAirQualityDto {
-  level: AirQualityLevel;
-  daysCovered: number;
-  pollutants: MonthlyPollutantDto[];
+export type StationArea = "urban" | "suburban" | "rural";
+
+/** Indicateur annuel à la station de fond la plus proche (EEA). */
+export interface AnnualPollutantStatDto {
+  code: AnnualPollutantCode;
+  value: number;
+  unit: AnnualUnit;
+  year: number;
+  stationName: string;
+  distanceKm: number;
+  area: StationArea;
+  /** `true` quand aucune station n'est à < 20 km : station rurale de référence, à < 80 km. */
+  ruralFallback: boolean;
+  /** Moyenne des stations de fond françaises la même année, même unité. */
+  nationalMean: number;
+  /** Seuil de référence (OMS ou cible UE selon `referenceKind`), même unité. */
+  reference: number;
+  referenceKind: AnnualReferenceKind;
+  /** Série annuelle de la station retenue et moyenne France, alignées sur `years`. */
+  history: { years: number[]; station: (number | null)[]; national: (number | null)[] };
 }
 
 export interface AirQualityAnalysisDto {
-  /** `false` quand Atmo a répondu mais n'a aucun indice publié pour la commune.
-   *  L'UI masque la card pour éviter d'afficher un fallback "moyen" trompeur. */
+  /** `false` quand aucune station de mesure n'est assez proche : l'UI masque alors la card. */
   available: boolean;
-  level: AirQualityLevel;
-  message: string;
-  /** Polluant le plus contributeur à l'indice (ex. "ozone (O₃)"). */
-  dominantPollutant: string | null;
-  /** Date ISO de la dernière mise à jour Atmo. */
-  lastUpdated: string;
-  /** Historique récent (typiquement 7 jours, du plus ancien au plus récent). */
-  recentDays: AirQualityDayDto[];
-  /** Statistiques agrégées sur ~30 jours. */
-  monthly?: MonthlyAirQualityDto;
-  /** Présent uniquement quand NEXT_PUBLIC_DEBUG=true. */
-  debugRaw?: unknown;
+  /** Indicateurs annuels par polluant ; vide si aucune station retenue. */
+  annual: AnnualPollutantStatDto[];
 }
 
 export interface NeighborhoodPoiDto {

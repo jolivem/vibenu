@@ -41,8 +41,12 @@ import type { Locale } from "@/i18n/locales";
  *
  * v9 : nouvelle clé « fiscalite » (taxe foncière face à la médiane des communes, droits de
  * mutation, dette), avec sa lecture piégeuse — des taux, jamais un montant en euros.
+ *
+ * v10 : nouvelle clé « air » (mesures annuelles de la station de fond la plus proche face à
+ * la France et aux seuils OMS / UE, tendance sur dix ans), avec l'ozone compté en jours et
+ * la seule explication causale autorisée du prompt.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 9;
+export const CARD_INSIGHTS_PROMPT_VERSION = 10;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
@@ -94,6 +98,11 @@ const BRIEFS: Record<CardInsightKey, { titreCard: string; consigne: string }> = 
     consigne:
       "le caractère du climat en s'appuyant sur le type de climat de référence le plus proche, les extrêmes mensuels et la pluviométrie ; nomme le type de climat (« un climat océanique »), jamais une ville de référence",
   },
+  air: {
+    titreCard: "Qualité de l'air",
+    consigne:
+      "la qualité de l'air par rapport à la moyenne française, en nommant le polluant à signaler s'il y en a un et sa position face aux seuils, puis la tendance sur dix ans ; pas d'énumération des quatre polluants",
+  },
 };
 
 const OUTPUT_BLOCK = CARD_INSIGHT_KEYS.map(
@@ -107,8 +116,8 @@ Pour chaque section demandée, 1 à 2 phrases (25 à 45 mots) qui disent CE QU'I
 
 RÈGLES DE FOND
 - Tu ne disposes que des données JSON fournies. Tu n'inventes RIEN : ni chiffre, ni évolution, ni comparaison qui n'y figure pas.
-- Aucune explication causale. Pas de « grâce à la proximité du centre », « en raison de la gentrification » : les données ne contiennent pas les causes.
-- Les champs "tendance", "tendance_…", "ecart_…", "multiple_…", "position_…", "…_dominant", "…_dominante", "tranche_sur_representee", "climat_de_reference_le_plus_proche" sont DÉJÀ calculés. Reprends-les tels quels, ne les recalcule pas, ne les contredis pas.
+- Aucune explication causale. Pas de « grâce à la proximité du centre », « en raison de la gentrification » : les données ne contiennent pas les causes. Une seule exception, décrite plus bas pour l'ozone.
+- Les champs "tendance", "tendance_…", "ecart_…", "multiple_…", "position_…", "…_dominant", "…_dominante", "tranche_sur_representee", "climat_de_reference_le_plus_proche", "polluant_a_signaler" sont DÉJÀ calculés. Reprends-les tels quels, ne les recalcule pas, ne les contredis pas.
 - Chaque phrase situe le lieu par rapport au repère fourni (France, département, ou climats de référence). Un chiffre sans repère n'apprend rien : ne le donne jamais seul.
 - Seuil de saillance : en dessous de 2 points d'écart (ou 5 % en relatif), écris « proche de la moyenne » — ne dramatise pas un écart faible. Au-delà, nomme le sens de l'écart.
 - Au plus DEUX chiffres par phrase. Jamais d'énumération de pourcentages.
@@ -129,6 +138,11 @@ LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
 - Sécurité : "annees_masquees" compte les années sous secret statistique, ce qui signifie 1 à 4 faits dans l'année — donc un phénomène RARE, et non une donnée manquante. N'écris jamais « données indisponibles » à ce sujet. Ce sont des faits ENREGISTRÉS : la mesure dépend aussi du dépôt de plainte. Quand "multiple_vs_departement" ou "multiple_vs_france" est renseigné (le taux atteint au moins le double du repère), exprime cet écart en fois — « 13,6 fois plus fréquents qu'en France » — et jamais en pourcentage.
 - Climat : il n'y a pas de moyenne France pertinente ; la comparaison se fait aux types de climat de référence fournis, en t'appuyant sur "climat_de_reference_le_plus_proche". Désigne-les par leur type (continental, méditerranéen, océanique) et ne cite aucune ville.
 - Climat, quand "climat_de_reference_le_plus_proche" vaut null : aucun des trois types ne se détache. Décris alors le climat local par ses extrêmes et sa pluviométrie, sans le rattacher à un type et sans en désigner un « le plus proche » de toi-même.
+- Qualité de l'air : ce sont des moyennes ANNUELLES mesurées à la station de fond la plus proche, pas à l'adresse : écris « dans le secteur » ou « à la station la plus proche », jamais « l'air de ce logement ». Reprends "position_vs_france" tel quel ; quand "multiple_vs_france" est fourni, dis l'écart en fois (« 2,7 fois la moyenne française », jamais « dépasse de 2,7 fois »), sinon ne calcule AUCUN rapport toi-même. Quand "provenance_mesures" est présent, la phrase DOIT le reprendre, par exemple en ouverture (« D'après une station rurale à 40 km, faute de station plus proche, … »).
+- Qualité de l'air, tendances : une tendance n'existe que pour les polluants qui portent un champ "tendance". N'en attribue JAMAIS à un polluant qui n'en a pas, et ne transpose pas celle d'un polluant à un autre.
+- Qualité de l'air, seuils : la "valeur guide OMS" est un objectif sanitaire exigeant, dépassé dans une grande partie du pays pour les particules — mentionne-le sans dramatiser. La "limite_ue" est le seuil réglementaire européen applicable en 2030 : quand "depassee" est vrai, dis que la limite européenne est dépassée. Quand "multiple" est fourni, exprime l'écart au seuil en fois (« deux fois la valeur guide »).
+- Qualité de l'air, ozone : il se compte en JOURS de dépassement par an, jamais en µg/m³, et sa tendance en jours ("evolution_jours", "evolution_france_jours"), jamais en pourcentage. "valeur" est le nombre TOTAL de jours, pas un excédent : écris « 29 jours de pic d'ozone par an, au-delà de la cible européenne de 25 jours », jamais « dépasse la cible de 29 jours ». Quand "ozone_plus_eleve_hors_villes" est vrai, et seulement alors, tu peux ajouter que l'ozone se forme à distance des sources de pollution et touche souvent davantage la périphérie et la campagne que les centres-villes : c'est la seule explication causale permise dans tout ce prompt.
+- Qualité de l'air, quand "polluant_a_signaler" vaut null : aucun polluant ne ressort ; dis que l'air est proche de la moyenne française (ou meilleur), sans en inventer un.
 - Emploi : le taux de chômage est celui du recensement, déclaratif, structurellement 1 à 2 points au-dessus du taux trimestriel diffusé dans les médias. Compare-le au taux France fourni, à rien d'autre.
 - Élections : décris l'écart au national, jamais l'électeur. Aucun jugement sur les habitants.
 - Municipales : quand "nuancee" est faux, les listes n'ont AUCUNE étiquette politique — l'État ne les attribue qu'au-delà d'une certaine taille de commune. Il n'y a alors ni nuance ni score national : décris les scores et la participation, sans chercher un écart qui n'existe pas et sans qualifier politiquement une liste. Quand "ville_entiere" est vrai, le résultat est celui de la ville entière et non de l'arrondissement : ne l'attribue pas au quartier.
@@ -173,7 +187,8 @@ LANGUE DE SORTIE — PRIORITAIRE SUR LES RÈGLES DE FORME CI-DESSUS
 - Garde tels quels les mots "commune", "arrondissement" et "département", les noms de lieux, de candidats et de partis. Les étiquettes politiques te sont fournies en anglais : reprends-les telles quelles.
 - Nombres à l'anglaise : point décimal ("12.5%"), pas d'espace avant "%".
 - Traduis les libellés français des données que tu cites (unités, catégories, tranches d'âge : « 15-29 ans » → "15-29 year-olds").
-- Types de climat : "continental", "Mediterranean", "oceanic".`,
+- Types de climat : "continental", "Mediterranean", "oceanic".
+- Qualité de l'air : « dans le secteur » → "in the area" ; « la limite européenne » → "the EU limit" ; « la valeur guide de l'OMS » → "the WHO guideline" ; « jours de dépassement » → "days of exceedance".`,
 };
 
 export function buildCardInsightsSystemPrompt(lang: Locale): string {

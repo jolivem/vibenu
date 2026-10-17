@@ -1,3 +1,6 @@
+import type { LineChartSeries } from "./LineChart";
+import { LOCAL_SERIES_COLOR } from "./chartColors";
+
 /**
  * Géométrie commune aux graphes en courbes de l'écran d'analyse — répartition par âge
  * et profil climatique mensuel.
@@ -57,4 +60,63 @@ export function niceStep(max: number): number {
   const normalized = target / magnitude;
   const factor = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
   return factor * magnitude;
+}
+
+export interface YearChartModel {
+  series: LineChartSeries[];
+  yTicks: number[];
+  x: (i: number) => number;
+  y: (v: number) => number;
+  xLabels: string[];
+  xTitles: string[];
+}
+
+export function localSeries(name: string, values: (number | null)[]): LineChartSeries {
+  return { name, color: LOCAL_SERIES_COLOR, strokeWidth: 2.8, dotRadius: 4, opacity: 1, values };
+}
+
+export function referenceSeries(name: string, color: string, values: (number | null)[]): LineChartSeries {
+  return { name, color, strokeWidth: 1.4, dotRadius: 2.5, opacity: 0.75, values };
+}
+
+/**
+ * Échelles d'un graphe annuel (fiscalité locale, qualité de l'air). Même géométrie que les graphes de délinquance — retrait aux
+ * extrémités compris, pour que les années écrites en entier y tiennent.
+ *
+ * L'axe part de zéro, seule origine honnête pour comparer des ordres de grandeur, et ne
+ * descend en dessous que si une valeur est négative (une épargne brute peut l'être).
+ */
+export function buildYearChart(
+  annees: number[],
+  series: LineChartSeries[],
+  /** Valeurs à faire tenir dans l'axe sans les tracer en série (seuils). */
+  include: number[] = [],
+): YearChartModel {
+  const values = [...series.flatMap((s) => s.values).filter((v): v is number => v !== null), ...include];
+  const rawMax = Math.max(...values, 0);
+  const rawMin = Math.min(...values, 0);
+  const step = niceStep(rawMax - rawMin || 1);
+  const maxY = Math.max(Math.ceil(rawMax / step) * step, step);
+  const minY = Math.floor(rawMin / step) * step;
+
+  const { W, H, padL, padR, padT, padB } = LINE_CHART_DIMENSIONS;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const intervals = Math.max(annees.length - 1, 1);
+  const insetRatio = BAND_HALF_WIDTH_RATIO / 2;
+  const xStep = plotW / (intervals + 2 * insetRatio);
+  const inset = xStep * insetRatio;
+
+  const yTicks: number[] = [];
+  for (let t = minY; t <= maxY + step / 2; t += step) yTicks.push(Math.round(t * 100) / 100);
+
+  return {
+    series,
+    yTicks,
+    x: (i) => padL + inset + i * xStep,
+    y: (v) => padT + plotH - ((v - minY) / (maxY - minY)) * plotH,
+    xLabels: yearLabels(annees),
+    xTitles: annees.map(String),
+  };
 }

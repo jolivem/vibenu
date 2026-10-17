@@ -1,69 +1,54 @@
-export type AirQualityLevel = "bon" | "moyen" | "dégradé" | "mauvais" | "très_mauvais";
+/** Polluants dont on lit un indicateur annuel (stations EEA). */
+export type AnnualPollutantCode = "no2" | "pm25" | "pm10" | "o3";
 
-export type PollutantCode = "no2" | "o3" | "pm10" | "pm25" | "so2";
+export const ANNUAL_POLLUTANTS: AnnualPollutantCode[] = ["no2", "pm25", "pm10", "o3"];
 
-export interface AirQualityHistoryDay {
-  date: string; // ISO YYYY-MM-DD
-  level: AirQualityLevel;
-  aqi: number;
-  /** Codes Atmo 0-7 par sous-polluant pour ce jour (optionnel selon disponibilité). */
-  pollutantCodes?: Partial<Record<PollutantCode, number>>;
-}
+/**
+ * `ugm3` : concentration moyenne annuelle. `days` : jours de dépassement par an — l'ozone,
+ * polluant de pics estivaux, dont la moyenne annuelle ne dit presque rien.
+ */
+export type AnnualUnit = "ugm3" | "days";
 
-export interface MonthlyPollutantStat {
-  code: PollutantCode;
-  /** Libellé long affichable, ex. "ozone (O₃)". */
-  label: string;
-  /** Niveau moyen sur la période. */
-  level: AirQualityLevel;
-  /** Nombre de jours avec donnée. */
-  daysCovered: number;
-}
+/** `who` : valeur guide OMS 2021. `euTarget` : valeur cible européenne (pas d'équivalent OMS). */
+export type AnnualReferenceKind = "who" | "euTarget";
 
-export interface MonthlyAirQualityStats {
-  level: AirQualityLevel;
-  daysCovered: number;
-  pollutants: MonthlyPollutantStat[];
-}
+/**
+ * Référence affichée par polluant. NO₂, PM2,5, PM10 : valeurs guides annuelles OMS 2021 (µg/m³).
+ * Ozone : valeur cible européenne, 25 jours par an au-delà de 120 µg/m³ sur 8 h, moyenne sur
+ * 3 ans — l'OMS ne fixe pas de seuil exprimé en jours.
+ */
+export const ANNUAL_REFERENCES: Record<AnnualPollutantCode, { value: number; kind: AnnualReferenceKind }> = {
+  no2: { value: 10, kind: "who" },
+  pm25: { value: 5, kind: "who" },
+  pm10: { value: 15, kind: "who" },
+  o3: { value: 25, kind: "euTarget" },
+};
 
-export interface AirQualityData {
-  aqi: number; // Air Quality Index (0-500), valeur du jour
-  level: AirQualityLevel; // niveau du jour
-  pollutants: {
-    pm25?: number;
-    pm10?: number;
-    no2?: number;
-    o3?: number;
-    so2?: number;
-  };
-  source: string;
-  lastUpdated: Date;
-  /** Historique récent (du plus ancien au plus récent), incluant le jour courant. */
-  history: AirQualityHistoryDay[];
-  /** Brut renvoyé par Atmo. Présent uniquement en mode debug (NEXT_PUBLIC_DEBUG=true). */
-  debugRaw?: unknown;
-}
+export type StationArea = "urban" | "suburban" | "rural";
 
-export interface AirQualityRecentDay {
-  date: string;
-  level: AirQualityLevel;
+/** Indicateur annuel d'un polluant à la station de fond la plus proche. */
+export interface AnnualPollutantStat {
+  code: AnnualPollutantCode;
+  value: number;
+  unit: AnnualUnit;
+  year: number;
+  stationName: string;
+  distanceKm: number;
+  area: StationArea;
+  /** `true` quand aucune station n'est à < 20 km et qu'on retient une station rurale de référence. */
+  ruralFallback: boolean;
+  /** Moyenne des stations de fond françaises la même année, même unité. */
+  nationalMean: number;
+  /** Seuil de référence (cf. `ANNUAL_REFERENCES`), même unité. */
+  reference: number;
+  referenceKind: AnnualReferenceKind;
+  /** Série annuelle de la station retenue et moyenne France, alignées sur `years`. */
+  history: { years: number[]; station: (number | null)[]; national: (number | null)[] };
 }
 
 export interface AirQualityAnalysis {
-  /** `false` quand Atmo a répondu mais n'a aucun indice publié pour la commune
-   *  (typiquement petites communes hors zones urbaines couvertes). L'UI masque la card
-   *  dans ce cas pour éviter d'afficher un badge "moyen" trompeur basé sur le fallback. */
+  /** `false` quand aucune station de mesure n'est assez proche : l'UI masque alors la card. */
   available: boolean;
-  level: AirQualityData["level"];
-  message: string;
-  /** Polluant le plus contributeur à l'indice (ex. "ozone (O₃)"). null si non identifiable. */
-  dominantPollutant: string | null;
-  /** ISO date de la dernière mise à jour Atmo. */
-  lastUpdated: string;
-  /** Historique récent (typiquement 7 jours, du plus ancien au plus récent). */
-  recentDays: AirQualityRecentDay[];
-  /** Statistiques agrégées sur ~30 jours. */
-  monthly?: MonthlyAirQualityStats;
-  /** Brut renvoyé par Atmo. Présent uniquement en mode debug (NEXT_PUBLIC_DEBUG=true). */
-  debugRaw?: unknown;
+  /** Indicateurs annuels par polluant ; vide si aucune station retenue. */
+  annual: AnnualPollutantStat[];
 }

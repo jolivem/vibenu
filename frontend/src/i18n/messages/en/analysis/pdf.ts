@@ -19,7 +19,7 @@ export const pdf: PdfMessages = {
   notes: {
     origin: "The figures come directly from the public files.",
     sources:
-      "Sources: IGN · DVF · DGFiP · Géorisques · INSEE · Interior Ministry · Météo-France · ATMO · Ministry of Education.",
+      "Sources: IGN · DVF · DGFiP · Géorisques · INSEE · Interior Ministry · Météo-France · EEA · Ministry of Education.",
     onlineLead: "Details, charts and maps: ",
   },
   property: {

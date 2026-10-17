@@ -67,8 +67,8 @@ export const about: AboutMessages = {
       {
         id: "air",
         name: "Air quality",
-        issuer: "Atmo France · LCSQA",
-        desc: "Daily air quality index and the nearest monitoring stations.",
+        issuer: "European Environment Agency · AASQA",
+        desc: "Validated annual statistics from the nearest background station (within 20 km, otherwise a rural station within 80 km): average NO₂, PM2.5 and PM10 concentrations, compared with the French station average and the 2021 WHO guidelines (10, 5 and 15 µg/m³); for ozone, the number of days on which the 8-hour average exceeds 120 µg/m³, averaged over 3 years, compared with the EU target value of 25 days. The trend compares, over ten years, the average of the first three and the last three measured years, for the station and for France alike. For Paris, Lyon and Marseille, the yearly ATMO index summary.",
       },
       {
         name: "Recorded crime",

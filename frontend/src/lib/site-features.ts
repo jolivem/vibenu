@@ -42,7 +42,7 @@ export interface SiteFeatures {
   showRealEstate: boolean;
   /** Card "Risques" — Géorisques. */
   showRisks: boolean;
-  /** Card "Qualité de l'air" — Atmo. */
+  /** Card "Qualité de l'air" — stations EEA. */
   showAirQuality: boolean;
   /** Card "Climat" — normales Météo-France. */
   showClimate: boolean;

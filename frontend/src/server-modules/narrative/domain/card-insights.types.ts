@@ -195,6 +195,69 @@ export interface ClimatInsightInput {
   climat_de_reference_le_plus_proche: string | null;
 }
 
+// --- Qualité de l'air -------------------------------------------------------
+
+/** Position d'une mesure face à la moyenne des stations de fond françaises, tranchée en TS. */
+export type PositionAir =
+  | "nettement en dessous"
+  | "en dessous"
+  | "proche"
+  | "au-dessus"
+  | "nettement au-dessus";
+
+export interface AirPolluantInput {
+  polluant: string;
+  /** « µg/m³ » ou « jours de dépassement par an » (ozone : jours au-delà de 120 µg/m³ sur 8 h). */
+  unite: string;
+  valeur: number;
+  annee: number;
+  moyenne_france: number;
+  position_vs_france: PositionAir;
+  /** Présent dès le double de la France : l'écart se dit alors « N fois », calculé ici. */
+  multiple_vs_france?: number;
+  seuil_reference: {
+    /** « valeur guide OMS » ou, pour l'ozone, « valeur cible européenne ». */
+    nature: string;
+    valeur: number;
+    /** Multiple de la valeur guide OMS quand elle est dépassée de plus de 10 % ; jamais pour l'ozone. */
+    multiple?: number;
+    position: "sous" | "au niveau" | "au-dessus";
+  };
+  /** Valeur limite européenne (applicable en 2030) ; absente pour l'ozone. */
+  limite_ue?: { valeur: number; depassee: boolean };
+  /** Absente quand la station n'a pas six ans de mesures. */
+  tendance?: {
+    depuis: number;
+    tendance: Tendance;
+    /** En % pour les concentrations ; pour l'ozone, l'écart en jours (petits nombres) — station et France. */
+    evolution_pct?: number;
+    evolution_france_pct?: number;
+    evolution_jours?: number;
+    evolution_france_jours?: number;
+  };
+}
+
+export interface AirInsightInput {
+  /**
+   * Présent quand aucune station n'est à moins de 20 km : la provenance, déjà rédigée, que
+   * la phrase doit reprendre. Un booléen et une distance étaient ignorés par le modèle.
+   */
+  provenance_mesures?: string;
+  polluants: AirPolluantInput[];
+  /**
+   * Le polluant qui ressort, tranché en TS : parmi ceux qui dépassent leur limite ou cible
+   * européenne, le plus au-dessus de la moyenne française ; à défaut de dépassement, le plus
+   * au-dessus de la France ; sinon `null` (aucun ne ressort).
+   */
+  polluant_a_signaler: string | null;
+  /**
+   * L'ozone est au-dessus de la France alors que le dioxyde d'azote ne l'est pas : le cas
+   * qui surprend le lecteur (« plus d'ozone qu'en ville »), et la seule explication que le
+   * prompt autorise.
+   */
+  ozone_plus_eleve_hors_villes: boolean;
+}
+
 // --- Fiscalité locale -------------------------------------------------------
 
 /** Position d'un taux face à la médiane des communes, tranchée en TS sur des seuils en points. */
@@ -253,4 +316,5 @@ export interface CardInsightsInput {
   elections?: ElectionsInsightInput;
   municipales?: MunicipalesInsightInput;
   climat?: ClimatInsightInput;
+  air?: AirInsightInput;
 }

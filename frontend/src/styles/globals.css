@@ -2360,6 +2360,12 @@ html {
   text-anchor: middle;
 }
 
+.line-chart-threshold {
+  stroke-width: 1.2;
+  stroke-dasharray: 5 4;
+}
+
+
 .line-chart-line {
   fill: none;
   stroke-linejoin: round;
@@ -2408,6 +2414,14 @@ html {
 .line-chart-band {
   fill: var(--line-chart-band-color, #4B9319);
   opacity: 0.16;
+}
+
+/* Seuil (valeur guide, limite) : un tireté, comme son trait sur le graphe. */
+.line-chart-legend-dash {
+  display: inline-block;
+  width: 16px;
+  flex-shrink: 0;
+  border-top: 2px dashed;
 }
 
 .line-chart-legend-band {
@@ -2703,7 +2717,9 @@ html {
 .climate-metric > .line-chart-legend,
 .security-metric > .line-chart,
 .security-metric > .line-chart-legend,
-.security-metric > .security-conversion {
+.security-metric > .security-conversion,
+.air-annual-chart > .line-chart,
+.air-annual-chart > .line-chart-legend {
   max-width: var(--line-chart-max);
   margin-inline: auto;
 }
@@ -2850,135 +2866,108 @@ html {
   vertical-align: 0.1em;
 }
 
-/* Air quality card — échelle, polluant dominant, historique 7 jours */
-.air-headline {
-  display: flex;
+/* Air quality card — indicateurs annuels par polluant : station, courbe et seuils. */
+/* Mise en garde bien visible : sans elle, une valeur mesurée à 40 km se lit comme celle de
+   l'adresse. Encart ambré, texte foncé, pictogramme d'information. */
+.air-annual-caveat {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  margin: 4px 0 12px;
+  margin: 4px 0 16px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #fef3c7;
+  color: #78350f;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
-.air-headline-label {
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.air-scale {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 3px;
-  margin-bottom: 14px;
-}
-
-.air-scale-step {
-  height: 22px;
-  border-radius: 3px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.55;
-  transition: opacity 0.15s;
-}
-
-.air-scale-step--active {
-  opacity: 1;
-  outline: 2px solid var(--text);
-  outline-offset: 2px;
-  z-index: 1;
-}
-
-.air-scale-step-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: white;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
-  white-space: nowrap;
-  padding: 0 4px;
+/* « i » cerclé dessiné en CSS : le caractère ⓘ manque à la police du site. */
+.air-annual-caveat::before {
+  content: "i";
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  margin-right: 7px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 12px;
   text-align: center;
 }
 
-.air-pollutant {
-  margin: 8px 0 0;
-  font-size: 0.85rem;
-  color: var(--text);
-}
-
-.air-history {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 0.5px dashed var(--border);
-}
-
-.air-history-title {
-  margin: 0 0 8px;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.air-history-strip {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.air-history-day {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  min-width: 36px;
-}
-
-.air-history-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.air-history-date {
-  font-size: 0.7rem;
-  color: var(--muted-soft);
-  font-variant-numeric: tabular-nums;
-}
-
-.air-monthly {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 0.5px dashed var(--border);
-}
-
-.air-monthly-title {
-  margin: 0 0 8px;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.air-monthly-pollutants {
+.air-annual-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 18px;
 }
 
-.air-monthly-pollutants li {
+/* Valeur à la suite du nom, calée à gauche comme le reste du bloc — affichée seulement quand
+   il n'y a pas de courbe pour la porter. */
+.air-annual-head {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+  font-size: 0.9rem;
 }
 
-.air-monthly-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  flex-shrink: 0;
+.air-annual-value {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.air-annual-chart {
+  margin-top: 8px;
+}
+
+/* Glossaire des seuils : le terme précédé du tireté de sa couleur, comme dans la légende. */
+.air-threshold-notes {
+  margin: 18px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.air-threshold-notes dt {
+  display: inline;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.air-threshold-notes dt::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-top: 2px dashed;
+  border-top-color: inherit;
+}
+
+.air-threshold-notes dd {
+  display: inline;
+  margin: 0;
+}
+
+/* Même corps que le nom du polluant, en gris pour rester second ; la distance ressort, car
+   c'est elle qui dit si la mesure vaut pour l'adresse (1,7 km en ville, 40 km en repli rural). */
+.air-annual-station {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.air-annual-distance {
+  font-weight: 600;
+  color: var(--text);
 }
 
 .climate-value {
@@ -3141,40 +3130,6 @@ html {
   background: transparent;
   color: var(--muted-soft);
   border: 1px dashed var(--hairline-strong);
-}
-
-.air-badge {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  line-height: 1.4;
-}
-
-.air-badge--bon {
-  background: #e8f5e9;
-  color: #166534;
-}
-
-.air-badge--moyen {
-  background: #fff3cd;
-  color: #92400e;
-}
-
-.air-badge--degrade {
-  background: #fed7aa;
-  color: #9a3412;
-}
-
-.air-badge--mauvais {
-  background: #fde8e8;
-  color: #991b1b;
-}
-
-.air-badge--tres-mauvais {
-  background: #581c87;
-  color: #f3e8ff;
 }
 
 /* Risk alert block (élevé / modéré) */

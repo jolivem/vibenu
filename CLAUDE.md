@@ -201,7 +201,7 @@ Per PLAN-V2, **PRO is out of scope** on `dev/v2`: status quo, don't invest effor
 
 ### Caching
 
-Two tiers. `InMemoryCache` per source with source-appropriate TTLs (6 h for Atmo → 30 days for
+Two tiers. `InMemoryCache` per source with source-appropriate TTLs (24 h for Géorisques → 30 days for
 climate normals), keyed on coordinates rounded to ~10 m (`buildGeoKey`), capped at 500 entries;
 `DISABLE_CACHE=1` disables all of it. LLM text is cached in Postgres (`card_insights_cache`,
 `commune_narrative_cache`) so it survives redeploys — the cache key includes the model and prompt
@@ -215,8 +215,8 @@ debugging a prompt, it burns the API quota.
 Mistral (`mistral-small-latest`) behind an OpenAI-compatible `/chat/completions`, so swapping
 providers is just `LLM_BASE_URL` + `LLM_API_KEY` (falls back to `MISTRAL_API_KEY`).
 
-Two pipelines: `card-insights.*` (nine keys — `fiscalite`, `securite`, `demographie`, `logement`, `emploi`,
-`menages`, `elections`, `municipales`, `climat` — in one call, for the "En bref" lines under card
+Two pipelines: `card-insights.*` (ten keys — `fiscalite`, `securite`, `demographie`, `logement`, `emploi`,
+`menages`, `elections`, `municipales`, `climat`, `air` — in one call, for the "En bref" lines under card
 titles) and
 `commune-narrative.*` (editorial paragraphs for the `/commune/*` pages).
 

@@ -72,8 +72,8 @@ export const about = {
       {
         id: "air",
         name: "Qualité de l'air",
-        issuer: "Atmo France · LCSQA",
-        desc: "Indice quotidien de qualité de l'air et stations de mesure les plus proches.",
+        issuer: "Agence européenne de l'environnement · AASQA",
+        desc: "Statistiques annuelles validées de la station de fond la plus proche (à moins de 20 km, à défaut une station rurale à moins de 80 km) : concentrations moyennes de NO₂, PM2,5 et PM10, comparées à la moyenne des stations françaises et aux valeurs guides de l'OMS 2021 (10, 5 et 15 µg/m³) ; pour l'ozone, nombre de jours où la moyenne sur 8 h dépasse 120 µg/m³, moyenné sur 3 ans, comparé à la valeur cible européenne de 25 jours. La tendance compare, sur dix ans, la moyenne des trois premières et des trois dernières années mesurées, pour la station comme pour la France. Pour Paris, Lyon et Marseille, bilan annuel de l'indice ATMO.",
       },
       {
         name: "Délinquance enregistrée",

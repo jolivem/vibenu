@@ -17,7 +17,7 @@ import type {
   RiskAnalysisDto,
   SchoolSectorDto,
 } from "@/types/location-analysis";
-import { modalLevel } from "@/components/analysis/airQualityModel";
+import { airTrend, referenceRatio } from "@/components/analysis/airQualityModel";
 import type { ClimateMetric } from "@/components/analysis/climateChart";
 import { climateTitle } from "@/components/analysis/climateFormat";
 import {
@@ -574,10 +574,12 @@ export function PdfEnvironnementFiche({
   climate,
   airQuality,
   insight,
+  airInsight,
 }: {
   climate: ClimateAnalysisDto | null;
   airQuality: AirQualityAnalysisDto | null;
   insight?: string | null;
+  airInsight?: string | null;
 }) {
   const {
     cadastre: cadastreMessages,
@@ -593,10 +595,6 @@ export function PdfEnvironnementFiche({
     pdf,
   } = usePdfMessages();
   const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
-  const monthly = airQuality?.monthly;
-  const airLevel =
-    monthly && monthly.daysCovered > 0 ? monthly.level : airQuality ? modalLevel(airQuality.recentDays) : null;
-  const airDays = monthly && monthly.daysCovered > 0 ? monthly.daysCovered : airQuality?.recentDays.length ?? 0;
   const measure = (metric: ClimateMetric, value: number | null, reference: number) => {
     const format = climateMessages.pdfFormat[metric];
     return value != null
@@ -619,8 +617,22 @@ export function PdfEnvironnementFiche({
           </Fact>
         </View>
       )}
-      {airLevel && (
-        <Fact label={airMessages.pdfLabel}>{airMessages.pdfLine(airLevel, airDays)}</Fact>
+      {airQuality && airQuality.annual.length > 0 && <PdfInsight text={airInsight} />}
+      {airQuality && airQuality.annual.length > 0 && (
+        <Fact label={airMessages.pdfLabel}>
+          {join(
+            airQuality.annual.map((s) =>
+              airMessages.pdfAnnual(
+                s.code,
+                s.value,
+                s.unit,
+                s.referenceKind,
+                referenceRatio(s.value, s.reference),
+                airTrend(s.history),
+              ),
+            ),
+          )}
+        </Fact>
       )}
     </Block>
   );

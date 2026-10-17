@@ -248,6 +248,7 @@ export function AnalysisPdfDocument({
             climate={showClimate ? (data.climate ?? null) : null}
             airQuality={showAirQuality ? data.airQuality : null}
             insight={insights.climat}
+            airInsight={insights.air}
           />
         )}
 

@@ -123,7 +123,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
   }
 
   async execute(input: AnalyzeLocationInput): Promise<LocationAnalysisDto> {
-    // Resolve address first — we need codeInsee for DVF and Atmo
+    // Resolve address first — we need codeInsee for DVF
     const addressDetails = await this.dependencies.addressProvider.reverseGeocode(input.lat, input.lon);
     const codeInsee = addressDetails?.citycode;
     const contourCitycode = input.citycode ?? codeInsee;
@@ -183,7 +183,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
         this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee, { mode }),
-        this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon, codeInsee),
+        this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon),
         neighborhoodPromise,
         cadastrePromise,
         this.dependencies.demographicsService.getDemographicsData(input.lat, input.lon),
