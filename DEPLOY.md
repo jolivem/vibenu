@@ -2,28 +2,13 @@ ensure token to push docker image from to dockerhiub is OK
 ensure toekn to pull docker image form Hetzner is OK
 if not generate a classic token with crite:read package right.
 
-# take into account new env on vps
-cd vibenu
-docker compose up -d app
 
-
-# Build and Push to GH package
+## 1. Build and Push to GH package
+```bash
 cd clairimmo
 ./buildPush.sh
-
-# Mode maintenance géré par cady
-cd vibenu
-touch maintenance/ON     # couper le site (restore de la base, grosse migration…)
-rm maintenance/ON        # le rétablir
-
-# Upgrade from GH
-cd vibenu
-./update.sh --maintenance
-
-
-## Backup / restore DB
-
-### Dump depuis le local
+```
+## 2. Dump depuis le local
 
 ```bash
 cd ~/github/clairimmo
@@ -39,10 +24,18 @@ pg_dump --host=localhost --port=5432 --username=bienvu \
 scp claire_adresse.dump michel@178.104.51.131:/tmp/
 ```
 
-### Restore sur le VPS (clean slate — recommandé)
 
+## 3. Mode maintenance géré par cady
 ```bash
 ssh michel@178.104.51.131
+cd vibenu
+touch maintenance/ON     # couper le site (restore de la base, grosse migration…)
+```
+
+
+## 4. Restore DB sur le VPS
+
+```bash
 cd vibenu
 docker compose exec postgres dropdb -U claireadresse --if-exists --force cadb
 docker compose exec postgres createdb -U claireadresse -O claireadresse cadb
@@ -51,5 +44,15 @@ docker compose cp /tmp/claire_adresse.dump postgres:/tmp/
 docker compose exec -T postgres pg_restore \
   -U claireadresse -d cadb \
   --no-owner --no-privileges \
-  /tmp/clairimmo_$(date +%Y%m%d).dump
+  /tmp/claire_adresse.dump
+```
+
+## 5. Mettre à jour l'app : nouvelle image, migrations, redémarrage
+```bash
+./update.sh
+```
+
+## 6. Rouvrir le site
+```bash
+rm maintenance/ON
 ```
