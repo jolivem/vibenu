@@ -132,7 +132,7 @@ export const landing: LandingMessages = {
   faq: {
     title: ["Frequently asked ", "questions", ""],
     meta: "About the service",
-    items: ({ showAirQuality, hasSEOPages }) => [
+    items: ({ showAirQuality, showRents, hasSEOPages }) => [
       {
         question: `Is ${BRANDING.name} free?`,
         answer:
@@ -141,7 +141,9 @@ export const landing: LandingMessages = {
       {
         question: "Where does the data come from?",
         answer:
-          "Every figure comes from an official public source: DVF (the tax authority's register of property sales) for prices, ANIL (the national housing information agency) for rents, Géorisques for natural and technological risks, IGN and the Géoportail de l'Urbanisme for plots, the local plan (PLU) and flood-risk prevention zoning, INSEE for population, income, employment and housing, INSEE's permanent database of facilities and OpenStreetMap for shops and local services, transport.data.gouv.fr for transport, Météo-France for climate, " +
+          "Every figure comes from an official public source: DVF (the tax authority's register of property sales) for prices, " +
+          (showRents ? "ANIL (the national housing information agency) for rents, " : "") +
+          "Géorisques for natural and technological risks, IGN and the Géoportail de l'Urbanisme for plots, the local plan (PLU) and flood-risk prevention zoning, INSEE for population, income, employment and housing, INSEE's permanent database of facilities and OpenStreetMap for shops and local services, transport.data.gouv.fr for transport, Météo-France for climate, " +
           (showAirQuality ? "the European Environment Agency for air quality, " : "") +
           "SSMSI (the Interior Ministry's statistical service) for crime, the Interior Ministry for elections, the City of Paris for school catchment areas, and IGN for address search, base maps and historical aerial views. Each figure stays tied to its source and publication date. Only the “In brief” sentences under the section titles are written by a language model: it rewords those same figures and invents none.",
       },
@@ -167,6 +169,15 @@ export const landing: LandingMessages = {
         answer:
           "Prices come from the DVF database (Demandes de Valeurs Foncières) published by the French state, which records actual property transactions registered by notaries. The figures are sales that really took place.",
       },
+      ...(showRents
+        ? [
+            {
+              question: "Where do the rents come from?",
+              answer:
+                "From the « Carte des loyers » published by ANIL (the national housing information agency) and the French Ministry of Housing, estimated from millions of rental listings. They are advertised rents per m², charges included, for unfurnished dwellings, given by commune — and by arrondissement in Paris, Lyon and Marseille — for flats by size and for houses, with a range. In small communes, where listings are scarce, the estimate covers a group of neighbouring communes, and the analysis says so. The rent finally signed may differ from the advertised one.",
+            },
+          ]
+        : []),
     ],
   },
   footer: {

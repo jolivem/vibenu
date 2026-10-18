@@ -10,6 +10,8 @@ const COUNT_WORDS = [
 interface FaqOptions {
   /** La mention de la source « air » suit la card : l'annoncer quand elle est coupée serait la promettre pour rien. */
   showAirQuality: boolean;
+  /** Même règle pour les loyers : ni source annoncée ni question sans la card. */
+  showRents: boolean;
   hasSEOPages: boolean;
 }
 
@@ -161,7 +163,7 @@ export const landing = {
      * Les réponses partent aussi en `FAQPage` JSON-LD, donc potentiellement en extrait de
      * résultat Google : elles n'énumèrent que ce qui s'affiche réellement.
      */
-    items: ({ showAirQuality, hasSEOPages }: FaqOptions) => [
+    items: ({ showAirQuality, showRents, hasSEOPages }: FaqOptions) => [
       {
         question: `${BRANDING.name} est-il gratuit ?`,
         answer:
@@ -170,7 +172,9 @@ export const landing = {
       {
         question: "D'où viennent les données affichées ?",
         answer:
-          "Tous les chiffres proviennent de sources publiques officielles : DVF (DGFiP) pour les prix immobiliers, l'ANIL pour les loyers, Géorisques pour les risques naturels et technologiques, l'IGN et le Géoportail de l'Urbanisme pour les parcelles, le PLU et les zonages des plans de prévention du risque d'inondation, l'INSEE pour la population, les revenus, l'emploi et les logements, la Base Permanente des Équipements de l'INSEE et OpenStreetMap pour les commerces et services de proximité, transport.data.gouv.fr pour les transports, Météo-France pour le climat, " +
+          "Tous les chiffres proviennent de sources publiques officielles : DVF (DGFiP) pour les prix immobiliers, " +
+          (showRents ? "l'ANIL pour les loyers, " : "") +
+          "Géorisques pour les risques naturels et technologiques, l'IGN et le Géoportail de l'Urbanisme pour les parcelles, le PLU et les zonages des plans de prévention du risque d'inondation, l'INSEE pour la population, les revenus, l'emploi et les logements, la Base Permanente des Équipements de l'INSEE et OpenStreetMap pour les commerces et services de proximité, transport.data.gouv.fr pour les transports, Météo-France pour le climat, " +
           (showAirQuality ? "l'Agence européenne de l'environnement pour la qualité de l'air, " : "") +
           "le SSMSI pour la délinquance, le ministère de l'Intérieur pour les élections, la Ville de Paris pour la carte scolaire, et l'IGN pour la recherche d'adresse, les fonds de carte et les vues aériennes anciennes. Chaque chiffre reste rattaché à sa source et à sa date de publication. Seules les phrases « En bref », sous les titres de rubriques, sont rédigées par un modèle de langage : il reformule ces mêmes chiffres, il n'en invente aucun.",
       },
@@ -196,6 +200,15 @@ export const landing = {
         answer:
           "Les prix proviennent de la base DVF (Demandes de Valeurs Foncières) publiée par l'État, qui recense les transactions immobilières réelles enregistrées chez les notaires. Les chiffres correspondent à des ventes effectivement réalisées.",
       },
+      ...(showRents
+        ? [
+            {
+              question: "D'où viennent les loyers affichés ?",
+              answer:
+                "De la « Carte des loyers » publiée par l'ANIL et le ministère du Logement, estimée à partir de millions d'annonces de location. Ce sont des loyers d'annonce au m², charges comprises, pour un logement non meublé, donnés par commune — et par arrondissement à Paris, Lyon et Marseille — pour les appartements selon leur taille et pour les maisons, avec une fourchette. Dans les petites communes, faute d'annonces suffisantes, l'estimation porte sur un groupe de communes voisines, et l'analyse le signale. Le loyer finalement signé peut différer du loyer annoncé.",
+            },
+          ]
+        : []),
     ],
   },
   footer: {

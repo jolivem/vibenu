@@ -4,6 +4,12 @@ import {
   type SecurityIndicatorSummary,
 } from "@/server-modules/commune-stats/application/security-summary";
 import { CITIES } from "@/lib/commune-slugs";
+import { FEATURES } from "@/lib/site-features";
+import { hasRentContent, rentDeltaPct, rentExamples, rentOf } from "@/components/analysis/rentsModel";
+import { rents as rentsMessages } from "@/i18n/messages/fr/analysis/rents";
+import { createFormat } from "@/i18n/format";
+
+const fr = createFormat("fr");
 import type { EcartRelatif } from "@/server-shared/domain/trend";
 import { formatEur, formatInt, formatPct } from "./format";
 
@@ -62,6 +68,34 @@ export function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] 
     items.push({
       question: `Quel est le prix moyen au m² à ${nomCourt} ?`,
       answer: `Le prix médian d'un appartement à ${nomCourt} est de ${formatEur(stats.prix.prixM2Median)} le mètre carré, calculé sur ${formatInt(stats.prix.nbTransactions)} transactions enregistrées au cours des 24 derniers mois (données DVF).`,
+    });
+  }
+
+  // Juste après le prix d'achat : la question que se pose celui qui loue.
+  const loyerApp = FEATURES.showRents && hasRentContent(stats.loyers) ? rentOf(stats.loyers, "app") : null;
+  if (stats.loyers && loyerApp) {
+    const { perM2 } = rentsMessages;
+    const fourchette =
+      loyerApp.icBas !== null && loyerApp.icHaut !== null
+        ? ` (fourchette de ${fr.fixed(loyerApp.icBas, 1)} à ${perM2(loyerApp.icHaut)})`
+        : "";
+    const exemple = rentExamples(stats.loyers).find((e) => e.surface === 45);
+    const exemplePhrase = exemple
+      ? `, soit environ ${formatInt(exemple.monthly)} € par mois pour un 2 pièces de 45 m²`
+      : "";
+    const ville = stats.loyersVille?.app;
+    const delta = rentDeltaPct(loyerApp.loyerM2, ville);
+    const adjectif = CITIES[stats.city].adjectif;
+    // Même seuil « proche » (±5 %) que la légende « En bref » des loyers.
+    const repere =
+      delta === null || ville === undefined
+        ? ""
+        : Math.abs(delta) < 5
+          ? ` C'est proche de la moyenne ${adjectif} (${perM2(ville)}).`
+          : ` C'est ${Math.abs(delta)} % ${delta > 0 ? "au-dessus de" : "en dessous de"} la moyenne ${adjectif} (${perM2(ville)}).`;
+    items.push({
+      question: `Quel est le loyer moyen à ${nomCourt} ?`,
+      answer: `Le loyer d'annonce d'un appartement à ${nomCourt} est de ${perM2(loyerApp.loyerM2)}, charges comprises et hors meublé${fourchette}${exemplePhrase}.${repere} Source : Carte des loyers (ANIL et ministère du Logement), 3e trimestre ${stats.loyers.annee}.`,
     });
   }
 

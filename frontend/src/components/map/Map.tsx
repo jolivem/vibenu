@@ -300,7 +300,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       layers.push({ id: SCHOOL_SECTOR_LAYER_ID, label: m.overlays.schoolSector, color: "#d97706" });
     }
     if (rentAreas?.length) {
-      layers.push({ id: RENT_LAYER_ID, label: m.overlays.rents, color: "#4b9319" });
+      layers.push({ id: RENT_LAYER_ID, label: m.overlays.rents, color: "#f0a94e" });
     }
     return layers;
   }, [dvfTransactions, irisGeojson, schoolSector, rentAreas, m]);
