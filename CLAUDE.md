@@ -54,7 +54,7 @@ runs on the VPS (git pull → docker compose pull → replay migrations → rest
 ### Server: DDD modules under `frontend/src/server-modules/<domain>/`
 
 Every data domain (`address`, `mobility`, `risks`, `real-estate`, `cadastre`, `air-quality`,
-`neighborhood`, `demographics`, `elections`, `climate`, `security`, `local-tax`, `school-sector`,
+`neighborhood`, `demographics`, `elections`, `climate`, `security`, `local-tax`, `rents`, `school-sector`,
 `commune-stats`, `commune-equipment`, `summary`, `narrative`) follows the same three-layer shape:
 
 - `domain/` — types only
@@ -126,6 +126,10 @@ text:
 - **Two disjoint anchor namespaces**, never crossed: `components/commune/sections.ts` for
   arrondissements, `hubSections.ts` for hubs. Both are exhaustive `Record`s — adding an id
   does not compile until it has a title *and* a display condition.
+- **"Achat & location"** (anchor `prix-immobilier`, kept for indexing): the DVF price card
+  ("Achat") then the analysis's `RentsCard` titled "Location", which on these pages only
+  receives a city benchmark (arrondissements' rents averaged, weighted by listings) and its
+  "En bref" (`legende_loyers`). The analysis card keeps no comparison.
 - **Still missing on arrondissement pages**: PDF export, and "En bref" on a few cards.
 - `app/sitemap.ts` and `app/commune/page.tsx` still ignore `hasSEOPages`.
 

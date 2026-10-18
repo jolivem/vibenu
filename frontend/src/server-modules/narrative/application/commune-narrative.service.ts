@@ -32,6 +32,7 @@ export interface CommuneNarrativeService {
  */
 const LEGENDS_FIXTURE: CommuneLegendes = {
   legende_prix: "Le prix au mètre carré dépasse d'environ un cinquième la moyenne de la ville, et il progresse plus vite qu'elle depuis deux ans.",
+  legende_loyers: "Les loyers d'annonce se situent légèrement sous la moyenne de la ville, alors que les prix d'achat la dépassent : louer y coûte relativement moins qu'acheter.",
   legende_demographie: "La population est plus jeune et plus aisée que la moyenne française, avec une nette sur-représentation des 30-44 ans.",
   legende_logement: "Le parc est presque entièrement collectif et compte une part de locataires du privé bien supérieure à la moyenne française ; les deux-pièces y dominent.",
   legende_emploi: "Le chômage déclaré reste sous la moyenne française et les diplômés du supérieur y sont deux fois plus nombreux ; les cadres forment la catégorie la plus représentée.",

@@ -2866,10 +2866,9 @@ html {
   vertical-align: 0.1em;
 }
 
-/* Air quality card — indicateurs annuels par polluant : station, courbe et seuils. */
-/* Mise en garde bien visible : sans elle, une valeur mesurée à 40 km se lit comme celle de
-   l'adresse. Encart ambré, texte foncé, pictogramme d'information. */
-.air-annual-caveat {
+/* Mise en garde de portée d'une card (qualité de l'air) : sans elle, une valeur mesurée à
+   40 km se lit comme celle de l'adresse. Encart ambré, texte foncé, pictogramme d'information. */
+.card-caveat {
   display: inline-flex;
   align-items: center;
   margin: 4px 0 16px;
@@ -2882,7 +2881,7 @@ html {
 }
 
 /* « i » cerclé dessiné en CSS : le caractère ⓘ manque à la police du site. */
-.air-annual-caveat::before {
+.card-caveat::before {
   content: "i";
   flex-shrink: 0;
   width: 15px;
@@ -2897,6 +2896,122 @@ html {
   text-align: center;
 }
 
+/* Loyers card — loyers par type de bien, exemples en euros par mois, carte alentour. */
+/* Ligne de tête descriptive, sans encadré : le loyer n'appelle pas de mise en garde. */
+.rents-intro {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.rents-group {
+  margin-top: 16px;
+}
+
+.rents-rows {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Colonnes alignées d'une ligne à l'autre ; sur mobile, la fourchette passe à la ligne. */
+.rents-row {
+  display: grid;
+  grid-template-columns: 9.5rem 6.5rem auto;
+  column-gap: 12px;
+  align-items: baseline;
+  font-size: 0.92rem;
+}
+
+.rents-value {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rents-range {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Écart à la ville (pages commune) : sous le loyer, sur toute la largeur de la ligne. */
+.rents-delta {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+}
+
+.rents-note {
+  grid-column: 1 / -1;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.rents-examples {
+  margin-top: 16px;
+  font-size: 0.92rem;
+}
+
+.rents-examples p {
+  margin: 0 0 6px;
+}
+
+/* Tableau d'exemples : l'estimation en gras au centre, ses bornes de part et d'autre en gris. */
+.rents-examples-table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.rents-examples-table th,
+.rents-examples-table td {
+  padding: 4px 14px 4px 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rents-examples-table thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 0.5px solid var(--hairline-strong);
+}
+
+.rents-examples-table th[scope="row"],
+.rents-examples-table thead th:first-child {
+  text-align: left;
+  font-weight: 400;
+}
+
+.rents-examples-table tbody td:not(:nth-child(3)) {
+  color: var(--muted);
+}
+
+@media (max-width: 560px) {
+  .rents-examples-table th,
+  .rents-examples-table td {
+    padding-right: 8px;
+    font-size: 0.85rem;
+  }
+}
+
+.card-map > .line-chart-legend {
+  margin-top: 10px;
+}
+
+@media (max-width: 560px) {
+  .rents-row {
+    grid-template-columns: 8rem auto;
+  }
+
+  .rents-range {
+    grid-column: 2;
+  }
+}
+
+/* Air quality card — indicateurs annuels par polluant : station, courbe et seuils. */
 .air-annual-list {
   list-style: none;
   padding: 0;

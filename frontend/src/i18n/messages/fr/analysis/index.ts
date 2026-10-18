@@ -9,6 +9,7 @@ import { nearby } from "./nearby";
 import { pdf } from "./pdf";
 import { population } from "./population";
 import { realEstate } from "./realEstate";
+import { rents } from "./rents";
 import { risks } from "./risks";
 import { screen } from "./screen";
 import { sections } from "./sections";
@@ -31,6 +32,7 @@ export const analysis = {
   nearby,
   mobility,
   realEstate,
+  rents,
   keyFigures,
   screen,
   pdf,

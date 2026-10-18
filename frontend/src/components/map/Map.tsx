@@ -17,13 +17,15 @@ import {
 } from "./basemaps";
 import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
-import type { CadastreParcelDto, DvfTransactionFeatureDto, FloodZoneDto, GeoJsonGeometryDto, RiskAnalysisDto } from "@/types/location-analysis";
+import type { CadastreParcelDto, DvfTransactionFeatureDto, FloodZoneDto, GeoJsonGeometryDto, RentAreaFeatureDto, RiskAnalysisDto } from "@/types/location-analysis";
 import { useI18n } from "@/i18n/client";
 
 /** Exportés pour que les cartes thématiques puissent les passer en `initialLayers`. */
 export const DVF_LAYER_ID = "dvf-transactions";
 export const IRIS_LAYER_ID = "iris-boundary";
 export const SCHOOL_SECTOR_LAYER_ID = "school-sector";
+/** Loyers des communes alentour (card Loyers). Les features portent leur couleur en `fill`. */
+export const RENT_LAYER_ID = "rent-areas";
 /**
  * Les zonages PPR d'inondation. Nommé hors de l'espace `risk-*` **exprès** : ces ids sont
  * réservés aux rasters WMS de `RISK_LAYERS`, sur lesquels `applyLayerVisibility` appelle
@@ -103,6 +105,7 @@ function applyLayerVisibility(m: MapLibreMap, visibleLayers: Set<string>): void 
     [IRIS_LAYER_ID, IRIS_LAYER_ID],
     [SCHOOL_SECTOR_LAYER_ID, SCHOOL_SECTOR_LAYER_ID],
     [FLOOD_ZONES_LAYER_ID, FLOOD_ZONES_LAYER_ID],
+    [RENT_LAYER_ID, RENT_LAYER_ID],
   ];
 
   for (const [toggleId, layerPrefix] of pairs) {
@@ -169,6 +172,11 @@ interface MapProps {
    * exactement le piège documenté sur `NO_TRANSPORTS`.
    */
   floodZones?: FloodZoneDto[];
+  /**
+   * Communes alentour colorées par loyer : la couleur arrive déjà calculée dans la propriété
+   * `fill` (`rentMapFeatures`). Sans valeur par défaut, pour la même raison que `floodZones`.
+   */
+  rentAreas?: Array<RentAreaFeatureDto & { properties: { fill: string } }>;
   onReady?: (map: MapLibreMap) => void;
   height?: string;
   showLayerToggle?: boolean;
@@ -208,7 +216,7 @@ interface MapProps {
   zoom?: number;
 }
 
-export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, floodZones, onReady, height = "400px", showLayerToggle = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
+export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, floodZones, rentAreas, onReady, height = "400px", showLayerToggle = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
   const { map: m } = useI18n();
   // Les infobulles sont construites dans des gestionnaires posés une fois à la création
   // de la carte : ils lisent les messages par cette ref, sans dépendre du rendu.
@@ -291,8 +299,11 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     if (schoolSector) {
       layers.push({ id: SCHOOL_SECTOR_LAYER_ID, label: m.overlays.schoolSector, color: "#d97706" });
     }
+    if (rentAreas?.length) {
+      layers.push({ id: RENT_LAYER_ID, label: m.overlays.rents, color: "#4b9319" });
+    }
     return layers;
-  }, [dvfTransactions, irisGeojson, schoolSector, m]);
+  }, [dvfTransactions, irisGeojson, schoolSector, rentAreas, m]);
 
   // Le style IGN est chargé à part : c'est un fetch (~288 Ko), mutualisé entre les cartes
   // de la page par le cache de `loadIgnStyle`. Tant qu'il n'est pas là, la carte n'est pas
@@ -375,6 +386,35 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         paint: { "raster-opacity": 0.5 },
         layout: { visibility: "none" },
       });
+    }
+
+    // Loyers des communes alentour : un aplat par commune, contour épais pour la commune analysée.
+    const rentSources: Record<string, maplibregl.SourceSpecification> = {};
+    const rentLayers: maplibregl.LayerSpecification[] = [];
+    if (rentAreas?.length) {
+      rentSources[RENT_LAYER_ID] = {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: rentAreas as unknown as GeoJSON.Feature[] },
+      };
+      rentLayers.push(
+        {
+          id: `${RENT_LAYER_ID}-fill`,
+          type: "fill",
+          source: RENT_LAYER_ID,
+          paint: { "fill-color": ["get", "fill"], "fill-opacity": 0.7 },
+          layout: { visibility: "none" },
+        },
+        {
+          id: `${RENT_LAYER_ID}-outline`,
+          type: "line",
+          source: RENT_LAYER_ID,
+          paint: {
+            "line-color": "#1f2937",
+            "line-width": ["case", ["get", "courante"], 2.5, 0.6],
+          },
+          layout: { visibility: "none" },
+        },
+      );
     }
 
     // Build DVF transaction sources and layers
@@ -660,6 +700,8 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       // de risque — et doivent donc rester sous les surcouches qui désignent un objet
       // précis (transaction, quartier, parcelle), lesquelles se liraient mal sous un aplat.
       ...floodZoneLayers,
+      // Aplats communaux : sous tout ce qui désigne un objet plus précis.
+      ...rentLayers,
       ...dvfLayers,
       ...irisLayers,
       ...schoolSectorLayers,
@@ -689,6 +731,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           ...baseOverlaySources,
           ...wmsSources,
           ...floodZoneSources,
+          ...rentSources,
           ...dvfSources,
           ...irisSources,
           ...schoolSectorSources,
@@ -779,6 +822,30 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       });
     }
 
+    // Loyers : nommer la commune et son loyer au clic.
+    if (rentAreas?.length) {
+      const m = map.current;
+      m.on("click", `${RENT_LAYER_ID}-fill`, (e) => {
+        const props = e.features?.[0]?.properties;
+        if (!props) return;
+        const popup = messagesRef.current.rentPopup({
+          nom: String(props.nom),
+          loyerM2: Number(props.loyerM2),
+          groupe: props.niveau !== "commune",
+        });
+        new maplibregl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(`<strong>${popup.title}</strong><br/>${popup.lines.join("<br/>")}`)
+          .addTo(m);
+      });
+      m.on("mouseenter", `${RENT_LAYER_ID}-fill`, () => {
+        m.getCanvas().style.cursor = "pointer";
+      });
+      m.on("mouseleave", `${RENT_LAYER_ID}-fill`, () => {
+        m.getCanvas().style.cursor = "";
+      });
+    }
+
     // DVF popup on click
     if (dvfTransactions?.length) {
       const m = map.current;
@@ -848,7 +915,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         map.current = null;
       }
     };
-  }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, floodZones, zoom]);
+  }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, floodZones, rentAreas, zoom]);
 
   // Répercute les clics sur les cases. Le cas « la carte n'existe pas encore » est traité par
   // l'effet d'init lui-même, pas ici : cet effet ne se relancerait pas, ses dépendances ne

@@ -8,6 +8,7 @@ import type {
 import type { AnalysisMessages } from "@/i18n/messages/fr/analysis";
 import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
 import { hasLocalTaxContent } from "@/components/analysis/localTaxModel";
+import { hasRentContent } from "@/components/analysis/rentsModel";
 import { SECTION_ORDER, type SectionId } from "@/components/analysis/sections";
 import "./registerFonts";
 import { PdfMessagesProvider } from "./pdfMessages";
@@ -133,6 +134,7 @@ export function AnalysisPdfDocument({
   const showRealEstate = FEATURES.showRealEstate && Boolean(realEstate);
   const showCadastre = FEATURES.showCadastre && Boolean(data.cadastre);
   const localTax = FEATURES.showLocalTax && hasLocalTaxContent(data.localTax) ? data.localTax : null;
+  const rents = FEATURES.showRents && hasRentContent(data.rents) ? data.rents : null;
   const showNeighborhood = FEATURES.showNeighborhood && data.mode !== "commune";
   const showSchoolSector = FEATURES.showSchoolSector && Boolean(data.schoolSector);
   const showCommuneEquipment =
@@ -145,7 +147,7 @@ export function AnalysisPdfDocument({
 
   // Mêmes conditions que `hasContent` dans `AnalysisScreen`, une section par entrée.
   const sections: Record<SectionId, boolean> = {
-    immobilier: showRealEstate || showCadastre || Boolean(localTax),
+    immobilier: showRealEstate || showCadastre || Boolean(localTax) || Boolean(rents),
     proximite: showNeighborhood || showSchoolSector || showCommuneEquipment,
     deplacer: FEATURES.showMobility,
     securite: showSecurity,
@@ -206,6 +208,7 @@ export function AnalysisPdfDocument({
             cadastre={showCadastre ? data.cadastre : null}
             localTax={localTax}
             localTaxInsight={insights.fiscalite}
+            rents={rents}
           />
         )}
 

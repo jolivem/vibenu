@@ -52,7 +52,16 @@ export const map = {
     dvf: "Prix immobiliers (DVF)",
     iris: "Quartier démographique",
     schoolSector: "Secteur collège",
+    rents: "Loyers des communes",
   },
+  /** Infobulle d'une commune de la carte des loyers. */
+  rentPopup: (p: { nom: string; loyerM2: number; groupe: boolean }) => ({
+    title: p.nom,
+    lines: [
+      `Appartements : ${f.fixed(p.loyerM2, 1)} €/m²`,
+      ...(p.groupe ? ["estimé sur un groupe de communes voisines"] : []),
+    ],
+  }),
   /** Infobulle d'une vente DVF : le prix au m² en titre, puis une ligne par information. */
   dvfPopup: (p: { pricePerSqm: number; price: number; surface: string; date: string; propertyType: string }) => ({
     title: `${f.spaced(p.pricePerSqm)} €/m²`,

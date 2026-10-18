@@ -34,6 +34,8 @@ export interface SiteFeatures {
   showSecurity: boolean;
   /** Card "Fiscalité locale" — taux DGFiP, droits de mutation, comptes de la commune. */
   showLocalTax: boolean;
+  /** Card "Loyers" — loyers d'annonce par commune (ANIL), carte des communes alentour. */
+  showRents: boolean;
   /** Card "Municipales 2026" — résultats du scrutin local. */
   showMunicipales: boolean;
   /** Card "Transports en commun" — gares, bus, métros à proximité. */
@@ -100,6 +102,7 @@ const PUBLIC_FEATURES: SiteFeatures = {
   showMobility: true,
   showSecurity: true,
   showLocalTax: true,
+  showRents: true,
   showRealEstate: true,
   showRisks: true,
   showAirQuality: true,
@@ -132,6 +135,7 @@ const PRO_FEATURES: SiteFeatures = {
   showMobility: true,
   showSecurity: false, // usage professionnel : hors périmètre
   showLocalTax: false,
+  showRents: false,
   showRealEstate: false,
   showRisks: false,
   showAirQuality: false,

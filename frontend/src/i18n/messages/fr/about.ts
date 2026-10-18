@@ -81,6 +81,11 @@ export const about = {
         desc: "Faits enregistrés par la police et la gendarmerie sur dix ans, à la maille communale — la plus fine qui soit publiée.",
       },
       {
+        name: "Loyers",
+        issuer: "ANIL · ministère du Logement",
+        desc: "Loyers d'annonce au m², charges comprises, par commune et par type de bien (Carte des loyers), estimés sur un groupe de communes voisines quand les annonces manquent.",
+      },
+      {
         name: "Fiscalité locale",
         issuer: "DGFiP · data.economie.gouv.fr",
         desc: "Taux de taxe foncière et d'ordures ménagères, résidences secondaires, droits de mutation et comptes des communes.",

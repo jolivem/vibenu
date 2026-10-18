@@ -26,7 +26,7 @@ export const pdf = {
   notes: {
     origin: "Les chiffres viennent directement des fichiers publics.",
     sources:
-      "Sources : IGN · DVF · DGFiP · Géorisques · INSEE · Ministère de l'Intérieur · Météo-France · AEE · Éducation nationale.",
+      "Sources : IGN · DVF · DGFiP · ANIL · Géorisques · INSEE · Ministère de l'Intérieur · Météo-France · AEE · Éducation nationale.",
     /** Suivi de l'adresse de la page en ligne. */
     onlineLead: "Détail, graphes et cartes : ",
   },

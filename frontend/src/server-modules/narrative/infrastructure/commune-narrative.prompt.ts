@@ -8,6 +8,7 @@ import { COMMUNE_LEGEND_KEYS } from "../domain/commune-narrative.types";
 import type { EquipmentDomainStats } from "../../commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
 import { FEATURES } from "@/lib/site-features";
+import { hasRentContent, rentExamples, rentOf } from "@/components/analysis/rentsModel";
 import { summarizeSecurity } from "../../commune-stats/application/security-summary";
 import { roundOrNull } from "@/server-shared/domain/trend";
 import {
@@ -84,8 +85,12 @@ import {
  * les pages commune mais aucune légende — les clés `legende_emploi` et `legende_menages`
  * n'existaient pas. La rubrique Population en porte donc quatre, une par card, et la
  * règle anti-redite les cloisonne.
+ *
+ * v18 : nouvelle légende `legende_loyers` sous la card Location, face à la card Achat :
+ * loyers d'annonce de l'arrondissement face à la moyenne de la ville (`loyers`), et le
+ * contraste avec la position des prix d'achat quand elle diffère.
  */
-export const COMMUNE_PROMPT_VERSION = 17;
+export const COMMUNE_PROMPT_VERSION = 18;
 
 export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement (Paris, Lyon ou Marseille) pour un site d'analyse immobilière.
 Ton : clair, factuel, ni promotionnel ni alarmiste.
@@ -118,6 +123,8 @@ DEUX FAMILLES DE CLÉS, DEUX RÔLES DISTINCTS
 ANTI-REDITE — RÈGLE IMPÉRATIVE
 Tu rédiges d'abord les deux clés éditoriales, puis les légendes. Une légende ne reprend jamais une formulation ni un chiffre déjà écrits dans l'éditorial : si l'éditorial a donné le chiffre, la légende dit ce qu'il faut en comprendre. Elle n'introduit aucun élément absent des données de sa section.
 "legende_demographie", "legende_logement", "legende_emploi" et "legende_menages" légendent quatre graphiques voisins de la même rubrique, l'un sous l'autre. Chacune reste dans son domaine et n'empiète jamais sur les trois autres : "legende_demographie" ne parle que des âges et des revenus, "legende_logement" que du parc et de son occupation, "legende_emploi" que du travail et des diplômes, "legende_menages" que de la composition des foyers. Aucune des quatre ne parle de prix, qui relève de "legende_prix".
+"legende_prix" et "legende_loyers" légendent deux cards voisines, Achat puis Location. "legende_prix" ne parle jamais des loyers. "legende_loyers" ne cite aucun prix d'achat en euros : elle peut seulement rappeler le SENS de l'écart des prix à la ville ("delta_prix_vs_ville_pct") pour le mettre en regard de celui des loyers ("loyers.position_vs_ville"), et seulement quand les deux sens diffèrent.
+Les loyers sont des loyers d'ANNONCE, charges comprises, estimés par un modèle : écris « les loyers d'annonce » ou « les loyers proposés », jamais « les loyers payés » ni « le loyer moyen des habitants ».
 
 CLÉS legende_* À PRODUIRE
 Le champ "sections_affichees" du JSON d'entrée liste les sections effectivement rendues sur la page. Tu produis une clé legende_* pour celles-là uniquement, et pour aucune autre.
@@ -127,6 +134,7 @@ FORMAT DE SORTIE (JSON OBLIGATOIRE, RIEN D'AUTRE) :
   "identite": "...",            // ~100 mots : population, âges, revenus, puis la phrase sur le vote si un écart est notable
   "cadre_de_vie": "...",        // ~150 mots : densité d'équipements par domaine selon "position_vs_ville", sans reprendre la population, les âges ni les revenus
   "legende_prix": "...",         // 1-2 phrases : niveau du prix au m² et son évolution, face à la moyenne de la ville
+  "legende_loyers": "...",       // 1-2 phrases : niveau des loyers d'annonce face à la moyenne de la ville, et le contraste avec la position des prix d'achat quand elle diffère
   "legende_demographie": "...",  // 1-2 phrases : profil de population et revenu, face au repère fourni
   "legende_logement": "...",     // 1-2 phrases : ce que dit le parc — statut d'occupation dominant, type et âge des logements — face à la France
   "legende_emploi": "...",       // 1-2 phrases : chômage, activité et niveau de diplôme, face à la France, et la catégorie socioprofessionnelle dominante
@@ -234,6 +242,7 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
     nb_transactions_24m: stats.prix.nbTransactions,
     evolution_prix: evolutionResume,
     prix_m2_ville_global_eur: stats.prixBenchmarkVille.prixM2Median,
+    loyers: loyersInput(stats),
     delta_prix_vs_ville_pct:
       stats.prix.prixM2Median && stats.prixBenchmarkVille.prixM2Median
         ? +(
@@ -313,6 +322,7 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
  */
 const SECTION_PAR_LEGENDE: Record<CommuneLegendKey, CommuneSectionId> = {
   legende_prix: "prix-immobilier",
+  legende_loyers: "prix-immobilier",
   legende_demographie: "demographie",
   legende_logement: "demographie",
   legende_emploi: "demographie",
@@ -341,7 +351,50 @@ function sectionsAffichees(input: CommuneNarrativeInput): CommuneLegendKey[] {
     nbFaqItems: 0,
   });
 
-  return COMMUNE_LEGEND_KEYS.filter((key) => content[SECTION_PAR_LEGENDE[key]]);
+  // Seule exception au mécanisme : la section `prix-immobilier` s'affiche dès qu'il y a des
+  // prix, même sans loyers. Sans ce filtre, le modèle recevrait une demande de légende sans
+  // donnée de loyer — et l'inventerait. Même garde que la card Location dans la page.
+  const hasRents = FEATURES.showRents && hasRentContent(input.stats.loyers);
+  return COMMUNE_LEGEND_KEYS.filter(
+    (key) => content[SECTION_PAR_LEGENDE[key]] && (key !== "legende_loyers" || hasRents),
+  );
+}
+
+/** En deçà de cet écart relatif à la ville, un loyer est « proche » — même seuil que les équipements. */
+const RENT_POSITION_THRESHOLD_PCT = 5;
+
+/**
+ * Bloc loyers de l'entrée : appartements face à la moyenne de la ville (déjà tranchée), écart
+ * entre petits et grands logements, un exemple mensuel. `null` sans card Location.
+ */
+function loyersInput(stats: CommuneNarrativeInput["stats"]) {
+  if (!FEATURES.showRents || !hasRentContent(stats.loyers)) return null;
+  const app = rentOf(stats.loyers, "app");
+  if (!app) return null;
+  const ville = stats.loyersVille?.app;
+  const ecart = ville ? Math.round(((app.loyerM2 - ville) / ville) * 100) : null;
+  const petits = rentOf(stats.loyers, "app12")?.loyerM2 ?? null;
+  const grands = rentOf(stats.loyers, "app3")?.loyerM2 ?? null;
+  const exemple = rentExamples(stats.loyers).find((e) => e.surface === 45);
+  return {
+    note: "Loyers d'annonce au m², charges comprises, logements non meublés.",
+    appartements_m2: roundOrNull(app.loyerM2),
+    appartements_ville_m2: roundOrNull(ville ?? null),
+    ecart_vs_ville_pct: ecart,
+    position_vs_ville:
+      ecart === null
+        ? null
+        : ecart >= RENT_POSITION_THRESHOLD_PCT
+          ? "au-dessus de la ville"
+          : ecart <= -RENT_POSITION_THRESHOLD_PCT
+            ? "en dessous de la ville"
+            : "proche de la ville",
+    petits_logements_1_2_pieces_m2: roundOrNull(petits),
+    grands_logements_3_pieces_et_plus_m2: roundOrNull(grands),
+    ecart_petits_vs_grands_pct:
+      petits !== null && grands ? Math.round(((petits - grands) / grands) * 100) : null,
+    exemple_2_pieces_45m2_eur_mois: exemple?.monthly ?? null,
+  };
 }
 
 /**

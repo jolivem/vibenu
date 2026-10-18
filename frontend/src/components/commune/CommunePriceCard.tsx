@@ -25,7 +25,7 @@ export function CommunePriceCard({ stats, nomCourt, legendes }: Props) {
 
   return (
     <section className="card">
-      <h2>Prix au m²</h2>
+      <h2>Achat</h2>
 
       <CardInsight text={legendes?.legende_prix} animate={false} />
 

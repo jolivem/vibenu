@@ -16,6 +16,7 @@ L'utilisateur saisit une adresse en France et obtient :
 - les commerces et services de proximité ;
 - les données socio-démographiques (population, âge, revenus, pauvreté), le parc de logements, l'emploi et les qualifications, la composition des ménages ;
 - la **délinquance enregistrée** (SSMSI) sur dix ans, comparée au département et à la France ;
+- les **loyers** (ANIL) : loyers d'annonce au m² de la commune par type de bien, et carte des communes alentour ;
 - la **fiscalité locale** (DGFiP) : taux de taxe foncière et d'ordures ménagères face à la médiane des communes, résidences secondaires et logements vacants, droits de mutation, comptes de la commune ;
 - les **normales climatiques 1991-2020** (température, pluviométrie, ensoleillement) avec comparaison commune / France ;
 - les **résultats de la dernière élection présidentielle** (1er tour 2022) avec comparaison commune / national ;
@@ -52,6 +53,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
 | `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Météo-France — normales par station pré-importées (PostgreSQL/PostGIS) ; moyenne nationale hardcodée |
 | `security` | Délinquance enregistrée, 10 ans, maille communale + repères département/France | SSMSI via data.gouv.fr (PostgreSQL) |
+| `rents` | Loyers d'annonce par commune (appartements tous types, 1-2 pièces, 3 pièces et plus, maisons) et communes alentour pour la carte | « Carte des loyers » ANIL / ministère du Logement (PostgreSQL) ; contours de communes reconstitués depuis les IRIS |
 | `local-tax` | Fiscalité locale : taxe foncière et TEOM (2021-2025), résidences secondaires et vacance, droits de mutation, comptes de la commune | DGFiP via data.economie.gouv.fr (PostgreSQL) ; barème DMTO ressaisi dans `dmto-rates.ts` |
 | `school-sector` | Secteur de collège (donnée disponible pour Paris) | Ville de Paris (PostgreSQL/PostGIS) |
 | `commune-stats` | Agrégats des pages SEO `/commune/*` (prix, démographie, équipements, air, élections) | PostgreSQL/PostGIS |
@@ -108,6 +110,7 @@ Le serveur utilise un cache en mémoire (`InMemoryCache`) avec des TTL adaptés 
 | Climat (Météo-France stations, normales 1991-2020) | 30 jours | in-memory (clé arrondie ~11 km) | données figées (passé) |
 | Élections (Postgres local) | — | — | données figées (scrutin clos) |
 | Fiscalité locale (Postgres local) | 7 jours | in-memory (clé = code commune) | annuel (DGFiP) |
+| Loyers (Postgres local) | 7 jours | in-memory (code commune + clé géo) | annuel (édition de décembre) |
 | Contour commune (geo.api.gouv.fr) | 30 jours | in-memory | quasi-statique |
 | Mini-synthèses « En bref » (Mistral) | 90 jours | **PostgreSQL** (`card_insights_cache`) | sources annuelles (recensement, SSMSI, normales, présidentielle) |
 | Narrative des pages `/commune/*` (Mistral) | version de prompt | **PostgreSQL** (`commune_narrative_cache`) | stable tant que les données sources ne changent pas |
@@ -292,6 +295,10 @@ python import_crime.py
 # Importer la fiscalité locale DGFiP — taux, délibérations, comptes (6 CSV, ~25 Mo), téléchargés si absents
 python import_local_tax.py
 
+# Importer les loyers d'annonce par commune (ANIL, 4 CSV ~19 Mo, téléchargés si absents) et
+# reconstruire les contours de communes depuis les IRIS — à lancer APRÈS import_iris.py
+python import_rents.py
+
 # Importer les normales climatiques Météo-France 1991-2020 — ~10 min
 # Déposer d'abord les *.csv.gz décadaires dans scripts/data/climate/
 python import_climate_stations.py
@@ -329,6 +336,7 @@ Migrations actuelles :
 - `014-drop-climate-national-tables.sql` — nettoyage de deux tables climat obsolètes
 - `015-crime-ssmsi.sql` — délinquance SSMSI (`crime_commune`, `crime_reference`, `crime_indicateur`)
 - `020-local-tax.sql` — fiscalité locale DGFiP (`local_tax_commune`, `local_tax_reference`, `local_tax_deliberation`, `local_tax_deliberation_reference`, `local_tax_finances`)
+- `023-rents.sql` — loyers d'annonce par commune (`rent_commune`) et contours simplifiés des communes (`commune_shape`)
 - `021-card-insights-lang.sql` — colonne `lang` du cache des mini-synthèses (une phrase par langue)
 - `022-air-quality-stations.sql` — indicateurs annuels par station de mesure (`air_quality_station_annual`, source EEA)
 - `016-municipales-2026.sql` — municipales 2026
@@ -484,6 +492,15 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - Licence : Licence Ouverte Etalab 2.0
 - Mise à jour : annuelle. Les jeux « délibérations » et « comptes » sont millésimés (nouvelle URL chaque année) : mettre à jour les constantes en tête du script, puis le relancer. `update.sh` rejoue les migrations mais **pas** l'import
 
+### Loyers (« Carte des loyers », ANIL)
+- **Source** : [« Carte des loyers » — indicateurs de loyers d'annonce par commune en 2025](https://www.data.gouv.fr/datasets/693aa2feed1bf4da603faa49/), ANIL et ministère du Logement (DHUP), d'après 9,1 millions d'annonces du 3e trimestre. Quatre CSV (point-virgule, Latin-1, virgule décimale) : appartements, appartements 1-2 pièces, 3 pièces et plus, maisons
+- **Import** : `scripts/import_rents.py` → `rent_commune` (loyer €/m² charges comprises hors meublé, intervalle à 95 %, niveau d'estimation, nombre d'annonces, R²) ; reconstruit aussi `commune_shape` (contours des communes, fusion simplifiée des IRIS) pour la carte
+- **Précautions** : 86 % des communes sont estimées au niveau d'une « maille » (groupe de communes voisines) faute d'annonces — la card le signale ; le producteur recommande la prudence sous 30 annonces ou sous un R² de 0,5. Les arrondissements de Paris, Lyon et Marseille ont leurs propres lignes. Ce sont des **loyers d'annonce estimés par un modèle**, pas une médiane ni des loyers signés
+- **Pas de série dans le temps** : les éditions (2018, 2022-2025) ne se comparent pas entre elles, de l'aveu du producteur
+- **Pages commune** (card « Location ») : chaque loyer est comparé à la moyenne de la ville, calculée sur ses arrondissements et pondérée par leur nombre d'annonces (le fichier n'a pas de ligne pour Paris, Lyon ou Marseille entières) ; légende « En bref » `legende_loyers`. L'écran d'analyse n'affiche aucune comparaison
+- Licence : Licence Ouverte 2.0
+- Mise à jour : une édition par an, en décembre, sous un nouveau jeu : mettre à jour `ANNEE` et `FILES` en tête du script, puis le relancer
+
 ## Langues
 
 Le site existe en français (langue d'origine, URL inchangées) et en anglais sous `/en`
@@ -513,6 +530,7 @@ claireadresse/
 │   ├── import_municipales.py         # Import Municipales 2026 (T1 + T2)
 │   ├── import_crime.py               # Import délinquance SSMSI (commune + dept + France)
 │   ├── import_local_tax.py           # Import fiscalité locale DGFiP (taux, délibérations, comptes)
+│   ├── import_rents.py               # Import loyers d'annonce ANIL + contours de communes
 │   ├── import_climate_stations.py    # Normales Météo-France 1991-2020 par station
 │   ├── import_atmo_*.py              # Indices ATMO annuels (Paris, Lyon, Marseille)
 │   ├── import_school_sectors_paris.py # Secteurs de collège (opendata.paris.fr)
@@ -531,7 +549,7 @@ claireadresse/
         │   ├── location-analysis/  # Hooks (useLocationAnalysis, useCardInsights)
         │   └── analysis-pdf/       # Export PDF (react-pdf) — document, sections, capture carte
         ├── lib/site-features.ts  # Drapeaux de features des variantes PUBLIC / PRO
-        ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, security, local-tax, school-sector, commune-stats, summary, narrative
+        ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, security, local-tax, rents, school-sector, commune-stats, summary, narrative
         ├── server-shared/
         │   ├── infrastructure/
         │   │   ├── database/     # Pool PostgreSQL + migrations SQL applicatives

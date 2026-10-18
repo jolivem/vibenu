@@ -16,6 +16,7 @@ export interface CommuneNarrativeInput {
  */
 export const COMMUNE_LEGEND_KEYS = [
   "legende_prix",
+  "legende_loyers",
   "legende_demographie",
   "legende_logement",
   "legende_emploi",

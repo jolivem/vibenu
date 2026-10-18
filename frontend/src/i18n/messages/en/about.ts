@@ -76,6 +76,11 @@ export const about: AboutMessages = {
         desc: "Offences recorded by the police and gendarmerie over ten years, at commune level — the finest level published.",
       },
       {
+        name: "Rents",
+        issuer: "ANIL · Ministry of Housing",
+        desc: "Advertised rents per m², charges included, by commune and type of dwelling (Carte des loyers), estimated over a group of neighbouring communes where listings are scarce.",
+      },
+      {
         name: "Local taxation",
         issuer: "DGFiP · data.economie.gouv.fr",
         desc: "Property tax and waste collection tax rates, second homes, transfer duties and municipal accounts.",

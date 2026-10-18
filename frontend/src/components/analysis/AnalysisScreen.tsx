@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Map as MapLibreMap } from "maplibre-gl";
+import type { RentAnalysisDto } from "@/types/location-analysis";
+import type { RentsMessages } from "@/i18n/messages/fr/analysis/rents";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
 import { useCardInsights } from "@/features/location-analysis/useCardInsights";
-import { DVF_LAYER_ID, FLOOD_ZONES_LAYER_ID, IRIS_LAYER_ID, SCHOOL_SECTOR_LAYER_ID, Map } from "@/components/map/Map";
+import { DVF_LAYER_ID, FLOOD_ZONES_LAYER_ID, IRIS_LAYER_ID, RENT_LAYER_ID, SCHOOL_SECTOR_LAYER_ID, Map } from "@/components/map/Map";
 import { LazyMap } from "@/components/map/LazyMap";
 import { THEMATIC_BASEMAP } from "@/components/map/basemaps";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
@@ -16,6 +18,9 @@ import { RealEstateCard } from "@/components/analysis/RealEstateCard";
 import { CadastreCard } from "@/components/analysis/CadastreCard";
 import { LocalTaxCard } from "@/components/analysis/LocalTaxCard";
 import { hasLocalTaxContent } from "@/components/analysis/localTaxModel";
+import { RentsCard } from "@/components/analysis/RentsCard";
+import { hasRentContent, rentClasses, rentMapFeatures } from "@/components/analysis/rentsModel";
+import { ChartLegend } from "@/components/analysis/ChartLegend";
 import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
 import { DemographicsCard } from "@/components/analysis/DemographicsCard";
 import { PopulationScope } from "@/components/analysis/PopulationScope";
@@ -158,6 +163,7 @@ export function AnalysisScreen() {
       immobilier:
         (FEATURES.showRealEstate && !!data.realEstate) ||
         (FEATURES.showLocalTax && hasLocalTaxContent(data.localTax)) ||
+        (FEATURES.showRents && hasRentContent(data.rents)) ||
         (FEATURES.showCadastre && !!data.cadastre),
       deplacer: FEATURES.showMobility,
       proximite:
@@ -306,6 +312,17 @@ export function AnalysisScreen() {
                           </LazyMap>
                         ) : null}
                       </RealEstateCard>
+                    )}
+                    {FEATURES.showRents && hasRentContent(data.rents) && (
+                      <RentsCard rents={data.rents} m={m.rents}>
+                        <RentsMap
+                          rents={data.rents}
+                          lat={data.map.center.lat}
+                          lon={data.map.center.lon}
+                          label={data.address.label}
+                          m={m.rents}
+                        />
+                      </RentsCard>
                     )}
                     {FEATURES.showLocalTax && hasLocalTaxContent(data.localTax) && (
                       <LocalTaxCard localTax={data.localTax} m={m.localTax} insight={insights.fiscalite} />
@@ -502,3 +519,56 @@ export function AnalysisScreen() {
     </main>
   );
 }
+
+/**
+ * Carte des loyers des communes alentour, sous les loyers de la card. Hors de `RentsCard`
+ * parce que `Map` est un composant client à charger paresseusement, comme pour DVF.
+ *
+ * Centrée sur l'adresse, dont elle garde le marqueur. Zoom 11 : les communes à 8 km doivent
+ * tenir dans le cadre ; le zoom par défaut (14) n'en montrerait que la commune analysée.
+ */
+const RENT_MAP_ZOOM = 11;
+
+function RentsMap({
+  rents,
+  lat,
+  lon,
+  label,
+  m,
+}: {
+  rents: RentAnalysisDto;
+  lat: number;
+  lon: number;
+  label: string;
+  m: RentsMessages;
+}) {
+  if (rents.alentour.length === 0) return null;
+  const classes = rentClasses(rents.alentour);
+  const features = rentMapFeatures(rents.alentour, classes);
+
+  return (
+    <div className="card-map">
+      <p className="card-map-hint">{m.mapTitle}</p>
+      <LazyMap height={THEMATIC_MAP_HEIGHT}>
+        <Map
+          lat={lat}
+          lon={lon}
+          label={label}
+          rentAreas={features}
+          basemap={THEMATIC_BASEMAP}
+          initialLayers={RENT_INITIAL_LAYERS}
+          showLayerToggle={false}
+          height={THEMATIC_MAP_HEIGHT}
+          zoom={RENT_MAP_ZOOM}
+        />
+      </LazyMap>
+      <ChartLegend
+        kind="categories"
+        items={classes.map((c) => ({ name: m.classLabel(c.low, c.high), color: c.color }))}
+      />
+    </div>
+  );
+}
+
+/** Constante de module : un tableau littéral reconstruirait la carte à chaque rendu. */
+const RENT_INITIAL_LAYERS = [RENT_LAYER_ID];

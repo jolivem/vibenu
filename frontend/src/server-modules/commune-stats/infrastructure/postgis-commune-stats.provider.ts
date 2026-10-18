@@ -1,6 +1,8 @@
 import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache } from "../../../server-shared/infrastructure/cache/in-memory-cache";
-import { CITIES, getCityForCodeInsee, type City } from "@/lib/commune-slugs";
+import { CITIES, getArrondissementsByCity, getCityForCodeInsee, getCommuneByCodeInsee, type City } from "@/lib/commune-slugs";
+import { RentsDatabaseProvider } from "../../rents/infrastructure/rents-database.provider";
+import type { RentType } from "../../rents/domain/rents.types";
 import type {
   CommuneStats,
   PriceStats,
@@ -33,6 +35,7 @@ const ONE_DAY = 24 * 60 * 60 * 1000;
 
 /** Délinquance SSMSI : même source et même cache de 7 jours que la card de l'analyse. */
 const securityProvider = new SecurityDatabaseProvider();
+const rentsProvider = new RentsDatabaseProvider();
 
 /**
  * Réaligne les séries d'une analyse de sécurité sur d'autres années, par année et non par
@@ -146,6 +149,7 @@ export class PostgisCommuneStatsProvider {
   }>(ONE_DAY);
   private static franceDemoCache = new InMemoryCache<DemographicsStats>(ONE_DAY);
   private static atmoCache = new InMemoryCache<AirQualityStats | null>(ONE_DAY);
+  private static rentBenchmarkCache = new InMemoryCache<CommuneStats["loyersVille"]>(ONE_DAY);
 
   async getStats(codeCommune: string): Promise<CommuneStats> {
     const cached = PostgisCommuneStatsProvider.cache.get(codeCommune);
@@ -169,6 +173,8 @@ export class PostgisCommuneStatsProvider {
       securityLocal,
       securityVille,
       inseeProfile,
+      loyers,
+      loyersVille,
     ] = await Promise.all([
       this.queryPriceStats({ codeCommune }),
       this.queryDemographics(codeCommune),
@@ -185,6 +191,9 @@ export class PostgisCommuneStatsProvider {
       // La ville entière existe dans la base (75056, 69123, 13055) : pas d'agrégation.
       securityProvider.getSecurityData(CITIES[city].codeCommune),
       this.queryInseeProfile(codeCommune),
+      // Ne lève jamais : sans table de loyers, la page se rend sans la card Loyers.
+      this.queryRents(codeCommune),
+      this.getCityBenchmarkRents(city),
     ]);
 
     // Signalée avant les highlights et la narrative : un écart retiré ici ne produit ni
@@ -209,6 +218,8 @@ export class PostgisCommuneStatsProvider {
       city,
       prix,
       prixBenchmarkVille,
+      loyers,
+      loyersVille,
       demo,
       demoFrance,
       housing: inseeProfile.housing,
@@ -222,6 +233,14 @@ export class PostgisCommuneStatsProvider {
     };
     PostgisCommuneStatsProvider.cache.set(codeCommune, stats);
     return stats;
+  }
+
+  /** Loyers de l'arrondissement, sans les contours alentour : la page SEO n'a pas de carte des loyers. */
+  private async queryRents(codeCommune: string): Promise<CommuneStats["loyers"]> {
+    const entry = getCommuneByCodeInsee(codeCommune);
+    if (!entry) return null;
+    const rents = await rentsProvider.getRents(codeCommune, entry.lat, entry.lon);
+    return rents && rents.indicateurs.length > 0 ? { ...rents, alentour: [] } : null;
   }
 
   /**
@@ -556,6 +575,37 @@ export class PostgisCommuneStatsProvider {
     const stats = await this.queryPriceStats({ codeCommunePattern: CITIES[city].sqlPattern });
     PostgisCommuneStatsProvider.benchmarkCache.set(city, stats);
     return stats;
+  }
+
+  /**
+   * Loyer moyen de la ville par type de bien : moyenne des arrondissements pondérée par leur
+   * nombre d'annonces, pour qu'un arrondissement peu documenté ne pèse pas autant que le 15e.
+   * Le fichier ANIL n'a pas de ligne pour la ville entière. `null` si la table est vide ;
+   * ne lève jamais, la card s'affiche alors sans repère.
+   */
+  private async getCityBenchmarkRents(city: City): Promise<CommuneStats["loyersVille"]> {
+    const cached = PostgisCommuneStatsProvider.rentBenchmarkCache.get(city);
+    if (cached !== undefined) return cached;
+    try {
+      const codes = getArrondissementsByCity(city).map((a) => a.codeCommune);
+      const rows = await query<{ type_bien: RentType; moyenne: string | null }>(
+        `SELECT type_bien,
+                SUM(loyer_m2 * nb_annonces) / NULLIF(SUM(nb_annonces), 0) AS moyenne
+           FROM rent_commune
+          WHERE code_commune = ANY($1)
+            AND annee = (SELECT MAX(annee) FROM rent_commune)
+          GROUP BY type_bien`,
+        [codes],
+      );
+      const values: Partial<Record<RentType, number>> = {};
+      for (const r of rows) if (r.moyenne !== null) values[r.type_bien] = Math.round(Number(r.moyenne) * 100) / 100;
+      const result = Object.keys(values).length > 0 ? values : null;
+      PostgisCommuneStatsProvider.rentBenchmarkCache.set(city, result);
+      return result;
+    } catch (error) {
+      console.warn("getCityBenchmarkRents error:", error);
+      return null;
+    }
   }
 
   private async getCityBenchmarkEquipment(city: City): Promise<EquipmentDomainStats[]> {

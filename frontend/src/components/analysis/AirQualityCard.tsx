@@ -28,7 +28,7 @@ export function AirQualityCard({
 
       {airQuality.annual.length > 0 && (
         <div className="air-annual">
-          <p className="air-annual-caveat">{m.annualCaveat}</p>
+          <p className="card-caveat">{m.annualCaveat}</p>
           <ul className="air-annual-list">
             {airQuality.annual.map((stat) => (
               <AnnualRow key={stat.code} stat={stat} m={m} />

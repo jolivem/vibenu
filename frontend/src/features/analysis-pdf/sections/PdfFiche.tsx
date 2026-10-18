@@ -14,10 +14,12 @@ import type {
   MunicipalesAnalysisDto,
   NeighborhoodAnalysisDto,
   RealEstateAnalysisDto,
+  RentAnalysisDto,
   RiskAnalysisDto,
   SchoolSectorDto,
 } from "@/types/location-analysis";
 import { airTrend, referenceRatio } from "@/components/analysis/airQualityModel";
+import { rentOf } from "@/components/analysis/rentsModel";
 import type { ClimateMetric } from "@/components/analysis/climateChart";
 import { climateTitle } from "@/components/analysis/climateFormat";
 import {
@@ -175,9 +177,12 @@ export function PdfImmobilierFiche({
   cadastre,
   localTax,
   localTaxInsight,
+  rents,
 }: {
   realEstate: RealEstateAnalysisDto | null;
   cadastre: CadastreAnalysisDto | null;
+  /** `null` quand la card « Loyers » n'est pas rendue. */
+  rents: RentAnalysisDto | null;
   /** `null` quand la card « Fiscalité locale » n'est pas rendue. */
   localTax: LocalTaxAnalysisDto | null;
   localTaxInsight?: string | null;
@@ -191,11 +196,13 @@ export function PdfImmobilierFiche({
     mobility: mobilityMessages,
     nearby: nearbyMessages,
     population,
+    rents: rentsMessages,
     risks: risksMessages,
     sections,
     pdf,
   } = usePdfMessages();
   const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
+  const rentApp = rents ? rentOf(rents, "app") : null;
   const zone = cadastre?.urbanZone ?? null;
   const type = zone ? pluZoneType(zone.type, cadastreMessages) : null;
   const longLabel = zone ? pluZoneLongLabel(zone.label) : null;
@@ -210,6 +217,16 @@ export function PdfImmobilierFiche({
             median != null && median > 0 && pdf.property.median(median),
             Boolean(transactions) && pdf.property.transactions(transactions),
           ]) || pdf.property.noSale}
+        </Fact>
+      )}
+      {rents && rentApp && (
+        <Fact label={rentsMessages.pdfLabel}>
+          {rentsMessages.pdfLine(
+            rentApp.loyerM2,
+            rentOf(rents, "app12")?.loyerM2 ?? null,
+            rentOf(rents, "app3")?.loyerM2 ?? null,
+            rentOf(rents, "maison")?.loyerM2 ?? null,
+          )}
         </Fact>
       )}
       {cadastre?.parcel && (

@@ -5,6 +5,7 @@
 
 import type { City } from "@/lib/commune-slugs";
 import type { SecurityAnalysis } from "@/server-modules/security/domain/security.types";
+import type { RentAnalysis, RentType } from "@/server-modules/rents/domain/rents.types";
 import type {
   EmploymentStats,
   HouseholdsStats,
@@ -148,6 +149,16 @@ export interface CommuneStats {
   city: City;
   prix: PriceStats;
   prixBenchmarkVille: PriceStats; // benchmark de la ville (Paris/Lyon/Marseille) pour comparatif
+  /**
+   * Loyers d'annonce de l'arrondissement (« Carte des loyers », ANIL), qui a ses propres
+   * lignes. Sans la carte des communes alentour (`alentour` vide) : la page est statique.
+   */
+  loyers: RentAnalysis | null;
+  /**
+   * Repère des loyers : moyenne des arrondissements de la ville, pondérée par leur nombre
+   * d'annonces, par type de bien. Calculée sur les mêmes lignes que `loyers`.
+   */
+  loyersVille: Partial<Record<RentType, number>> | null;
   demo: DemographicsStats;
   demoFrance: DemographicsStats | null; // benchmark France pour la pyramide des âges
   /**

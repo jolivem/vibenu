@@ -38,7 +38,15 @@ export const map: MapMessages = {
     dvf: "Property prices (DVF)",
     iris: "Statistical neighbourhood",
     schoolSector: "School catchment",
+    rents: "Rents by commune",
   },
+  rentPopup: (p) => ({
+    title: p.nom,
+    lines: [
+      `Flats: €${f.fixed(p.loyerM2, 1)}/m²`,
+      ...(p.groupe ? ["estimated over a group of neighbouring communes"] : []),
+    ],
+  }),
   dvfPopup: (p) => ({
     title: `€${f.int(p.pricePerSqm)}/m²`,
     lines: [

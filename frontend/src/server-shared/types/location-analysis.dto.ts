@@ -152,6 +152,46 @@ export interface AirQualityAnalysisDto {
   annual: AnnualPollutantStatDto[];
 }
 
+export type RentTypeDto = "app" | "app12" | "app3" | "maison";
+export type RentLevelDto = "commune" | "maille" | "epci";
+
+export interface RentIndicatorDto {
+  type: RentTypeDto;
+  /** €/m², charges comprises, hors meublé. */
+  loyerM2: number;
+  /** Intervalle de prédiction à 95 %. */
+  icBas: number | null;
+  icHaut: number | null;
+  /** `maille` : estimé sur un groupe de communes voisines ; `epci` : sur l'intercommunalité. */
+  niveau: RentLevelDto;
+  nbAnnonces: number;
+  /** Au moins 30 annonces et un R² ajusté d'au moins 0,5 (seuils du producteur). */
+  fiable: boolean;
+}
+
+export interface RentAreaFeatureDto {
+  type: "Feature";
+  geometry: GeoJsonGeometryDto;
+  properties: {
+    code: string;
+    nom: string;
+    /** Loyer des appartements tous types, €/m². */
+    loyerM2: number;
+    niveau: RentLevelDto;
+    courante: boolean;
+  };
+}
+
+/** « Carte des loyers » (ANIL, ministère du Logement) : une édition par an, sans série. */
+export interface RentAnalysisDto {
+  codeCommune: string;
+  nomCommune: string | null;
+  annee: number;
+  indicateurs: RentIndicatorDto[];
+  /** Communes à moins de 8 km, pour la carte. */
+  alentour: RentAreaFeatureDto[];
+}
+
 export interface NeighborhoodPoiDto {
   name: string;
   category: string;
@@ -582,6 +622,8 @@ export interface LocationAnalysisDto {
   security?: SecurityAnalysisDto | null;
   municipales?: MunicipalesAnalysisDto | null;
   localTax?: LocalTaxAnalysisDto | null;
+  /** Loyers d'annonce de la commune ; `null` si la source ne la connaît pas. */
+  rents?: RentAnalysisDto | null;
   /** Mode commune uniquement ; `null` en mode adresse ou si la BPE ne connaît pas le code. */
   communeEquipment?: CommuneEquipmentDto | null;
 }

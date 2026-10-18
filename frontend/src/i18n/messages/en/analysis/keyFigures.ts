@@ -7,6 +7,8 @@ export const keyFigures: KeyFiguresMessages = {
   ariaLabel: "Key figures",
   priceLabel: "Median price",
   price: (pricePerSquareMeter) => `€${f.int(pricePerSquareMeter)}/m²`,
+  rentLabel: "Flat rent",
+  rent: (perM2) => `€${f.fixed(perM2, 1)}/m²`,
   transportLabel: "Transport",
   transportLevels: {
     excellent: "Excellent",

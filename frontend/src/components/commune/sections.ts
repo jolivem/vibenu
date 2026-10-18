@@ -15,6 +15,7 @@
 
 import { FEATURES } from "@/lib/site-features";
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
+import { hasRentContent } from "@/components/analysis/rentsModel";
 import { candidatsTop, equipementsAffichables } from "./format";
 
 export const COMMUNE_SECTION_ORDER = [
@@ -31,7 +32,7 @@ export const COMMUNE_SECTION_ORDER = [
 export type CommuneSectionId = (typeof COMMUNE_SECTION_ORDER)[number];
 
 export const COMMUNE_SECTION_TITLES: Record<CommuneSectionId, string> = {
-  "prix-immobilier": "Prix immobilier",
+  "prix-immobilier": "Achat & location",
   equipements: "Équipements & cadre de vie",
   securite: "Sécurité",
   demographie: "Population",
@@ -66,7 +67,9 @@ export function communeSectionContent({
   return {
     // Un prix nul n'est pas un prix mais l'absence de ventes connues : une section, une
     // entrée de sommaire et une tuile pour afficher « — » ne valent pas mieux qu'un silence.
-    "prix-immobilier": stats.prix.prixM2Median !== null,
+    // Deux parties, achat et location : la section vit tant que l'une des deux a un chiffre.
+    "prix-immobilier":
+      stats.prix.prixM2Median !== null || (FEATURES.showRents && hasRentContent(stats.loyers)),
     equipements: equipementsAffichables(stats).length > 0,
     securite: FEATURES.showSecurity && stats.securite !== null,
     // La card Âge est le plancher de la section ; emploi, ménages et logement ne font que s'y ajouter.

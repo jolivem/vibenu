@@ -18,6 +18,9 @@ import { SectionNav } from "@/components/analysis/SectionNav";
 import { CommuneHero } from "@/components/commune/CommuneHero";
 import { CommuneLocatorCard } from "@/components/commune/CommuneLocatorCard";
 import { CommunePriceCard } from "@/components/commune/CommunePriceCard";
+import { RentsCard } from "@/components/analysis/RentsCard";
+import { hasRentContent } from "@/components/analysis/rentsModel";
+import { rents as rentsMessages } from "@/i18n/messages/fr/analysis/rents";
 import { CommuneAgeCard } from "@/components/commune/CommuneAgeCard";
 import { CommuneEmploymentCard } from "@/components/commune/CommuneEmploymentCard";
 import { CommuneHouseholdsCard } from "@/components/commune/CommuneHouseholdsCard";
@@ -266,7 +269,20 @@ export default async function CommunePage({
           <div className="page-sections">
             {content["prix-immobilier"] && (
               <CommuneSection id="prix-immobilier">
-                <CommunePriceCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
+                {stats.prix.prixM2Median !== null && (
+                  <CommunePriceCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
+                )}
+                {FEATURES.showRents && hasRentContent(stats.loyers) && (
+                  <RentsCard
+                    rents={stats.loyers}
+                    m={rentsMessages}
+                    title="Location"
+                    benchmark={
+                      stats.loyersVille ? { adjectif: CITIES[stats.city].adjectif, values: stats.loyersVille } : null
+                    }
+                    insight={legendes?.legende_loyers}
+                  />
+                )}
               </CommuneSection>
             )}
 

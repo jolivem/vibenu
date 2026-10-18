@@ -9,6 +9,12 @@ export const keyFigures = {
   ariaLabel: "Chiffres clés",
   priceLabel: "Prix médian",
   price: (pricePerSquareMeter: number) => `${f.spaced(Math.round(pricePerSquareMeter))} €/m²`,
+  /**
+   * Loyer d'annonce des appartements, charges comprises. Pas « médian » : l'ANIL publie un
+   * loyer estimé par un modèle pour un logement type, pas une médiane d'annonces.
+   */
+  rentLabel: "Loyer appartement",
+  rent: (perM2: number) => `${f.fixed(perM2, 1)} €/m²`,
   transportLabel: "Transports",
   /** Niveau de desserte. Les clés sont les codes du DTO. */
   transportLevels: {
