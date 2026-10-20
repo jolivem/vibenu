@@ -37,7 +37,7 @@ import { MunicipalesCard } from "@/components/analysis/MunicipalesCard";
 import { KeyFigures, type KeyFigure } from "@/components/analysis/KeyFigures";
 import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
 import { SectionNav } from "@/components/analysis/SectionNav";
-import { ShareLinks } from "@/components/analysis/ShareLinks";
+import { ShareInline, ShareLinks } from "@/components/analysis/ShareLinks";
 import { SECTION_ORDER, sectionTitles, type SectionId } from "@/components/analysis/sections";
 import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
 import { Brand } from "@/components/Brand";
@@ -495,10 +495,6 @@ export function AnalysisScreen() {
                   </AnalysisSection>
                 )}
 
-                {FEATURES.showCardInsights && (
-                  <p className="analysis-ai-notice">{m.screen.aiNotice}</p>
-                )}
-
                 {insightsDebug !== undefined && (
                   <details className="card-insight-debug">
                     <summary>
@@ -508,9 +504,15 @@ export function AnalysisScreen() {
                   </details>
                 )}
 
-                <a href="#haut" className="analysis-back-to-top">
-                  <span aria-hidden>↑</span> {m.screen.backToTop}
-                </a>
+                <div className="analysis-footer">
+                  <Link href={localizedHref(locale, "home")} className="analysis-footer-link">
+                    <span aria-hidden>←</span> {m.screen.newAnalysis}
+                  </Link>
+                  {FEATURES.hasShareLinks && <ShareInline label={data.address.label} m={m.screen.share} />}
+                  <a href="#haut" className="analysis-footer-link">
+                    <span aria-hidden>↑</span> {m.screen.backToTop}
+                  </a>
+                </div>
               </div>
             </div>
           </>

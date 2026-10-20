@@ -207,19 +207,10 @@ export function LocalTaxCard({
                 validFrom: dmto.valableAu,
                 firstTimeBuyerRate: dmto.tauxPrimoAccedant,
               })}
-            />{" "}
-            <a href={dmto.sourceUrl} target="_blank" rel="noopener noreferrer">
-              {m.transferDuty.scaleLink}
-            </a>
-            .
+            />
           </p>
         </div>
       )}
-
-      {villeEntiere && <p className="elections-footnote">{m.wholeCityNote}</p>}
-      <p className="elections-footnote">
-        <RichText text={m.ratesNote} />
-      </p>
     </section>
   );
 }

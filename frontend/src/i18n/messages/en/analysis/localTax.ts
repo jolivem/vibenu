@@ -119,15 +119,7 @@ export const localTax: LocalTaxMessages = {
           : ""
       }.`,
     ],
-    scaleLink: "Official rate table (DGFiP, in French)",
   },
-  wholeCityNote:
-    "Rates and accounts for the whole city: they are voted by the city and are the same in all its arrondissements.",
-  ratesNote: [
-    "These figures are ",
-    { strong: "rates" },
-    ". The amount of a tax also depends on the cadastral rental value, which is specific to each home: it cannot be estimated here. Ask the seller for the latest property tax notice.",
-  ],
   pdf: {
     heading: (wholeCity) => `Local taxes${wholeCity ? " — whole city" : ""}`,
     propertyTaxLabel: (year) => `Property tax ${year}`,

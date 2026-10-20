@@ -26,10 +26,10 @@ export const screen = {
       "Cochez pour afficher les zones sur la carte. Seul le périmètre du plan de prévention des risques (PPR) d'inondation est publié ici, pas son zonage détaillé.",
     none: "Cochez pour afficher les zones sur la carte. Aucun zonage de plan de prévention des risques (PPR) d'inondation n'est publié ici.",
   },
-  aiNotice:
-    "Les synthèses « En bref » sont rédigées par une intelligence artificielle à partir des seules données affichées sur cette page. Les chiffres et les sources qui les entourent, eux, proviennent directement des fichiers publics cités.",
   debugSummary: (tokens: number) => `Données envoyées au modèle (debug) — ~${tokens} tokens`,
   backToTop: "Haut de page",
+  /** Pied de page : retour à la recherche pour lancer une autre analyse. */
+  newAnalysis: "Nouvelle analyse",
   share: {
     trigger: "Partager",
     panelTitle: "Partager cette analyse",
@@ -43,6 +43,8 @@ export const screen = {
     targetAria: (target: string) => `Partager par ${target}`,
     nativeAria: "Partager via une autre application",
     nativeTitle: "Autre application…",
+    /** Icône de copie du pied de page, qui n'a pas de champ affichant le lien. */
+    copyLinkAria: "Copier le lien",
   },
   pdfButton: {
     idle: "Télécharger PDF",

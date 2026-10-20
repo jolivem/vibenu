@@ -1,23 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { ScreenMessages } from "@/i18n/messages/fr/analysis/screen";
 
+type ShareMessages = ScreenMessages["share"];
+
 /**
- * Partage de l'analyse courante.
+ * Partage de l'analyse courante, sous deux formes : le menu « Partager » de la barre du
+ * haut (`ShareLinks`) et la rangée d'icônes du pied de page (`ShareInline`). Les deux
+ * partagent `useShare` et `ShareTargetList`.
  *
  * Rien à générer : l'URL de `/analyze` porte déjà tous les paramètres (coordonnées, libellé,
  * commune, code INSEE), elle rejoue donc l'analyse à l'identique chez le destinataire.
- *
- * Le menu est un `<details>` natif — ouverture au clavier et au clic sans code. On ne lui
- * ajoute que la fermeture au clic extérieur et à Échap, que le navigateur ne fournit pas.
- *
- * Le champ affichant le lien est là pour le cas où l'écriture dans le presse-papiers échoue :
- * l'API `clipboard` exige un contexte sécurisé (HTTPS ou localhost) et peut être refusée par
- * l'utilisateur. Le lien reste alors sélectionnable à la main.
  */
-export function ShareLinks({ label, m }: { label: string; m: ScreenMessages["share"] }) {
-  const detailsRef = useRef<HTMLDetailsElement>(null);
+function useShare(label: string, m: ShareMessages) {
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [canUseNativeShare, setCanUseNativeShare] = useState(false);
@@ -27,35 +23,6 @@ export function ShareLinks({ label, m }: { label: string; m: ScreenMessages["sha
   useEffect(() => {
     setUrl(window.location.href);
     setCanUseNativeShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
-  }, []);
-
-  useEffect(() => {
-    const details = detailsRef.current;
-    if (!details) return;
-
-    const close = () => {
-      details.open = false;
-    };
-
-    const onPointerDown = (event: MouseEvent | TouchEvent) => {
-      if (!details.open) return;
-      if (event.target instanceof Node && details.contains(event.target)) return;
-      close();
-    };
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && details.open) {
-        close();
-        details.querySelector("summary")?.focus();
-      }
-    };
-
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
   }, []);
 
   // Le message repart à zéro quelques secondes après la copie, pour rester vrai si
@@ -69,23 +36,24 @@ export function ShareLinks({ label, m }: { label: string; m: ScreenMessages["sha
   const shareTitle = m.title(label);
   const shareText = m.text(label);
 
-  async function handleCopy() {
+  /** Faux si le presse-papiers est refusé ou hors contexte sécurisé (HTTPS ou localhost). */
+  async function copy(): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
+      return true;
     } catch {
-      // Presse-papiers refusé ou hors contexte sécurisé : on sélectionne le champ pour que
-      // la copie manuelle ne demande qu'un Ctrl+C.
-      detailsRef.current?.querySelector("input")?.select();
+      return false;
     }
   }
 
-  async function handleNativeShare() {
+  /** Faux si le partage a été annulé. */
+  async function nativeShare(): Promise<boolean> {
     try {
       await navigator.share({ title: shareTitle, text: shareText, url });
-      if (detailsRef.current) detailsRef.current.open = false;
+      return true;
     } catch {
-      // Partage annulé par l'utilisateur : rien à signaler.
+      return false;
     }
   }
 
@@ -118,50 +86,183 @@ export function ShareLinks({ label, m }: { label: string; m: ScreenMessages["sha
     },
   ];
 
+  return { url, copied, canUseNativeShare, copy, nativeShare, targets };
+}
+
+/** Les icônes de partage ; `before` s'insère en tête de liste (bouton de copie du pied). */
+function ShareTargetList({
+  share,
+  onNativeShare,
+  m,
+  before,
+}: {
+  share: ReturnType<typeof useShare>;
+  onNativeShare: () => void;
+  m: ShareMessages;
+  before?: ReactNode;
+}) {
+  return (
+    <ul className="share-targets">
+      {before}
+      {share.targets.map((target) => (
+        <li key={target.key}>
+          <a
+            href={target.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`share-icon share-icon-${target.key}`}
+            aria-label={m.targetAria(target.label)}
+            title={target.label}
+          >
+            {target.icon}
+          </a>
+        </li>
+      ))}
+      {share.canUseNativeShare && (
+        <li>
+          <button
+            type="button"
+            onClick={onNativeShare}
+            className="share-icon share-icon-native"
+            aria-label={m.nativeAria}
+            title={m.nativeTitle}
+          >
+            <ShareIcon />
+          </button>
+        </li>
+      )}
+    </ul>
+  );
+}
+
+/**
+ * Menu « Partager » de la barre du haut.
+ *
+ * C'est un `<details>` natif — ouverture au clavier et au clic sans code. On ne lui ajoute
+ * que la fermeture au clic extérieur et à Échap, que le navigateur ne fournit pas.
+ *
+ * Le champ affichant le lien est là pour le cas où l'écriture dans le presse-papiers échoue :
+ * l'API `clipboard` exige un contexte sécurisé (HTTPS ou localhost) et peut être refusée par
+ * l'utilisateur. Le lien reste alors sélectionnable à la main.
+ */
+export function ShareLinks({ label, m }: { label: string; m: ShareMessages }) {
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const share = useShare(label, m);
+
+  useEffect(() => {
+    const details = detailsRef.current;
+    if (!details) return;
+
+    const close = () => {
+      details.open = false;
+    };
+
+    const onPointerDown = (event: MouseEvent | TouchEvent) => {
+      if (!details.open) return;
+      if (event.target instanceof Node && details.contains(event.target)) return;
+      close();
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && details.open) {
+        close();
+        details.querySelector("summary")?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  async function handleCopy() {
+    // Copie refusée : on sélectionne le champ pour que la copie manuelle ne demande qu'un Ctrl+C.
+    if (!(await share.copy())) detailsRef.current?.querySelector("input")?.select();
+  }
+
+  async function handleNativeShare() {
+    if ((await share.nativeShare()) && detailsRef.current) detailsRef.current.open = false;
+  }
+
   return (
     <details className="share-menu" ref={detailsRef}>
-      <summary className="share-trigger">{m.trigger}</summary>
+      <summary className="share-trigger">
+        <ShareTriggerIcon />
+        {m.trigger}
+      </summary>
       <div className="share-panel">
         <p className="share-panel-title">{m.panelTitle}</p>
 
         <div className="share-copy">
-          <input type="text" readOnly value={url} aria-label={m.linkAria} />
+          <input type="text" readOnly value={share.url} aria-label={m.linkAria} />
           <button type="button" onClick={handleCopy}>
-            {copied ? m.copied : m.copy}
+            {share.copied ? m.copied : m.copy}
           </button>
         </div>
 
-        <ul className="share-targets">
-          {targets.map((target) => (
-            <li key={target.key}>
-              <a
-                href={target.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`share-icon share-icon-${target.key}`}
-                aria-label={m.targetAria(target.label)}
-                title={target.label}
-              >
-                {target.icon}
-              </a>
-            </li>
-          ))}
-          {canUseNativeShare && (
-            <li>
-              <button
-                type="button"
-                onClick={handleNativeShare}
-                className="share-icon share-icon-native"
-                aria-label={m.nativeAria}
-                title={m.nativeTitle}
-              >
-                <ShareIcon />
-              </button>
-            </li>
-          )}
-        </ul>
+        <ShareTargetList share={share} onNativeShare={handleNativeShare} m={m} />
       </div>
     </details>
+  );
+}
+
+/**
+ * Les mêmes options de partage, à plat en pied de page : pas de menu à ouvrir, et le lien
+ * se copie par une icône plutôt que par un champ. Si le presse-papiers est refusé, une
+ * boîte de dialogue présente le lien à copier à la main.
+ */
+export function ShareInline({ label, m }: { label: string; m: ShareMessages }) {
+  const share = useShare(label, m);
+
+  async function handleCopy() {
+    if (!(await share.copy())) window.prompt(m.linkAria, share.url);
+  }
+
+  return (
+    <div className="share-inline">
+      <p className="share-panel-title">{m.panelTitle}</p>
+      <ShareTargetList
+        share={share}
+        onNativeShare={() => void share.nativeShare()}
+        m={m}
+        before={
+          <li>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="share-icon share-icon-copy"
+              aria-label={m.copyLinkAria}
+              title={share.copied ? m.copied : m.copyLinkAria}
+            >
+              {share.copied ? <CheckIcon /> : <LinkIcon />}
+            </button>
+          </li>
+        }
+      />
+      <span className="visually-hidden" aria-live="polite">
+        {share.copied ? m.copied : ""}
+      </span>
+    </div>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2" />
+      <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m5 12.5 4.5 4.5L19 7.5" />
+    </svg>
   );
 }
 
@@ -199,6 +300,22 @@ function MailIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor">
       <path d="M1.5 4h21a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-21A1.5 1.5 0 0 1 0 18.5v-13A1.5 1.5 0 0 1 1.5 4m20.018 2H2.482L12 13.713zM2 18V8.183l10 8.104 10-8.104V18z" />
+    </svg>
+  );
+}
+
+/**
+ * Variante du pictogramme de partage pour le bouton de la barre du haut : à 16 px, le tracé
+ * Material ci-dessous écrase ses trois points dans les liaisons et ne se lit plus que
+ * comme un « < ». Ici les points sont gros et les liaisons fines.
+ */
+function ShareTriggerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M17.5 5.5 6.5 12l11 6.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="17.5" cy="5.5" r="3.2" fill="currentColor" />
+      <circle cx="6.5" cy="12" r="3.2" fill="currentColor" />
+      <circle cx="17.5" cy="18.5" r="3.2" fill="currentColor" />
     </svg>
   );
 }

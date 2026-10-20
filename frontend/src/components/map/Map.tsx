@@ -19,6 +19,7 @@ import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
 import type { CadastreParcelDto, DvfTransactionFeatureDto, FloodZoneDto, GeoJsonGeometryDto, RentAreaFeatureDto, RiskAnalysisDto } from "@/types/location-analysis";
 import { useI18n } from "@/i18n/client";
+import { RENT_CLASS_COLORS } from "@/components/analysis/rentsModel";
 
 /** Exportés pour que les cartes thématiques puissent les passer en `initialLayers`. */
 export const DVF_LAYER_ID = "dvf-transactions";
@@ -125,7 +126,7 @@ function applyLayerVisibility(m: MapLibreMap, visibleLayers: Set<string>): void 
   }
 }
 
-function computeBbox(geometry: GeoJsonGeometryDto): LngLatBounds | null {
+export function computeBbox(geometry: GeoJsonGeometryDto): LngLatBounds | null {
   let minLon = Infinity;
   let minLat = Infinity;
   let maxLon = -Infinity;
@@ -300,7 +301,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       layers.push({ id: SCHOOL_SECTOR_LAYER_ID, label: m.overlays.schoolSector, color: "#d97706" });
     }
     if (rentAreas?.length) {
-      layers.push({ id: RENT_LAYER_ID, label: m.overlays.rents, color: "#f0a94e" });
+      layers.push({ id: RENT_LAYER_ID, label: m.overlays.rents, color: RENT_CLASS_COLORS[RENT_CLASS_COLORS.length - 1] });
     }
     return layers;
   }, [dvfTransactions, irisGeojson, schoolSector, rentAreas, m]);

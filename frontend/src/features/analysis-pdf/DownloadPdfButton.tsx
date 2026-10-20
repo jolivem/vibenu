@@ -83,7 +83,11 @@ export function DownloadPdfButton({
       let mapDataUrl: string | null = null;
       if (mapInstance) {
         try {
-          mapDataUrl = await captureMap(mapInstance);
+          mapDataUrl = await captureMap(mapInstance, {
+            lat: data.map.center.lat,
+            lon: data.map.center.lon,
+            communeContour: data.map.communeContour,
+          });
         } catch {
           mapDataUrl = null;
         }

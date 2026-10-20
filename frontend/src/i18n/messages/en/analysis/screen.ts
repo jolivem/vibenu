@@ -17,10 +17,9 @@ export const screen: ScreenMessages = {
       "Tick to show the zones on the map. Only the outline of the flood risk prevention plan (PPR) is published here, not its detailed zoning.",
     none: "Tick to show the zones on the map. No flood risk prevention plan (PPR) zoning is published here.",
   },
-  aiNotice:
-    "The “In brief” summaries are written by an artificial intelligence using only the data shown on this page. The figures and sources around them come directly from the public files cited.",
   debugSummary: (tokens) => `Data sent to the model (debug) — ~${tokens} tokens`,
   backToTop: "Back to top",
+  newAnalysis: "New analysis",
   share: {
     trigger: "Share",
     panelTitle: "Share this analysis",
@@ -33,6 +32,7 @@ export const screen: ScreenMessages = {
     targetAria: (target) => `Share via ${target}`,
     nativeAria: "Share via another app",
     nativeTitle: "Another app…",
+    copyLinkAria: "Copy link",
   },
   pdfButton: {
     idle: "Download PDF",

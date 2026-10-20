@@ -170,15 +170,7 @@ export const localTax = {
           : ""
       }.`,
     ],
-    scaleLink: "Barème de la DGFiP",
   },
-  wholeCityNote:
-    "Taux et comptes de la ville entière : ils sont votés par la ville et sont les mêmes dans tous ses arrondissements.",
-  ratesNote: [
-    "Ces chiffres sont des ",
-    { strong: "taux" },
-    ". Le montant d'une taxe dépend aussi de la valeur locative cadastrale, propre à chaque logement : il ne peut pas être estimé ici. Demandez le dernier avis de taxe foncière au vendeur.",
-  ] as Rich,
   /** Fiche PDF : une ligne par bloc, sans graphe. */
   pdf: {
     heading: (wholeCity: boolean) => `Fiscalité locale${wholeCity ? " — ville entière" : ""}`,

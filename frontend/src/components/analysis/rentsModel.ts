@@ -57,11 +57,11 @@ export function rentExamples(rents: RentAnalysisDto): RentExample[] {
 // --- Carte des communes alentour ---------------------------------------------
 
 /**
- * Quatre teintes d'une gamme jaune pâle → orange doux : plus c'est chaud, plus c'est cher —
- * une gamme continue, sans rouge, donc sans code d'alerte. Teintes désaturées : en vert foncé
- * puis en orange franc, des dizaines de communes chères (Paris) saturaient la carte.
+ * Quatre teintes d'une gamme bleu très pâle → bleu moyen : plus c'est foncé, plus c'est
+ * cher — une gamme continue, sans rouge, donc sans code d'alerte. Tons clairs : en vert
+ * foncé puis en orange franc, des dizaines de communes chères (Paris) saturaient la carte.
  */
-export const RENT_CLASS_COLORS = ["#fef6dd", "#fde4a0", "#f9c96b", "#f0a94e"];
+export const RENT_CLASS_COLORS = ["#eef5fc", "#cfe2f5", "#a6c8ea", "#79a9da"];
 
 export interface RentClass {
   /** Bornes de la classe, `null` aux deux extrémités. */
