@@ -49,7 +49,9 @@ docker compose exec -T postgres pg_restore \
 
 ## 5. Mettre à jour l'app : nouvelle image, migrations, redémarrage
 ```bash
-./update.sh
+./update.sh                 # (update classique)
+./update.sh --full          # (pull + restart de tout)
+./update.sh --maintenance   # (site en maintenance pendant l'update, cumulable)
 ```
 
 ## 6. Rouvrir le site
