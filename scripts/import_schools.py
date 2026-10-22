@@ -181,6 +181,10 @@ def import_annuaire(conn, refresh: bool) -> None:
             continue
         if EXCLUDED_NATURE.match(r.get("libelle_nature") or ""):
             continue
+        # Hors contrat : ni résultats, ni IPS, ni encadrement publiés — une ligne vide dans
+        # la liste, et souvent une école de coiffure ou de santé plutôt qu'un lycée.
+        if (r.get("type_contrat_prive") or "").strip() == "HORS CONTRAT":
+            continue
         code_commune = text(r.get("code_commune"))
         if lat is None or lon is None or not code_commune:
             skipped += 1

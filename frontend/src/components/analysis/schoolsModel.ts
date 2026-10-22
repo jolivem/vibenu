@@ -1,8 +1,11 @@
 import type { NearbySchoolDto, NearbySchoolsDto, SchoolExamResultDto } from "@/types/location-analysis";
 import type { SchoolPoint } from "@/components/map/Map";
 
-/** Colonnes triables de la card ; « distance » est l'ordre par défaut. */
-export type SchoolSortKey = "distance" | "reussite" | "va" | "ips" | "eleves";
+/**
+ * Colonnes triables de la card. Ordre par défaut : `distance` autour d'une adresse, `nom` en
+ * mode commune, où la distance au centre ne dit rien d'un logement.
+ */
+export type SchoolSortKey = "nom" | "distance" | "reussite" | "va" | "ips" | "eleves";
 export type SortDirection = "asc" | "desc";
 
 /**
@@ -12,6 +15,7 @@ export type SortDirection = "asc" | "desc";
  * ce qui compte pour lui.
  */
 export const DEFAULT_DIRECTION: Record<SchoolSortKey, SortDirection> = {
+  nom: "asc",
   distance: "asc",
   reussite: "desc",
   va: "desc",
@@ -32,7 +36,7 @@ export function secondaryExam(s: NearbySchoolDto): SchoolExamResultDto | null {
   return s.level === "lycee" && s.bacGt && s.bacPro ? s.bacPro : null;
 }
 
-function sortValue(s: NearbySchoolDto, key: SchoolSortKey): number | null {
+function sortValue(s: NearbySchoolDto, key: Exclude<SchoolSortKey, "nom">): number | null {
   switch (key) {
     case "distance":
       return s.distance;
@@ -58,6 +62,14 @@ export function sortSchools(
   direction: SortDirection,
 ): NearbySchoolDto[] {
   const sign = direction === "asc" ? 1 : -1;
+  if (key === "nom") {
+    // Ceux de la commune par nom ; ceux d'à côté, ajoutés faute de mieux, après et par distance.
+    return [...list].sort((a, b) => {
+      if (a.horsCommune !== b.horsCommune) return a.horsCommune ? 1 : -1;
+      if (a.horsCommune) return a.distance - b.distance;
+      return a.nom.localeCompare(b.nom, "fr") * sign;
+    });
+  }
   return [...list].sort((a, b) => {
     const va = sortValue(a, key);
     const vb = sortValue(b, key);

@@ -290,6 +290,8 @@ const PDF_SCHOOLS_PER_LEVEL = 3;
 export function PdfEnseignementFiche({ schools }: { schools: NearbySchoolsDto }) {
   const { schools: m, sections } = usePdfMessages();
   const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
+  // Autour d'une adresse, les plus proches ; dans une commune, le début de la liste (par nom),
+  // les établissements d'à côté venant après ceux de la commune.
   const pick = (list: NearbySchoolDto[]) => {
     const sector = list.filter((s) => s.estSecteur);
     const others = list.filter((s) => !s.estSecteur);
@@ -308,7 +310,16 @@ export function PdfEnseignementFiche({ schools }: { schools: NearbySchoolsDto })
             const exam = primaryExam(s);
             return (
               <Fact key={s.uai} label={s.estSecteur ? m.sectorBadge : undefined}>
-                {m.pdfLine(s.nom, s.distance, exam?.tauxReussite ?? null, exam?.vaReussite ?? null)}
+                {m.pdfLine(
+                  s.nom,
+                  schools.scope === "rayon"
+                    ? m.distance(s.distance)
+                    : s.horsCommune
+                      ? m.outside(s.nomCommune, s.distance)
+                      : null,
+                  exam?.tauxReussite ?? null,
+                  exam?.vaReussite ?? null,
+                )}
               </Fact>
             );
           })}

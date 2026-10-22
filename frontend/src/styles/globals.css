@@ -3258,6 +3258,13 @@ html {
   color: var(--text);
 }
 
+.schools-outside {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
 .schools-badges {
   display: flex;
   flex-wrap: wrap;

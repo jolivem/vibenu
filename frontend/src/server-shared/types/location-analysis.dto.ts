@@ -436,6 +436,13 @@ export interface NearbySchoolDto {
   distance: number;
   /** Collège du secteur de l'adresse (Paris seulement, là où la sectorisation est connue). */
   estSecteur: boolean;
+  /** Commune de l'établissement (annuaire). */
+  nomCommune: string | null;
+  /**
+   * Mode commune : établissement pris hors de la commune analysée, parce qu'elle en a moins
+   * de trois. Sa distance est alors mesurée depuis le centre de la commune.
+   */
+  horsCommune: boolean;
   brevet: SchoolExamResultDto | null;
   bacGt: SchoolExamResultDto | null;
   bacPro: SchoolExamResultDto | null;

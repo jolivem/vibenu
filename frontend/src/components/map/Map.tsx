@@ -220,7 +220,9 @@ function fitSchools(
       [Math.min(...lons), Math.min(...lats)],
       [Math.max(...lons), Math.max(...lats)],
     ],
-    { padding: 36, maxZoom: 16, duration: animate ? 600 : 0 },
+    // Marges inégales : le marqueur de l'adresse dépasse de 40 px au-dessus de son point, et
+    // les boutons de zoom occupent le bord droit.
+    { padding: { top: 52, right: 60, bottom: 36, left: 36 }, maxZoom: 16, duration: animate ? 600 : 0 },
   );
 }
 
@@ -956,6 +958,13 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     if (schools?.length) {
       const m = map.current;
       fitSchools(m, schools, visibleLayersRef.current, [lon, lat], schoolSector, false);
+      // Recadrer une fois la carte chargée : monté en différé (LazyMap), le conteneur n'a
+      // pas toujours sa largeur définitive à la construction, et sur téléphone le premier
+      // cadrage coupait des établissements.
+      m.once("load", () => {
+        m.resize();
+        fitSchools(m, schools, visibleLayersRef.current, [lon, lat], schoolSector, false);
+      });
       for (const id of [SCHOOLS_COLLEGES_LAYER_ID, SCHOOLS_LYCEES_LAYER_ID]) {
         const layerId = `${id}-points`;
         m.on("click", layerId, (e) => {

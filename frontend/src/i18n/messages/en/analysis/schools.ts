@@ -13,12 +13,18 @@ export const schools: SchoolsMessages = {
       "The coloured area is the catchment of the collège circled in black: every address inside it is assigned to that school.",
   },
   titles: { college: "Collèges (ages 11-15)", lycee: "Lycées (ages 15-18)" },
-  lead: (level, count, scope, rayon) => {
+  lead: (level, count, rayon) => {
     const noun = level === "college" ? (count === 1 ? "collège" : "collèges") : count === 1 ? "lycée" : "lycées";
-    return scope === "commune"
-      ? `${count} ${noun} in the commune.`
-      : `${count} ${noun} within ${distance(rayon)} or among the nearest.`;
+    return `${count} ${noun} within ${distance(rayon)} or among the nearest.`;
   },
+  leadCommune: (level, inside, outside) => {
+    const noun = (n: number) => (level === "college" ? (n === 1 ? "collège" : "collèges") : n === 1 ? "lycée" : "lycées");
+    const nearest = (n: number) => (n === 1 ? `the nearest ${noun(1)}` : `the ${n} nearest`);
+    if (outside === 0) return `${inside} ${noun(inside)} in the commune.`;
+    if (inside === 0) return `No ${noun(1)} in the commune; ${nearest(outside)} outside it:`;
+    return `${inside} ${noun(inside)} in the commune, and ${nearest(outside)} outside it.`;
+  },
+  outside: (commune, dist) => `${commune ? `In ${commune}, ` : "Outside the commune, "}${distance(dist)} from the centre`,
   labelSeparator: ": ",
   explain: (level) => [
     {
@@ -114,9 +120,12 @@ export const schools: SchoolsMessages = {
   note: (level) =>
     `${level === "college" ? "Brevet pass rate" : "Baccalauréat pass rate"}, value added and social position index (SPI): French Ministry of Education (DEPP), latest published session. ` +
     "Value added compares the observed pass rate with the one expected from the pupils' profile; the DEPP advises against using it to rank schools. " +
-    "“dept.”: average of the schools in the département.",
-  pdfLine: (nom, dist, reussite, va) =>
-    `${nom} — ${distance(dist)}` +
+    (level === "college"
+      ? "“dept.”: average of the collèges in the département."
+      : "“dept.”: average of lycées of the same type in the département — general and technological, or vocational; a vocational lycée is compared with vocational lycées."),
+  pdfLine: (nom, lieu, reussite, va) =>
+    nom +
+    (lieu ? ` — ${lieu}` : "") +
     (reussite !== null ? ` · pass rate ${f.decimal(reussite, 0)}%` : "") +
     (va !== null ? ` · VA ${signed(va)}` : ""),
 };

@@ -19,10 +19,21 @@ export const schools = {
   },
   titles: { college: "Collèges", lycee: "Lycées" },
   /** Ligne de tête de chaque card. */
-  lead: (level: "college" | "lycee", count: number, scope: "rayon" | "commune", rayon: number) => {
+  lead: (level: "college" | "lycee", count: number, rayon: number) => {
     const noun = level === "college" ? (count > 1 ? "collèges" : "collège") : count > 1 ? "lycées" : "lycée";
-    return scope === "commune" ? `${count} ${noun} dans la commune.` : `${count} ${noun} à moins de ${distance(rayon)} ou parmi les plus proches.`;
+    return `${count} ${noun} à moins de ${distance(rayon)} ou parmi les plus proches.`;
   },
+  /** Mode commune : ceux de la commune, puis, s'il en manque, les plus proches hors commune. */
+  leadCommune: (level: "college" | "lycee", inside: number, outside: number) => {
+    const noun = (n: number) => (level === "college" ? (n > 1 ? "collèges" : "collège") : n > 1 ? "lycées" : "lycée");
+    const plusProche = (n: number) => (n > 1 ? `les ${n} plus proches` : "le plus proche");
+    if (outside === 0) return `${inside} ${noun(inside)} dans la commune.`;
+    if (inside === 0) return `Aucun ${noun(1)} dans la commune ; ${plusProche(outside)} hors de la commune :`;
+    return `${inside} ${noun(inside)} dans la commune, et ${plusProche(outside)} hors de la commune.`;
+  },
+  /** Sous le nom d'un établissement pris hors de la commune analysée. */
+  outside: (commune: string | null, dist: number) =>
+    `${commune ? `À ${commune}, ` : "Hors de la commune, "}${distance(dist)} du centre`,
   /** Entre un terme et sa définition : le français met une espace avant les deux-points. */
   labelSeparator: " : ",
   /** Définitions affichées au-dessus de chaque tableau : terme, puis explication. */
@@ -130,10 +141,14 @@ export const schools = {
   note: (level: "college" | "lycee") =>
     `${level === "college" ? "Réussite au brevet" : "Réussite au baccalauréat"}, valeur ajoutée et indice de position sociale (IPS) : ministère de l'Éducation nationale (DEPP), dernière session publiée. ` +
     "La valeur ajoutée compare la réussite observée à celle qu'attendait le profil des élèves ; la DEPP déconseille d'en tirer un palmarès. " +
-    "« dép. » : moyenne des établissements du département.",
+    (level === "college"
+      ? "« dép. » : moyenne des collèges du département."
+      : "« dép. » : moyenne des lycées du même type dans le département — général et technologique, ou professionnel ; un lycée professionnel se compare aux lycées professionnels."),
   /** Fiche PDF : une ligne par établissement, les plus proches. */
-  pdfLine: (nom: string, dist: number, reussite: number | null, va: number | null) =>
-    `${nom} — ${distance(dist)}` +
+  /** `lieu` : la distance en mode adresse, la commune voisine en mode commune, rien sinon. */
+  pdfLine: (nom: string, lieu: string | null, reussite: number | null, va: number | null) =>
+    nom +
+    (lieu ? ` — ${lieu}` : "") +
     (reussite !== null ? ` · réussite ${f.decimal(reussite, 0)} %` : "") +
     (va !== null ? ` · VA ${signed(va)}` : ""),
 };

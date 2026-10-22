@@ -40,8 +40,11 @@ export function SchoolsCard({
   children?: ReactNode;
 }) {
   const list = level === "college" ? schools.colleges : schools.lycees;
+  // En mode commune, la distance est mesurée depuis le centre de la commune : elle ne dit rien
+  // d'un logement. La colonne disparaît, et la liste se range par nom.
+  const isCommune = schools.scope === "commune";
   const [sort, setSort] = useState<{ key: SchoolSortKey; direction: SortDirection }>({
-    key: "distance",
+    key: isCommune ? "nom" : "distance",
     direction: "asc",
   });
   const rows = useMemo(() => sortSchools(list, sort.key, sort.direction), [list, sort]);
@@ -58,7 +61,7 @@ export function SchoolsCard({
   const header = (key: SchoolSortKey, label: string, help?: string) => (
     <th
       scope="col"
-      className={key === "distance" ? undefined : "num"}
+      className={key === "distance" || key === "nom" ? undefined : "num"}
       aria-sort={sort.key === key ? (sort.direction === "asc" ? "ascending" : "descending") : undefined}
     >
       <button type="button" onClick={() => toggle(key)} title={help ?? m.sortBy(label)}>
@@ -77,7 +80,11 @@ export function SchoolsCard({
         <p className="schools-lead">{m.none[level]}</p>
       ) : (
         <>
-          <p className="schools-lead">{m.lead(level, list.length, schools.scope, rayon)}</p>
+          <p className="schools-lead">
+            {isCommune
+              ? m.leadCommune(level, list.filter((s) => !s.horsCommune).length, list.filter((s) => s.horsCommune).length)
+              : m.lead(level, list.length, rayon)}
+          </p>
           {children && (
             <div className="card-map card-map--inline">
               <p className="card-map-hint">{m.map.hint}</p>
@@ -107,8 +114,8 @@ export function SchoolsCard({
           <table className="schools-table">
             <thead>
               <tr>
-                <th scope="col">{m.columns.name}</th>
-                {header("distance", m.columns.distance)}
+                {isCommune ? header("nom", m.columns.name) : <th scope="col">{m.columns.name}</th>}
+                {!isCommune && header("distance", m.columns.distance)}
                 {header("reussite", m.columns.reussite, m.columnHelp.reussite)}
                 {header("va", m.columns.va, m.columnHelp.va)}
                 {header("ips", m.columns.ips, m.columnHelp.ips)}
@@ -117,7 +124,7 @@ export function SchoolsCard({
             </thead>
             <tbody>
               {rows.map((s) => (
-                <SchoolRow key={s.uai} school={s} m={m} />
+                <SchoolRow key={s.uai} school={s} m={m} showDistance={!isCommune} />
               ))}
             </tbody>
           </table>
@@ -128,7 +135,15 @@ export function SchoolsCard({
   );
 }
 
-function SchoolRow({ school: s, m }: { school: NearbySchoolDto; m: SchoolsMessages }) {
+function SchoolRow({
+  school: s,
+  m,
+  showDistance,
+}: {
+  school: NearbySchoolDto;
+  m: SchoolsMessages;
+  showDistance: boolean;
+}) {
   const exam = primaryExam(s);
   const second = secondaryExam(s);
   const examLabel = (e: SchoolExamResultDto) =>
@@ -138,10 +153,11 @@ function SchoolRow({ school: s, m }: { school: NearbySchoolDto; m: SchoolsMessag
     <tr className={s.estSecteur ? "is-sector" : undefined}>
       <th scope="row" className="schools-name">
         <span className="schools-title">{s.nom}</span>
+        {s.horsCommune && <span className="schools-outside">{m.outside(s.nomCommune, s.distance)}</span>}
         <SchoolBadges school={s} m={m} />
         <SchoolDetails school={s} m={m} />
       </th>
-      <td data-label={m.columns.distance}>{m.distance(s.distance)}</td>
+      {showDistance && <td data-label={m.columns.distance}>{m.distance(s.distance)}</td>}
       <td className="num" data-label={m.columns.reussite}>
         <ExamValue
           exams={[exam, second]}

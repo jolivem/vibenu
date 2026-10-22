@@ -62,6 +62,7 @@ interface EstablishmentRow {
   site_web: string | null;
   fiche_onisep: string | null;
   code_commune: string;
+  nom_commune: string | null;
   lat: number;
   lon: number;
   distance: number;
@@ -74,7 +75,7 @@ const ESTABLISHMENT_COLUMNS = `
   e.lycee_agricole, e.lycee_des_metiers,
   e.section_europeenne, e.section_internationale, e.section_sport,
   e.section_arts, e.section_cinema, e.section_theatre,
-  e.site_web, e.fiche_onisep, e.code_commune,
+  e.site_web, e.fiche_onisep, e.code_commune, e.nom_commune,
   ST_Y(e.geom) AS lat, ST_X(e.geom) AS lon`;
 
 interface ReferenceRow {
@@ -113,6 +114,7 @@ export class PostgisSchoolsProvider implements SchoolsProvider {
       const build = (e: EstablishmentRow) => ({
         ...toNearbySchool(e, data.get(e.uai) ?? new Map(), references),
         estSecteur: e.uai === sector?.uai,
+        horsCommune: q.scope === "commune" && e.code_commune !== q.codeCommune,
       });
       const result: NearbySchools = {
         scope: q.scope,
@@ -136,15 +138,30 @@ export class PostgisSchoolsProvider implements SchoolsProvider {
    */
   private async selectEstablishments(q: SchoolsQuery, level: SchoolLevel): Promise<EstablishmentRow[]> {
     if (q.scope === "commune") {
-      return query<EstablishmentRow>(
+      const inside = await query<EstablishmentRow>(
         `SELECT ${ESTABLISHMENT_COLUMNS},
                 ST_Distance(e.geom::geography, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) AS distance
            FROM school_establishment e
           WHERE e.type = $3 AND e.code_commune = $4
-          ORDER BY distance
+          ORDER BY e.nom
           LIMIT $5`,
         [q.lat, q.lon, level, q.codeCommune, MAX_PER_LEVEL_COMMUNE],
       );
+      if (inside.length >= MIN_PER_LEVEL) return inside;
+      // Neuf communes sur dix n'ont pas de collège : sans ce complément, la section
+      // disparaîtrait de la plupart des analyses de commune. On prend les plus proches du
+      // centre, hors de la commune, jusqu'à en avoir trois.
+      const outside = await query<EstablishmentRow>(
+        `WITH pt AS (SELECT ST_SetSRID(ST_MakePoint($2, $1), 4326) AS g)
+         SELECT ${ESTABLISHMENT_COLUMNS},
+                ST_Distance(e.geom::geography, pt.g::geography) AS distance
+           FROM school_establishment e, pt
+          WHERE e.type = $3 AND e.code_commune <> $4
+          ORDER BY e.geom <-> pt.g
+          LIMIT $5`,
+        [q.lat, q.lon, level, q.codeCommune, MIN_PER_LEVEL - inside.length],
+      );
+      return [...inside, ...outside.sort((a, b) => a.distance - b.distance)];
     }
     const radius = level === "college" ? COLLEGE_RADIUS_M : LYCEE_RADIUS_M;
     return query<EstablishmentRow>(
@@ -321,6 +338,8 @@ function toNearbySchool(
     lon: Number(e.lon),
     distance: Math.round(Number(e.distance)),
     estSecteur: false,
+    nomCommune: e.nom_commune,
+    horsCommune: false,
     brevet: isLycee ? null : brevetOf(rows(DATASETS.ivac)[0], refs, dep),
     bacGt: isLycee ? lyceeExamOf(rows(DATASETS.ivalGt)[0], refs, dep, "bac_gt") : null,
     bacPro: isLycee ? lyceeExamOf(rows(DATASETS.ivalPro)[0], refs, dep, "bac_pro") : null,
