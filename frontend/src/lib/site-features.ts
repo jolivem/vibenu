@@ -62,8 +62,10 @@ export interface SiteFeatures {
   showElections: boolean;
   /** Card "Cadastre & urbanisme" — APICarto. */
   showCadastre: boolean;
-  /** Card "Carte scolaire" — secteur collège (Paris uniquement pour la donnée). */
+  /** Secteur de collège (Paris uniquement pour la donnée), sur la carte de la section Enseignement. */
   showSchoolSector: boolean;
+  /** Section "Enseignement" — carte, collèges et lycées alentour (data.education.gouv.fr). */
+  showSchools: boolean;
   /** Card "Équipements de la commune" — nombres et densités BPE, en mode commune. */
   showCommuneEquipment: boolean;
   /** Card "Localisation" — carte interactive MapLibre + capture dans le PDF. */
@@ -116,6 +118,7 @@ const PUBLIC_FEATURES: SiteFeatures = {
   showMunicipales: true,
   showCadastre: true,
   showSchoolSector: true,
+  showSchools: true,
   showCommuneEquipment: true,
   showLocation: true,
   hasSEOPages: true,
@@ -149,6 +152,7 @@ const PRO_FEATURES: SiteFeatures = {
   showMunicipales: false,
   showCadastre: false,
   showSchoolSector: false,
+  showSchools: false,
   showCommuneEquipment: false,
   showLocation: false,
   hasSEOPages: false,

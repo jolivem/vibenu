@@ -16,7 +16,8 @@ import type {
   RealEstateAnalysisDto,
   RentAnalysisDto,
   RiskAnalysisDto,
-  SchoolSectorDto,
+  NearbySchoolDto,
+  NearbySchoolsDto,
 } from "@/types/location-analysis";
 import { airTrend, referenceRatio } from "@/components/analysis/airQualityModel";
 import { rentOf } from "@/components/analysis/rentsModel";
@@ -47,6 +48,7 @@ import {
 import { formatProximity } from "@/components/analysis/proximityFormat";
 import { RISK_LEVEL_BADGES, riskName, splitRisks } from "@/components/analysis/riskLevels";
 import { sectionTitles } from "@/components/analysis/sections";
+import { primaryExam } from "@/components/analysis/schoolsModel";
 import { COLORS, FONTS } from "../pdfStyles";
 import { PdfBadge, PdfCardBox, PdfCardTitle, pdfSafe } from "./PdfCard";
 import { PdfInsight } from "./PdfInsight";
@@ -277,14 +279,51 @@ function countLine(
   return pdf.nearby.count(count, closest);
 }
 
+/** Établissements par niveau dans la fiche : les plus proches, le collège de secteur d'abord. */
+const PDF_SCHOOLS_PER_LEVEL = 3;
+
+/**
+ * Section Enseignement : une ligne par établissement, les plus proches de chaque niveau.
+ * Le collège de secteur (Paris) passe en tête, même s'il n'est pas parmi les plus proches :
+ * c'est le seul de la liste qui concerne vraiment l'adresse.
+ */
+export function PdfEnseignementFiche({ schools }: { schools: NearbySchoolsDto }) {
+  const { schools: m, sections } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
+  const pick = (list: NearbySchoolDto[]) => {
+    const sector = list.filter((s) => s.estSecteur);
+    const others = list.filter((s) => !s.estSecteur);
+    return [...sector, ...others].slice(0, PDF_SCHOOLS_PER_LEVEL);
+  };
+  const levels = (["college", "lycee"] as const)
+    .map((level) => ({ level, list: pick(level === "college" ? schools.colleges : schools.lycees) }))
+    .filter(({ list }) => list.length > 0);
+
+  return (
+    <Block title={SECTION_TITLES.enseignement}>
+      {levels.map(({ level, list }) => (
+        <View key={level} wrap={false}>
+          <Sub>{m.titles[level]}</Sub>
+          {list.map((s) => {
+            const exam = primaryExam(s);
+            return (
+              <Fact key={s.uai} label={s.estSecteur ? m.sectorBadge : undefined}>
+                {m.pdfLine(s.nom, s.distance, exam?.tauxReussite ?? null, exam?.vaReussite ?? null)}
+              </Fact>
+            );
+          })}
+        </View>
+      ))}
+    </Block>
+  );
+}
+
 export function PdfProximiteFiche({
   neighborhood,
-  schoolSector,
   communeEquipment,
 }: {
   /** `null` en mode commune : les POI y sont mesurés depuis le centroïde. */
   neighborhood: NeighborhoodAnalysisDto | null;
-  schoolSector: SchoolSectorDto | null;
   /** Mode commune : les équipements de la commune entière, à la place du voisinage. */
   communeEquipment?: CommuneEquipmentDto | null;
 }) {
@@ -335,9 +374,6 @@ export function PdfProximiteFiche({
 
   return (
     <Block title={SECTION_TITLES.proximite}>
-      {schoolSector && (
-        <Fact label={nearbyMessages.school.levels[schoolSector.niveau]}>{schoolSector.nomEtablissement}</Fact>
-      )}
       {communeEquipment && (
         <>
           <Fact>{equipmentFootnote(communeEquipment, nearbyMessages.communeEquipment)}</Fact>

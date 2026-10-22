@@ -8,6 +8,7 @@ import type { SectionId } from "@/components/analysis/sections";
 export const sections = {
   titles: {
     immobilier: "Immobilier & urbanisme",
+    enseignement: "Enseignement",
     deplacer: "Se déplacer",
     proximite: "À proximité",
     environnement: "Climat",

@@ -14,6 +14,7 @@ import type { SchoolSectorService } from "../../school-sector/application/school
 import type { SecurityService } from "../../security/application/security.service";
 import type { LocalTaxService } from "../../local-tax/application/local-tax.service";
 import type { RentsService } from "../../rents/application/rents.service";
+import type { SchoolsService } from "../../schools/application/schools.service";
 import type { CommuneEquipmentService } from "../../commune-equipment/application/commune-equipment.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
 import type { FloodWindow } from "../../risks/domain/risk.types";
@@ -114,6 +115,7 @@ interface Dependencies {
   securityService: SecurityService;
   localTaxService: LocalTaxService;
   rentsService: RentsService;
+  schoolsService: SchoolsService;
   communeEquipmentService: CommuneEquipmentService;
 }
 
@@ -180,7 +182,17 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         : Promise.resolve(windowAround(input.lat, input.lon, FLOOD_RADIUS_M))
     ).then((window) => this.dependencies.riskService.getFloodZones(window));
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment, floodZones, localTax, rents] =
+    // Collèges et lycées : autour du point en mode adresse, ceux de la commune cherchée
+    // en mode commune (même code que les équipements).
+    // Chaînée sur la carte scolaire, pour situer le collège de secteur dans la liste.
+    const schoolsPromise = schoolSectorPromise.then((sector) =>
+      this.dependencies.schoolsService.getNearbySchools(input.lat, input.lon, {
+        codeCommune: mode === "commune" ? contourCitycode : undefined,
+        sectorCollege: sector?.nomEtablissement ?? null,
+      }),
+    );
+
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment, floodZones, localTax, rents, schools] =
       await Promise.all([
         this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
         this.dependencies.riskService.getRiskData(input.lat, input.lon),
@@ -201,7 +213,9 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
         this.dependencies.localTaxService.getLocalTax(mode === "commune" ? contourCitycode : codeInsee),
         // Même code que la fiscalité ; la carte « alentour » se centre sur le point analysé.
         this.dependencies.rentsService.getRents(mode === "commune" ? contourCitycode : codeInsee, input.lat, input.lon),
+        schoolsPromise,
       ]);
+
 
     const address = {
       label: input.label ?? addressDetails?.label ?? `${input.lat}, ${input.lon}`,
@@ -242,6 +256,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       communeEquipment,
       localTax,
       rents,
+      schools,
     };
   }
 }

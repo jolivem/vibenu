@@ -8,7 +8,7 @@ interface Props {
   m: PopulationMessages;
   /**
    * Carte du quartier, montée par l'appelant — comme le font déjà `RealEstateCard` et
-   * `SchoolSectorCard`. Absente en mode commune, et quand le contour IRIS manque.
+   * `SchoolsMapCard`. Absente en mode commune, et quand le contour IRIS manque.
    */
   children?: ReactNode;
 }

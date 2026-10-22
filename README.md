@@ -56,6 +56,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `rents` | Loyers d'annonce par commune (appartements tous types, 1-2 pièces, 3 pièces et plus, maisons) et communes alentour pour la carte | « Carte des loyers » ANIL / ministère du Logement (PostgreSQL) ; contours de communes reconstitués depuis les IRIS |
 | `local-tax` | Fiscalité locale : taxe foncière et TEOM (2021-2025), résidences secondaires et vacance, droits de mutation, comptes de la commune | DGFiP via data.economie.gouv.fr (PostgreSQL) ; barème DMTO ressaisi dans `dmto-rates.ts` |
 | `school-sector` | Secteur de collège (donnée disponible pour Paris) | Ville de Paris (PostgreSQL/PostGIS) |
+| `schools` | Section « Enseignement » : collèges et lycées alentour (ou de la commune), résultats, valeur ajoutée, IPS, encadrement, langues, offre | Éducation nationale / DEPP (PostgreSQL/PostGIS, `scripts/import_schools.py`) |
 | `commune-stats` | Agrégats des pages SEO `/commune/*` (prix, démographie, équipements, air, élections) | PostgreSQL/PostGIS |
 | `summary` | Construction du résumé textuel (règles déterministes) — toujours produit dans le DTO, **plus affiché** depuis le passage aux mini-synthèses | - |
 | `narrative` | Mini-synthèses « En bref » des cards + narrative des pages `/commune/*`, avec cache Postgres | Mistral AI (api.mistral.ai) |
@@ -313,6 +314,11 @@ python import_atmo_marseille.py
 
 # Importer les secteurs de collège de Paris (opendata.paris.fr)
 python import_school_sectors_paris.py
+
+# Importer les collèges et lycées (annuaire) et les données publiées par établissement :
+# résultats et valeur ajoutée, IPS, effectifs, langues, encadrement, évaluations de 6e…
+# (data.education.gouv.fr, 24 jeux, ~1 Go en cache dans data/schools/) — APRÈS la migration 024
+python import_schools.py
 ```
 
 ### 2. Migrations SQL applicatives
@@ -337,6 +343,7 @@ Migrations actuelles :
 - `015-crime-ssmsi.sql` — délinquance SSMSI (`crime_commune`, `crime_reference`, `crime_indicateur`)
 - `020-local-tax.sql` — fiscalité locale DGFiP (`local_tax_commune`, `local_tax_reference`, `local_tax_deliberation`, `local_tax_deliberation_reference`, `local_tax_finances`)
 - `023-rents.sql` — loyers d'annonce par commune (`rent_commune`) et contours simplifiés des communes (`commune_shape`)
+- `024-schools.sql` — collèges et lycées (`school_establishment`, indexée spatialement) et données par établissement telles que publiées (`school_data`, JSONB), avec la date de chaque chargement (`school_dataset_import`)
 - `021-card-insights-lang.sql` — colonne `lang` du cache des mini-synthèses (une phrase par langue)
 - `022-air-quality-stations.sql` — indicateurs annuels par station de mesure (`air_quality_station_annual`, source EEA)
 - `016-municipales-2026.sql` — municipales 2026
@@ -501,6 +508,16 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - Licence : Licence Ouverte 2.0
 - Mise à jour : une édition par an, en décembre, sous un nouveau jeu : mettre à jour `ANNEE` et `FILES` en tête du script, puis le relancer
 
+### Collèges et lycées (Éducation nationale, DEPP)
+- **Source** : [data.education.gouv.fr](https://data.education.gouv.fr), ministère de l'Éducation nationale et DEPP. Chaque jeu est téléchargé en entier par l'export JSON Lines de l'API Opendatasoft ; la liste est dans `DATASETS` en tête de `scripts/import_schools.py`
+- **Import** : `scripts/import_schools.py` →
+  - `school_establishment` : collèges et lycées **ouverts** de l'Annuaire de l'éducation (`fr-en-annuaire-education`), avec coordonnées, secteur, éducation prioritaire, voies, services (cantine, internat, ULIS, SEGPA) et sections (européenne, internationale, sport, arts…), liens site web et fiche ONISEP
+  - `school_data` : chaque ligne des autres jeux, **telle que publiée** (JSONB), rattachée à l'UAI et à l'année — l'affichage n'étant pas arrêté, rien n'est réinterprété à l'import. On y trouve : offre de langues, sections internationales et sportives, lycées des métiers, internats et mode d'hébergement ; effectifs par niveau, sexe et langue ; encadrement (heures par élève, élèves par division) ; résultats et valeur ajoutée (IVAC collèges depuis 2022, IVAL lycées GT et pro depuis 2012, brevet par établissement), évaluations nationales de 6e, insertion des lycées pro (Inserjeunes) ; IPS (2016-2021 et depuis 2023) et indice d'éloignement
+  - Les lignes « Total Département » / « Total Académie » de certains jeux sont gardées avec `uai` à NULL : ce sont les références de comparaison
+- **Précautions** : la valeur ajoutée est l'écart entre la réussite observée et celle qu'attendait le profil des élèves ; elle n'est pas calculée sous un seuil d'effectif, et **la DEPP déconseille d'en tirer un palmarès**. Les jeux ne couvrent pas tous les mêmes établissements (privé hors contrat absent des résultats, internats publics seulement)
+- Licence : Licence Ouverte 2.0
+- Mise à jour : relancer le script après chaque publication (résultats au printemps, effectifs et IPS à l'automne) ; `--only <jeu>` pour un seul jeu, `--refresh` pour retélécharger
+
 ## Langues
 
 Le site existe en français (langue d'origine, URL inchangées) et en anglais sous `/en`
@@ -534,6 +551,7 @@ claireadresse/
 │   ├── import_climate_stations.py    # Normales Météo-France 1991-2020 par station
 │   ├── import_atmo_*.py              # Indices ATMO annuels (Paris, Lyon, Marseille)
 │   ├── import_school_sectors_paris.py # Secteurs de collège (opendata.paris.fr)
+│   ├── import_schools.py             # Collèges, lycées et données par établissement (data.education.gouv.fr)
 │   ├── requirements.txt     # Dépendances Python
 │   └── .env                 # Config PostgreSQL locale (non versionné)
 └── frontend/              # Next.js / React / MapLibre
@@ -549,7 +567,7 @@ claireadresse/
         │   ├── location-analysis/  # Hooks (useLocationAnalysis, useCardInsights)
         │   └── analysis-pdf/       # Export PDF (react-pdf) — document, sections, capture carte
         ├── lib/site-features.ts  # Drapeaux de features des variantes PUBLIC / PRO
-        ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, security, local-tax, rents, school-sector, commune-stats, summary, narrative
+        ├── server-modules/       # Modules serveur (DDD) : address, mobility, risks, real-estate, cadastre, air-quality, neighborhood, demographics, elections, climate, security, local-tax, rents, school-sector, schools, commune-stats, summary, narrative
         ├── server-shared/
         │   ├── infrastructure/
         │   │   ├── database/     # Pool PostgreSQL + migrations SQL applicatives

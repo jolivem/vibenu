@@ -35,9 +35,13 @@ export const landing: LandingMessages = {
         "Recent sales from the DVF register and prices per m², placed on the map. Advertised rents by type of dwelling and a map of the surrounding communes. Cadastral plot, zoning under the local plan (PLU) and planning restrictions. Property tax, transfer duty and the commune's accounts.",
       schemaLabel: "Property prices (DVF), rents, cadastre, PLU zoning and local taxes",
     },
-    proximite: {
+    enseignement: {
       blurb:
-        "Schools, pharmacies, shops, parks: everyday services and how long it takes to walk there. In Paris, the catchment secondary school.",
+        "Nearby secondary schools on a map: exam pass rates, value added, social profile, languages and special sections. In Paris, the catchment school.",
+      schemaLabel: "Secondary schools: results, value added, languages",
+    },
+    proximite: {
+      blurb: "Schools, pharmacies, shops, parks: everyday services and how long it takes to walk there.",
       schemaLabel: "Shops, schools and services nearby",
     },
     deplacer: {
@@ -145,7 +149,7 @@ export const landing: LandingMessages = {
           (showRents ? "ANIL (the national housing information agency) for rents, " : "") +
           "Géorisques for natural and technological risks, IGN and the Géoportail de l'Urbanisme for plots, the local plan (PLU) and flood-risk prevention zoning, INSEE for population, income, employment and housing, INSEE's permanent database of facilities and OpenStreetMap for shops and local services, transport.data.gouv.fr for transport, Météo-France for climate, " +
           (showAirQuality ? "the European Environment Agency for air quality, " : "") +
-          "SSMSI (the Interior Ministry's statistical service) for crime, the Interior Ministry for elections, the City of Paris for school catchment areas, and IGN for address search, base maps and historical aerial views. Each figure stays tied to its source and publication date. Only the “In brief” sentences under the section titles are written by a language model: it rewords those same figures and invents none.",
+          "SSMSI (the Interior Ministry's statistical service) for crime, the Interior Ministry for elections, the Ministry of Education for secondary schools, the City of Paris for school catchment areas, and IGN for address search, base maps and historical aerial views. Each figure stays tied to its source and publication date. Only the “In brief” sentences under the section titles are written by a language model: it rewords those same figures and invents none.",
       },
       {
         question: "Which addresses can I analyse?",

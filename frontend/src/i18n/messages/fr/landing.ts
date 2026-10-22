@@ -55,9 +55,14 @@ export const landing = {
         "Transactions DVF récentes et prix au m², situées sur la carte. Loyers d'annonce par type de bien et carte des communes alentour. Parcelle cadastrale, zone du PLU et prescriptions d'urbanisme. Taxe foncière, droits de mutation et comptes de la commune.",
       schemaLabel: "Prix immobiliers DVF, loyers, cadastre, zonage PLU et fiscalité locale",
     },
+    enseignement: {
+      blurb:
+        "Les collèges et lycées alentour sur une carte : réussite au brevet et au bac, valeur ajoutée, profil social, langues et sections. À Paris, le collège de secteur.",
+      schemaLabel: "Collèges et lycées : résultats, valeur ajoutée, langues",
+    },
     proximite: {
       blurb:
-        "Écoles, pharmacies, commerces, parcs : les services du quotidien et leur temps à pied. À Paris, le collège de secteur.",
+        "Écoles, pharmacies, commerces, parcs : les services du quotidien et leur temps à pied.",
       schemaLabel: "Commerces, écoles et services à proximité",
     },
     deplacer: {
@@ -176,7 +181,7 @@ export const landing = {
           (showRents ? "l'ANIL pour les loyers, " : "") +
           "Géorisques pour les risques naturels et technologiques, l'IGN et le Géoportail de l'Urbanisme pour les parcelles, le PLU et les zonages des plans de prévention du risque d'inondation, l'INSEE pour la population, les revenus, l'emploi et les logements, la Base Permanente des Équipements de l'INSEE et OpenStreetMap pour les commerces et services de proximité, transport.data.gouv.fr pour les transports, Météo-France pour le climat, " +
           (showAirQuality ? "l'Agence européenne de l'environnement pour la qualité de l'air, " : "") +
-          "le SSMSI pour la délinquance, le ministère de l'Intérieur pour les élections, la Ville de Paris pour la carte scolaire, et l'IGN pour la recherche d'adresse, les fonds de carte et les vues aériennes anciennes. Chaque chiffre reste rattaché à sa source et à sa date de publication. Seules les phrases « En bref », sous les titres de rubriques, sont rédigées par un modèle de langage : il reformule ces mêmes chiffres, il n'en invente aucun.",
+          "le SSMSI pour la délinquance, le ministère de l'Intérieur pour les élections, le ministère de l'Éducation nationale pour les collèges et lycées, la Ville de Paris pour la carte scolaire, et l'IGN pour la recherche d'adresse, les fonds de carte et les vues aériennes anciennes. Chaque chiffre reste rattaché à sa source et à sa date de publication. Seules les phrases « En bref », sous les titres de rubriques, sont rédigées par un modèle de langage : il reformule ces mêmes chiffres, il n'en invente aucun.",
       },
       {
         question: "Quelles adresses puis-je analyser ?",

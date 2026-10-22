@@ -61,7 +61,6 @@ export const nearby: NearbyMessages = {
       hospital: "Hospital or clinic",
       emergency: "Emergency department",
     },
-    sectorTag: "catchment school",
     truncated: "Not a complete list — only the nearest places are shown.",
     none: "No amenities found nearby.",
     unnamed: {
@@ -79,16 +78,6 @@ export const nearby: NearbyMessages = {
       hospital: "Hospital",
       emergency: "Emergency department",
     },
-  },
-  school: {
-    title: "School catchment",
-    levels: {
-      college: "Catchment lower secondary school (collège)",
-      lycee: "Catchment upper secondary school (lycée)",
-    },
-    mapHint: (level) =>
-      `The coloured area is the catchment of the ${level === "college" ? "collège" : "lycée"}: every address inside it is assigned to that school.`,
-    footnote: (uai) => `Official state-school catchment.${uai ? ` School UAI code: ${uai}.` : ""}`,
   },
   communeEquipment: {
     title: "Amenities in the commune",

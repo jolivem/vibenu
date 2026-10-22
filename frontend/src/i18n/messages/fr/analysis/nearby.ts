@@ -1,4 +1,3 @@
-import type { SchoolSectorDto } from "@/types/location-analysis";
 import { createFormat } from "../../../format";
 
 const f = createFormat("fr");
@@ -58,8 +57,6 @@ export const nearby = {
       hospital: "Hôpital ou clinique",
       emergency: "Urgences",
     } as Record<string, string>,
-    /** Étiquette de l'établissement auquel l'adresse est rattachée par la carte scolaire. */
-    sectorTag: "de secteur",
     truncated: "Liste non exhaustive — seuls les équipements les plus proches sont affichés.",
     none: "Aucun équipement trouvé à proximité.",
     /** Nom générique d'un équipement que la source ne nomme pas. */
@@ -78,21 +75,6 @@ export const nearby = {
       hospital: "Hôpital",
       emergency: "Service d'urgences",
     } as Record<string, string>,
-  },
-  school: {
-    title: "Carte scolaire",
-    levels: {
-      college: "Collège de secteur",
-      lycee: "Lycée de secteur",
-    } satisfies Record<SchoolSectorDto["niveau"], string> as Record<SchoolSectorDto["niveau"], string>,
-    /**
-     * Sans légende, la zone colorée pouvait se lire comme le quartier IRIS de la rubrique
-     * Population, ou comme un rayon autour de l'adresse.
-     */
-    mapHint: (level: SchoolSectorDto["niveau"]) =>
-      `La zone colorée est le secteur ${level === "college" ? "du collège" : "du lycée"} : toutes les adresses qu'elle contient y sont rattachées.`,
-    footnote: (uai: string | null | undefined) =>
-      `Sectorisation publique officielle.${uai ? ` Code UAI de l'établissement : ${uai}.` : ""}`,
   },
   communeEquipment: {
     title: "Équipements de la commune",

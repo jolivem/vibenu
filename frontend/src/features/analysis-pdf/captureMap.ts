@@ -1,6 +1,6 @@
 import maplibregl, { type Map as MapLibreMap } from "maplibre-gl";
 import { ignTransformRequest } from "@/components/map/basemaps";
-import { computeBbox } from "@/components/map/Map";
+import { ADDRESS_MARKER_COLOR, computeBbox } from "@/components/map/Map";
 import type { GeoJsonGeometryDto } from "@/types/location-analysis";
 
 /**
@@ -81,7 +81,7 @@ export async function captureMap(source: MapLibreMap, target: MapCaptureTarget):
         source: ADDRESS_POINT_SOURCE,
         paint: {
           "circle-radius": 7,
-          "circle-color": "#0066cc",
+          "circle-color": ADDRESS_MARKER_COLOR,
           "circle-stroke-width": 2,
           "circle-stroke-color": "#ffffff",
         },

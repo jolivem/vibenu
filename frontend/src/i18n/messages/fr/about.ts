@@ -106,6 +106,11 @@ export const about = {
         desc: "Carte de Cassini, carte de l'état-major et photographies aériennes depuis les années 1950.",
       },
       {
+        name: "Collèges et lycées",
+        issuer: "Ministère de l'Éducation nationale · DEPP (data.education.gouv.fr)",
+        desc: "Annuaire des établissements, réussite au brevet et au baccalauréat avec leur valeur ajoutée, indice de position sociale, élèves par classe, langues et sections proposées.",
+      },
+      {
         name: "Carte scolaire",
         issuer: "Ville de Paris — opendata.paris.fr",
         desc: "Secteurs de collège, disponibles pour Paris uniquement.",
@@ -134,6 +139,7 @@ export const about = {
     paragraphs: [
       "Les données publiques ne sont pas infaillibles. Elles peuvent être erronées, incomplètes ou en retard sur le terrain : un commerce fermé figure encore dans l'inventaire des équipements, une vente n'apparaît dans DVF que plusieurs mois après la signature, un plan de prévention des risques n'est parfois publié que par son périmètre. Nous corrigeons ce que nous repérons, sans pouvoir garantir l'exactitude de chaque chiffre.",
       "La plupart des indicateurs décrivent en outre une zone plus large que le logement : un quartier IRIS, une commune, un rayon autour de l'adresse. Ils disent ce qui entoure un bien, pas l'état du bien lui-même.",
+      "Les collèges et lycées affichés sont les plus proches, pas forcément ceux où un enfant sera inscrit : hors de Paris, nous ne connaissons pas la sectorisation, que fixe le département pour les collèges et la région pour les lycées — la mairie ou le rectorat la donnent. Leurs résultats ne sont pas un classement : la valeur ajoutée compare chaque établissement à ce qu'on attendait de ses élèves, et le ministère déconseille d'en tirer un palmarès. Les établissements privés hors contrat n'y figurent pas.",
       "ClaireAdresse est un point de départ, pas un avis. Avant toute décision — achat, location, travaux —, recoupez ces informations sur place, par une visite, si possible à différentes heures, et auprès des sources locales : la mairie pour le PLU et les projets à venir, l'état des risques annexé à la promesse de vente ou au bail, les diagnostics techniques, le notaire, l'agence, le voisinage.",
     ] as Rich[],
   },

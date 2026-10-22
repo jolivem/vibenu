@@ -32,6 +32,8 @@ import { MeteoFranceStationsProvider } from "@/server-modules/climate/infrastruc
 import { ClimateServiceImpl } from "@/server-modules/climate/application/climate.service.impl";
 import { PostgisSchoolSectorProvider } from "@/server-modules/school-sector/infrastructure/postgis-school-sector.provider";
 import { SchoolSectorServiceImpl } from "@/server-modules/school-sector/application/school-sector.service.impl";
+import { PostgisSchoolsProvider } from "@/server-modules/schools/infrastructure/postgis-schools.provider";
+import { SchoolsServiceImpl } from "@/server-modules/schools/application/schools.service.impl";
 import { PostgisCommuneEquipmentProvider } from "@/server-modules/commune-equipment/infrastructure/postgis-commune-equipment.provider";
 import { CommuneEquipmentServiceImpl } from "@/server-modules/commune-equipment/application/commune-equipment.service.impl";
 
@@ -62,6 +64,7 @@ const useCase = new LocationAnalysisUseCase({
   rentsService: new RentsServiceImpl(new RentsDatabaseProvider()),
   climateService: new ClimateServiceImpl(new MeteoFranceStationsProvider()),
   schoolSectorService: new SchoolSectorServiceImpl(new PostgisSchoolSectorProvider()),
+  schoolsService: new SchoolsServiceImpl(new PostgisSchoolsProvider()),
   communeEquipmentService: new CommuneEquipmentServiceImpl(new PostgisCommuneEquipmentProvider()),
 });
 

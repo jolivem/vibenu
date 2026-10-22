@@ -9,6 +9,7 @@ import type { AnalysisMessages } from "@/i18n/messages/fr/analysis";
 import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
 import { hasLocalTaxContent } from "@/components/analysis/localTaxModel";
 import { hasRentContent } from "@/components/analysis/rentsModel";
+import { hasSchools } from "@/components/analysis/schoolsModel";
 import { SECTION_ORDER, type SectionId } from "@/components/analysis/sections";
 import "./registerFonts";
 import { PdfMessagesProvider } from "./pdfMessages";
@@ -21,6 +22,7 @@ import {
   PdfImmobilierFiche,
   PdfKeyFigures,
   PdfPopulationFiche,
+  PdfEnseignementFiche,
   PdfProximiteFiche,
   PdfRisquesFiche,
   PdfSecuriteFiche,
@@ -138,7 +140,7 @@ export function AnalysisPdfDocument({
   const localTax = FEATURES.showLocalTax && hasLocalTaxContent(data.localTax) ? data.localTax : null;
   const rents = FEATURES.showRents && hasRentContent(data.rents) ? data.rents : null;
   const showNeighborhood = FEATURES.showNeighborhood && data.mode !== "commune";
-  const showSchoolSector = FEATURES.showSchoolSector && Boolean(data.schoolSector);
+  const schools = FEATURES.showSchools && hasSchools(data.schools) ? data.schools : null;
   const showCommuneEquipment =
     FEATURES.showCommuneEquipment && data.mode === "commune" && Boolean(data.communeEquipment);
   const showSecurity = FEATURES.showSecurity && Boolean(data.security?.indicateurs.length);
@@ -150,7 +152,8 @@ export function AnalysisPdfDocument({
   // Mêmes conditions que `hasContent` dans `AnalysisScreen`, une section par entrée.
   const sections: Record<SectionId, boolean> = {
     immobilier: showRealEstate || showCadastre || Boolean(localTax) || Boolean(rents),
-    proximite: showNeighborhood || showSchoolSector || showCommuneEquipment,
+    enseignement: Boolean(schools),
+    proximite: showNeighborhood || showCommuneEquipment,
     deplacer: FEATURES.showMobility,
     securite: showSecurity,
     population:
@@ -214,10 +217,11 @@ export function AnalysisPdfDocument({
           />
         )}
 
+        {sections.enseignement && schools && <PdfEnseignementFiche schools={schools} />}
+
         {sections.proximite && (
           <PdfProximiteFiche
             neighborhood={showNeighborhood ? data.neighborhood : null}
-            schoolSector={showSchoolSector ? (data.schoolSector ?? null) : null}
             communeEquipment={showCommuneEquipment ? (data.communeEquipment ?? null) : null}
           />
         )}

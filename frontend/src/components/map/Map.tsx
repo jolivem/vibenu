@@ -28,6 +28,17 @@ export const SCHOOL_SECTOR_LAYER_ID = "school-sector";
 /** Loyers des communes alentour (card Loyers). Les features portent leur couleur en `fill`. */
 export const RENT_LAYER_ID = "rent-areas";
 /**
+ * Marqueur de l'adresse analysée : le vert du logo (`--accent` dans globals.css). MapLibre
+ * le dessine en SVG inline, hors de portée des variables CSS : d'où la copie ici.
+ */
+export const ADDRESS_MARKER_COLOR = "#4B9319";
+/** Cases de la carte « Collèges et lycées » ; le secteur de collège suit la première. */
+export const SCHOOLS_COLLEGES_LAYER_ID = "schools-colleges";
+export const SCHOOLS_LYCEES_LAYER_ID = "schools-lycees";
+const SCHOOLS_SOURCE = "schools";
+/** Couleurs des points : celle des collèges reprend l'orangé du secteur qu'ils desservent. */
+export const SCHOOL_COLORS = { college: "#d97706", lycee: "#7c3aed" } as const;
+/**
  * Les zonages PPR d'inondation. Nommé hors de l'espace `risk-*` **exprès** : ces ids sont
  * réservés aux rasters WMS de `RISK_LAYERS`, sur lesquels `applyLayerVisibility` appelle
  * `setLayoutProperty` sans garde `getLayer`. Une couche vectorielle qui s'y glisserait
@@ -116,6 +127,20 @@ function applyLayerVisibility(m: MapLibreMap, visibleLayers: Set<string>): void 
     m.setLayoutProperty(`${layerPrefix}-outline`, "visibility", visibility);
   }
 
+  // Établissements : un calque de points par case. Le secteur de collège, quand la carte
+  // montre aussi les collèges, suit leur case : c'est le même sujet.
+  for (const id of [SCHOOLS_COLLEGES_LAYER_ID, SCHOOLS_LYCEES_LAYER_ID]) {
+    if (m.getLayer(`${id}-points`)) {
+      m.setLayoutProperty(`${id}-points`, "visibility", visibleLayers.has(id) ? "visible" : "none");
+    }
+  }
+  if (m.getLayer(`${SCHOOLS_COLLEGES_LAYER_ID}-points`) && m.getLayer(`${SCHOOL_SECTOR_LAYER_ID}-fill`)) {
+    const visibility =
+      visibleLayers.has(SCHOOLS_COLLEGES_LAYER_ID) || visibleLayers.has(SCHOOL_SECTOR_LAYER_ID) ? "visible" : "none";
+    m.setLayoutProperty(`${SCHOOL_SECTOR_LAYER_ID}-fill`, "visibility", visibility);
+    m.setLayoutProperty(`${SCHOOL_SECTOR_LAYER_ID}-outline`, "visibility", visibility);
+  }
+
   // Troisième calque des zonages PPR, sous la même case que leur aplat.
   if (m.getLayer(FLOOD_PERIMETER_LAYER)) {
     m.setLayoutProperty(
@@ -154,6 +179,51 @@ export function computeBbox(geometry: GeoJsonGeometryDto): LngLatBounds | null {
   ];
 }
 
+/** Un établissement sur la carte « Collèges et lycées ». */
+export interface SchoolPoint {
+  uai: string;
+  level: "college" | "lycee";
+  nom: string;
+  lat: number;
+  lon: number;
+  distance: number;
+  reussite: number | null;
+  estSecteur: boolean;
+}
+
+/**
+ * Cadre la carte sur le point analysé, les établissements des cases cochées et, s'il est
+ * affiché, le secteur de collège. `animate` : au fil des clics, pas à l'ouverture.
+ */
+function fitSchools(
+  m: MapLibreMap,
+  schools: SchoolPoint[],
+  visibleLayers: Set<string>,
+  center: [number, number],
+  sector: GeoJsonGeometryDto | null | undefined,
+  animate: boolean,
+): void {
+  const points: Array<[number, number]> = [center];
+  for (const s of schools) {
+    const id = s.level === "college" ? SCHOOLS_COLLEGES_LAYER_ID : SCHOOLS_LYCEES_LAYER_ID;
+    if (visibleLayers.has(id)) points.push([s.lon, s.lat]);
+  }
+  if (sector && visibleLayers.has(SCHOOLS_COLLEGES_LAYER_ID)) {
+    const bbox = computeBbox(sector);
+    if (bbox) points.push(bbox[0] as [number, number], bbox[1] as [number, number]);
+  }
+  if (points.length < 2) return;
+  const lons = points.map((p) => p[0]);
+  const lats = points.map((p) => p[1]);
+  m.fitBounds(
+    [
+      [Math.min(...lons), Math.min(...lats)],
+      [Math.max(...lons), Math.max(...lats)],
+    ],
+    { padding: 36, maxZoom: 16, duration: animate ? 600 : 0 },
+  );
+}
+
 interface MapProps {
   lat: number;
   lon: number;
@@ -178,9 +248,19 @@ interface MapProps {
    * `fill` (`rentMapFeatures`). Sans valeur par défaut, pour la même raison que `floodZones`.
    */
   rentAreas?: Array<RentAreaFeatureDto & { properties: { fill: string } }>;
+  /**
+   * Collèges et lycées, en points, avec une case par niveau. Sans valeur par défaut, pour
+   * la même raison que `floodZones` ; le parent le mémorise.
+   */
+  schools?: SchoolPoint[];
   onReady?: (map: MapLibreMap) => void;
   height?: string;
   showLayerToggle?: boolean;
+  /**
+   * Avec `showLayerToggle`, propose aussi les couches de risques (BRGM). Faux pour une carte
+   * thématique dont les cases ne concernent que ses propres surcouches (établissements).
+   */
+  showRiskToggles?: boolean;
   /**
    * Ajoute les fonds optionnels — photo aérienne, relief LiDAR — et leurs cases.
    *
@@ -217,7 +297,7 @@ interface MapProps {
   zoom?: number;
 }
 
-export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, floodZones, rentAreas, onReady, height = "400px", showLayerToggle = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
+export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, floodZones, rentAreas, schools, onReady, height = "400px", showLayerToggle = true, showRiskToggles = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
   const { map: m } = useI18n();
   // Les infobulles sont construites dans des gestionnaires posés une fois à la création
   // de la carte : ils lisent les messages par cette ref, sans dépendre du rendu.
@@ -297,14 +377,22 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
     if (irisGeojson) {
       layers.push({ id: IRIS_LAYER_ID, label: m.overlays.iris, color: "#8b5cf6" });
     }
-    if (schoolSector) {
+    if (schools?.length) {
+      // Le secteur de collège n'a pas sa propre case ici : il suit celle des collèges.
+      if (schools.some((s) => s.level === "college")) {
+        layers.push({ id: SCHOOLS_COLLEGES_LAYER_ID, label: m.overlays.colleges, color: SCHOOL_COLORS.college });
+      }
+      if (schools.some((s) => s.level === "lycee")) {
+        layers.push({ id: SCHOOLS_LYCEES_LAYER_ID, label: m.overlays.lycees, color: SCHOOL_COLORS.lycee });
+      }
+    } else if (schoolSector) {
       layers.push({ id: SCHOOL_SECTOR_LAYER_ID, label: m.overlays.schoolSector, color: "#d97706" });
     }
     if (rentAreas?.length) {
       layers.push({ id: RENT_LAYER_ID, label: m.overlays.rents, color: RENT_CLASS_COLORS[RENT_CLASS_COLORS.length - 1] });
     }
     return layers;
-  }, [dvfTransactions, irisGeojson, schoolSector, rentAreas, m]);
+  }, [dvfTransactions, irisGeojson, schoolSector, rentAreas, schools, m]);
 
   // Le style IGN est chargé à part : c'est un fetch (~288 Ko), mutualisé entre les cartes
   // de la page par le cache de `loadIgnStyle`. Tant qu'il n'est pas là, la carte n'est pas
@@ -588,6 +676,44 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       );
     }
 
+    // Établissements : un point par collège ou lycée, cerclé de noir s'il est le collège de
+    // secteur. Dessinés dans le canvas, et non en marqueurs DOM, pour figurer aussi dans
+    // les captures (PDF).
+    const schoolSources: Record<string, maplibregl.SourceSpecification> = {};
+    const schoolLayers: maplibregl.LayerSpecification[] = [];
+
+    if (schools?.length) {
+      schoolSources[SCHOOLS_SOURCE] = {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: schools.map((s) => ({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [s.lon, s.lat] },
+            properties: { uai: s.uai, level: s.level, nom: s.nom, distance: s.distance, reussite: s.reussite ?? -1, secteur: s.estSecteur },
+          })),
+        },
+      };
+      for (const [id, level] of [
+        [SCHOOLS_COLLEGES_LAYER_ID, "college"],
+        [SCHOOLS_LYCEES_LAYER_ID, "lycee"],
+      ] as const) {
+        schoolLayers.push({
+          id: `${id}-points`,
+          type: "circle",
+          source: SCHOOLS_SOURCE,
+          filter: ["==", ["get", "level"], level],
+          paint: {
+            "circle-color": SCHOOL_COLORS[level],
+            "circle-radius": ["case", ["get", "secteur"], 9, 6.5],
+            "circle-stroke-color": ["case", ["get", "secteur"], "#1f2937", "#ffffff"],
+            "circle-stroke-width": ["case", ["get", "secteur"], 3, 1.5],
+          },
+          layout: { visibility: "none" },
+        });
+      }
+    }
+
     // Les zonages PPR d'inondation : une seule source, un `Feature` par assiette, parce
     // que le nom du plan doit rester attaché à sa géométrie pour la popup. Les fusionner
     // en une géométrie unique rendrait l'aplat plus léger mais muet.
@@ -706,6 +832,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       ...dvfLayers,
       ...irisLayers,
       ...schoolSectorLayers,
+      ...schoolLayers,
       ...communeLayers,
       ...cadastreLayers, // cadastre on top of DVF
     ];
@@ -736,6 +863,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           ...dvfSources,
           ...irisSources,
           ...schoolSectorSources,
+          ...schoolSources,
           ...communeSources,
           ...cadastreSources,
         },
@@ -796,14 +924,15 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         map.current.fitBounds(bbox, { padding: 24, duration: 0 });
       }
     } else {
-      new maplibregl.Marker({ color: "#0066cc" })
+      new maplibregl.Marker({ color: ADDRESS_MARKER_COLOR })
         .setLngLat([lon, lat])
         .setPopup(new maplibregl.Popup().setText(label))
         .addTo(map.current);
 
       // Le secteur est le sujet de sa carte, pas une surcouche : il doit tenir dans le cadre.
       // Le zoom 14 par défaut couvre ~3 km, ce qui suffit en ville mais coupe un secteur rural.
-      if (schoolSector) {
+      // Sur la carte des établissements, c'est `fitSchools` qui cadre (plus bas).
+      if (schoolSector && !schools?.length) {
         const bbox = computeBbox(schoolSector);
         if (bbox) {
           map.current.fitBounds(bbox, { padding: 24, duration: 0 });
@@ -821,6 +950,37 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         marker.setPopup(new maplibregl.Popup().setText(`${transport.type}: ${transport.name}`));
         marker.addTo(map.current!);
       });
+    }
+
+    // Établissements : cadrer sur ceux des cases cochées, nommer l'établissement au clic.
+    if (schools?.length) {
+      const m = map.current;
+      fitSchools(m, schools, visibleLayersRef.current, [lon, lat], schoolSector, false);
+      for (const id of [SCHOOLS_COLLEGES_LAYER_ID, SCHOOLS_LYCEES_LAYER_ID]) {
+        const layerId = `${id}-points`;
+        m.on("click", layerId, (e) => {
+          const props = e.features?.[0]?.properties;
+          if (!props) return;
+          const reussite = Number(props.reussite);
+          const popup = messagesRef.current.schoolPopup({
+            nom: String(props.nom),
+            distance: Number(props.distance),
+            reussite: reussite >= 0 ? reussite : null,
+            secteur: props.secteur === true || props.secteur === "true",
+          });
+          const html = document.createElement("div");
+          const title = document.createElement("strong");
+          title.textContent = popup.title;
+          html.append(title, ...popup.lines.flatMap((line) => [document.createElement("br"), line]));
+          new maplibregl.Popup().setLngLat(e.lngLat).setDOMContent(html).addTo(m);
+        });
+        m.on("mouseenter", layerId, () => {
+          m.getCanvas().style.cursor = "pointer";
+        });
+        m.on("mouseleave", layerId, () => {
+          m.getCanvas().style.cursor = "";
+        });
+      }
     }
 
     // Loyers : nommer la commune et son loyer au clic.
@@ -916,7 +1076,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         map.current = null;
       }
     };
-  }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, floodZones, rentAreas, zoom]);
+  }, [baseStyle, lat, lon, label, transports, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, floodZones, rentAreas, schools, zoom]);
 
   // Répercute les clics sur les cases. Le cas « la carte n'existe pas encore » est traité par
   // l'effet d'init lui-même, pas ici : cet effet ne se relancerait pas, ses dépendances ne
@@ -927,6 +1087,8 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
 
     if (m.isStyleLoaded()) {
       applyLayerVisibility(m, visibleLayers);
+      // Cocher « Lycées » élargit le cadre à leur rayon ; décocher le resserre.
+      if (schools?.length) fitSchools(m, schools, visibleLayers, [lon, lat], schoolSector, true);
     } else {
       const handler = () => applyLayerVisibility(m, visibleLayers);
       m.once("style.load", handler);
@@ -934,6 +1096,9 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
         m.off("style.load", handler);
       };
     }
+    // `schools`, `lat`, `lon` et `schoolSector` ne bougent pas sans recréer la carte : seul
+    // un clic sur une case doit relancer cet effet.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleLayers]);
 
   return (
@@ -950,7 +1115,7 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       />
       {(showLayerToggle || showBaseLayers) && (
         <LayerTogglePanel
-          riskLayers={showLayerToggle ? availableRiskLayers : []}
+          riskLayers={showLayerToggle && showRiskToggles ? availableRiskLayers : []}
           overlayLayers={showLayerToggle ? overlayLayers : []}
           baseChoices={
             showBaseLayers ? BASE_CHOICES.map((c) => ({ id: c.id, label: m.basemaps[c.id] ?? c.id })) : []

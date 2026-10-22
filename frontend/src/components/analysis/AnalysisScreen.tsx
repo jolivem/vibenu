@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Map as MapLibreMap } from "maplibre-gl";
-import type { RentAnalysisDto } from "@/types/location-analysis";
+import type { RentAnalysisDto, SchoolSectorDto } from "@/types/location-analysis";
 import type { RentsMessages } from "@/i18n/messages/fr/analysis/rents";
 import { useLocationAnalysis } from "@/features/location-analysis/useLocationAnalysis";
 import { useCardInsights } from "@/features/location-analysis/useCardInsights";
-import { DVF_LAYER_ID, FLOOD_ZONES_LAYER_ID, IRIS_LAYER_ID, RENT_LAYER_ID, SCHOOL_SECTOR_LAYER_ID, Map } from "@/components/map/Map";
+import { DVF_LAYER_ID, FLOOD_ZONES_LAYER_ID, IRIS_LAYER_ID, RENT_LAYER_ID, SCHOOLS_COLLEGES_LAYER_ID, SCHOOLS_LYCEES_LAYER_ID, Map, type SchoolPoint } from "@/components/map/Map";
 import { LazyMap } from "@/components/map/LazyMap";
 import { THEMATIC_BASEMAP } from "@/components/map/basemaps";
 import { MobilityCard } from "@/components/analysis/MobilityCard";
@@ -30,7 +30,8 @@ import { EmploymentCard } from "@/components/analysis/EmploymentCard";
 import { HouseholdsCard } from "@/components/analysis/HouseholdsCard";
 import { ElectionsCard } from "@/components/analysis/ElectionsCard";
 import { ClimateCard } from "@/components/analysis/ClimateCard";
-import { SchoolSectorCard } from "@/components/analysis/SchoolSectorCard";
+import { SchoolsCard } from "@/components/analysis/SchoolsCard";
+import { hasSchools, schoolPoints } from "@/components/analysis/schoolsModel";
 import { CommuneEquipmentCard } from "@/components/analysis/CommuneEquipmentCard";
 import { SecurityCard } from "@/components/analysis/SecurityCard";
 import { MunicipalesCard } from "@/components/analysis/MunicipalesCard";
@@ -133,6 +134,16 @@ export function AnalysisScreen() {
   const getMap = useCallback(() => mapRef.current, []);
 
   const isCommune = data?.mode === "commune";
+
+  // Mémorisés : un tableau neuf à chaque rendu détruirait et reconstruirait la carte.
+  const schoolMapPoints = useMemo(() => {
+    const points = data?.schools ? schoolPoints(data.schools) : [];
+    return {
+      college: points.filter((p) => p.level === "college"),
+      lycee: points.filter((p) => p.level === "lycee"),
+    };
+  }, [data?.schools]);
+  const sectorGeometry = FEATURES.showSchoolSector ? (data?.schoolSector?.geometry ?? null) : null;
   // L'arrondissement analysé a aussi sa page commune SEO : on la propose, sans l'imposer.
   const seoPage = isCommune ? seoPageForCitycode(citycode) : undefined;
   // Un vrai zonage d'inondation, et pas seulement le périmètre d'un plan.
@@ -149,6 +160,7 @@ export function AnalysisScreen() {
     if (!data) {
       return {
         immobilier: false,
+        enseignement: false,
         deplacer: false,
         proximite: false,
         environnement: false,
@@ -165,10 +177,10 @@ export function AnalysisScreen() {
         (FEATURES.showLocalTax && hasLocalTaxContent(data.localTax)) ||
         (FEATURES.showRents && hasRentContent(data.rents)) ||
         (FEATURES.showCadastre && !!data.cadastre),
+      enseignement: FEATURES.showSchools && hasSchools(data.schools),
       deplacer: FEATURES.showMobility,
       proximite:
         (FEATURES.showNeighborhood && data.mode !== "commune") ||
-        (FEATURES.showSchoolSector && !!data.schoolSector) ||
         // En mode commune, les équipements de la commune entière remplacent le voisinage.
         (FEATURES.showCommuneEquipment && data.mode === "commune" && !!data.communeEquipment),
       environnement:
@@ -333,35 +345,40 @@ export function AnalysisScreen() {
                   </AnalysisSection>
                 )}
 
-                {hasContent.proximite && (
-                  <AnalysisSection id="proximite">
-                    {FEATURES.showNeighborhood && !isCommune && (
-                      <NeighborhoodCard
-                        neighborhood={data.neighborhood}
-                        m={m.nearby}
-                        sectorSchool={FEATURES.showSchoolSector ? data.schoolSector : null}
-                      />
-                    )}
-                    {FEATURES.showCommuneEquipment && isCommune && data.communeEquipment && (
-                      <CommuneEquipmentCard equipment={data.communeEquipment} m={m.nearby.communeEquipment} />
-                    )}
-                    {FEATURES.showSchoolSector && data.schoolSector && (
-                      <SchoolSectorCard schoolSector={data.schoolSector} m={m.nearby.school}>
-                        {data.schoolSector.geometry ? (
+                {hasContent.enseignement && data.schools && (
+                  <AnalysisSection id="enseignement">
+                    {(["college", "lycee"] as const).map((level) => (
+                      <SchoolsCard
+                        key={level}
+                        level={level}
+                        schools={data.schools!}
+                        m={m.schools}
+                        hasSector={level === "college" && !!sectorGeometry}
+                      >
+                        {schoolMapPoints[level].length > 0 && (
                           <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                            <Map
+                            <SchoolsMap
+                              points={schoolMapPoints[level]}
+                              level={level}
                               lat={data.map.center.lat}
                               lon={data.map.center.lon}
                               label={data.address.label}
-                              schoolSector={data.schoolSector.geometry}
-                              basemap={THEMATIC_BASEMAP}
-                              initialLayers={[SCHOOL_SECTOR_LAYER_ID]}
-                              showLayerToggle={false}
-                              height={THEMATIC_MAP_HEIGHT}
+                              sector={level === "college" ? sectorGeometry : null}
                             />
                           </LazyMap>
-                        ) : null}
-                      </SchoolSectorCard>
+                        )}
+                      </SchoolsCard>
+                    ))}
+                  </AnalysisSection>
+                )}
+
+                {hasContent.proximite && (
+                  <AnalysisSection id="proximite">
+                    {FEATURES.showNeighborhood && !isCommune && (
+                      <NeighborhoodCard neighborhood={data.neighborhood} m={m.nearby} />
+                    )}
+                    {FEATURES.showCommuneEquipment && isCommune && data.communeEquipment && (
+                      <CommuneEquipmentCard equipment={data.communeEquipment} m={m.nearby.communeEquipment} />
                     )}
                   </AnalysisSection>
                 )}
@@ -574,3 +591,39 @@ function RentsMap({
 
 /** Constante de module : un tableau littéral reconstruirait la carte à chaque rendu. */
 const RENT_INITIAL_LAYERS = [RENT_LAYER_ID];
+/** Une carte par niveau : sa seule couche est allumée d'emblée, sans case à cocher. */
+const SCHOOLS_INITIAL_LAYERS = {
+  college: [SCHOOLS_COLLEGES_LAYER_ID],
+  lycee: [SCHOOLS_LYCEES_LAYER_ID],
+};
+
+/** Carte des collèges ou des lycées d'une card de la section Enseignement. */
+function SchoolsMap({
+  points,
+  level,
+  lat,
+  lon,
+  label,
+  sector,
+}: {
+  points: SchoolPoint[];
+  level: "college" | "lycee";
+  lat: number;
+  lon: number;
+  label: string;
+  sector: SchoolSectorDto["geometry"] | null;
+}) {
+  return (
+    <Map
+      lat={lat}
+      lon={lon}
+      label={label}
+      schools={points}
+      schoolSector={sector}
+      basemap={THEMATIC_BASEMAP}
+      initialLayers={SCHOOLS_INITIAL_LAYERS[level]}
+      showLayerToggle={false}
+      height={THEMATIC_MAP_HEIGHT}
+    />
+  );
+}

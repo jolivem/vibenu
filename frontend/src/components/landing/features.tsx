@@ -19,6 +19,14 @@ import type { LandingMessages } from "@/i18n/messages/fr/landing";
 /** Enfants du `<svg>` : le wrapper est rendu une seule fois par la page. */
 const ICONS: Record<SectionId, ReactNode> = {
   immobilier: <path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />,
+  // Toque de diplômé : plateau, calotte, gland.
+  enseignement: (
+    <>
+      <path d="M12 4 2 9l10 5 10-5z" />
+      <path d="M6 11.2V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.8" />
+      <path d="M22 9v5" />
+    </>
+  ),
   // Devanture de commerce : auvent, corps, porte.
   proximite: (
     <>

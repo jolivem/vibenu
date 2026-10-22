@@ -101,6 +101,11 @@ export const about: AboutMessages = {
         desc: "The Cassini map, the État-major map and aerial photographs since the 1950s.",
       },
       {
+        name: "Secondary schools",
+        issuer: "French Ministry of Education · DEPP (data.education.gouv.fr)",
+        desc: "Directory of schools, brevet and baccalauréat pass rates with their value added, social position index, pupils per class, languages and special sections on offer.",
+      },
+      {
         name: "School catchment",
         issuer: "City of Paris — opendata.paris.fr",
         desc: "Secondary school (collège) catchment areas, available for Paris only.",
@@ -129,6 +134,7 @@ export const about: AboutMessages = {
     paragraphs: [
       "Public data is not infallible. It can be wrong, incomplete or behind the situation on the ground: a closed shop still appears in the facilities inventory, a sale only shows up in DVF several months after signing, a risk prevention plan is sometimes published only as an outline. We correct what we spot, but cannot guarantee that every figure is accurate.",
       "Most indicators also describe an area larger than the home itself: an IRIS neighbourhood, a commune, a radius around the address. They tell you what surrounds a property, not the condition of the property.",
+      "The collèges and lycées shown are the nearest ones, not necessarily those a child will attend: outside Paris we do not know the catchment areas, which the département sets for collèges and the region for lycées — the town hall or the local education authority can tell you. Their results are not a ranking: value added compares each school with what its pupils were expected to achieve, and the Ministry advises against using it to rank schools. Private schools without a state contract are not included.",
       "ClaireAdresse is a starting point, not an opinion. Before any decision — buying, renting, building work — check this information on site, by visiting, at different times of day if you can, and with local sources: the town hall for the PLU and upcoming projects, the risk statement attached to the sale agreement or the lease, the technical surveys, the notary, the agency, the neighbours.",
     ],
   },

@@ -363,6 +363,107 @@ export interface SchoolSectorDto {
   geometry: GeoJsonGeometryDto;
 }
 
+/** Niveau d'un établissement du second degré. */
+export type SchoolLevelDto = "college" | "lycee";
+
+/** Voies d'un lycée, selon l'annuaire de l'éducation. */
+export type SchoolVoieDto = "generale" | "technologique" | "professionnelle";
+
+/**
+ * Codes de l'offre d'un établissement (annuaire, sections sportives, lycées des métiers) ;
+ * le libellé est produit à l'affichage, dans la langue de la page.
+ */
+export type SchoolOfferCodeDto =
+  | "cantine"
+  | "internat"
+  | "ulis"
+  | "segpa"
+  | "post_bac"
+  | "apprentissage"
+  | "agricole"
+  | "metiers"
+  | "europeenne"
+  | "internationale"
+  | "sport"
+  | "arts"
+  | "cinema"
+  | "theatre";
+
+/**
+ * Résultats à un examen (brevet, bac général et technologique, bac professionnel), dernière
+ * session publiée. Les valeurs ajoutées (`va*`) sont l'écart en points entre le résultat
+ * observé et celui qu'attendait le profil des élèves ; `null` = non publié sous le seuil
+ * d'effectif de la DEPP, jamais 0.
+ */
+export interface SchoolExamResultDto {
+  annee: number;
+  candidats: number | null;
+  tauxReussite: number | null;
+  vaReussite: number | null;
+  /** Moyenne des établissements du département, pondérée par les candidats. */
+  tauxReussiteDepartement: number | null;
+  tauxMentions: number | null;
+  vaMentions: number | null;
+  /** Brevet seulement : note moyenne aux épreuves écrites, sur 20. */
+  noteEcrit: number | null;
+  vaNote: number | null;
+}
+
+/** Une valeur et la moyenne départementale à laquelle la comparer. */
+export interface SchoolIndicatorDto {
+  annee: number;
+  valeur: number;
+  departement: number | null;
+}
+
+export interface NearbySchoolDto {
+  uai: string;
+  nom: string;
+  level: SchoolLevelDto;
+  secteur: "public" | "prive";
+  educationPrioritaire: "REP" | "REP+" | null;
+  voies: SchoolVoieDto[];
+  offre: SchoolOfferCodeDto[];
+  /** Disciplines des sections sportives, texte source (« Rugby »). */
+  sports: string[];
+  /** Langues proposées, texte source ; `lca` = langues et cultures de l'Antiquité. */
+  langues: { lv1: string[]; lv2: string[]; lca: string[] };
+  /** Intitulé du label « lycée des métiers », texte source. */
+  labelMetiers: string | null;
+  lat: number;
+  lon: number;
+  /** Distance au point analysé, en mètres. */
+  distance: number;
+  /** Collège du secteur de l'adresse (Paris seulement, là où la sectorisation est connue). */
+  estSecteur: boolean;
+  brevet: SchoolExamResultDto | null;
+  bacGt: SchoolExamResultDto | null;
+  bacPro: SchoolExamResultDto | null;
+  /** Indice de position sociale ; la référence est celle du département (et du type de lycée). */
+  ips: SchoolIndicatorDto | null;
+  /** Élèves par division (E/S), pour le niveau de l'établissement. */
+  elevesParDivision: SchoolIndicatorDto | null;
+  /** Lycées professionnels : insertion des sortants (Inserjeunes), en %. */
+  insertion: {
+    annee: number;
+    tauxEmploi6Mois: number | null;
+    vaEmploi6Mois: number | null;
+    tauxPoursuiteEtudes: number | null;
+  } | null;
+  ficheOnisep: string | null;
+  siteWeb: string | null;
+}
+
+export interface NearbySchoolsDto {
+  /** `rayon` autour de l'adresse, ou établissements de la `commune` analysée. */
+  scope: "rayon" | "commune";
+  /** Rayons de recherche en mètres (mode `rayon`). */
+  rayonColleges: number;
+  rayonLycees: number;
+  colleges: NearbySchoolDto[];
+  lycees: NearbySchoolDto[];
+}
+
 export interface MapContextDto {
   center: {
     lat: number;
@@ -626,4 +727,6 @@ export interface LocationAnalysisDto {
   rents?: RentAnalysisDto | null;
   /** Mode commune uniquement ; `null` en mode adresse ou si la BPE ne connaît pas le code. */
   communeEquipment?: CommuneEquipmentDto | null;
+  /** Collèges et lycées alentour (ou de la commune) ; `null` si la base ne répond pas. */
+  schools?: NearbySchoolsDto | null;
 }

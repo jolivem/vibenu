@@ -53,6 +53,8 @@ export const map = {
     iris: "Quartier démographique",
     schoolSector: "Secteur collège",
     rents: "Loyers des communes",
+    colleges: "Collèges",
+    lycees: "Lycées",
   },
   /** Infobulle d'une commune de la carte des loyers. */
   rentPopup: (p: { nom: string; loyerM2: number; groupe: boolean }) => ({
@@ -60,6 +62,15 @@ export const map = {
     lines: [
       `Appartements : ${f.fixed(p.loyerM2, 1)} €/m²`,
       ...(p.groupe ? ["estimé sur un groupe de communes voisines"] : []),
+    ],
+  }),
+  /** Infobulle d'un collège ou d'un lycée : le nom, puis distance et réussite à l'examen. */
+  schoolPopup: (p: { nom: string; distance: number; reussite: number | null; secteur: boolean }) => ({
+    title: p.nom,
+    lines: [
+      ...(p.secteur ? ["Collège de secteur"] : []),
+      p.distance < 1000 ? `À ${Math.round(p.distance / 10) * 10} m` : `À ${f.decimal(p.distance / 1000, 1)} km`,
+      ...(p.reussite !== null ? [`Réussite à l'examen : ${f.decimal(p.reussite, 0)} %`] : []),
     ],
   }),
   /** Infobulle d'une vente DVF : le prix au m² en titre, puis une ligne par information. */

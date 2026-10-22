@@ -13,8 +13,10 @@
 import type { SectionsMessages } from "@/i18n/messages/fr/analysis/sections";
 
 export const SECTION_ORDER = [
-  // Le logement et ce qu'on en atteint.
+  // Le logement et ce qu'on en atteint : les établissements scolaires d'abord, critère
+  // de choix à part entière, puis les services du quotidien.
   "immobilier",
+  "enseignement",
   "proximite",
   "deplacer",
   // Puis les gens : qui vit là, et comment.

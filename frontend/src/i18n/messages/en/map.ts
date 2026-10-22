@@ -39,12 +39,22 @@ export const map: MapMessages = {
     iris: "Statistical neighbourhood",
     schoolSector: "School catchment",
     rents: "Rents by commune",
+    colleges: "Collèges",
+    lycees: "Lycées",
   },
   rentPopup: (p) => ({
     title: p.nom,
     lines: [
       `Flats: €${f.fixed(p.loyerM2, 1)}/m²`,
       ...(p.groupe ? ["estimated over a group of neighbouring communes"] : []),
+    ],
+  }),
+  schoolPopup: (p) => ({
+    title: p.nom,
+    lines: [
+      ...(p.secteur ? ["Catchment collège"] : []),
+      p.distance < 1000 ? `${Math.round(p.distance / 10) * 10} m away` : `${f.decimal(p.distance / 1000, 1)} km away`,
+      ...(p.reussite !== null ? [`Exam pass rate: ${f.decimal(p.reussite, 0)}%`] : []),
     ],
   }),
   dvfPopup: (p) => ({

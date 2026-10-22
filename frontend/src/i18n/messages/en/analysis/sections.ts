@@ -3,6 +3,7 @@ import type { SectionsMessages } from "../../fr/analysis/sections";
 export const sections: SectionsMessages = {
   titles: {
     immobilier: "Property & planning",
+    enseignement: "Schools",
     deplacer: "Getting around",
     proximite: "Nearby",
     environnement: "Climate",
