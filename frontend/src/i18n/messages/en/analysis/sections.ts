@@ -11,6 +11,7 @@ export const sections: SectionsMessages = {
     risques: "Natural risks",
     population: "Population",
     elections: "Elections",
+    fiscalite: "Local taxes",
     histoire: "History",
   },
   environnementWithAirQuality: "Climate & air quality",

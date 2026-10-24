@@ -18,6 +18,7 @@ export const sections = {
     risques: "Risques naturels",
     population: "Population",
     elections: "Élections",
+    fiscalite: "Fiscalité locale",
     histoire: "Histoire",
   } satisfies Record<SectionId, string> as Record<SectionId, string>,
   /**

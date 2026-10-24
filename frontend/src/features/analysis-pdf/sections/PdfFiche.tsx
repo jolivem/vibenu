@@ -177,17 +177,12 @@ export function PdfKeyFigures({ figures }: { figures: Array<Pick<KeyFigure, "lab
 export function PdfImmobilierFiche({
   realEstate,
   cadastre,
-  localTax,
-  localTaxInsight,
   rents,
 }: {
   realEstate: RealEstateAnalysisDto | null;
   cadastre: CadastreAnalysisDto | null;
   /** `null` quand la card « Loyers » n'est pas rendue. */
   rents: RentAnalysisDto | null;
-  /** `null` quand la card « Fiscalité locale » n'est pas rendue. */
-  localTax: LocalTaxAnalysisDto | null;
-  localTaxInsight?: string | null;
 }) {
   const {
     cadastre: cadastreMessages,
@@ -251,17 +246,29 @@ export function PdfImmobilierFiche({
       {cadastre && cadastre.prescriptions.length > 0 && (
         <Fact label={pdf.property.prescriptionsLabel}>{join(cadastre.prescriptions.map((p) => p.label), " ; ")}</Fact>
       )}
-      {localTax && (
-        <View>
-          <Sub>{localTaxMessages.pdf.heading(localTax.villeEntiere)}</Sub>
-          <PdfInsight text={localTaxInsight} />
-          {localTaxFacts(localTax, localTaxMessages).map((fact) => (
-            <Fact key={fact.label} label={fact.label}>
-              {fact.text}
-            </Fact>
-          ))}
-        </View>
-      )}
+    </Block>
+  );
+}
+
+/** Section Fiscalité locale : les faits de la card, une ligne chacun. */
+export function PdfFiscaliteFiche({
+  localTax,
+  insight,
+}: {
+  localTax: LocalTaxAnalysisDto;
+  insight?: string | null;
+}) {
+  const { localTax: localTaxMessages, sections } = usePdfMessages();
+  const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
+  return (
+    <Block title={SECTION_TITLES.fiscalite}>
+      {localTax.villeEntiere && <Sub>{localTaxMessages.pdf.wholeCity}</Sub>}
+      <PdfInsight text={insight} />
+      {localTaxFacts(localTax, localTaxMessages).map((fact) => (
+        <Fact key={fact.label} label={fact.label}>
+          {fact.text}
+        </Fact>
+      ))}
     </Block>
   );
 }

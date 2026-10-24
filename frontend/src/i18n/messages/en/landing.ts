@@ -32,8 +32,8 @@ export const landing: LandingMessages = {
   features: {
     immobilier: {
       blurb:
-        "Recent sales from the DVF register and prices per m², placed on the map. Advertised rents by type of dwelling and a map of the surrounding communes. Cadastral plot, zoning under the local plan (PLU) and planning restrictions. Property tax, transfer duty and the commune's accounts.",
-      schemaLabel: "Property prices (DVF), rents, cadastre, PLU zoning and local taxes",
+        "Recent sales from the DVF register and prices per m², placed on the map. Advertised rents by type of dwelling and a map of the surrounding communes. Cadastral plot, zoning under the local plan (PLU) and planning restrictions.",
+      schemaLabel: "Property prices (DVF), rents, cadastre and PLU zoning",
     },
     enseignement: {
       blurb:
@@ -72,6 +72,11 @@ export const landing: LandingMessages = {
       blurb:
         "2026 municipal and 2022 presidential elections: results in the commune, turnout, gap with the national vote.",
       schemaLabel: "Election results by commune",
+    },
+    fiscalite: {
+      blurb:
+        "Property tax rates, waste collection tax, transfer duty on purchase and the commune's accounts, compared with communes of similar size.",
+      schemaLabel: "Local taxes and municipal finances",
     },
     histoire: {
       blurb:

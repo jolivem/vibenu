@@ -173,7 +173,8 @@ export const localTax = {
   },
   /** Fiche PDF : une ligne par bloc, sans graphe. */
   pdf: {
-    heading: (wholeCity: boolean) => `Fiscalité locale${wholeCity ? " — ville entière" : ""}`,
+    /** Sous le titre de section, quand les chiffres portent sur la ville et non l'arrondissement. */
+    wholeCity: "Ville entière",
     propertyTaxLabel: (year: number) => `Taxe foncière ${year}`,
     propertyTax: (p: { rate: number; franceMedian: number | null; departmentMedian: number | null }) => {
       const references = [

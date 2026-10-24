@@ -168,13 +168,13 @@ export function AnalysisScreen() {
         risques: false,
         population: false,
         elections: false,
+        fiscalite: false,
         histoire: false,
       };
     }
     return {
       immobilier:
         (FEATURES.showRealEstate && !!data.realEstate) ||
-        (FEATURES.showLocalTax && hasLocalTaxContent(data.localTax)) ||
         (FEATURES.showRents && hasRentContent(data.rents)) ||
         (FEATURES.showCadastre && !!data.cadastre),
       enseignement: FEATURES.showSchools && hasSchools(data.schools),
@@ -196,6 +196,7 @@ export function AnalysisScreen() {
       elections:
         (FEATURES.showElections && !!data.elections) ||
         (FEATURES.showMunicipales && !!data.municipales),
+      fiscalite: FEATURES.showLocalTax && hasLocalTaxContent(data.localTax),
       // Seule section sans condition sur la donnée : elle ne consomme rien du serveur,
       // les cartes anciennes viennent directement de la Géoplateforme IGN.
       histoire: FEATURES.showHistory,
@@ -336,9 +337,6 @@ export function AnalysisScreen() {
                         />
                       </RentsCard>
                     )}
-                    {FEATURES.showLocalTax && hasLocalTaxContent(data.localTax) && (
-                      <LocalTaxCard localTax={data.localTax} m={m.localTax} insight={insights.fiscalite} />
-                    )}
                     {FEATURES.showCadastre && data.cadastre && (
                       <CadastreCard cadastre={data.cadastre} m={m.cadastre} />
                     )}
@@ -451,6 +449,12 @@ export function AnalysisScreen() {
                     {FEATURES.showElections && data.elections && (
                       <ElectionsCard elections={data.elections} m={m.elections} insight={insights.elections} />
                     )}
+                  </AnalysisSection>
+                )}
+
+                {hasContent.fiscalite && data.localTax && (
+                  <AnalysisSection id="fiscalite">
+                    <LocalTaxCard localTax={data.localTax} m={m.localTax} insight={insights.fiscalite} />
                   </AnalysisSection>
                 )}
 

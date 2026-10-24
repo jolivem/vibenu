@@ -23,6 +23,8 @@ export const SECTION_ORDER = [
   "securite",
   "population",
   "elections",
+  // L'impôt local après le vote : il découle des choix de la commune plus que du bien.
+  "fiscalite",
   // Puis le cadre physique, qu'on ne choisit pas.
   "environnement",
   "risques",

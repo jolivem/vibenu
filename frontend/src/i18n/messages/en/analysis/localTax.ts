@@ -121,7 +121,7 @@ export const localTax: LocalTaxMessages = {
     ],
   },
   pdf: {
-    heading: (wholeCity) => `Local taxes${wholeCity ? " — whole city" : ""}`,
+    wholeCity: "Whole city",
     propertyTaxLabel: (year) => `Property tax ${year}`,
     propertyTax: (p) => {
       const references = [

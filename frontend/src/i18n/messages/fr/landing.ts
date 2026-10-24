@@ -52,8 +52,8 @@ export const landing = {
   features: {
     immobilier: {
       blurb:
-        "Transactions DVF récentes et prix au m², situées sur la carte. Loyers d'annonce par type de bien et carte des communes alentour. Parcelle cadastrale, zone du PLU et prescriptions d'urbanisme. Taxe foncière, droits de mutation et comptes de la commune.",
-      schemaLabel: "Prix immobiliers DVF, loyers, cadastre, zonage PLU et fiscalité locale",
+        "Transactions DVF récentes et prix au m², situées sur la carte. Loyers d'annonce par type de bien et carte des communes alentour. Parcelle cadastrale, zone du PLU et prescriptions d'urbanisme.",
+      schemaLabel: "Prix immobiliers DVF, loyers, cadastre et zonage PLU",
     },
     enseignement: {
       blurb:
@@ -95,6 +95,11 @@ export const landing = {
       blurb:
         "Municipales 2026 et présidentielle 2022 : résultats de la commune, participation, écart avec le vote national.",
       schemaLabel: "Résultats électoraux par commune",
+    },
+    fiscalite: {
+      blurb:
+        "Taux de taxe foncière, taxe d'ordures ménagères, droits de mutation à l'achat et comptes de la commune, comparés aux communes de taille comparable.",
+      schemaLabel: "Fiscalité locale et finances de la commune",
     },
     histoire: {
       blurb:

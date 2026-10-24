@@ -18,6 +18,7 @@ import { PdfMap } from "./sections/PdfMap";
 import {
   PdfDeplacerFiche,
   PdfElectionsFiche,
+  PdfFiscaliteFiche,
   PdfEnvironnementFiche,
   PdfImmobilierFiche,
   PdfKeyFigures,
@@ -151,7 +152,7 @@ export function AnalysisPdfDocument({
 
   // Mêmes conditions que `hasContent` dans `AnalysisScreen`, une section par entrée.
   const sections: Record<SectionId, boolean> = {
-    immobilier: showRealEstate || showCadastre || Boolean(localTax) || Boolean(rents),
+    immobilier: showRealEstate || showCadastre || Boolean(rents),
     enseignement: Boolean(schools),
     proximite: showNeighborhood || showCommuneEquipment,
     deplacer: FEATURES.showMobility,
@@ -163,6 +164,7 @@ export function AnalysisPdfDocument({
         (FEATURES.showEmployment && Boolean(data.demographics?.employment)) ||
         (FEATURES.showHouseholds && Boolean(data.demographics?.households))),
     elections: showElections || showMunicipales,
+    fiscalite: Boolean(localTax),
     environnement: showClimate || showAirQuality,
     risques: FEATURES.showRisks,
     histoire: false,
@@ -211,8 +213,6 @@ export function AnalysisPdfDocument({
           <PdfImmobilierFiche
             realEstate={showRealEstate ? realEstate : null}
             cadastre={showCadastre ? data.cadastre : null}
-            localTax={localTax}
-            localTaxInsight={insights.fiscalite}
             rents={rents}
           />
         )}
@@ -250,6 +250,10 @@ export function AnalysisPdfDocument({
             elections={showElections ? (data.elections ?? null) : null}
             insights={insights}
           />
+        )}
+
+        {sections.fiscalite && localTax && (
+          <PdfFiscaliteFiche localTax={localTax} insight={insights.fiscalite} />
         )}
 
         {sections.environnement && (
