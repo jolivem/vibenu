@@ -75,6 +75,23 @@ export const schools = {
     ips: "IPS",
     eleves: "Élèves / classe",
   },
+  /** Intitulés des chiffres sur téléphone, où les quatre tiennent sur une rangée. */
+  columnsShort: {
+    reussite: "Réussite",
+    va: "VA",
+    ips: "IPS",
+    eleves: "Élèves/cl.",
+  },
+  /** Sur téléphone, au-dessus de la liste : les moyennes du département identiques sur chaque ligne. */
+  departmentSummary: (refs: { reussite: string | null; ips: string | null; eleves: string | null }) =>
+    "Moyennes du département : " +
+    [
+      refs.reussite && `réussite ${refs.reussite}`,
+      refs.ips && `IPS ${refs.ips}`,
+      refs.eleves && `${refs.eleves} élèves par classe`,
+    ]
+      .filter(Boolean)
+      .join(" · "),
   /** Infobulle des en-têtes. */
   columnHelp: {
     reussite: "Taux de réussite au dernier brevet ou baccalauréat publié",

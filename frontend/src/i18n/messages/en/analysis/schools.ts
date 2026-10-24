@@ -61,6 +61,21 @@ export const schools: SchoolsMessages = {
     ips: "SPI",
     eleves: "Pupils / class",
   },
+  columnsShort: {
+    reussite: "Pass rate",
+    va: "VA",
+    ips: "SPI",
+    eleves: "Pupils/cl.",
+  },
+  departmentSummary: (refs) =>
+    "Département averages: " +
+    [
+      refs.reussite && `pass rate ${refs.reussite}`,
+      refs.ips && `SPI ${refs.ips}`,
+      refs.eleves && `${refs.eleves} pupils per class`,
+    ]
+      .filter(Boolean)
+      .join(" · "),
   columnHelp: {
     reussite: "Pass rate at the latest published brevet or baccalauréat",
     va: "Gap in points between the observed pass rate and the one expected from the pupils' profile",

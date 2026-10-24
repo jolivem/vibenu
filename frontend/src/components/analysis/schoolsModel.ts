@@ -90,6 +90,34 @@ export function canSortByName(list: NearbySchoolDto[]): boolean {
   return inside > 1 || list.length - inside > 1;
 }
 
+/** Moyennes du département communes à toute la liste, par colonne ; `null` si elles varient. */
+export interface CommonDepartmentRefs {
+  reussite: number | null;
+  ips: number | null;
+  eleves: number | null;
+}
+
+/**
+ * Sur téléphone, une moyenne du département identique sur chaque ligne n'est dite qu'une
+ * fois, au-dessus de la liste. Elle varie pour les lycées, comparés aux lycées du même type
+ * (général et technologique, ou professionnel) : elle reste alors sous chaque valeur.
+ */
+export function commonDepartmentRefs(list: NearbySchoolDto[]): CommonDepartmentRefs {
+  const single = (values: Array<number | null | undefined>) => {
+    const set = new Set(values.filter((v): v is number => v != null));
+    return set.size === 1 ? [...set][0] : null;
+  };
+  return {
+    reussite: single(
+      list.flatMap((s) =>
+        [primaryExam(s), secondaryExam(s)].map((e) => (e?.tauxReussite != null ? e.tauxReussiteDepartement : null)),
+      ),
+    ),
+    ips: single(list.map((s) => s.ips?.departement)),
+    eleves: single(list.map((s) => s.elevesParDivision?.departement)),
+  };
+}
+
 /** Le tableau affichera-t-il au moins un « non publié » ? Mêmes colonnes que `SchoolRow`. */
 export function hasNotPublished(list: NearbySchoolDto[]): boolean {
   return list.some((s) => {

@@ -5,8 +5,10 @@ import type { NearbySchoolDto, NearbySchoolsDto, SchoolExamResultDto, SchoolIndi
 import type { SchoolsMessages } from "@/i18n/messages/fr/analysis/schools";
 import {
   canSortByName,
+  commonDepartmentRefs,
   DEFAULT_DIRECTION,
   hasNotPublished,
+  type CommonDepartmentRefs,
   primaryExam,
   secondaryExam,
   sortSchools,
@@ -49,6 +51,8 @@ export function SchoolsCard({
     direction: "asc",
   });
   const rows = useMemo(() => sortSchools(list, sort.key, sort.direction), [list, sort]);
+  const commonRefs = useMemo(() => commonDepartmentRefs(list), [list]);
+  const hasCommonRef = commonRefs.reussite !== null || commonRefs.ips !== null || commonRefs.eleves !== null;
   const rayon = level === "college" ? schools.rayonColleges : schools.rayonLycees;
   // Sur téléphone, les définitions repoussent le tableau d'un écran entier : elles y sont
   // repliées derrière un bouton. Au-delà, le bouton est masqué et le cadre toujours visible (CSS).
@@ -121,6 +125,16 @@ export function SchoolsCard({
               </div>
             ))}
           </dl>
+          {/* Téléphone seulement (CSS) : les moyennes répétées sur chaque fiche, dites une fois. */}
+          {hasCommonRef && (
+            <p className="schools-dept-summary">
+              {m.departmentSummary({
+                reussite: commonRefs.reussite !== null ? m.percent(commonRefs.reussite) : null,
+                ips: commonRefs.ips !== null ? m.ips(commonRefs.ips) : null,
+                eleves: commonRefs.eleves !== null ? m.eleves(commonRefs.eleves) : null,
+              })}
+            </p>
+          )}
           <table className="schools-table">
             <thead>
               <tr>
@@ -134,7 +148,7 @@ export function SchoolsCard({
             </thead>
             <tbody>
               {rows.map((s) => (
-                <SchoolRow key={s.uai} school={s} m={m} showDistance={!isCommune} />
+                <SchoolRow key={s.uai} school={s} m={m} showDistance={!isCommune} commonRefs={commonRefs} />
               ))}
             </tbody>
           </table>
@@ -149,10 +163,12 @@ function SchoolRow({
   school: s,
   m,
   showDistance,
+  commonRefs,
 }: {
   school: NearbySchoolDto;
   m: SchoolsMessages;
   showDistance: boolean;
+  commonRefs: CommonDepartmentRefs;
 }) {
   const exam = primaryExam(s);
   const second = secondaryExam(s);
@@ -160,32 +176,37 @@ function SchoolRow({
     s.level === "college" ? null : e === s.bacPro ? m.exam.bacPro : m.exam.bacGt;
 
   return (
-    <tr className={s.estSecteur ? "is-sector" : undefined}>
+    <tr className={[s.estSecteur && "is-sector", showDistance && "has-distance"].filter(Boolean).join(" ") || undefined}>
       <th scope="row" className="schools-name">
         <span className="schools-title">{s.nom}</span>
         {s.horsCommune && <span className="schools-outside">{m.outside(s.nomCommune, s.distance)}</span>}
         <SchoolBadges school={s} m={m} />
         <SchoolDetails school={s} m={m} />
       </th>
-      {showDistance && <td data-label={m.columns.distance}>{m.distance(s.distance)}</td>}
-      <td className="num" data-label={m.columns.reussite}>
+      {showDistance && (
+        <td className="schools-distance" data-label={m.columns.distance}>
+          {m.distance(s.distance)}
+        </td>
+      )}
+      <td className="num" data-label={m.columnsShort.reussite}>
         <ExamValue
           exams={[exam, second]}
           label={examLabel}
           value={(e) => e.tauxReussite}
           format={m.percent}
           reference={(e) => e.tauxReussiteDepartement}
+          commonRef={commonRefs.reussite !== null}
           m={m}
         />
       </td>
-      <td className="num" data-label={m.columns.va}>
+      <td className="num" data-label={m.columnsShort.va}>
         <ExamValue exams={[exam, second]} label={examLabel} value={(e) => e.vaReussite} format={m.signed} m={m} />
       </td>
-      <td className="num" data-label={m.columns.ips}>
-        <Indicator indicator={s.ips} format={m.ips} m={m} />
+      <td className="num" data-label={m.columnsShort.ips}>
+        <Indicator indicator={s.ips} format={m.ips} commonRef={commonRefs.ips !== null} m={m} />
       </td>
-      <td className="num" data-label={m.columns.eleves}>
-        <Indicator indicator={s.elevesParDivision} format={m.eleves} m={m} />
+      <td className="num" data-label={m.columnsShort.eleves}>
+        <Indicator indicator={s.elevesParDivision} format={m.eleves} commonRef={commonRefs.eleves !== null} m={m} />
       </td>
     </tr>
   );
@@ -198,6 +219,7 @@ function ExamValue({
   value,
   format,
   reference,
+  commonRef = false,
   m,
 }: {
   exams: Array<SchoolExamResultDto | null>;
@@ -205,6 +227,8 @@ function ExamValue({
   value: (e: SchoolExamResultDto) => number | null;
   format: (v: number) => string;
   reference?: (e: SchoolExamResultDto) => number | null;
+  /** Moyenne identique sur toute la liste : masquée sur téléphone, dite au-dessus. */
+  commonRef?: boolean;
   m: SchoolsMessages;
 }) {
   const present = exams.filter((e): e is SchoolExamResultDto => e !== null);
@@ -219,7 +243,7 @@ function ExamValue({
           <span key={i} className="schools-value">
             {tag && <span className="schools-exam">{tag}</span>}
             {v === null ? <NotPublished m={m} /> : <strong>{format(v)}</strong>}
-            {ref !== null && <span className="schools-ref">{m.department(format(ref))}</span>}
+            {ref !== null && <span className={refClass(commonRef)}>{m.department(format(ref))}</span>}
           </span>
         );
       })}
@@ -230,10 +254,12 @@ function ExamValue({
 function Indicator({
   indicator,
   format,
+  commonRef = false,
   m,
 }: {
   indicator: SchoolIndicatorDto | null;
   format: (v: number) => string;
+  commonRef?: boolean;
   m: SchoolsMessages;
 }) {
   if (!indicator) return <NotPublished m={m} />;
@@ -241,11 +267,13 @@ function Indicator({
     <span className="schools-value">
       <strong>{format(indicator.valeur)}</strong>
       {indicator.departement !== null && (
-        <span className="schools-ref">{m.department(format(indicator.departement))}</span>
+        <span className={refClass(commonRef)}>{m.department(format(indicator.departement))}</span>
       )}
     </span>
   );
 }
+
+const refClass = (common: boolean) => (common ? "schools-ref is-common" : "schools-ref");
 
 function NotPublished({ m }: { m: SchoolsMessages }) {
   return (

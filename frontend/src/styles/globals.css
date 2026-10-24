@@ -3377,6 +3377,14 @@ html {
   color: var(--text);
 }
 
+/* Téléphone seulement : voir la règle à 560 px. */
+.schools-dept-summary {
+  display: none;
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 .schools-ref,
 .schools-exam {
   display: block;
@@ -3427,10 +3435,12 @@ html {
     border-color: var(--accent);
   }
 
+  /* Une fiche par établissement : le nom (et la distance, à sa droite), puis les quatre
+     chiffres sur une seule rangée. */
   .schools-table tbody tr {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px 8px;
     padding: 12px 8px;
     border-bottom: 0.5px solid var(--hairline);
   }
@@ -3443,6 +3453,46 @@ html {
 
   .schools-table tbody th {
     grid-column: 1 / -1;
+  }
+
+  /* La distance se pose en haut à droite, hors de la grille : seul le nom lui laisse la place,
+     les badges et les langues gardent toute la largeur. */
+  .schools-table tbody tr.has-distance {
+    position: relative;
+  }
+
+  .schools-table tbody tr.has-distance .schools-title {
+    display: block;
+    padding-right: 4.5rem;
+  }
+
+  .schools-table tbody td.schools-distance {
+    position: absolute;
+    top: 12px;
+    right: 8px;
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .schools-table tbody td.schools-distance::before {
+    content: none;
+  }
+
+  .schools-ref.is-common {
+    display: none;
+  }
+
+  /* Pas de lien ONISEP sur téléphone : il allongeait chaque fiche d'une ligne. Le bloc
+     disparaît aussi quand il ne contenait que ce lien, pour ne pas laisser sa marge. */
+  .schools-links,
+  .schools-details:not(:has(.schools-detail)) {
+    display: none;
+  }
+
+  .schools-dept-summary {
+    display: block;
   }
 
   .schools-table .num {
@@ -3462,9 +3512,8 @@ html {
   .schools-table tbody td::before {
     content: attr(data-label);
     display: block;
-    font-size: 0.7rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    margin-bottom: 2px;
+    font-size: 0.72rem;
     color: var(--muted);
   }
 
