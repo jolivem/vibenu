@@ -63,10 +63,11 @@ export function sortSchools(
 ): NearbySchoolDto[] {
   const sign = direction === "asc" ? 1 : -1;
   if (key === "nom") {
-    // Ceux de la commune par nom ; ceux d'à côté, ajoutés faute de mieux, après et par distance.
+    // Ceux de la commune d'abord, ceux d'à côté (ajoutés faute de mieux) après ; chaque groupe
+    // par nom, dans le sens demandé. Trier ceux d'à côté par distance rendait le clic sans effet
+    // quand la commune n'en compte qu'un ou aucun.
     return [...list].sort((a, b) => {
       if (a.horsCommune !== b.horsCommune) return a.horsCommune ? 1 : -1;
-      if (a.horsCommune) return a.distance - b.distance;
       return a.nom.localeCompare(b.nom, "fr") * sign;
     });
   }
@@ -78,6 +79,15 @@ export function sortSchools(
     if (vb === null) return -1;
     return va === vb ? a.distance - b.distance : (va - vb) * sign;
   });
+}
+
+/**
+ * Le tri par nom change-t-il quelque chose ? Les deux groupes (commune, hors commune) restent
+ * séparés : il faut au moins deux établissements dans l'un d'eux.
+ */
+export function canSortByName(list: NearbySchoolDto[]): boolean {
+  const inside = list.filter((s) => !s.horsCommune).length;
+  return inside > 1 || list.length - inside > 1;
 }
 
 /** Le tableau affichera-t-il au moins un « non publié » ? Mêmes colonnes que `SchoolRow`. */

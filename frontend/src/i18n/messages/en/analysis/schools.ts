@@ -26,6 +26,7 @@ export const schools: SchoolsMessages = {
   },
   outside: (commune, dist) => `${commune ? `In ${commune}, ` : "Outside the commune, "}${distance(dist)} from the centre`,
   labelSeparator: ": ",
+  explainToggle: { show: "How to read this table", hide: "Hide explanations" },
   explain: (level) => [
     {
       term: "Value added",
@@ -38,19 +39,14 @@ export const schools: SchoolsMessages = {
       definition:
         "social position index of the pupils, based on their parents' occupations. Around 100 on average nationally; the higher it is, the more advantaged the intake. It describes who attends, not the quality of teaching.",
     },
+    {
+      term: "dept.",
+      definition:
+        level === "college"
+          ? "average of the collèges in the département."
+          : "average of lycées of the same type in the département — general and technological, or vocational; a vocational lycée is compared with vocational lycées.",
+    },
   ],
-  explainOffer: {
-    ulis: {
-      term: "ULIS",
-      definition:
-        "localised unit for inclusive education: support for pupils with disabilities (cognitive, motor, sensory…). They attend a mainstream class and spend part of their time with a specialist teacher.",
-    },
-    segpa: {
-      term: "SEGPA",
-      definition:
-        "adapted general and vocational education section: classes from year 7 to year 10 for pupils with lasting learning difficulties, with smaller groups and an introduction to trades.",
-    },
-  },
   explainNotPublished: {
     term: "n/a",
     definition:
@@ -92,8 +88,6 @@ export const schools: SchoolsMessages = {
   offre: {
     cantine: "Canteen",
     internat: "Boarding",
-    ulis: "ULIS",
-    segpa: "SEGPA",
     post_bac: "Post-bac",
     apprentissage: "Apprenticeships",
     agricole: "Agricultural lycée",
@@ -105,10 +99,6 @@ export const schools: SchoolsMessages = {
     cinema: "Film section",
     theatre: "Theatre section",
   },
-  offreHelp: {
-    ulis: "Inclusion unit for pupils with disabilities",
-    segpa: "Adapted general and vocational education section",
-  },
   sports: (list) => `Sports section: ${list.join(", ").toLowerCase()}`,
   langues: {
     lv1: (list) => `1st language: ${list.join(", ")}`,
@@ -116,13 +106,9 @@ export const schools: SchoolsMessages = {
     lca: (list) => `Classical languages: ${list.join(", ")}`,
   },
   insertion: (taux, annee) => `${f.decimal(taux, 0)}% in work 6 months after leaving (${annee})`,
-  links: { onisep: "ONISEP page", site: "Website" },
+  links: { onisep: "ONISEP page" },
   note: (level) =>
-    `${level === "college" ? "Brevet pass rate" : "Baccalauréat pass rate"}, value added and social position index (SPI): French Ministry of Education (DEPP), latest published session. ` +
-    "Value added compares the observed pass rate with the one expected from the pupils' profile; the DEPP advises against using it to rank schools. " +
-    (level === "college"
-      ? "“dept.”: average of the collèges in the département."
-      : "“dept.”: average of lycées of the same type in the département — general and technological, or vocational; a vocational lycée is compared with vocational lycées."),
+    `${level === "college" ? "Brevet pass rate" : "Baccalauréat pass rate"}, value added and social position index (SPI): French Ministry of Education (DEPP), latest published session.`,
   pdfLine: (nom, lieu, reussite, va) =>
     nom +
     (lieu ? ` — ${lieu}` : "") +

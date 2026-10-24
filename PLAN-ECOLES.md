@@ -67,7 +67,7 @@ réinterpréter**.
 Il suit le découpage habituel (`domain/`, `application/`, `infrastructure/`) :
 
 - **`domain/schools.types.ts`** : `NearbySchool` contient l'UAI, le nom, le type, le secteur, la distance, la voie, les derniers résultats (avec leur année), les résultats de l'année précédente (pour une flèche de tendance) et l'IPS avec ses références départementale et nationale.
-  - Il porte aussi la **fiche** : la liste des **codes** d'offre présents (`cantine`, `internat`, `ulis`, `segpa`, `post_bac`, `apprentissage`, `agricole`, `europeenne`, `internationale`, `arts`, `cinema`, `theatre`), les disciplines sportives, le label et les filières « lycée des métiers », et les URL ONISEP et du site.
+  - Il porte aussi la **fiche** : la liste des **codes** d'offre présents (`cantine`, `internat`, `post_bac`, `apprentissage`, `agricole`, `europeenne`, `internationale`, `arts`, `cinema`, `theatre`), les disciplines sportives, le label et les filières « lycée des métiers », et les URL ONISEP et du site.
   - Le DTO transporte ces **codes**, et le client les traduit. C'est la règle du projet : le DTO porte des codes, le texte est produit à l'affichage. Les disciplines et les filières sont du texte source, affiché tel quel avec `lang="fr"`.
 - **`infrastructure/postgis-schools.provider.ts`** :
   - **Mode adresse** : les collèges à moins de 2 km et les lycées à moins de 5 km, triés par distance, avec un plafond de 8 par niveau. Si le rayon en contient moins de 3, on complète avec les 3 plus proches par KNN (`ORDER BY geom <-> point`).
@@ -82,7 +82,7 @@ Il suit le découpage habituel (`domain/`, `application/`, `infrastructure/`) :
 
 - **`components/analysis/SchoolsCard.tsx`**, dans la section `proximite`, après la card du secteur de collège (`AnalysisScreen.tsx`, autour de la ligne 348). Deux sous-blocs, « Collèges » et « Lycées » :
   - un tableau avec une ligne par établissement : nom, distance, réussite, valeur ajoutée, mentions, IPS ;
-  - **sous le nom, une ligne de badges** : « Public » ou « Privé sous contrat », « REP+ », « Collège de secteur », « Cantine », « Internat », « Section européenne », « Section sportive : rugby », « ULIS », « Lycée des métiers », « Post-bac »… Le libellé de chaque code est dans `i18n/messages/<locale>/analysis/schools.ts` (`Record<SchoolOfferCode, string>`) ;
+  - **sous le nom, une ligne de badges** : « Public » ou « Privé sous contrat », « REP+ », « Collège de secteur », « Cantine », « Internat », « Section européenne », « Section sportive : rugby », « Lycée des métiers », « Post-bac »… Le libellé de chaque code est dans `i18n/messages/<locale>/analysis/schools.ts` (`Record<SchoolOfferCode, string>`) ;
   - **deux liens discrets** : « Fiche ONISEP » (formations, langues, options) et « Site de l'établissement ». Ils s'ouvrent dans un nouvel onglet ;
   - **un détail repliable** (`<details>`) pour les filières du label « lycée des métiers ». La ligne reste ainsi courte ;
   - **par défaut, tri par distance**. Les en-têtes sont des `<button>` avec `aria-sort` et le tri se fait côté client. Les valeurs « non publié » vont en fin de liste, quel que soit le sens du tri ;

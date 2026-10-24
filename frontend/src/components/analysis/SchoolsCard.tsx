@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import type { NearbySchoolDto, NearbySchoolsDto, SchoolExamResultDto, SchoolIndicatorDto } from "@/types/location-analysis";
 import type { SchoolsMessages } from "@/i18n/messages/fr/analysis/schools";
 import {
+  canSortByName,
   DEFAULT_DIRECTION,
   hasNotPublished,
   primaryExam,
@@ -49,6 +50,10 @@ export function SchoolsCard({
   });
   const rows = useMemo(() => sortSchools(list, sort.key, sort.direction), [list, sort]);
   const rayon = level === "college" ? schools.rayonColleges : schools.rayonLycees;
+  // Sur téléphone, les définitions repoussent le tableau d'un écran entier : elles y sont
+  // repliées derrière un bouton. Au-delà, le bouton est masqué et le cadre toujours visible (CSS).
+  const [explainOpen, setExplainOpen] = useState(false);
+  const explainId = useId();
 
   function toggle(key: SchoolSortKey) {
     setSort((current) =>
@@ -92,14 +97,19 @@ export function SchoolsCard({
               {hasSector && <p className="card-map-hint schools-sector-hint">{m.map.sectorHint}</p>}
             </div>
           )}
-          {/* Les deux colonnes qui ne se lisent pas seules, expliquées avant le tableau. */}
-          <dl className="schools-explain">
+          {/* Tout ce qui ne se lit pas seul dans le tableau, expliqué avant lui ; le pied de card ne garde que la source. */}
+          <button
+            type="button"
+            className="schools-explain-toggle"
+            onClick={() => setExplainOpen((v) => !v)}
+            aria-expanded={explainOpen}
+            aria-controls={explainId}
+          >
+            {explainOpen ? m.explainToggle.hide : m.explainToggle.show}
+          </button>
+          <dl id={explainId} className={`schools-explain${explainOpen ? " is-open" : ""}`}>
             {[
               ...m.explain(level),
-              // Un sigle n'est défini que si un établissement de la liste l'affiche.
-              ...(["ulis", "segpa"] as const)
-                .filter((code) => list.some((s) => s.offre.includes(code)))
-                .map((code) => m.explainOffer[code]),
               ...(hasNotPublished(list) ? [m.explainNotPublished] : []),
             ].map((e) => (
               <div key={e.term}>
@@ -114,7 +124,7 @@ export function SchoolsCard({
           <table className="schools-table">
             <thead>
               <tr>
-                {isCommune ? header("nom", m.columns.name) : <th scope="col">{m.columns.name}</th>}
+                {isCommune && canSortByName(list) ? header("nom", m.columns.name) : <th scope="col">{m.columns.name}</th>}
                 {!isCommune && header("distance", m.columns.distance)}
                 {header("reussite", m.columns.reussite, m.columnHelp.reussite)}
                 {header("va", m.columns.va, m.columnHelp.va)}
@@ -247,7 +257,7 @@ function NotPublished({ m }: { m: SchoolsMessages }) {
 
 /** Secteur, public/privé, éducation prioritaire, voies, puis l'offre (cantine, sections…). */
 function SchoolBadges({ school: s, m }: { school: NearbySchoolDto; m: SchoolsMessages }) {
-  const badges: Array<{ key: string; text: string; title?: string; strong?: boolean }> = [];
+  const badges: Array<{ key: string; text: string; strong?: boolean }> = [];
   if (s.estSecteur) badges.push({ key: "secteur", text: m.sectorBadge, strong: true });
   badges.push({ key: "secteur-pp", text: m.secteur[s.secteur] });
   if (s.educationPrioritaire) badges.push({ key: "ep", text: m.educationPrioritaire[s.educationPrioritaire] });
@@ -255,12 +265,12 @@ function SchoolBadges({ school: s, m }: { school: NearbySchoolDto; m: SchoolsMes
   for (const code of s.offre) {
     // La section sportive est détaillée avec ses disciplines, plus bas.
     if (code === "sport" && s.sports.length > 0) continue;
-    badges.push({ key: code, text: m.offre[code], title: m.offreHelp[code] });
+    badges.push({ key: code, text: m.offre[code] });
   }
   return (
     <span className="schools-badges">
       {badges.map((b) => (
-        <span key={b.key} className={b.strong ? "schools-badge is-strong" : "schools-badge"} title={b.title}>
+        <span key={b.key} className={b.strong ? "schools-badge is-strong" : "schools-badge"}>
           {b.text}
         </span>
       ))}
@@ -279,8 +289,9 @@ function SchoolDetails({ school: s, m }: { school: NearbySchoolDto; m: SchoolsMe
   if (s.insertion?.tauxEmploi6Mois != null) {
     lines.push({ key: "insertion", text: m.insertion(s.insertion.tauxEmploi6Mois, s.insertion.annee) });
   }
-  const hasLinks = s.ficheOnisep || s.siteWeb;
-  if (lines.length === 0 && !hasLinks) return null;
+  // Seule la fiche ONISEP est liée : le site web vient de l'annuaire de l'Éducation
+  // nationale, souvent périmé, et la fiche ONISEP y renvoie déjà.
+  if (lines.length === 0 && !s.ficheOnisep) return null;
   return (
     <span className="schools-details">
       {lines.map((l) => (
@@ -288,18 +299,11 @@ function SchoolDetails({ school: s, m }: { school: NearbySchoolDto; m: SchoolsMe
           {l.text}
         </span>
       ))}
-      {hasLinks && (
+      {s.ficheOnisep && (
         <span className="schools-links">
-          {s.ficheOnisep && (
-            <a href={s.ficheOnisep} target="_blank" rel="noopener noreferrer">
-              {m.links.onisep}
-            </a>
-          )}
-          {s.siteWeb && (
-            <a href={s.siteWeb} target="_blank" rel="noopener noreferrer">
-              {m.links.site}
-            </a>
-          )}
+          <a href={s.ficheOnisep} target="_blank" rel="noopener noreferrer">
+            {m.links.onisep}
+          </a>
         </span>
       )}
     </span>

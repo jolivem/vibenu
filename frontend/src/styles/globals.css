@@ -3150,6 +3150,62 @@ html {
   color: var(--muted);
 }
 
+/* Bouton des définitions, sur téléphone seulement (règle à 560 px plus bas). Rendu en aide
+   discrète, gris et petit comme l'indication de la carte : en gras et en couleur, il se
+   lisait comme un titre. */
+.schools-explain-toggle {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+/* Le « i » cerclé : un repère d'aide, pas un mot à traduire. */
+.schools-explain-toggle::before {
+  content: "i";
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.8em;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.schools-explain-toggle:hover {
+  color: var(--text);
+}
+
+.schools-explain-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (max-width: 560px) {
+  .schools-explain-toggle {
+    display: inline-flex;
+  }
+
+  .schools-explain:not(.is-open) {
+    display: none;
+  }
+}
+
 .schools-explain {
   margin: 0 0 14px;
   padding: 10px 14px;

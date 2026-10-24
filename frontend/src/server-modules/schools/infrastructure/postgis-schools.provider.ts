@@ -47,8 +47,6 @@ interface EstablishmentRow {
   voie_professionnelle: boolean;
   restauration: boolean;
   hebergement: boolean;
-  ulis: boolean;
-  segpa: boolean;
   post_bac: boolean;
   apprentissage: boolean;
   lycee_agricole: boolean;
@@ -71,7 +69,7 @@ interface EstablishmentRow {
 const ESTABLISHMENT_COLUMNS = `
   e.uai, e.nom, e.type, e.secteur, e.education_prioritaire,
   e.voie_generale, e.voie_technologique, e.voie_professionnelle,
-  e.restauration, e.hebergement, e.ulis, e.segpa, e.post_bac, e.apprentissage,
+  e.restauration, e.hebergement, e.post_bac, e.apprentissage,
   e.lycee_agricole, e.lycee_des_metiers,
   e.section_europeenne, e.section_internationale, e.section_sport,
   e.section_arts, e.section_cinema, e.section_theatre,
@@ -304,8 +302,6 @@ function toNearbySchool(
   const add = (cond: boolean, code: SchoolOfferCode) => cond && offre.push(code);
   add(e.restauration, "cantine");
   add(e.hebergement, "internat");
-  add(e.ulis, "ulis");
-  add(e.segpa, "segpa");
   add(e.post_bac, "post_bac");
   add(e.apprentissage, "apprentissage");
   add(e.lycee_agricole, "agricole");

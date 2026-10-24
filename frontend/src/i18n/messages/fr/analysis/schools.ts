@@ -36,6 +36,8 @@ export const schools = {
     `${commune ? `À ${commune}, ` : "Hors de la commune, "}${distance(dist)} du centre`,
   /** Entre un terme et sa définition : le français met une espace avant les deux-points. */
   labelSeparator: " : ",
+  /** Bouton qui déplie les définitions, sur téléphone seulement. */
+  explainToggle: { show: "Comment lire ce tableau", hide: "Masquer les explications" },
   /** Définitions affichées au-dessus de chaque tableau : terme, puis explication. */
   explain: (level: "college" | "lycee") => [
     {
@@ -49,20 +51,14 @@ export const schools = {
       definition:
         "indice de position sociale des élèves, calculé d'après la profession de leurs parents. Autour de 100 en moyenne nationale ; plus il est élevé, plus le public est favorisé. Il décrit le recrutement, pas la qualité de l'enseignement.",
     },
+    {
+      term: "dép.",
+      definition:
+        level === "college"
+          ? "moyenne des collèges du département."
+          : "moyenne des lycées du même type dans le département — général et technologique, ou professionnel ; un lycée professionnel se compare aux lycées professionnels.",
+    },
   ],
-  /** Sigles de l'offre, définis sous la valeur ajoutée et l'IPS quand un établissement de la liste les affiche. */
-  explainOffer: {
-    ulis: {
-      term: "ULIS",
-      definition:
-        "unité localisée pour l'inclusion scolaire : un dispositif qui accueille des élèves en situation de handicap (troubles cognitifs, moteurs, sensoriels…). Ils suivent les cours d'une classe ordinaire et retrouvent, une partie du temps, un enseignant spécialisé.",
-    },
-    segpa: {
-      term: "SEGPA",
-      definition:
-        "section d'enseignement général et professionnel adapté : des classes de la 6e à la 3e pour des élèves aux difficultés scolaires durables, avec des effectifs réduits et une découverte des métiers.",
-    },
-  } satisfies Partial<Record<SchoolOfferCodeDto, { term: string; definition: string }>>,
   /** Défini sous les autres termes quand le tableau compte au moins une valeur absente. */
   explainNotPublished: {
     term: "n. p.",
@@ -109,8 +105,6 @@ export const schools = {
   offre: {
     cantine: "Cantine",
     internat: "Internat",
-    ulis: "ULIS",
-    segpa: "SEGPA",
     post_bac: "Post-bac",
     apprentissage: "Apprentissage",
     agricole: "Lycée agricole",
@@ -122,11 +116,6 @@ export const schools = {
     cinema: "Section cinéma",
     theatre: "Section théâtre",
   } satisfies Record<SchoolOfferCodeDto, string>,
-  /** Infobulle des sigles. */
-  offreHelp: {
-    ulis: "Unité localisée pour l'inclusion scolaire : accueil d'élèves en situation de handicap",
-    segpa: "Section d'enseignement général et professionnel adapté",
-  } as Partial<Record<SchoolOfferCodeDto, string>>,
   /** « Section sportive : rugby, football ». */
   sports: (list: string[]) => `Section sportive : ${list.join(", ").toLowerCase()}`,
   langues: {
@@ -136,14 +125,10 @@ export const schools = {
   },
   /** Lycée professionnel : insertion des sortants. */
   insertion: (taux: number, annee: number) => `${f.decimal(taux, 0)} % en emploi 6 mois après la sortie (${annee})`,
-  links: { onisep: "Fiche ONISEP", site: "Site" },
-  /** Pied de card. */
+  links: { onisep: "Fiche ONISEP" },
+  /** Pied de card : la source seule, les termes étant définis au-dessus du tableau. */
   note: (level: "college" | "lycee") =>
-    `${level === "college" ? "Réussite au brevet" : "Réussite au baccalauréat"}, valeur ajoutée et indice de position sociale (IPS) : ministère de l'Éducation nationale (DEPP), dernière session publiée. ` +
-    "La valeur ajoutée compare la réussite observée à celle qu'attendait le profil des élèves ; la DEPP déconseille d'en tirer un palmarès. " +
-    (level === "college"
-      ? "« dép. » : moyenne des collèges du département."
-      : "« dép. » : moyenne des lycées du même type dans le département — général et technologique, ou professionnel ; un lycée professionnel se compare aux lycées professionnels."),
+    `${level === "college" ? "Réussite au brevet" : "Réussite au baccalauréat"}, valeur ajoutée et indice de position sociale (IPS) : ministère de l'Éducation nationale (DEPP), dernière session publiée.`,
   /** Fiche PDF : une ligne par établissement, les plus proches. */
   /** `lieu` : la distance en mode adresse, la commune voisine en mode commune, rien sinon. */
   pdfLine: (nom: string, lieu: string | null, reussite: number | null, va: number | null) =>

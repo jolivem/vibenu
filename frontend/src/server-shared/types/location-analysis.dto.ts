@@ -376,8 +376,6 @@ export type SchoolVoieDto = "generale" | "technologique" | "professionnelle";
 export type SchoolOfferCodeDto =
   | "cantine"
   | "internat"
-  | "ulis"
-  | "segpa"
   | "post_bac"
   | "apprentissage"
   | "agricole"
