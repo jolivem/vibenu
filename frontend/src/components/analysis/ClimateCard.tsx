@@ -2,7 +2,8 @@ import type { ClimateAnalysisDto } from "@/types/location-analysis";
 import { CardInsight } from "@/components/CardInsight";
 import type { ClimateMessages } from "@/i18n/messages/fr/analysis/climate";
 import { ClimateChart } from "./ClimateChart";
-import { CLIMATE_METRICS } from "./climateChart";
+import { CLIMATE_METRICS, climateEssentials } from "./climateChart";
+import { CardDetail } from "./readingMode";
 import { climateStationLines, climateTitle } from "./climateFormat";
 
 type ClimateMonthly = NonNullable<ClimateAnalysisDto["monthly"]>;
@@ -13,6 +14,9 @@ type ClimateMonthly = NonNullable<ClimateAnalysisDto["monthly"]>;
  * Pas de comparaison à une moyenne France : un chiffre national moyen ne correspond
  * à aucun climat réel, alors que « plus proche de Strasbourg que de Marseille » se
  * comprend d'emblée.
+ *
+ * En mode « L'essentiel », les moyennes annuelles et les mois extrêmes ; les graphes et les
+ * notes passent dans le détail.
  */
 export function ClimateCard({
   climate,
@@ -30,6 +34,7 @@ export function ClimateCard({
   // Le fournisseur nomme la série locale en français : le nom affiché vient des messages.
   const named = { ...monthly, local: { ...monthly.local, name: m.localSeries } };
   const stationLines = climateStationLines(climate, m);
+  const essentials = climateEssentials(climate);
   const typedReferences = monthly.references.filter(
     (r): r is typeof r & { climateType: string } => Boolean(r.climateType),
   );
@@ -43,14 +48,46 @@ export function ClimateCard({
 
       <CardInsight text={insight} />
 
-      <ClimateCharts monthly={named} m={m} />
+      {essentials && <ClimateEssentialFacts facts={essentials} m={m} />}
 
-      <p className="elections-footnote">{m.referencesNote(typedReferences)}</p>
-      {stationLines.length > 0 && <p className="elections-footnote">{m.stationsNote(stationLines)}</p>}
-      {referenceStations.length > 0 && (
-        <p className="elections-footnote">{m.referenceStationsNote(referenceStations)}</p>
-      )}
+      <CardDetail>
+        <ClimateCharts monthly={named} m={m} />
+
+        <p className="elections-footnote">{m.referencesNote(typedReferences)}</p>
+        {stationLines.length > 0 && <p className="elections-footnote">{m.stationsNote(stationLines)}</p>}
+        {referenceStations.length > 0 && (
+          <p className="elections-footnote">{m.referenceStationsNote(referenceStations)}</p>
+        )}
+      </CardDetail>
     </section>
+  );
+}
+
+/** Les chiffres de l'essentiel, une ligne par mesure disponible. */
+function ClimateEssentialFacts({ facts, m }: { facts: NonNullable<ReturnType<typeof climateEssentials>>; m: ClimateMessages }) {
+  const temperature = m.essential.temperature(facts.meanTemperature, facts.coldest, facts.warmest);
+  const lines = [
+    temperature && { key: "temperature", label: m.essential.labels.temperature, text: temperature },
+    facts.precipitation !== null && {
+      key: "precipitation",
+      label: m.essential.labels.precipitation,
+      text: m.essential.precipitation(facts.precipitation),
+    },
+    facts.sunshine !== null && {
+      key: "sunshine",
+      label: m.essential.labels.sunshine,
+      text: m.essential.sunshine(facts.sunshine),
+    },
+  ].filter((l): l is { key: string; label: string; text: string } => Boolean(l));
+  return (
+    <dl className="essential-facts">
+      {lines.map((l) => (
+        <div key={l.key}>
+          <dt>{l.label}</dt>
+          <dd>{l.text}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 

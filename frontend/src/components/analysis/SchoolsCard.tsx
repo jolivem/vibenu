@@ -7,6 +7,7 @@ import {
   canSortByName,
   commonDepartmentRefs,
   DEFAULT_DIRECTION,
+  essentialSchools,
   hasNotPublished,
   type CommonDepartmentRefs,
   primaryExam,
@@ -15,6 +16,7 @@ import {
   type SchoolSortKey,
   type SortDirection,
 } from "./schoolsModel";
+import { CardDetailToggle, useCardDetail } from "./readingMode";
 
 /**
  * Card « Collèges » ou « Lycées » de la section Enseignement : un tableau des
@@ -23,6 +25,10 @@ import {
  * Pas de note ni de rang : la DEPP déconseille les palmarès, et le principe de l'écran est
  * de montrer chaque indicateur dans son unité, à côté de sa référence — ici la moyenne du
  * département. Sur téléphone, chaque ligne devient une fiche (CSS, `data-label`).
+ *
+ * En mode « L'essentiel » : le collège de secteur et les plus proches, avec leur seule
+ * réussite. La carte, le tableau complet et triable, ses explications et la note de source
+ * passent dans le détail.
  */
 export function SchoolsCard({
   level,
@@ -50,8 +56,17 @@ export function SchoolsCard({
     key: isCommune ? "nom" : "distance",
     direction: "asc",
   });
-  const rows = useMemo(() => sortSchools(list, sort.key, sort.direction), [list, sort]);
-  const commonRefs = useMemo(() => commonDepartmentRefs(list), [list]);
+  const detail = useCardDetail();
+  const full = detail.open;
+  const sortedRows = useMemo(() => sortSchools(list, sort.key, sort.direction), [list, sort]);
+  const essentialRows = useMemo(() => essentialSchools(list, isCommune), [list, isCommune]);
+  const rows = full ? sortedRows : essentialRows;
+  // En mode essentiel, la moyenne du département reste sous chaque réussite : le résumé qui
+  // la remplace sur téléphone appartient au détail.
+  const commonRefs = useMemo(
+    () => (full ? commonDepartmentRefs(list) : { reussite: null, ips: null, eleves: null }),
+    [list, full],
+  );
   const hasCommonRef = commonRefs.reussite !== null || commonRefs.ips !== null || commonRefs.eleves !== null;
   const rayon = level === "college" ? schools.rayonColleges : schools.rayonLycees;
   // Sur téléphone, les définitions repoussent le tableau d'un écran entier : elles y sont
@@ -94,7 +109,7 @@ export function SchoolsCard({
               ? m.leadCommune(level, list.filter((s) => !s.horsCommune).length, list.filter((s) => s.horsCommune).length)
               : m.lead(level, list.length, rayon)}
           </p>
-          {children && (
+          {full && children && (
             <div className="card-map card-map--inline">
               <p className="card-map-hint">{m.map.hint}</p>
               {children}
@@ -102,29 +117,33 @@ export function SchoolsCard({
             </div>
           )}
           {/* Tout ce qui ne se lit pas seul dans le tableau, expliqué avant lui ; le pied de card ne garde que la source. */}
-          <button
-            type="button"
-            className="schools-explain-toggle"
-            onClick={() => setExplainOpen((v) => !v)}
-            aria-expanded={explainOpen}
-            aria-controls={explainId}
-          >
-            {explainOpen ? m.explainToggle.hide : m.explainToggle.show}
-          </button>
-          <dl id={explainId} className={`schools-explain${explainOpen ? " is-open" : ""}`}>
-            {[
-              ...m.explain(level),
-              ...(hasNotPublished(list) ? [m.explainNotPublished] : []),
-            ].map((e) => (
-              <div key={e.term}>
-                <dt>
-                  {e.term}
-                  {m.labelSeparator}
-                </dt>
-                <dd>{e.definition}</dd>
-              </div>
-            ))}
-          </dl>
+          {full && (
+            <>
+              <button
+                type="button"
+                className="schools-explain-toggle"
+                onClick={() => setExplainOpen((v) => !v)}
+                aria-expanded={explainOpen}
+                aria-controls={explainId}
+              >
+                {explainOpen ? m.explainToggle.hide : m.explainToggle.show}
+              </button>
+              <dl id={explainId} className={`schools-explain${explainOpen ? " is-open" : ""}`}>
+                {[
+                  ...m.explain(level),
+                  ...(hasNotPublished(list) ? [m.explainNotPublished] : []),
+                ].map((e) => (
+                  <div key={e.term}>
+                    <dt>
+                      {e.term}
+                      {m.labelSeparator}
+                    </dt>
+                    <dd>{e.definition}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          )}
           {/* Téléphone seulement (CSS) : les moyennes répétées sur chaque fiche, dites une fois. */}
           {hasCommonRef && (
             <p className="schools-dept-summary">
@@ -137,24 +156,43 @@ export function SchoolsCard({
           )}
           <table className="schools-table">
             <thead>
-              <tr>
-                {isCommune && canSortByName(list) ? header("nom", m.columns.name) : <th scope="col">{m.columns.name}</th>}
-                {!isCommune && header("distance", m.columns.distance)}
-                {header("reussite", m.columns.reussite, m.columnHelp.reussite)}
-                {header("va", m.columns.va, m.columnHelp.va)}
-                {header("ips", m.columns.ips, m.columnHelp.ips)}
-                {header("eleves", m.columns.eleves, m.columnHelp.eleves)}
-              </tr>
+              {full ? (
+                <tr>
+                  {isCommune && canSortByName(list) ? header("nom", m.columns.name) : <th scope="col">{m.columns.name}</th>}
+                  {!isCommune && header("distance", m.columns.distance)}
+                  {header("reussite", m.columns.reussite, m.columnHelp.reussite)}
+                  {header("va", m.columns.va, m.columnHelp.va)}
+                  {header("ips", m.columns.ips, m.columnHelp.ips)}
+                  {header("eleves", m.columns.eleves, m.columnHelp.eleves)}
+                </tr>
+              ) : (
+                // Liste courte et fixe : pas de tri.
+                <tr className="schools-head-plain">
+                  <th scope="col">{m.columns.name}</th>
+                  {!isCommune && <th scope="col">{m.columns.distance}</th>}
+                  <th scope="col" className="num" title={m.columnHelp.reussite}>
+                    {m.columns.reussite}
+                  </th>
+                </tr>
+              )}
             </thead>
             <tbody>
               {rows.map((s) => (
-                <SchoolRow key={s.uai} school={s} m={m} showDistance={!isCommune} commonRefs={commonRefs} />
+                <SchoolRow
+                  key={s.uai}
+                  school={s}
+                  m={m}
+                  showDistance={!isCommune}
+                  commonRefs={commonRefs}
+                  compact={!full}
+                />
               ))}
             </tbody>
           </table>
         </>
       )}
-      <p className="elections-footnote">{m.note(level)}</p>
+      {full && <p className="elections-footnote">{m.note(level)}</p>}
+      {detail.enabled && list.length > 0 && <CardDetailToggle open={detail.open} onToggle={detail.toggle} />}
     </section>
   );
 }
@@ -164,11 +202,14 @@ function SchoolRow({
   m,
   showDistance,
   commonRefs,
+  compact,
 }: {
   school: NearbySchoolDto;
   m: SchoolsMessages;
   showDistance: boolean;
   commonRefs: CommonDepartmentRefs;
+  /** Mode « L'essentiel » : la réussite seule, sans langues, sections ni lien. */
+  compact: boolean;
 }) {
   const exam = primaryExam(s);
   const second = secondaryExam(s);
@@ -181,7 +222,7 @@ function SchoolRow({
         <span className="schools-title">{s.nom}</span>
         {s.horsCommune && <span className="schools-outside">{m.outside(s.nomCommune, s.distance)}</span>}
         <SchoolBadges school={s} m={m} />
-        <SchoolDetails school={s} m={m} />
+        {!compact && <SchoolDetails school={s} m={m} />}
       </th>
       {showDistance && (
         <td className="schools-distance" data-label={m.columns.distance}>
@@ -199,15 +240,19 @@ function SchoolRow({
           m={m}
         />
       </td>
-      <td className="num" data-label={m.columnsShort.va}>
-        <ExamValue exams={[exam, second]} label={examLabel} value={(e) => e.vaReussite} format={m.signed} m={m} />
-      </td>
-      <td className="num" data-label={m.columnsShort.ips}>
-        <Indicator indicator={s.ips} format={m.ips} commonRef={commonRefs.ips !== null} m={m} />
-      </td>
-      <td className="num" data-label={m.columnsShort.eleves}>
-        <Indicator indicator={s.elevesParDivision} format={m.eleves} commonRef={commonRefs.eleves !== null} m={m} />
-      </td>
+      {!compact && (
+        <>
+          <td className="num" data-label={m.columnsShort.va}>
+            <ExamValue exams={[exam, second]} label={examLabel} value={(e) => e.vaReussite} format={m.signed} m={m} />
+          </td>
+          <td className="num" data-label={m.columnsShort.ips}>
+            <Indicator indicator={s.ips} format={m.ips} commonRef={commonRefs.ips !== null} m={m} />
+          </td>
+          <td className="num" data-label={m.columnsShort.eleves}>
+            <Indicator indicator={s.elevesParDivision} format={m.eleves} commonRef={commonRefs.eleves !== null} m={m} />
+          </td>
+        </>
+      )}
     </tr>
   );
 }

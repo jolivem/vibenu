@@ -34,6 +34,13 @@ export const screen: ScreenMessages = {
     nativeTitle: "Another app…",
     copyLinkAria: "Copy link",
   },
+  readingMode: {
+    label: "Level of detail",
+    essential: "Key facts",
+    detailed: "Detailed",
+    show: "Show more",
+    hide: "Show less",
+  },
   pdfButton: {
     idle: "Download PDF",
     generating: "Generating...",

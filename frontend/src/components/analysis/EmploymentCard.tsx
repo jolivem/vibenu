@@ -1,6 +1,7 @@
 import type { AnalysisMode, DemographicsAnalysisDto, EmploymentStatsDto } from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
 import { IndicatorBlock } from "./IndicatorBlock";
+import { CardDetail } from "./readingMode";
 import { EMPLOYMENT_INDICATORS } from "./populationIndicators";
 import { viewForMode, type InseeView } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
@@ -32,11 +33,15 @@ export function EmploymentCard({ demographics, mode, m, insight }: Props) {
       <h2>{m.employment.title}</h2>
       <CardInsight text={insight} />
 
-      <EmploymentCharts view={view} />
+      <EmploymentIndicators view={view} />
 
-      <p className="elections-footnote">
-        <RichText text={m.employment.footnote} />
-      </p>
+      <CardDetail>
+        <EmploymentDistributions view={view} />
+
+        <p className="elections-footnote">
+          <RichText text={m.employment.footnote} />
+        </p>
+      </CardDetail>
     </section>
   );
 }
@@ -46,13 +51,30 @@ export function EmploymentCard({ demographics, mode, m, insight }: Props) {
  * commune les reprennent tels quels, avec leurs propres sources.
  */
 export function EmploymentCharts({ view }: { view: InseeView<EmploymentStatsDto> }) {
-  const m = view.m.employment;
+  return (
+    <>
+      <EmploymentIndicators view={view} />
+      <EmploymentDistributions view={view} />
+    </>
+  );
+}
+
+/** Les indicateurs en phrases : l'essentiel de la card. */
+function EmploymentIndicators({ view }: { view: InseeView<EmploymentStatsDto> }) {
   return (
     <>
       {EMPLOYMENT_INDICATORS.map((indicator) => (
         <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
       ))}
+    </>
+  );
+}
 
+/** Les deux répartitions (catégories socioprofessionnelles, diplômes) : le détail. */
+function EmploymentDistributions({ view }: { view: InseeView<EmploymentStatsDto> }) {
+  const m = view.m.employment;
+  return (
+    <>
       <DistributionChart
         title={m.cspTitle}
         unit={m.cspUnit}

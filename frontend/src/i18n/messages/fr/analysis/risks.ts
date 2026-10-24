@@ -6,6 +6,8 @@ import type { RiskCategoryDto } from "@/types/location-analysis";
  */
 export const risks = {
   title: "Risques naturels",
+  /** Mode « L'essentiel », quand aucun risque n'est mis en avant : les autres sont dans le détail. */
+  noHighlighted: "Aucun risque recensé ici à un niveau élevé ou modéré.",
   /** Libellé de la pastille de niveau. Les clés sont les codes du DTO. */
   levels: {
     élevé: "Élevé",

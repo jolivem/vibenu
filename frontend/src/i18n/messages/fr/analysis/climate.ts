@@ -27,6 +27,24 @@ export const climate = {
     precipitationMm: (value: number) => `${Math.round(value)} mm`,
     sunshineHours: (value: number) => `${Math.round(value)} h`,
   } satisfies Record<ClimateMetric, (value: number) => string>,
+  /** Mode « L'essentiel » : une ligne par mesure, à la place des graphes. */
+  essential: {
+    temperature: (
+      mean: number | null,
+      coldest: { month: number; value: number } | null,
+      warmest: { month: number; value: number } | null,
+    ) => {
+      const range =
+        coldest && warmest
+          ? `de ${climate.format.temperatureC(coldest.value)} en ${climate.monthNames[coldest.month].toLowerCase()} à ${climate.format.temperatureC(warmest.value)} en ${climate.monthNames[warmest.month].toLowerCase()}`
+          : null;
+      if (mean === null) return range ? `Températures moyennes ${range}.` : null;
+      return `${climate.format.temperatureC(mean)} en moyenne sur l'année${range ? `, ${range}` : ""}.`;
+    },
+    precipitation: (mm: number) => `${f.int(mm)} mm de précipitations par an.`,
+    sunshine: (hours: number) => `${f.int(hours)} heures d'ensoleillement par an.`,
+    labels: { temperature: "Température", precipitation: "Précipitations", sunshine: "Ensoleillement" },
+  },
   /** Infobulle d'un point de courbe. */
   pointTitle: (series: string, x: string, value: string) => `${series} — ${x} : ${value}`,
   /** Graduation de l'axe des ordonnées. */

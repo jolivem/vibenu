@@ -3,6 +3,7 @@ import type { RentAnalysisDto, RentIndicatorDto } from "@/types/location-analysi
 import type { RentsMessages } from "@/i18n/messages/fr/analysis/rents";
 import { CardInsight } from "@/components/CardInsight";
 import { rentDeltaPct, rentExamples, rentOf } from "./rentsModel";
+import { CardDetail } from "./readingMode";
 
 /** Repère des pages commune : la moyenne de la ville, absent de l'écran d'analyse. */
 export interface RentBenchmark {
@@ -17,6 +18,9 @@ export interface RentBenchmark {
  *
  * Aucun repère départemental ni national : la card dit ce que coûte la location ici ; la
  * carte situe la commune parmi ses voisines, ce qui parle davantage qu'une moyenne nationale.
+ *
+ * En mode « L'essentiel », les loyers au m² ; les exemples en euros et la carte passent dans
+ * le détail. Sur les pages commune (sans mode de lecture), tout est affiché.
  */
 export function RentsCard({
   rents,
@@ -64,6 +68,7 @@ export function RentsCard({
         </div>
       )}
 
+      <CardDetail when={examples.length > 0 || Boolean(children)}>
       {examples.length > 0 && (
         <div className="rents-examples">
           <p>{m.examplesLead}</p>
@@ -97,6 +102,7 @@ export function RentsCard({
 
       {/* La carte ferme la card, débordant jusqu'à ses bords comme celle des ventes DVF. */}
       {children}
+      </CardDetail>
     </section>
   );
 }

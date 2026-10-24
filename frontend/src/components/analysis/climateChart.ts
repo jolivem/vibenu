@@ -1,3 +1,4 @@
+import type { ClimateAnalysisDto } from "@/types/location-analysis";
 import type { ClimateMonthlySeriesDto } from "@/types/location-analysis";
 import { LINE_CHART_DIMENSIONS } from "./lineChart";
 import { LOCAL_SERIES_COLOR } from "./chartColors";
@@ -163,4 +164,38 @@ function niceStep(range: number): number {
   const normalized = target / magnitude;
   const factor = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
   return factor * magnitude;
+}
+
+/** Les chiffres de l'essentiel de la card Climat : moyennes annuelles et mois extrêmes. */
+export interface ClimateEssentials {
+  meanTemperature: number | null;
+  /** Index du mois (0 = janvier) et sa température moyenne. */
+  coldest: { month: number; value: number } | null;
+  warmest: { month: number; value: number } | null;
+  precipitation: number | null;
+  sunshine: number | null;
+}
+
+/**
+ * Mode « L'essentiel » de la card Climat : quelques chiffres plutôt que trois graphes de
+ * douze mois. Sans le modèle de langage, la card dit encore quelque chose.
+ */
+export function climateEssentials(climate: ClimateAnalysisDto): ClimateEssentials | null {
+  const temps = climate.monthly?.local.temperatureC ?? [];
+  let coldest: ClimateEssentials["coldest"] = null;
+  let warmest: ClimateEssentials["warmest"] = null;
+  temps.forEach((value, month) => {
+    if (value === null) return;
+    if (!coldest || value < coldest.value) coldest = { month, value };
+    if (!warmest || value > warmest.value) warmest = { month, value };
+  });
+  const facts = {
+    meanTemperature: climate.temperatureC,
+    coldest,
+    warmest,
+    precipitation: climate.precipitationMm,
+    sunshine: climate.sunshineHours,
+  };
+  const empty = facts.meanTemperature === null && !coldest && facts.precipitation === null && facts.sunshine === null;
+  return empty ? null : facts;
 }

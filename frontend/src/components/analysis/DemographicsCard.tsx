@@ -4,6 +4,7 @@ import { CardInsight } from "@/components/CardInsight";
 import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 import { AgeChart } from "./AgeChart";
 import { IndicatorBlock } from "./IndicatorBlock";
+import { CardDetail } from "./readingMode";
 import { viewForMode } from "./inseeChart";
 import { DEMOGRAPHICS_INDICATORS, demographicsScoped } from "./populationIndicators";
 
@@ -21,6 +22,9 @@ interface Props {
  * La population totale n'y figure plus : elle ne se compare pas — les 67 millions
  * d'habitants de la France ne sont pas un repère pour un quartier de 2 000 — et
  * `PopulationScope` nomme déjà la zone en tête de section, pour les quatre cards.
+ *
+ * En mode « L'essentiel », les indicateurs ; la pyramide des âges et la note passent dans
+ * le détail.
  */
 export function DemographicsCard({ demographics, mode, m, insight }: Props) {
   const scoped = demographicsScoped(demographics);
@@ -46,22 +50,24 @@ export function DemographicsCard({ demographics, mode, m, insight }: Props) {
           L'ancienne classe `.demographics-age` composait ce titre en légende (0,85 rem,
           gris, centré), ce qui le faisait lire comme le sous-titre du graphe plutôt que
           comme un titre de section. */}
-      {local?.ageDistribution && (
-        <div className="insee-metric">
-          <h3>{m.demographics.ageTitle}</h3>
-          <p className="metric-unit">{m.demographics.ageUnit}</p>
-          <AgeChart
-            iris={local.ageDistribution}
-            commune={communeAges ?? null}
-            france={view.scoped.france?.ageDistribution ?? null}
-            showCommune={view.showCommune}
-            mainSeriesName={view.localName}
-            m={m}
-          />
-        </div>
-      )}
+      <CardDetail>
+        {local?.ageDistribution && (
+          <div className="insee-metric">
+            <h3>{m.demographics.ageTitle}</h3>
+            <p className="metric-unit">{m.demographics.ageUnit}</p>
+            <AgeChart
+              iris={local.ageDistribution}
+              commune={communeAges ?? null}
+              france={view.scoped.france?.ageDistribution ?? null}
+              showCommune={view.showCommune}
+              mainSeriesName={view.localName}
+              m={m}
+            />
+          </div>
+        )}
 
-      <p className="demographics-footnote">{m.demographics.footnote(mode === "commune")}</p>
+        <p className="demographics-footnote">{m.demographics.footnote(mode === "commune")}</p>
+      </CardDetail>
     </section>
   );
 }

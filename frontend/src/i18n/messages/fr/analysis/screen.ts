@@ -46,6 +46,14 @@ export const screen = {
     /** Icône de copie du pied de page, qui n'a pas de champ affichant le lien. */
     copyLinkAria: "Copier le lien",
   },
+  /** Mode de lecture : choisi en haut de page, ouvert ou refermé ensuite card par card. */
+  readingMode: {
+    label: "Niveau de détail",
+    essential: "L'essentiel",
+    detailed: "Détaillé",
+    show: "Voir plus",
+    hide: "Réduire",
+  },
   pdfButton: {
     idle: "Télécharger PDF",
     generating: "Génération...",

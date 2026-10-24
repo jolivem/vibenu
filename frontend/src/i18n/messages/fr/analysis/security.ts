@@ -73,6 +73,14 @@ export const security = {
     { strong: "1 à 4 faits" },
     ` dans l'année, ce qui représente ici ${rate(p.low)} à ${rate(p.high)} — l'échelle du graphe étant en ‰, pas en nombre de faits.`,
   ],
+  /** Mode « L'essentiel » : la dernière année seulement, une ligne par indicateur. */
+  latest: {
+    title: (year: number) => `Faits enregistrés en ${year}`,
+    /** La valeur masquée est dite pour ce qu'elle est, pas laissée vide. */
+    masked: "1 à 4 faits",
+    references: (department: string | null, france: string | null) =>
+      [department && `dép. ${department}`, france && `France ${france}`].filter(Boolean).join(" · "),
+  },
   noPublication:
     "Aucune année ne dépasse 4 faits pour les indicateurs suivis : les valeurs exactes ne sont pas publiées, seule leur fourchette est connue.",
   scopeNote: (p: { from: number; to: number; scale: SecurityScale; city?: string }) =>

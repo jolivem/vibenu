@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import type { ElectionsAnalysisDto } from "@/types/location-analysis";
 import { CardInsight } from "@/components/CardInsight";
 import type { ElectionsMessages } from "@/i18n/messages/fr/analysis/elections";
 import { NEUTRAL_COLOR, PARTI_COLOR } from "./electionFormat";
+import { CardDetailToggle, useCardDetail } from "./readingMode";
+
+/** Mode « L'essentiel » : les candidats arrivés en tête dans la commune. */
+const ESSENTIAL_CANDIDATES = 3;
 
 
 export function ElectionsCard({
@@ -17,7 +20,7 @@ export function ElectionsCard({
   /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
   insight?: string | null;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const detail = useCardDetail();
 
   // Tri par score communal décroissant
   const sorted = [...elections.candidates].sort(
@@ -29,9 +32,7 @@ export function ElectionsCard({
     1,
   );
 
-  const visibleCount = Math.ceil(sorted.length / 2);
-  const visible = expanded ? sorted : sorted.slice(0, visibleCount);
-  const hiddenCount = sorted.length - visibleCount;
+  const visible = detail.open ? sorted : sorted.slice(0, ESSENTIAL_CANDIDATES);
 
   return (
     <section className="card elections-card">
@@ -96,18 +97,8 @@ export function ElectionsCard({
         })}
       </ul>
 
-      {hiddenCount > 0 && (
-        <button
-          type="button"
-          className="elections-toggle"
-          onClick={() => setExpanded((v) => !v)}
-          aria-expanded={expanded}
-        >
-          {expanded ? m.presidential.hideOthers : m.presidential.showOthers(hiddenCount)}
-        </button>
-      )}
-
-      <p className="elections-footnote">{m.presidential.footnote}</p>
+      {detail.open && <p className="elections-footnote">{m.presidential.footnote}</p>}
+      {detail.enabled && <CardDetailToggle open={detail.open} onToggle={detail.toggle} />}
     </section>
   );
 }

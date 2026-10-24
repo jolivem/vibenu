@@ -24,6 +24,21 @@ export const climate: ClimateMessages = {
     precipitationMm: (value) => `${Math.round(value)} mm`,
     sunshineHours: (value) => `${Math.round(value)} h`,
   },
+  essential: {
+    temperature: (mean, coldest, warmest) => {
+      const months = climate.monthNames;
+      const t = climate.format.temperatureC;
+      const range =
+        coldest && warmest
+          ? `from ${t(coldest.value)} in ${months[coldest.month]} to ${t(warmest.value)} in ${months[warmest.month]}`
+          : null;
+      if (mean === null) return range ? `Average temperatures ${range}.` : null;
+      return `${t(mean)} on average over the year${range ? `, ${range}` : ""}.`;
+    },
+    precipitation: (mm) => `${f.int(mm)} mm of rainfall a year.`,
+    sunshine: (hours) => `${f.int(hours)} hours of sunshine a year.`,
+    labels: { temperature: "Temperature", precipitation: "Rainfall", sunshine: "Sunshine" },
+  },
   axisTick: (value) => f.number(value),
   pointTitle: (series, x, value) => `${series} — ${x}: ${value}`,
   monthInitials: ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"],

@@ -2,6 +2,10 @@ import type { MunicipalesAnalysisDto, MunicipalesListeDto } from "@/types/locati
 import { CardInsight } from "@/components/CardInsight";
 import type { ElectionsMessages } from "@/i18n/messages/fr/analysis/elections";
 import { NEUTRAL_COLOR, NUANCE_COLOR, seatCount } from "./electionFormat";
+import { CardDetailToggle, useCardDetail } from "./readingMode";
+
+/** Mode « L'essentiel » : les listes arrivées en tête (la requête les trie par score). */
+const ESSENTIAL_LISTES = 2;
 
 
 /** Mode nuancé : barres commune / France, comme la card présidentielle. */
@@ -134,6 +138,7 @@ export function MunicipalesCard({
   insight?: string | null;
 }) {
   const { tour, participationPct, nuancee, villeEntiere, listes } = municipales;
+  const detail = useCardDetail();
   if (listes.length === 0) return null;
 
   const listeUnique = listes.length === 1;
@@ -145,10 +150,13 @@ export function MunicipalesCard({
 
       <CardInsight text={insight} />
 
-      <MunicipalesLists listes={listes} nuancee={nuancee} m={m} />
+      <MunicipalesLists listes={detail.open ? listes : listes.slice(0, ESSENTIAL_LISTES)} nuancee={nuancee} m={m} />
 
-      {villeEntiere && <p className="elections-footnote">{m.municipal.wholeCity}</p>}
-      {!nuancee && <p className="elections-footnote">{m.municipal.noNuances}</p>}
+      {detail.open && villeEntiere && <p className="elections-footnote">{m.municipal.wholeCity}</p>}
+      {detail.open && !nuancee && <p className="elections-footnote">{m.municipal.noNuances}</p>}
+      {detail.enabled && (listes.length > ESSENTIAL_LISTES || villeEntiere || !nuancee) && (
+        <CardDetailToggle open={detail.open} onToggle={detail.toggle} />
+      )}
     </section>
   );
 }

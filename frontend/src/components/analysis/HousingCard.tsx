@@ -5,6 +5,7 @@ import type {
 } from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
 import { IndicatorBlock } from "./IndicatorBlock";
+import { CardDetail } from "./readingMode";
 import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { HOUSING_INDICATORS, dwellingSegments, occupancySegments } from "./populationIndicators";
 import { viewForMode, type InseeView } from "./inseeChart";
@@ -35,9 +36,13 @@ export function HousingCard({ demographics, mode, m, insight }: Props) {
 
       <CardInsight text={insight} />
 
-      <HousingCharts view={view} />
+      <HousingIndicators view={view} />
 
-      <p className="elections-footnote">{m.housing.footnote}</p>
+      <CardDetail>
+        <HousingDistributions view={view} />
+
+        <p className="elections-footnote">{m.housing.footnote}</p>
+      </CardDetail>
     </section>
   );
 }
@@ -47,13 +52,30 @@ export function HousingCard({ demographics, mode, m, insight }: Props) {
  * commune les reprennent tels quels, avec leurs propres sources.
  */
 export function HousingCharts({ view }: { view: InseeView<HousingStatsDto> }) {
-  const m = view.m.housing;
+  return (
+    <>
+      <HousingIndicators view={view} />
+      <HousingDistributions view={view} />
+    </>
+  );
+}
+
+/** Les indicateurs en phrases : l'essentiel de la card. */
+function HousingIndicators({ view }: { view: InseeView<HousingStatsDto> }) {
   return (
     <>
       {HOUSING_INDICATORS.map((indicator) => (
         <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
       ))}
+    </>
+  );
+}
 
+/** Les répartitions (occupation, type de logement, pièces, époque) : le détail. */
+function HousingDistributions({ view }: { view: InseeView<HousingStatsDto> }) {
+  const m = view.m.housing;
+  return (
+    <>
       <div className="insee-metric">
         <h3>{m.occupancyTitle}</h3>
         <p className="metric-unit">{m.occupancyUnit}</p>

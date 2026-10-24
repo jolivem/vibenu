@@ -47,6 +47,7 @@ import { seoPageForCitycode } from "@/lib/commune-routing";
 import { useAnalysisI18n, useI18n } from "@/i18n/client";
 import { localizedHref } from "@/i18n/locales";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ReadingModeProvider, ReadingModeSwitch } from "@/components/analysis/readingMode";
 
 /** Couche d'aléa allumée d'office quand il n'y a pas de zonage inondation à montrer : la
  *  seule à couvrir tout le territoire avec un dégradé lisible. Les autres restent derrière
@@ -225,321 +226,324 @@ export function AnalysisScreen() {
   );
 
   return (
-    <main id="haut" className="analysis-layout">
-      <header className="analysis-topbar">
-        <div className="analysis-topbar-inner">
-          <Link href={localizedHref(locale, "home")} className="analysis-back">
-            <span aria-hidden>←</span>
-            <span className="analysis-brand">
-              <Brand />
-            </span>
-          </Link>
-          <div className="analysis-actions">
-            <LanguageSwitcher route="analyze" className="analysis-language" />
+    <ReadingModeProvider urlValue={searchParams.get("vue")} labels={m.screen.readingMode}>
+      <main id="haut" className="analysis-layout">
+        <header className="analysis-topbar">
+          <div className="analysis-topbar-inner">
+            <Link href={localizedHref(locale, "home")} className="analysis-back">
+              <span aria-hidden>←</span>
+              <span className="analysis-brand">
+                <Brand />
+              </span>
+            </Link>
+            <div className="analysis-actions">
+              <LanguageSwitcher route="analyze" className="analysis-language" />
+            {data && (
+              <>
+                {FEATURES.hasShareLinks && <ShareLinks label={data.address.label} m={m.screen.share} />}
+                {FEATURES.hasPdfExport && (
+                  <DownloadPdfButton
+                    data={data}
+                    realEstate={realEstate ?? null}
+                    insights={insights}
+                    insightsLoading={insightsLoading}
+                    securityRating={securityRating}
+                    getMap={getMap}
+                  />
+                )}
+              </>
+            )}
+            </div>
+          </div>
+        </header>
+
+        <div className="analysis-hero-strip">
+          <div className="analysis-hero-inner">
+            <p className="analysis-hero-eyebrow">
+              {m.screen.eyebrow(city, postcode)}
+            </p>
+            <h1 className="analysis-hero-title">{label ?? m.screen.titleFallback}</h1>
+            {seoPage && (
+              <Link href={`/commune/${seoPage.slug}`} hrefLang="fr" className="analysis-hero-seo-link">
+                {m.screen.communePageLink(seoPage.nomCourt)}
+              </Link>
+            )}
+            {data && <ReadingModeSwitch className="analysis-hero-reading" />}
+          </div>
+        </div>
+
+        <div className="page-shell">
+          {isLoading && (
+            <div className="analysis-loader">
+              <div className="spinner" />
+              <p>{m.screen.loading}</p>
+            </div>
+          )}
+          {error && <p className="analysis-error">{m.screen.failed}</p>}
+
           {data && (
             <>
-              {FEATURES.hasShareLinks && <ShareLinks label={data.address.label} m={m.screen.share} />}
-              {FEATURES.hasPdfExport && (
-                <DownloadPdfButton
-                  data={data}
-                  realEstate={realEstate ?? null}
-                  insights={insights}
-                  insightsLoading={insightsLoading}
-                  securityRating={securityRating}
-                  getMap={getMap}
-                />
+              <KeyFigures figures={keyFigures} ariaLabel={m.keyFigures.ariaLabel} />
+
+              {FEATURES.showLocation && (
+                <section className="card map-section page-locator">
+                  <h2>{m.screen.locationTitle}</h2>
+                  <Map
+                    lat={data.map.center.lat}
+                    lon={data.map.center.lon}
+                    label={data.address.label}
+                    cadastreParcel={data.cadastre?.parcel}
+                    communeContour={data.map.communeContour}
+                    showLayerToggle={false}
+                    showBaseLayers
+                    height={LOCATOR_MAP_HEIGHT}
+                    onReady={handleMapReady}
+                  />
+                </section>
               )}
-            </>
-          )}
-          </div>
-        </div>
-      </header>
 
-      <div className="analysis-hero-strip">
-        <div className="analysis-hero-inner">
-          <p className="analysis-hero-eyebrow">
-            {m.screen.eyebrow(city, postcode)}
-          </p>
-          <h1 className="analysis-hero-title">{label ?? m.screen.titleFallback}</h1>
-          {seoPage && (
-            <Link href={`/commune/${seoPage.slug}`} hrefLang="fr" className="analysis-hero-seo-link">
-              {m.screen.communePageLink(seoPage.nomCourt)}
-            </Link>
-          )}
-        </div>
-      </div>
+              <div className="page-body">
+                <aside className="page-sidebar">
+                  <SectionNav sections={navSections} />
+                </aside>
 
-      <div className="page-shell">
-        {isLoading && (
-          <div className="analysis-loader">
-            <div className="spinner" />
-            <p>{m.screen.loading}</p>
-          </div>
-        )}
-        {error && <p className="analysis-error">{m.screen.failed}</p>}
-
-        {data && (
-          <>
-            <KeyFigures figures={keyFigures} ariaLabel={m.keyFigures.ariaLabel} />
-
-            {FEATURES.showLocation && (
-              <section className="card map-section page-locator">
-                <h2>{m.screen.locationTitle}</h2>
-                <Map
-                  lat={data.map.center.lat}
-                  lon={data.map.center.lon}
-                  label={data.address.label}
-                  cadastreParcel={data.cadastre?.parcel}
-                  communeContour={data.map.communeContour}
-                  showLayerToggle={false}
-                  showBaseLayers
-                  height={LOCATOR_MAP_HEIGHT}
-                  onReady={handleMapReady}
-                />
-              </section>
-            )}
-
-            <div className="page-body">
-              <aside className="page-sidebar">
-                <SectionNav sections={navSections} />
-              </aside>
-
-              <div className="page-sections">
-                {hasContent.immobilier && (
-                  <AnalysisSection id="immobilier">
-                    {FEATURES.showRealEstate && realEstate && (
-                      <RealEstateCard realEstate={realEstate} m={m.realEstate}>
-                        {realEstate.transactionFeatures?.length ? (
-                          <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                            <Map
-                              lat={data.map.center.lat}
-                              lon={data.map.center.lon}
-                              label={data.address.label}
-                              dvfTransactions={realEstate.transactionFeatures}
-                              communeContour={data.map.communeContour}
-                              basemap={THEMATIC_BASEMAP}
-                              initialLayers={[DVF_LAYER_ID]}
-                              showLayerToggle={false}
-                              height={THEMATIC_MAP_HEIGHT}
-                            />
-                          </LazyMap>
-                        ) : null}
-                      </RealEstateCard>
-                    )}
-                    {FEATURES.showRents && hasRentContent(data.rents) && (
-                      <RentsCard rents={data.rents} m={m.rents}>
-                        <RentsMap
-                          rents={data.rents}
-                          lat={data.map.center.lat}
-                          lon={data.map.center.lon}
-                          label={data.address.label}
-                          m={m.rents}
-                        />
-                      </RentsCard>
-                    )}
-                    {FEATURES.showCadastre && data.cadastre && (
-                      <CadastreCard cadastre={data.cadastre} m={m.cadastre} />
-                    )}
-                  </AnalysisSection>
-                )}
-
-                {hasContent.enseignement && data.schools && (
-                  <AnalysisSection id="enseignement">
-                    {(["college", "lycee"] as const).map((level) => (
-                      <SchoolsCard
-                        key={level}
-                        level={level}
-                        schools={data.schools!}
-                        m={m.schools}
-                        hasSector={level === "college" && !!sectorGeometry}
-                      >
-                        {schoolMapPoints[level].length > 0 && (
-                          <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                            <SchoolsMap
-                              points={schoolMapPoints[level]}
-                              level={level}
-                              lat={data.map.center.lat}
-                              lon={data.map.center.lon}
-                              label={data.address.label}
-                              sector={level === "college" ? sectorGeometry : null}
-                            />
-                          </LazyMap>
-                        )}
-                      </SchoolsCard>
-                    ))}
-                  </AnalysisSection>
-                )}
-
-                {hasContent.proximite && (
-                  <AnalysisSection id="proximite">
-                    {FEATURES.showNeighborhood && !isCommune && (
-                      <NeighborhoodCard neighborhood={data.neighborhood} m={m.nearby} />
-                    )}
-                    {FEATURES.showCommuneEquipment && isCommune && data.communeEquipment && (
-                      <CommuneEquipmentCard equipment={data.communeEquipment} m={m.nearby.communeEquipment} />
-                    )}
-                  </AnalysisSection>
-                )}
-
-                {hasContent.deplacer && (
-                  <AnalysisSection id="deplacer">
-                    <MobilityCard mobility={data.mobility} mode={data.mode} m={m.mobility} nearby={m.nearby} />
-                  </AnalysisSection>
-                )}
-
-                {hasContent.securite && data.security && (
-                  <AnalysisSection id="securite">
-                    <SecurityCard
-                      security={data.security}
-                      codeInsee={citycode}
-                      ville={data.address.city}
-                      m={m.security}
-                      insight={insights.securite}
-                    />
-                  </AnalysisSection>
-                )}
-
-                {hasContent.population && (
-                  <AnalysisSection
-                    id="population"
-                    // Gardé sur la donnée et non sur `showDemographics` : si un jour
-                    // seule la card Logement était activée, c'est encore ce bandeau qui
-                    // nommerait la zone qu'elle décrit.
-                    lead={
-                      data.demographics ? (
-                        <PopulationScope demographics={data.demographics} mode={data.mode} m={m.population}>
-                          {!isCommune && data.demographics.irisGeojson ? (
+                <div className="page-sections">
+                  {hasContent.immobilier && (
+                    <AnalysisSection id="immobilier">
+                      {FEATURES.showRealEstate && realEstate && (
+                        <RealEstateCard realEstate={realEstate} m={m.realEstate}>
+                          {realEstate.transactionFeatures?.length ? (
                             <LazyMap height={THEMATIC_MAP_HEIGHT}>
                               <Map
                                 lat={data.map.center.lat}
                                 lon={data.map.center.lon}
                                 label={data.address.label}
-                                irisGeojson={data.demographics.irisGeojson}
+                                dvfTransactions={realEstate.transactionFeatures}
+                                communeContour={data.map.communeContour}
                                 basemap={THEMATIC_BASEMAP}
-                                initialLayers={[IRIS_LAYER_ID]}
+                                initialLayers={[DVF_LAYER_ID]}
                                 showLayerToggle={false}
                                 height={THEMATIC_MAP_HEIGHT}
                               />
                             </LazyMap>
                           ) : null}
-                        </PopulationScope>
-                      ) : null
-                    }
-                  >
-                    {FEATURES.showDemographics && data.demographics && (
-                      <DemographicsCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.demographie} />
-                    )}
-                    {FEATURES.showEmployment && data.demographics && (
-                      <EmploymentCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.emploi} />
-                    )}
-                    {FEATURES.showHouseholds && data.demographics && (
-                      <HouseholdsCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.menages} />
-                    )}
-                    {FEATURES.showHousing && data.demographics && (
-                      <HousingCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.logement} />
-                    )}
-                  </AnalysisSection>
-                )}
+                        </RealEstateCard>
+                      )}
+                      {FEATURES.showRents && hasRentContent(data.rents) && (
+                        <RentsCard rents={data.rents} m={m.rents}>
+                          <RentsMap
+                            rents={data.rents}
+                            lat={data.map.center.lat}
+                            lon={data.map.center.lon}
+                            label={data.address.label}
+                            m={m.rents}
+                          />
+                        </RentsCard>
+                      )}
+                      {FEATURES.showCadastre && data.cadastre && (
+                        <CadastreCard cadastre={data.cadastre} m={m.cadastre} />
+                      )}
+                    </AnalysisSection>
+                  )}
 
-                {hasContent.elections && (
-                  <AnalysisSection id="elections">
-                    {FEATURES.showMunicipales && data.municipales && (
-                      <MunicipalesCard municipales={data.municipales} m={m.elections} insight={insights.municipales} />
-                    )}
-                    {FEATURES.showElections && data.elections && (
-                      <ElectionsCard elections={data.elections} m={m.elections} insight={insights.elections} />
-                    )}
-                  </AnalysisSection>
-                )}
+                  {hasContent.enseignement && data.schools && (
+                    <AnalysisSection id="enseignement">
+                      {(["college", "lycee"] as const).map((level) => (
+                        <SchoolsCard
+                          key={level}
+                          level={level}
+                          schools={data.schools!}
+                          m={m.schools}
+                          hasSector={level === "college" && !!sectorGeometry}
+                        >
+                          {schoolMapPoints[level].length > 0 && (
+                            <LazyMap height={THEMATIC_MAP_HEIGHT}>
+                              <SchoolsMap
+                                points={schoolMapPoints[level]}
+                                level={level}
+                                lat={data.map.center.lat}
+                                lon={data.map.center.lon}
+                                label={data.address.label}
+                                sector={level === "college" ? sectorGeometry : null}
+                              />
+                            </LazyMap>
+                          )}
+                        </SchoolsCard>
+                      ))}
+                    </AnalysisSection>
+                  )}
 
-                {hasContent.fiscalite && data.localTax && (
-                  <AnalysisSection id="fiscalite">
-                    <LocalTaxCard localTax={data.localTax} m={m.localTax} insight={insights.fiscalite} />
-                  </AnalysisSection>
-                )}
+                  {hasContent.proximite && (
+                    <AnalysisSection id="proximite">
+                      {FEATURES.showNeighborhood && !isCommune && (
+                        <NeighborhoodCard neighborhood={data.neighborhood} m={m.nearby} />
+                      )}
+                      {FEATURES.showCommuneEquipment && isCommune && data.communeEquipment && (
+                        <CommuneEquipmentCard equipment={data.communeEquipment} m={m.nearby.communeEquipment} />
+                      )}
+                    </AnalysisSection>
+                  )}
 
-                {hasContent.environnement && (
-                  <AnalysisSection id="environnement">
-                    {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} m={m.climate} insight={insights.climat} />}
-                    {FEATURES.showAirQuality && data.airQuality.available && (
-                      <AirQualityCard airQuality={data.airQuality} m={m.air} insight={insights.air} />
-                    )}
-                  </AnalysisSection>
-                )}
+                  {hasContent.deplacer && (
+                    <AnalysisSection id="deplacer">
+                      <MobilityCard mobility={data.mobility} mode={data.mode} m={m.mobility} nearby={m.nearby} />
+                    </AnalysisSection>
+                  )}
 
-                {hasContent.risques && (
-                  <AnalysisSection id="risques">
-                    <RisksCard risks={data.risks} m={m.risks}>
-                      <LazyMap height={THEMATIC_MAP_HEIGHT}>
-                        <Map
-                          lat={data.map.center.lat}
-                          lon={data.map.center.lon}
-                          label={data.address.label}
-                          risks={data.risks}
-                          floodZones={data.risks.floodZones}
-                          communeContour={data.map.communeContour}
-                          basemap={THEMATIC_BASEMAP}
-                          // Le zonage inondation passe devant l'argile quand il existe :
-                          // c'est l'aléa le plus localisé, donc le plus informatif. Deux
-                          // aplats superposés se mélangeraient en bouillie, d'où l'un ou
-                          // l'autre et non les deux. Un simple périmètre de PPR ne dit
-                          // rien du lieu : il ne prend pas la place de l'argile.
-                          initialLayers={
-                            hasFloodZoning ? [FLOOD_ZONES_LAYER_ID] : [DEFAULT_RISK_LAYER]
-                          }
-                          layerToggleHint={
-                            hasFloodZoning
-                              ? m.screen.floodHint.zoning
-                              : data.risks.floodZones?.length
-                                ? m.screen.floodHint.perimeterOnly
-                                : m.screen.floodHint.none
-                          }
-                          height={THEMATIC_MAP_HEIGHT}
-                        />
-                      </LazyMap>
-                    </RisksCard>
-                  </AnalysisSection>
-                )}
+                  {hasContent.securite && data.security && (
+                    <AnalysisSection id="securite">
+                      <SecurityCard
+                        security={data.security}
+                        codeInsee={citycode}
+                        ville={data.address.city}
+                        m={m.security}
+                        insight={insights.securite}
+                      />
+                    </AnalysisSection>
+                  )}
 
-                {hasContent.histoire && (
-                  <AnalysisSection id="histoire">
-                    <HistoryCard
-                      lat={data.map.center.lat}
-                      lon={data.map.center.lon}
-                      label={data.address.label}
-                      mode={data.mode}
-                      cadastreParcel={data.cadastre?.parcel ?? null}
-                      communeContour={data.map.communeContour ?? null}
-                      height={HISTORY_MAP_HEIGHT}
-                      title={m.screen.historyTitle}
-                    />
-                  </AnalysisSection>
-                )}
+                  {hasContent.population && (
+                    <AnalysisSection
+                      id="population"
+                      // Gardé sur la donnée et non sur `showDemographics` : si un jour
+                      // seule la card Logement était activée, c'est encore ce bandeau qui
+                      // nommerait la zone qu'elle décrit.
+                      lead={
+                        data.demographics ? (
+                          <PopulationScope demographics={data.demographics} mode={data.mode} m={m.population}>
+                            {!isCommune && data.demographics.irisGeojson ? (
+                              <LazyMap height={THEMATIC_MAP_HEIGHT}>
+                                <Map
+                                  lat={data.map.center.lat}
+                                  lon={data.map.center.lon}
+                                  label={data.address.label}
+                                  irisGeojson={data.demographics.irisGeojson}
+                                  basemap={THEMATIC_BASEMAP}
+                                  initialLayers={[IRIS_LAYER_ID]}
+                                  showLayerToggle={false}
+                                  height={THEMATIC_MAP_HEIGHT}
+                                />
+                              </LazyMap>
+                            ) : null}
+                          </PopulationScope>
+                        ) : null
+                      }
+                    >
+                      {FEATURES.showDemographics && data.demographics && (
+                        <DemographicsCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.demographie} />
+                      )}
+                      {FEATURES.showEmployment && data.demographics && (
+                        <EmploymentCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.emploi} />
+                      )}
+                      {FEATURES.showHouseholds && data.demographics && (
+                        <HouseholdsCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.menages} />
+                      )}
+                      {FEATURES.showHousing && data.demographics && (
+                        <HousingCard demographics={data.demographics} mode={data.mode} m={m.population} insight={insights.logement} />
+                      )}
+                    </AnalysisSection>
+                  )}
 
-                {insightsDebug !== undefined && (
-                  <details className="card-insight-debug">
-                    <summary>
-                      {m.screen.debugSummary(Math.round(JSON.stringify(insightsDebug).length / 4))}
-                    </summary>
-                    <pre>{JSON.stringify(insightsDebug, null, 2)}</pre>
-                  </details>
-                )}
+                  {hasContent.elections && (
+                    <AnalysisSection id="elections">
+                      {FEATURES.showMunicipales && data.municipales && (
+                        <MunicipalesCard municipales={data.municipales} m={m.elections} insight={insights.municipales} />
+                      )}
+                      {FEATURES.showElections && data.elections && (
+                        <ElectionsCard elections={data.elections} m={m.elections} insight={insights.elections} />
+                      )}
+                    </AnalysisSection>
+                  )}
 
-                <div className="analysis-footer">
-                  <Link href={localizedHref(locale, "home")} className="analysis-footer-link">
-                    <span aria-hidden>←</span> {m.screen.newAnalysis}
-                  </Link>
-                  {FEATURES.hasShareLinks && <ShareInline label={data.address.label} m={m.screen.share} />}
-                  <a href="#haut" className="analysis-footer-link">
-                    <span aria-hidden>↑</span> {m.screen.backToTop}
-                  </a>
+                  {hasContent.fiscalite && data.localTax && (
+                    <AnalysisSection id="fiscalite">
+                      <LocalTaxCard localTax={data.localTax} m={m.localTax} insight={insights.fiscalite} />
+                    </AnalysisSection>
+                  )}
+
+                  {hasContent.environnement && (
+                    <AnalysisSection id="environnement">
+                      {FEATURES.showClimate && data.climate && <ClimateCard climate={data.climate} m={m.climate} insight={insights.climat} />}
+                      {FEATURES.showAirQuality && data.airQuality.available && (
+                        <AirQualityCard airQuality={data.airQuality} m={m.air} insight={insights.air} />
+                      )}
+                    </AnalysisSection>
+                  )}
+
+                  {hasContent.risques && (
+                    <AnalysisSection id="risques">
+                      <RisksCard risks={data.risks} m={m.risks}>
+                        <LazyMap height={THEMATIC_MAP_HEIGHT}>
+                          <Map
+                            lat={data.map.center.lat}
+                            lon={data.map.center.lon}
+                            label={data.address.label}
+                            risks={data.risks}
+                            floodZones={data.risks.floodZones}
+                            communeContour={data.map.communeContour}
+                            basemap={THEMATIC_BASEMAP}
+                            // Le zonage inondation passe devant l'argile quand il existe :
+                            // c'est l'aléa le plus localisé, donc le plus informatif. Deux
+                            // aplats superposés se mélangeraient en bouillie, d'où l'un ou
+                            // l'autre et non les deux. Un simple périmètre de PPR ne dit
+                            // rien du lieu : il ne prend pas la place de l'argile.
+                            initialLayers={
+                              hasFloodZoning ? [FLOOD_ZONES_LAYER_ID] : [DEFAULT_RISK_LAYER]
+                            }
+                            layerToggleHint={
+                              hasFloodZoning
+                                ? m.screen.floodHint.zoning
+                                : data.risks.floodZones?.length
+                                  ? m.screen.floodHint.perimeterOnly
+                                  : m.screen.floodHint.none
+                            }
+                            height={THEMATIC_MAP_HEIGHT}
+                          />
+                        </LazyMap>
+                      </RisksCard>
+                    </AnalysisSection>
+                  )}
+
+                  {hasContent.histoire && (
+                    <AnalysisSection id="histoire">
+                      <HistoryCard
+                        lat={data.map.center.lat}
+                        lon={data.map.center.lon}
+                        label={data.address.label}
+                        mode={data.mode}
+                        cadastreParcel={data.cadastre?.parcel ?? null}
+                        communeContour={data.map.communeContour ?? null}
+                        height={HISTORY_MAP_HEIGHT}
+                        title={m.screen.historyTitle}
+                      />
+                    </AnalysisSection>
+                  )}
+
+                  {insightsDebug !== undefined && (
+                    <details className="card-insight-debug">
+                      <summary>
+                        {m.screen.debugSummary(Math.round(JSON.stringify(insightsDebug).length / 4))}
+                      </summary>
+                      <pre>{JSON.stringify(insightsDebug, null, 2)}</pre>
+                    </details>
+                  )}
+
+                  <div className="analysis-footer">
+                    <Link href={localizedHref(locale, "home")} className="analysis-footer-link">
+                      <span aria-hidden>←</span> {m.screen.newAnalysis}
+                    </Link>
+                    {FEATURES.hasShareLinks && <ShareInline label={data.address.label} m={m.screen.share} />}
+                    <a href="#haut" className="analysis-footer-link">
+                      <span aria-hidden>↑</span> {m.screen.backToTop}
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          </>
-        )}
-      </div>
-    </main>
+            </>
+          )}
+        </div>
+      </main>
+    </ReadingModeProvider>
   );
 }
 

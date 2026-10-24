@@ -2,6 +2,7 @@ import type { CadastreAnalysisDto } from "@/types/location-analysis";
 import { RichText } from "@/components/RichText";
 import type { CadastreMessages } from "@/i18n/messages/fr/analysis/cadastre";
 import { pluZoneLongLabel, pluZoneType } from "./pluZone";
+import { CardDetail } from "./readingMode";
 
 /**
  * Le zonage, en séparant ce qui est national de ce qui ne l'est pas.
@@ -71,7 +72,9 @@ export function CadastreCard({ cadastre, m }: { cadastre: CadastreAnalysisDto; m
 
       {cadastre.urbanZone && <UrbanZoneSection zone={cadastre.urbanZone} m={m} />}
 
-      {cadastre.prescriptions.length > 0 && (
+      {/* Mode « L'essentiel » : la parcelle et la zone ; les prescriptions, souvent une longue
+          liste en langage d'urbaniste, passent dans le détail. */}
+      <CardDetail when={cadastre.prescriptions.length > 0}>
         <div className="cadastre-section">
           <h3>{m.prescriptionsTitle}</h3>
           <ul className="cadastre-prescriptions" lang="fr">
@@ -81,7 +84,7 @@ export function CadastreCard({ cadastre, m }: { cadastre: CadastreAnalysisDto; m
           </ul>
           {m.sourceLanguageNote && <p className="local-tax-detail">{m.sourceLanguageNote}</p>}
         </div>
-      )}
+      </CardDetail>
     </section>
   );
 }

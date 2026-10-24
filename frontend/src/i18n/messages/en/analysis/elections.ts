@@ -55,8 +55,6 @@ export const elections: ElectionsMessages = {
   presidential: {
     title: "2022 presidential election — first round",
     participation: (local, france) => `Turnout: ${pct(local)} · France: ${pct(france)}`,
-    showOthers: (count) => `Show the ${count} other candidates`,
-    hideOthers: "Hide the other candidates",
     footnote: "Commune ↔ France comparison on the same scale.",
   },
   municipal: {

@@ -62,8 +62,6 @@ export const elections = {
     title: "Présidentielle 2022 — 1er tour",
     participation: (local: number, france: number) =>
       `Participation : ${pct(local)} · France : ${pct(france)}`,
-    showOthers: (count: number) => `Voir les ${count} autres candidats`,
-    hideOthers: "Masquer les autres candidats",
     footnote: "Comparaison commune ↔ France à la même échelle.",
   },
   municipal: {

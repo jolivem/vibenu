@@ -9,6 +9,7 @@ import {
   showsDensity,
   splitRubrics,
 } from "./communeEquipmentFormat";
+import { CardDetailToggle, useCardDetail } from "./readingMode";
 
 /**
  * Les équipements d'une commune entière, en mode commune — la card Voisinage n'y a pas
@@ -19,6 +20,9 @@ import {
  * les autres indicateurs de l'écran le sont à leur repère — sauf dans une petite commune,
  * où une seule unité fausse le ratio. Les rubriques absentes tiennent en une ligne par
  * famille plutôt qu'en une colonne de zéros.
+ *
+ * En mode « L'essentiel », le nombre de chaque équipement présent ; densités, absents et
+ * notes dans le détail.
  */
 export function CommuneEquipmentCard({
   equipment,
@@ -27,7 +31,8 @@ export function CommuneEquipmentCard({
   equipment: CommuneEquipmentDto;
   m: NearbyMessages["communeEquipment"];
 }) {
-  const withDensity = showsDensity(equipment.population);
+  const detail = useCardDetail();
+  const withDensity = detail.open && showsDensity(equipment.population);
   return (
     <section className="card">
       <h2>{m.title}</h2>
@@ -50,16 +55,21 @@ export function CommuneEquipmentCard({
                   )}
                 </li>
               ))}
-              {absent.length > 0 && <li className="poi-distance">{absentLine(absent, m)}</li>}
+              {detail.open && absent.length > 0 && <li className="poi-distance">{absentLine(absent, m)}</li>}
             </ul>
           </div>
         );
       })}
 
-      <p className="elections-footnote">{equipmentFootnote(equipment, m)}</p>
-      {/* Paris, Lyon, Marseille : le recensement rattache des équipements à l'adresse de
-          leur gestionnaire, et un arrondissement peut hériter de ceux de toute la ville. */}
-      {equipment.isArrondissement && <p className="elections-footnote">{m.arrondissementNote}</p>}
+      {detail.open && (
+        <>
+          <p className="elections-footnote">{equipmentFootnote(equipment, m)}</p>
+          {/* Paris, Lyon, Marseille : le recensement rattache des équipements à l'adresse de
+              leur gestionnaire, et un arrondissement peut hériter de ceux de toute la ville. */}
+          {equipment.isArrondissement && <p className="elections-footnote">{m.arrondissementNote}</p>}
+        </>
+      )}
+      {detail.enabled && <CardDetailToggle open={detail.open} onToggle={detail.toggle} />}
     </section>
   );
 }

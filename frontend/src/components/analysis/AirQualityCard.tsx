@@ -9,7 +9,14 @@ import {
   chartThresholds,
   type ChartThresholdKind,
 } from "./airQualityModel";
+import { CardDetailToggle, useCardDetail } from "./readingMode";
 
+/**
+ * Qualité de l'air : un bloc par polluant, mesuré à la station la plus proche.
+ *
+ * En mode « L'essentiel », la dernière valeur de chaque polluant et sa station ; les
+ * courbes, les seuils et les mises en garde passent dans le détail.
+ */
 export function AirQualityCard({
   airQuality,
   m,
@@ -20,6 +27,8 @@ export function AirQualityCard({
   /** Mini-synthèse IA affichée sous le titre. Absente tant qu'elle n'est pas générée. */
   insight?: string | null;
 }) {
+  const detail = useCardDetail();
+  const full = detail.open;
   return (
     <section className="card air-card">
       <h2>{m.title}</h2>
@@ -28,17 +37,20 @@ export function AirQualityCard({
 
       {airQuality.annual.length > 0 && (
         <div className="air-annual">
-          <p className="card-caveat">{m.annualCaveat}</p>
+          {full && <p className="card-caveat">{m.annualCaveat}</p>}
           <ul className="air-annual-list">
             {airQuality.annual.map((stat) => (
-              <AnnualRow key={stat.code} stat={stat} m={m} />
+              <AnnualRow key={stat.code} stat={stat} m={m} withChart={full} />
             ))}
           </ul>
-          <ThresholdNotes airQuality={airQuality} m={m} />
-          {airQuality.annual.some((s) => s.ruralFallback) && (
+          {full && <ThresholdNotes airQuality={airQuality} m={m} />}
+          {full && airQuality.annual.some((s) => s.ruralFallback) && (
             <p className="elections-footnote">{m.ruralFallbackNote}</p>
           )}
         </div>
+      )}
+      {detail.enabled && airQuality.annual.length > 0 && (
+        <CardDetailToggle open={detail.open} onToggle={detail.toggle} />
       )}
     </section>
   );
@@ -65,8 +77,10 @@ function ThresholdNotes({ airQuality, m }: { airQuality: AirQualityAnalysisDto; 
   );
 }
 
-function AnnualRow({ stat, m }: { stat: AnnualPollutantStatDto; m: AirMessages }) {
-  const chart = buildAirTrendChartModel(stat, { station: stat.stationName, national: m.trendSeries.national });
+function AnnualRow({ stat, m, withChart }: { stat: AnnualPollutantStatDto; m: AirMessages; withChart: boolean }) {
+  const chart = withChart
+    ? buildAirTrendChartModel(stat, { station: stat.stationName, national: m.trendSeries.national })
+    : null;
   const { years } = stat.history;
   const thresholds = chartThresholds(stat).map((t) => ({
     value: t.value,

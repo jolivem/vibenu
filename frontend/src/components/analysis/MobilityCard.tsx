@@ -3,6 +3,11 @@ import type { MobilityMessages } from "@/i18n/messages/fr/analysis/mobility";
 import type { NearbyMessages } from "@/i18n/messages/fr/analysis/nearby";
 import { mobilityView } from "./mobilityModel";
 import { formatProximity } from "./proximityFormat";
+import { CardDetailToggle, useCardDetail } from "./readingMode";
+
+/** Mode « L'essentiel » : les arrêts et les gares les plus proches seulement. */
+const ESSENTIAL_STOPS = 3;
+const ESSENTIAL_STATIONS = 2;
 
 interface Props {
   mobility: MobilityAnalysisDto;
@@ -14,7 +19,11 @@ interface Props {
 }
 
 export function MobilityCard({ mobility, mode, m, nearby }: Props) {
-  const { isCommune, stops, stations, stationsHeading } = mobilityView(mobility, mode);
+  const { isCommune, stops: allStops, stations: allStations, stationsHeading } = mobilityView(mobility, mode);
+  const detail = useCardDetail();
+  const stops = detail.open ? allStops : allStops.slice(0, ESSENTIAL_STOPS);
+  const stations = detail.open ? allStations : allStations.slice(0, ESSENTIAL_STATIONS);
+  const hasMore = allStops.length > ESSENTIAL_STOPS || allStations.length > ESSENTIAL_STATIONS;
 
   return (
     <section className="card">
@@ -57,6 +66,8 @@ export function MobilityCard({ mobility, mode, m, nearby }: Props) {
           </ul>
         </>
       )}
+
+      {detail.enabled && hasMore && <CardDetailToggle open={detail.open} onToggle={detail.toggle} />}
     </section>
   );
 }

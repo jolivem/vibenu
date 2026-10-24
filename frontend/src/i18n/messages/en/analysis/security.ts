@@ -43,6 +43,12 @@ export const security: SecurityMessages = {
     { strong: "1 to 4 offences" },
     ` in the year, which here corresponds to ${rate(p.low)} to ${rate(p.high)} — the chart is scaled in ‰, not in number of offences.`,
   ],
+  latest: {
+    title: (year) => `Offences recorded in ${year}`,
+    masked: "1 to 4 offences",
+    references: (department, france) =>
+      [department && `dept. ${department}`, france && `France ${france}`].filter(Boolean).join(" · "),
+  },
   noPublication:
     "No year exceeds 4 offences for the indicators tracked: the exact values are not published, only their range is known.",
   scopeNote: (p) =>

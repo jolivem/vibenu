@@ -4,7 +4,13 @@ import { RichText } from "@/components/RichText";
 import type { SecurityMessages, SecurityScale } from "@/i18n/messages/fr/analysis/security";
 import { ChartLegend } from "./ChartLegend";
 import { LineChart } from "./LineChart";
-import { buildSecurityChartModel, isArrondissement, type SecurityChartReference } from "./securityChart";
+import { CardDetail } from "./readingMode";
+import {
+  buildSecurityChartModel,
+  isArrondissement,
+  latestSecurityFacts,
+  type SecurityChartReference,
+} from "./securityChart";
 
 /**
  * Le graphe d'un indicateur et ses repères.
@@ -96,6 +102,9 @@ export function SecurityIndicatorChart({
  *
  * Pas de score, pas de classement, pas de vert ni de rouge — c'est la ligne du reste de
  * l'application : exposer les faits, laisser l'interprétation.
+ *
+ * En mode « L'essentiel », la dernière année de chaque indicateur ; les courbes et les
+ * notes passent dans le détail.
  */
 export function SecurityCard({
   security,
@@ -116,6 +125,7 @@ export function SecurityCard({
 
   const maille: SecurityScale = isArrondissement(codeInsee) ? "arrondissement" : "commune";
   const aucunePublication = indicateurs.every((i) => i.commune.every((v) => v === null));
+  const latest = latestSecurityFacts(indicateurs, annees);
 
   return (
     <section className="card security-card">
@@ -125,22 +135,49 @@ export function SecurityCard({
 
       {aucunePublication && <p className="security-note">{m.noPublication}</p>}
 
-      {indicateurs.map((indicator) => (
-        <SecurityIndicatorChart
-          key={indicator.indicateur}
-          indicator={indicator}
-          annees={annees}
-          maille={maille}
-          m={m}
-        />
-      ))}
+      {latest && (
+        <div className="security-latest">
+          <h3>{m.latest.title(latest.year)}</h3>
+          <dl>
+            {latest.facts.map((fact) => (
+              <div key={fact.indicateur}>
+                <dt>
+                  {m.indicatorNames[fact.indicateur] ?? fact.indicateur}
+                  <span className="security-latest-base">{m.base[fact.base]}</span>
+                </dt>
+                <dd>
+                  <strong>{fact.value !== null ? m.rate(fact.value) : m.latest.masked}</strong>
+                  <span className="security-latest-ref">
+                    {m.latest.references(
+                      fact.departement !== null ? m.rate(fact.departement) : null,
+                      fact.france !== null ? m.rate(fact.france) : null,
+                    )}
+                  </span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
 
-      <p className="elections-footnote">
-        {m.scopeNote({ from: annees[0], to: annees[annees.length - 1], scale: maille, city: ville })}
-      </p>
-      <p className="elections-footnote">
-        <RichText text={m.recordedNote} />
-      </p>
+      <CardDetail>
+        {indicateurs.map((indicator) => (
+          <SecurityIndicatorChart
+            key={indicator.indicateur}
+            indicator={indicator}
+            annees={annees}
+            maille={maille}
+            m={m}
+          />
+        ))}
+
+        <p className="elections-footnote">
+          {m.scopeNote({ from: annees[0], to: annees[annees.length - 1], scale: maille, city: ville })}
+        </p>
+        <p className="elections-footnote">
+          <RichText text={m.recordedNote} />
+        </p>
+      </CardDetail>
     </section>
   );
 }

@@ -133,3 +133,35 @@ export function buildSecurityChartModel(
     xTitles: annees.map(String),
   };
 }
+
+/** Dernière année publiée d'un indicateur, à côté de ses repères. */
+export interface SecurityLatestFact {
+  indicateur: string;
+  base: SecurityIndicatorDto["base"];
+  /** `null` : valeur masquée par le secret statistique (1 à 4 faits). */
+  value: number | null;
+  departement: number | null;
+  france: number | null;
+}
+
+/**
+ * L'essentiel de la card Sécurité : la dernière année, indicateur par indicateur, sans le
+ * modèle de langage. Les dix ans de courbes restent dans le détail.
+ */
+export function latestSecurityFacts(
+  indicateurs: SecurityIndicatorDto[],
+  annees: number[],
+): { year: number; facts: SecurityLatestFact[] } | null {
+  const last = annees.length - 1;
+  if (last < 0) return null;
+  return {
+    year: annees[last],
+    facts: indicateurs.map((i) => ({
+      indicateur: i.indicateur,
+      base: i.base,
+      value: i.commune[last] ?? null,
+      departement: i.departement[last] ?? null,
+      france: i.france[last] ?? null,
+    })),
+  };
+}

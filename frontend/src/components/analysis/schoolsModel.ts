@@ -90,6 +90,23 @@ export function canSortByName(list: NearbySchoolDto[]): boolean {
   return inside > 1 || list.length - inside > 1;
 }
 
+/** Établissements montrés en mode « L'essentiel ». */
+export const ESSENTIAL_SCHOOLS = 3;
+
+/**
+ * Le collège de secteur d'abord — le seul qui concerne vraiment l'adresse —, puis les plus
+ * proches (par nom en mode commune, où la distance au centre ne dit rien d'un logement).
+ */
+export function essentialSchools(list: NearbySchoolDto[], isCommune: boolean): NearbySchoolDto[] {
+  const sector = list.filter((s) => s.estSecteur);
+  const others = sortSchools(
+    list.filter((s) => !s.estSecteur),
+    isCommune ? "nom" : "distance",
+    "asc",
+  ).slice(0, ESSENTIAL_SCHOOLS);
+  return [...sector, ...others];
+}
+
 /** Moyennes du département communes à toute la liste, par colonne ; `null` si elles varient. */
 export interface CommonDepartmentRefs {
   reussite: number | null;

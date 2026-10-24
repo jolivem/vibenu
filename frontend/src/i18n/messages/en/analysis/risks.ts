@@ -2,6 +2,7 @@ import type { RisksMessages } from "../../fr/analysis/risks";
 
 export const risks: RisksMessages = {
   title: "Natural risks",
+  noHighlighted: "No risk is recorded here at a high or moderate level.",
   levels: {
     élevé: "High",
     modéré: "Moderate",

@@ -1,6 +1,7 @@
 import type { AnalysisMode, DemographicsAnalysisDto, HouseholdsStatsDto } from "@/types/location-analysis";
 import { DistributionChart } from "./DistributionChart";
 import { IndicatorBlock } from "./IndicatorBlock";
+import { CardDetail } from "./readingMode";
 import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { HOUSEHOLDS_INDICATORS, compositionSegments } from "./populationIndicators";
 import { viewForMode, type InseeView } from "./inseeChart";
@@ -31,9 +32,13 @@ export function HouseholdsCard({ demographics, mode, m, insight }: Props) {
 
       <CardInsight text={insight} />
 
-      <HouseholdsCharts view={view} />
+      <HouseholdsIndicators view={view} />
 
-      <p className="elections-footnote">{m.households.footnote}</p>
+      <CardDetail>
+        <HouseholdsDistributions view={view} />
+
+        <p className="elections-footnote">{m.households.footnote}</p>
+      </CardDetail>
     </section>
   );
 }
@@ -43,13 +48,30 @@ export function HouseholdsCard({ demographics, mode, m, insight }: Props) {
  * notes de la card : les pages commune les reprennent tels quels.
  */
 export function HouseholdsCharts({ view }: { view: InseeView<HouseholdsStatsDto> }) {
-  const m = view.m.households;
+  return (
+    <>
+      <HouseholdsIndicators view={view} />
+      <HouseholdsDistributions view={view} />
+    </>
+  );
+}
+
+/** Les indicateurs en phrases : l'essentiel de la card. */
+function HouseholdsIndicators({ view }: { view: InseeView<HouseholdsStatsDto> }) {
   return (
     <>
       {HOUSEHOLDS_INDICATORS.map((indicator) => (
         <IndicatorBlock key={indicator.key} indicator={indicator} view={view} />
       ))}
+    </>
+  );
+}
 
+/** La barre de composition et le graphe des enfants : le détail. */
+function HouseholdsDistributions({ view }: { view: InseeView<HouseholdsStatsDto> }) {
+  const m = view.m.households;
+  return (
+    <>
       <div className="insee-metric">
         <h3>{m.compositionTitle}</h3>
         <p className="metric-unit">{m.compositionUnit}</p>
