@@ -30,6 +30,24 @@ export const security: SecurityMessages = {
   },
   departmentSeries: "Département",
   franceSeries: "France",
+  sizeSeries: {
+    1: "Communes under 2,000 pop.",
+    2: "Communes of 2,000–10,000 pop.",
+    3: "Towns of 10,000–50,000 pop.",
+    4: "Cities of 50,000–200,000 pop.",
+    5: "Cities over 200,000 pop.",
+  },
+  sizeGroup: {
+    1: "communes with under 2,000 inhabitants",
+    2: "communes with 2,000 to 10,000 inhabitants",
+    3: "towns with 10,000 to 50,000 inhabitants",
+    4: "cities with 50,000 to 200,000 inhabitants",
+    5: "cities with over 200,000 inhabitants",
+  },
+  sizeNote: (group, arrondissement) =>
+    `“Same size” benchmark: all ${group} in France${
+      arrondissement ? ", the arrondissement being grouped with its city" : ""
+    }, with Paris, Lyon and Marseille counted as whole cities. For communes whose figure is not published, the département average supplied by the SSMSI is used.`,
   chartAria: (name, unit, from, to) => `${name}, ${unit}, from ${from} to ${to}`,
   bandTitle: (year, low, high) =>
     `${year} — between 1 and 4 offences (${rate(low)} to ${rate(high)}), value withheld under statistical confidentiality`,
@@ -46,8 +64,11 @@ export const security: SecurityMessages = {
   latest: {
     title: (year) => `Offences recorded in ${year}`,
     masked: "1 to 4 offences",
-    references: (department, france) =>
-      [department && `dept. ${department}`, france && `France ${france}`].filter(Boolean).join(" · "),
+    comparedTo: (group) => `Compared with the département and ${group ? `with ${group}` : "with France"}.`,
+    references: (department, other, sameSize) =>
+      [department && `dept. ${department}`, other && `${sameSize ? "same size" : "France"} ${other}`]
+        .filter(Boolean)
+        .join(" · "),
   },
   noPublication:
     "No year exceeds 4 offences for the indicators tracked: the exact values are not published, only their range is known.",

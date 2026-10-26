@@ -1,4 +1,4 @@
-import type { SecurityIndicatorDto } from "@/types/location-analysis";
+import type { SecurityIndicatorDto, SecurityTrancheDto } from "@/types/location-analysis";
 import { createFormat } from "../../../format";
 import type { Rich } from "../../../types";
 
@@ -51,6 +51,29 @@ export const security = {
   } satisfies Record<SecurityScale, string> as Record<SecurityScale, string>,
   departmentSeries: "Département",
   franceSeries: "France",
+  /**
+   * Repère « communes de même taille », par tranche de population : nom de la courbe dans
+   * la légende, puis forme pour la phrase de l'essentiel.
+   */
+  sizeSeries: {
+    1: "Communes de moins de 2 000 hab.",
+    2: "Communes de 2 000 à 10 000 hab.",
+    3: "Communes de 10 000 à 50 000 hab.",
+    4: "Villes de 50 000 à 200 000 hab.",
+    5: "Villes de plus de 200 000 hab.",
+  } satisfies Record<SecurityTrancheDto, string> as Record<SecurityTrancheDto, string>,
+  sizeGroup: {
+    1: "communes de moins de 2 000 habitants",
+    2: "communes de 2 000 à 10 000 habitants",
+    3: "communes de 10 000 à 50 000 habitants",
+    4: "villes de 50 000 à 200 000 habitants",
+    5: "villes de plus de 200 000 habitants",
+  } satisfies Record<SecurityTrancheDto, string> as Record<SecurityTrancheDto, string>,
+  /** Comment le repère est construit, en note sous les graphes. */
+  sizeNote: (group: string, arrondissement: boolean) =>
+    `Repère « même taille » : l'ensemble des ${group} de France${
+      arrondissement ? ", l'arrondissement étant classé avec sa ville" : ""
+    }, Paris, Lyon et Marseille comptées comme villes entières. Pour les communes dont le chiffre n'est pas publié, on retient la moyenne départementale fournie par le SSMSI.`,
   chartAria: (name: string, unit: string, from: number, to: number) => `${name}, ${unit}, de ${from} à ${to}`,
   /** Infobulle d'une bande d'incertitude. */
   bandTitle: (year: number, low: number, high: number) =>
@@ -78,8 +101,13 @@ export const security = {
     title: (year: number) => `Faits enregistrés en ${year}`,
     /** La valeur masquée est dite pour ce qu'elle est, pas laissée vide. */
     masked: "1 à 4 faits",
-    references: (department: string | null, france: string | null) =>
-      [department && `dép. ${department}`, france && `France ${france}`].filter(Boolean).join(" · "),
+    /** Sous le titre : à quoi la valeur est comparée. Sans tranche connue, à la France. */
+    comparedTo: (group: string | null) =>
+      `Comparés au département et ${group ? `aux ${group}` : "à la France"}.`,
+    references: (department: string | null, other: string | null, sameSize: boolean) =>
+      [department && `dép. ${department}`, other && `${sameSize ? "même taille" : "France"} ${other}`]
+        .filter(Boolean)
+        .join(" · "),
   },
   noPublication:
     "Aucune année ne dépasse 4 faits pour les indicateurs suivis : les valeurs exactes ne sont pas publiées, seule leur fourchette est connue.",

@@ -3979,6 +3979,12 @@ html {
 }
 
 /* Card Sécurité, mode « L'essentiel » : la dernière année, une ligne par indicateur. */
+.security-latest-scope {
+  margin: -4px 0 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 .security-latest dl {
   margin: 0;
 }
@@ -4043,4 +4049,23 @@ html {
 .risk-none {
   margin: 0;
   color: var(--muted);
+}
+
+/* Sécurité, essentiel, téléphone : la valeur et ses repères passent sous le nom, qui
+   sinon se tasse sur trois lignes à côté d'eux. */
+@media (max-width: 560px) {
+  .security-latest dl > div {
+    display: block;
+  }
+
+  .security-latest dd {
+    margin-top: 4px;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .security-latest-ref {
+    display: inline;
+    margin-left: 8px;
+  }
 }

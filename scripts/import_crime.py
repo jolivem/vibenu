@@ -16,9 +16,18 @@ absence : c'est l'intervalle [1, 4] faits. On stocke NULL pour le nombre et le t
 mais on renseigne TOUJOURS le dénominateur — c'est lui qui permettra à l'écran de
 convertir ces bornes en taux et de dessiner la bande d'incertitude.
 
-Les colonnes `complement_info_*` sont volontairement ignorées : elles portent la moyenne
-du regroupement de communes comparables (leur « nombre » est fractionnaire), pas la
-valeur de la commune. L'afficher comme telle serait faux.
+Les colonnes `complement_info_*` ne sont jamais affichées pour une commune : elles portent,
+pour une valeur masquée, la moyenne des communes masquées du même département (leur
+« nombre » est fractionnaire), pas la valeur de la commune. Elles servent seulement au
+repère « communes de même taille » : additionnées, elles redonnent le total des faits
+masqués du département, ce qui évite de sous-estimer les petites communes, presque toutes
+sous secret.
+
+Repère « communes de même taille » : chaque année, les communes sont réparties en cinq
+tranches de population (TRANCHES) et le taux de chaque tranche est un rapport de sommes,
+comme la France. Paris, Lyon et Marseille y comptent comme villes entières (le fichier
+porte à la fois la ville et ses arrondissements : les deux compteraient double) ; leurs
+arrondissements prennent la tranche de leur ville.
 
 Usage :
     python import_crime.py                      # télécharge les deux fichiers
@@ -48,6 +57,27 @@ COM_URL = f"{BASE}/20260709-115942/donnee-data.gouv-2025-geographie2026-produit-
 DEP_URL = f"{BASE}/20260709-120038/donnee-dep-data.gouv-2025-geographie2026-produit-le2026-06-25.csv"
 
 DATA_DIR = Path(__file__).parent / "data" / "crime"
+
+# Tranches de population du repère « communes de même taille » : (code, borne basse).
+# Simples à dire en une ligne ; la dernière ne compte qu'une douzaine de grandes villes.
+TRANCHES = [(1, 0), (2, 2_000), (3, 10_000), (4, 50_000), (5, 200_000)]
+
+# Arrondissements → ville entière. La ville est dans le fichier sous son propre code.
+VILLE_DES_ARRONDISSEMENTS = (("751", "75056"), ("6938", "69123"), ("132", "13055"))
+
+
+def tranche_of(population: int) -> int:
+    return max(code for code, low in TRANCHES if population >= low)
+
+
+def ville_of(code: str) -> str | None:
+    """La ville d'un arrondissement de Paris, Lyon ou Marseille ; None pour une commune."""
+    if code in ("75056", "69123", "13055"):
+        return None
+    for prefix, ville in VILLE_DES_ARRONDISSEMENTS:
+        if code.startswith(prefix) and code != ville:
+            return ville
+    return None
 BATCH_SIZE = 5000
 
 # Le CSV du SSMSI est en point-virgule, virgule décimale, et son en-tête porte un BOM.
@@ -133,28 +163,51 @@ def deduce_bases(dep_path: Path) -> dict[str, str]:
     return bases
 
 
-def import_communes(conn, com_path: Path, bases: dict[str, str]) -> int:
-    """Insère les 5,2 M lignes communales en streaming — jamais tout en mémoire."""
+def import_communes(conn, com_path: Path, bases: dict[str, str]):
+    """
+    Insère les 5,2 M lignes communales en streaming — jamais tout en mémoire — et cumule au
+    passage les faits et dénominateurs par tranche de population.
+
+    Rend le nombre de lignes, les cumuls par (tranche, année, indicateur) et la dernière
+    population connue de chaque commune.
+    """
     f, reader = open_csv(com_path)
     total = 0
     batch = []
+    tranches = defaultdict(lambda: [0.0, 0])  # (tranche, annee, indicateur) -> [faits, dénominateur]
+    populations: dict[str, tuple[int, int]] = {}  # code -> (annee, population)
     with f, conn.cursor() as cur:
         for row in reader:
             ind = row["indicateur"]
+            code = row["CODGEO_2026"]
+            annee = int(row["annee"])
             base = bases.get(ind, "habitants")
             denom = to_int(row.get("insee_log" if base == "logements" else "insee_pop"))
             if not denom:
                 continue  # sans dénominateur, ni taux ni bande ne sont calculables
 
             diffuse = row.get("est_diffuse") == "diff"
+            nombre = to_int(row.get("nombre")) if diffuse else None
             batch.append((
-                row["CODGEO_2026"],
-                int(row["annee"]),
+                code,
+                annee,
                 ind,
-                to_int(row.get("nombre")) if diffuse else None,
+                nombre,
                 to_float(row.get("taux_pour_mille")) if diffuse else None,
                 denom,
             ))
+
+            pop = to_int(row.get("insee_pop"))
+            if pop:
+                if code not in populations or annee > populations[code][0]:
+                    populations[code] = (annee, pop)
+                # Les arrondissements sont déjà comptés dans leur ville.
+                if ville_of(code) is None:
+                    faits = nombre if diffuse else to_float(row.get("complement_info_nombre"))
+                    if faits is not None:
+                        acc = tranches[(tranche_of(pop), annee, ind)]
+                        acc[0] += faits
+                        acc[1] += denom
 
             if len(batch) >= BATCH_SIZE:
                 total += flush_communes(cur, batch)
@@ -164,7 +217,52 @@ def import_communes(conn, com_path: Path, bases: dict[str, str]) -> int:
         if batch:
             total += flush_communes(cur, batch)
     conn.commit()
-    return total
+    return total, tranches, populations
+
+
+def import_tranches(conn, tranches, populations) -> tuple[int, int]:
+    """
+    Écrit les taux des tranches dans `crime_reference` (codes 'T1' à 'T5') et la tranche
+    de chaque commune dans `crime_commune_tranche`.
+    """
+    rows = [
+        (f"T{tranche}", annee, ind, round(faits / denom * 1000, 4))
+        for (tranche, annee, ind), (faits, denom) in tranches.items()
+        if denom
+    ]
+    communes = []
+    for code, (annee, pop) in populations.items():
+        ville = ville_of(code)
+        ref_annee, ref_pop = populations.get(ville, (annee, pop)) if ville else (annee, pop)
+        communes.append((code, tranche_of(ref_pop), ref_pop, ref_annee))
+
+    with conn.cursor() as cur:
+        for i in range(0, len(rows), BATCH_SIZE):
+            execute_values(
+                cur,
+                """
+                INSERT INTO crime_reference (code, annee, indicateur, taux_pour_mille)
+                VALUES %s
+                ON CONFLICT (code, annee, indicateur) DO UPDATE SET
+                  taux_pour_mille = EXCLUDED.taux_pour_mille
+                """,
+                rows[i:i + BATCH_SIZE],
+            )
+        for i in range(0, len(communes), BATCH_SIZE):
+            execute_values(
+                cur,
+                """
+                INSERT INTO crime_commune_tranche (code_commune, tranche, population, annee)
+                VALUES %s
+                ON CONFLICT (code_commune) DO UPDATE SET
+                  tranche = EXCLUDED.tranche,
+                  population = EXCLUDED.population,
+                  annee = EXCLUDED.annee
+                """,
+                communes[i:i + BATCH_SIZE],
+            )
+    conn.commit()
+    return len(rows), len(communes)
 
 
 def flush_communes(cur, batch) -> int:
@@ -262,6 +360,19 @@ def print_stats(conn) -> None:
     print(f"  Années                  : {amin}-{amax}")
     print(f"  Lignes FRANCE           : {nb_fr}")
 
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT t.tranche, COUNT(*), r.taux_pour_mille
+              FROM crime_commune_tranche t
+              LEFT JOIN crime_reference r
+                ON r.code = 'T' || t.tranche AND r.annee = 2025
+               AND r.indicateur = 'Cambriolages de logement'
+             GROUP BY t.tranche, r.taux_pour_mille ORDER BY t.tranche
+        """)
+        print("\nTranches (communes classées, cambriolages 2025 pour 1 000 logements) :")
+        for tranche, nb, taux in cur.fetchall():
+            print(f"  T{tranche} : {nb:>6,} communes  {float(taux) if taux else 0:6.2f} ‰")
+
     # Contrôle : les valeurs relevées à la main sur le fichier départemental.
     attendu = {
         "Cambriolages de logement": 5.05,
@@ -305,8 +416,11 @@ def main():
         n_ref, n_fr = import_references(conn, dep, bases)
         print(f"  {n_ref:,} lignes ({n_fr} combinaisons France)")
         print("Import des communes (streaming)…")
-        n = import_communes(conn, com, bases)
+        n, tranches, populations = import_communes(conn, com, bases)
         print(f"  {n:,} lignes")
+        print("Repère « communes de même taille »…")
+        n_t, n_c = import_tranches(conn, tranches, populations)
+        print(f"  {n_t:,} taux de tranche, {n_c:,} communes classées")
         print_stats(conn)
     finally:
         conn.close()

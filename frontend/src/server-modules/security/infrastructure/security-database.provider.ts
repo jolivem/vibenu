@@ -7,6 +7,7 @@ import {
   SECURITY_INDICATORS,
   type SecurityAnalysis,
   type SecurityIndicator,
+  type SecurityTranche,
 } from "../domain/security.types";
 import type { SecurityProvider } from "./security.provider";
 
@@ -38,6 +39,14 @@ export class SecurityDatabaseProvider implements SecurityProvider {
     const indicateurs = [...SECURITY_INDICATORS];
 
     try {
+      // La tranche d'abord : elle choisit la ligne de référence « même taille ».
+      const trancheRows = await query<{ tranche: number }>(
+        `SELECT tranche FROM crime_commune_tranche WHERE code_commune = $1`,
+        [codeInsee],
+      );
+      const tranche = (trancheRows[0]?.tranche ?? null) as SecurityTranche | null;
+      const codeTranche = tranche !== null ? `T${tranche}` : null;
+
       const [communeRows, referenceRows] = await Promise.all([
         query<CommuneRow>(
           `SELECT c.annee, c.indicateur, c.taux_pour_mille, c.denominateur, i.base
@@ -51,7 +60,7 @@ export class SecurityDatabaseProvider implements SecurityProvider {
           `SELECT code, annee, indicateur, taux_pour_mille
              FROM crime_reference
             WHERE code = ANY($1) AND indicateur = ANY($2)`,
-          [[codeDepartement, "FRANCE"], indicateurs],
+          [[codeDepartement, "FRANCE", ...(codeTranche ? [codeTranche] : [])], indicateurs],
         ),
       ]);
 
@@ -82,6 +91,7 @@ export class SecurityDatabaseProvider implements SecurityProvider {
           borneHaute: empty(),
           departement: empty(),
           france: empty(),
+          memeTaille: empty(),
         };
 
         for (const row of rows) {
@@ -101,6 +111,7 @@ export class SecurityDatabaseProvider implements SecurityProvider {
         for (const [i, annee] of annees.entries()) {
           item.departement[i] = refIndex.get(`${codeDepartement}|${indicateur}|${annee}`) ?? null;
           item.france[i] = refIndex.get(`FRANCE|${indicateur}|${annee}`) ?? null;
+          if (codeTranche) item.memeTaille[i] = refIndex.get(`${codeTranche}|${indicateur}|${annee}`) ?? null;
         }
 
         result.push(item);
@@ -111,7 +122,7 @@ export class SecurityDatabaseProvider implements SecurityProvider {
         return null;
       }
 
-      const analysis: SecurityAnalysis = { annees, codeDepartement, indicateurs: result };
+      const analysis: SecurityAnalysis = { annees, codeDepartement, tranche, indicateurs: result };
       SecurityDatabaseProvider.cache.set(codeInsee, analysis);
       return analysis;
     } catch (error) {

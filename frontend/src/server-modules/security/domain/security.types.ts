@@ -25,6 +25,14 @@ export const SECURITY_INDICATORS = [
 export const MASKED_MIN_FACTS = 1;
 export const MASKED_MAX_FACTS = 4;
 
+/**
+ * Tranche de population du repère « communes de même taille » : 1 = moins de 2 000
+ * habitants, 2 = 2 000 à 10 000, 3 = 10 000 à 50 000, 4 = 50 000 à 200 000, 5 = 200 000 et
+ * plus. Les bornes sont fixées par l'import (`TRANCHES` dans `scripts/import_crime.py`) ;
+ * les arrondissements de Paris, Lyon et Marseille prennent la tranche de leur ville.
+ */
+export type SecurityTranche = 1 | 2 | 3 | 4 | 5;
+
 export interface SecurityIndicator {
   indicateur: string;
   /** Dénominateur du taux : la plupart pour 1 000 habitants, les cambriolages par logement. */
@@ -37,6 +45,8 @@ export interface SecurityIndicator {
   borneHaute: (number | null)[];
   departement: (number | null)[];
   france: (number | null)[];
+  /** Taux de l'ensemble des communes de la même tranche de population. */
+  memeTaille: (number | null)[];
 }
 
 export interface SecurityAnalysis {
@@ -44,5 +54,7 @@ export interface SecurityAnalysis {
   annees: number[];
   /** Code du département servant de référence. */
   codeDepartement: string;
+  /** `null` si la commune n'a pas pu être classée : la courbe de même taille manque alors. */
+  tranche: SecurityTranche | null;
   indicateurs: SecurityIndicator[];
 }

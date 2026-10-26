@@ -5,6 +5,7 @@ import type { SecurityMessages, SecurityScale } from "@/i18n/messages/fr/analysi
 import { ChartLegend } from "./ChartLegend";
 import { LineChart } from "./LineChart";
 import { CardDetail } from "./readingMode";
+import { FRANCE_SERIES_COLOR } from "./chartColors";
 import {
   buildSecurityChartModel,
   isArrondissement,
@@ -126,6 +127,16 @@ export function SecurityCard({
   const maille: SecurityScale = isArrondissement(codeInsee) ? "arrondissement" : "commune";
   const aucunePublication = indicateurs.every((i) => i.commune.every((v) => v === null));
   const latest = latestSecurityFacts(indicateurs, annees);
+  // Le repère « même taille » remplace la France : la délinquance enregistrée suit d'abord
+  // la taille de la ville, et la moyenne France mêle métropoles et villages. Il en prend la
+  // couleur. Sans tranche connue, la France reste.
+  const tranche = security.tranche;
+  const references = (indicator: SecurityIndicatorDto): SecurityChartReference[] => [
+    { name: m.departmentSeries, values: indicator.departement },
+    tranche !== null
+      ? { name: m.sizeSeries[tranche], values: indicator.memeTaille, color: FRANCE_SERIES_COLOR }
+      : { name: m.franceSeries, values: indicator.france, france: true },
+  ];
 
   return (
     <section className="card security-card">
@@ -138,6 +149,7 @@ export function SecurityCard({
       {latest && (
         <div className="security-latest">
           <h3>{m.latest.title(latest.year)}</h3>
+          <p className="security-latest-scope">{m.latest.comparedTo(tranche !== null ? m.sizeGroup[tranche] : null)}</p>
           <dl>
             {latest.facts.map((fact) => (
               <div key={fact.indicateur}>
@@ -148,10 +160,14 @@ export function SecurityCard({
                 <dd>
                   <strong>{fact.value !== null ? m.rate(fact.value) : m.latest.masked}</strong>
                   <span className="security-latest-ref">
-                    {m.latest.references(
-                      fact.departement !== null ? m.rate(fact.departement) : null,
-                      fact.france !== null ? m.rate(fact.france) : null,
-                    )}
+                    {(() => {
+                      const other = tranche !== null ? fact.memeTaille : fact.france;
+                      return m.latest.references(
+                        fact.departement !== null ? m.rate(fact.departement) : null,
+                        other !== null ? m.rate(other) : null,
+                        tranche !== null,
+                      );
+                    })()}
                   </span>
                 </dd>
               </div>
@@ -167,6 +183,7 @@ export function SecurityCard({
             indicator={indicator}
             annees={annees}
             maille={maille}
+            references={references(indicator)}
             m={m}
           />
         ))}
@@ -174,6 +191,9 @@ export function SecurityCard({
         <p className="elections-footnote">
           {m.scopeNote({ from: annees[0], to: annees[annees.length - 1], scale: maille, city: ville })}
         </p>
+        {tranche !== null && (
+          <p className="elections-footnote">{m.sizeNote(m.sizeGroup[tranche], maille === "arrondissement")}</p>
+        )}
         <p className="elections-footnote">
           <RichText text={m.recordedNote} />
         </p>

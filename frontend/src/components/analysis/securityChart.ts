@@ -47,6 +47,8 @@ export interface SecurityChartReference {
   values: (number | null)[];
   /** La France garde son brun partout ; tout autre repère prend le gris-bleu. */
   france?: boolean;
+  /** Couleur imposée, quand un repère prend la place de la France (« même taille »). */
+  color?: string;
 }
 
 export function buildSecurityChartModel(
@@ -74,7 +76,7 @@ export function buildSecurityChartModel(
     },
     ...references.map((reference) => ({
       name: reference.name,
-      color: reference.france ? FRANCE_SERIES_COLOR : REFERENCE_SERIES_COLOR,
+      color: reference.color ?? (reference.france ? FRANCE_SERIES_COLOR : REFERENCE_SERIES_COLOR),
       strokeWidth: 1.4,
       dotRadius: 2.5,
       opacity: 0.75,
@@ -142,6 +144,7 @@ export interface SecurityLatestFact {
   value: number | null;
   departement: number | null;
   france: number | null;
+  memeTaille: number | null;
 }
 
 /**
@@ -162,6 +165,7 @@ export function latestSecurityFacts(
       value: i.commune[last] ?? null,
       departement: i.departement[last] ?? null,
       france: i.france[last] ?? null,
+      memeTaille: i.memeTaille[last] ?? null,
     })),
   };
 }

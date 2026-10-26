@@ -291,7 +291,10 @@ export interface MunicipalesAnalysisDto {
   listes: MunicipalesListeDto[];
 }
 
-/** Une mesure de délinquance suivie sur 10 ans, avec ses repères département et France. */
+/**
+ * Une mesure de délinquance suivie sur 10 ans, avec ses repères : département, communes de
+ * même taille (tracées par la card d'analyse) et France (pages commune, « En bref »).
+ */
 export interface SecurityIndicatorDto {
   indicateur: string;
   /** Dénominateur du taux : cambriolages par logement, le reste par habitant. */
@@ -306,11 +309,17 @@ export interface SecurityIndicatorDto {
   borneHaute: (number | null)[];
   departement: (number | null)[];
   france: (number | null)[];
+  /** Taux de l'ensemble des communes de la même tranche de population (`tranche`). */
+  memeTaille: (number | null)[];
 }
+
+/** Tranche de population : 1 < 2 000 hab., 2 < 10 000, 3 < 50 000, 4 < 200 000, 5 au-delà. */
+export type SecurityTrancheDto = 1 | 2 | 3 | 4 | 5;
 
 export interface SecurityAnalysisDto {
   annees: number[];
   codeDepartement: string;
+  tranche: SecurityTrancheDto | null;
   indicateurs: SecurityIndicatorDto[];
 }
 

@@ -15,7 +15,7 @@ L'utilisateur saisit une adresse en France et obtient :
 - la qualité de l'air ;
 - les commerces et services de proximité ;
 - les données socio-démographiques (population, âge, revenus, pauvreté), le parc de logements, l'emploi et les qualifications, la composition des ménages ;
-- la **délinquance enregistrée** (SSMSI) sur dix ans, comparée au département et à la France ;
+- la **délinquance enregistrée** (SSMSI) sur dix ans, comparée au département et aux communes de même taille ;
 - les **loyers** (ANIL) : loyers d'annonce au m² de la commune par type de bien, et carte des communes alentour ;
 - la **fiscalité locale** (DGFiP) : taux de taxe foncière et d'ordures ménagères face à la médiane des communes, résidences secondaires et logements vacants, droits de mutation, comptes de la commune ;
 - les **normales climatiques 1991-2020** (température, pluviométrie, ensoleillement) avec comparaison commune / France ;
@@ -52,7 +52,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `demographics` | Données socio-démographiques (population, revenus, âge) | INSEE IRIS (PostgreSQL/PostGIS) |
 | `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
 | `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Météo-France — normales par station pré-importées (PostgreSQL/PostGIS) ; moyenne nationale hardcodée |
-| `security` | Délinquance enregistrée, 10 ans, maille communale + repères département/France | SSMSI via data.gouv.fr (PostgreSQL) |
+| `security` | Délinquance enregistrée, 10 ans, maille communale + repères département, communes de même taille (5 tranches de population, calculées à l'import) et France | SSMSI via data.gouv.fr (PostgreSQL) |
 | `rents` | Loyers d'annonce par commune (appartements tous types, 1-2 pièces, 3 pièces et plus, maisons) et communes alentour pour la carte | « Carte des loyers » ANIL / ministère du Logement (PostgreSQL) ; contours de communes reconstitués depuis les IRIS |
 | `local-tax` | Fiscalité locale : taxe foncière et TEOM (2021-2025), résidences secondaires et vacance, droits de mutation, comptes de la commune | DGFiP via data.economie.gouv.fr (PostgreSQL) ; barème DMTO ressaisi dans `dmto-rates.ts` |
 | `school-sector` | Secteur de collège (donnée disponible pour Paris) | Ville de Paris (PostgreSQL/PostGIS) |
@@ -344,6 +344,7 @@ Migrations actuelles :
 - `020-local-tax.sql` — fiscalité locale DGFiP (`local_tax_commune`, `local_tax_reference`, `local_tax_deliberation`, `local_tax_deliberation_reference`, `local_tax_finances`)
 - `023-rents.sql` — loyers d'annonce par commune (`rent_commune`) et contours simplifiés des communes (`commune_shape`)
 - `024-schools.sql` — collèges et lycées (`school_establishment`, indexée spatialement) et données par établissement telles que publiées (`school_data`, JSONB), avec la date de chaque chargement (`school_dataset_import`)
+- `025-crime-tranches.sql` — tranche de population de chaque commune pour le repère « communes de même taille » de la délinquance (`crime_commune_tranche`) ; les taux des tranches sont dans `crime_reference` (codes `T1` à `T5`)
 - `021-card-insights-lang.sql` — colonne `lang` du cache des mini-synthèses (une phrase par langue)
 - `022-air-quality-stations.sql` — indicateurs annuels par station de mesure (`air_quality_station_annual`, source EEA)
 - `016-municipales-2026.sql` — municipales 2026
@@ -545,7 +546,7 @@ claireadresse/
 │   ├── import_insee_iris.py # Enrichissement IRIS : logement, emploi, ménages
 │   ├── import_elections.py  # Import Présidentielle 2022 T1 (agrégation par commune)
 │   ├── import_municipales.py         # Import Municipales 2026 (T1 + T2)
-│   ├── import_crime.py               # Import délinquance SSMSI (commune + dept + France)
+│   ├── import_crime.py               # Import délinquance SSMSI (commune + dept + France + tranches de taille)
 │   ├── import_local_tax.py           # Import fiscalité locale DGFiP (taux, délibérations, comptes)
 │   ├── import_rents.py               # Import loyers d'annonce ANIL + contours de communes
 │   ├── import_climate_stations.py    # Normales Météo-France 1991-2020 par station
