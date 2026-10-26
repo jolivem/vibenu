@@ -24,10 +24,13 @@ https://claireadresse.fr/?utm_source=datagouv&utm_medium=reuse
 ClaireAdresse est un site gratuit et sans inscription. On y saisit une adresse ou un nom de
 commune, et le site rassemble sur une carte, en langage courant, ce que les données publiques en
 disent : prix réels des ventes (DVF), risques naturels et technologiques, zonages des plans de
-prévention du risque d'inondation, urbanisme, transports en commun, écoles et secteur scolaire,
-commerces et équipements, population, emploi, logement et revenus du quartier, délinquance,
-climat, qualité de l'air, résultats des élections, et cartes et photographies aériennes
-anciennes.
+prévention du risque d'inondation, urbanisme, transports en commun, collèges et lycées alentour
+avec leurs résultats (réussite aux examens, valeur ajoutée, indice de position sociale,
+encadrement, langues et sections) et secteur scolaire, commerces et équipements, population,
+emploi, logement et revenus du quartier, délinquance, fiscalité locale (taux de taxe foncière et
+d'ordures ménagères comparés à la médiane des communes, résidences secondaires et logements
+vacants, droits de mutation, comptes de la commune), climat, qualité de l'air, résultats des
+élections, et cartes et photographies aériennes anciennes.
 
 Chaque indicateur est présenté dans son unité et comparé à un repère (la commune, la France),
 sans score global : le site montre, il ne note pas. De courtes phrases « En bref » aident à la
@@ -41,7 +44,8 @@ Licence Ouverte 2.0 (Etalab) et ODbL (OpenStreetMap).
 ## Mots-clés
 
 immobilier, logement, adresse, quartier, commune, DVF, prix, risques, PPRI, inondation, PLU,
-urbanisme, INSEE, IRIS, BPE, transports, délinquance, climat, élections, cartographie
+urbanisme, INSEE, IRIS, BPE, transports, délinquance, climat, élections, cartographie,
+fiscalité locale, taxe foncière, comptes des communes, collèges, lycées, valeur ajoutée, IPS
 
 ## Jeux de données à associer (fichiers importés dans la base)
 
@@ -55,11 +59,32 @@ urbanisme, INSEE, IRIS, BPE, transports, délinquance, climat, élections, carto
 | Présidentielle 2022 | Élection présidentielle des 10 et 24 avril 2022 – Résultats définitifs du 1er tour | `import_elections.py` |
 | Municipales 2026 | Élections municipales 2026 – Résultats du premier tour / du second tour | `import_municipales.py` |
 | Climat | Données climatologiques de base – décadaires (Météo-France) | `import_climate_stations.py` |
+| Fiscalité locale : taux | Fiscalité locale des particuliers | `import_local_tax.py` |
+| Fiscalité locale : résidences secondaires, logements vacants | Délibérations de fiscalité directe locale des communes 2026 (hors taux) | `import_local_tax.py` |
+| Comptes de la commune | Comptes individuels des communes (fichier global) 2021 · 2022 · 2023-2024 · 2025 (quatre jeux) | `import_local_tax.py` |
+| Collèges et lycées | Annuaire de l'éducation | `import_schools.py` |
+| Résultats des collèges | Indicateurs de valeur ajoutée des collèges | `import_schools.py` |
+| Résultats des lycées | Indicateurs de valeur ajoutée des lycées d'enseignement général et technologique | `import_schools.py` |
+| Résultats des lycées pro | Indicateurs de valeur ajoutée des lycées d'enseignement professionnel | `import_schools.py` |
+| Profil social des élèves | Indices de position sociale des collèges (à partir de 2023) | `import_schools.py` |
+| Profil social des élèves | Indices de position sociale des lycées (à partir de 2023) | `import_schools.py` |
+| Élèves par classe | Indicateurs d'encadrement H/E et E/S à la rentrée dans le secteur public | `import_schools.py` |
+| Élèves par classe | Indicateurs d'encadrement H/E et E/S à la rentrée dans le secteur privé sous contrat | `import_schools.py` |
+| Langues | Offre de langues dans les collèges et lycées | `import_schools.py` |
+| Sections sportives | Sections Sportives Scolaires | `import_schools.py` |
+| Lycées des métiers | Lycées des métiers | `import_schools.py` |
+| Insertion des lycées pro | Inserjeunes Voie professionnelle scolaire par établissement relevant du ministère de l'éducation nationale | `import_schools.py` |
+
+Tous ces titres ont été vérifiés sur data.gouv.fr le 25 octobre 2026. Plusieurs ont des homonymes
+publiés par une collectivité (« … de Seine-Saint-Denis », « … franciliens ») ou une « ancienne
+version » : choisir le jeu publié par **Ministères de l'Éducation nationale** ou **Ministères
+économiques et financiers**.
 
 Hors data.gouv.fr, à citer dans la description :
 - INSEE (insee.fr) : recensement 2021 à l'IRIS (population, logement, activité, diplômes,
   ménages) et Filosofi 2021 (revenus) ;
 - Ville de Paris (opendata.paris.fr) : secteurs scolaires des collèges, indice Atmo à Paris ;
+- DGFiP (impots.gouv.fr) : barème des droits de mutation à titre onéreux, publié en PDF ;
 - Atmo Auvergne-Rhône-Alpes et AtmoSud : indice Atmo à Lyon et à Marseille ;
 - OpenStreetMap via Geofabrik (ODbL) : commerces et lieux du voisinage.
 
