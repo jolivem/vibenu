@@ -232,10 +232,12 @@ Non-negotiable invariants:
   extra.
 - **TypeScript computes, the model verbalises.** Trends, deltas vs. national, extrema and dominant
   classes are decided in TS against explicit thresholds; the model receives "down 31 %", never ten
-  raw numbers.
+  raw numbers. Where it still went wrong, TS goes further: the safety comparisons arrive
+  pre-written (`position_vs_…`) for the two indicators TS selected, and the safety rating tile is
+  computed in TS (`security-rating.ts`), no longer asked of the model.
 - **One sentence set per language.** The system prompt stays French; for another language an
-  output-language block is appended (`buildCardInsightsSystemPrompt(lang)`). JSON keys and
-  `securite_note` are protocol and never translated. The route takes `?lang=`.
+  output-language block is appended (`buildCardInsightsSystemPrompt(lang)`). JSON keys are
+  protocol and never translated. The route takes `?lang=`.
 - **The service never throws.** Missing key, exhausted quota, unparseable JSON or a dead DB all
   yield `insights: {}` and a 200 response; cards simply render without a sentence.
 - `CARD_INSIGHTS_FIXTURE=1` (or `=slow`) serves fake sentences with no API call — use it to develop

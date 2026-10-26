@@ -18,8 +18,8 @@ export const pdf: PdfMessages = {
   labelSeparator: ": ",
   notes: {
     origin: "The figures come directly from the public files.",
-    originWithAi: (securityRating) =>
-      `The “In brief” lines${securityRating ? " and the safety assessment" : ""} are written by an artificial intelligence using only the figures on this sheet, which come directly from the public files.`,
+    originWithAi:
+      "The “In brief” lines are written by an artificial intelligence using only the figures on this sheet, which come directly from the public files.",
     sources:
       "Sources: IGN · DVF · DGFiP · ANIL · Géorisques · INSEE · Interior Ministry · Météo-France · EEA · Ministry of Education.",
     onlineLead: "Details, charts and maps: ",

@@ -59,14 +59,28 @@ export interface PartCompare {
 export interface SecuriteIndicateurInput {
   indicateur: string;
   unite: string;
+  /** Taux de la dernière année ; `null` si elle est sous secret statistique. */
   taux_derniere_annee: number | null;
+  /**
+   * Quand la dernière année n'a pas de taux qui se compare — masquée (1 à 4 faits) ou à
+   * zéro —, son état rédigé, à reprendre tel quel. Les positions sont alors `null`.
+   */
+  etat_derniere_annee?: string;
   tendance_10ans: Tendance | null;
   evolution_10ans_pct: number | null;
-  /** Écarts en pourcentage, sauf dès le double du repère : `null`, et le multiple prend le relais. */
-  ecart_vs_departement_pct: number | null;
-  multiple_vs_departement: number | null;
-  ecart_vs_france_pct: number | null;
-  multiple_vs_france: number | null;
+  /**
+   * La comparaison, déjà rédigée : « taux 2 fois celui du département ». Avec des écarts
+   * chiffrés côte à côte, le modèle prêtait l'écart au département à l'autre repère, voire
+   * à la France qu'on ne lui donnait plus. Il reprend désormais ces phrases telles quelles.
+   */
+  position_vs_departement: string | null;
+  /**
+   * Le second repère : les communes de même taille quand la tranche est connue — c'est celui
+   * que trace la card —, sinon la France. Jamais les deux, pour que le modèle ne cite pas un
+   * repère absent de l'écran.
+   */
+  position_vs_meme_taille?: string | null;
+  position_vs_france?: string | null;
   /**
    * Nombre d'années sous secret statistique. Une valeur masquée signifie 1 à 4 faits
    * dans l'année — donc un phénomène rare, et surtout PAS une donnée manquante.
@@ -77,6 +91,11 @@ export interface SecuriteIndicateurInput {
 export interface SecuriteInsightInput {
   maille: "commune" | "arrondissement";
   periode: string;
+  /** Libellé de la tranche (« communes de 10 000 à 50 000 habitants ») ; absent sans tranche. */
+  libelle_meme_taille?: string;
+  /** Vrai quand la plupart des indicateurs sont masqués ou à zéro la dernière année. */
+  faits_rares?: boolean;
+  /** Les deux indicateurs les plus éloignés du repère, choisis par le code : seuls commentés. */
   indicateurs: SecuriteIndicateurInput[];
 }
 

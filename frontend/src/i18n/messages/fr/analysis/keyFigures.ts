@@ -28,7 +28,8 @@ export const keyFigures = {
   nearbyValue: (total: number) => `${total} équipement${total > 1 ? "s" : ""}`,
   securityLabel: "Sécurité",
   /**
-   * La note qualifie le lieu par rapport à la France, jamais dans l'absolu : « Moyen » ou
+   * La note qualifie le lieu par rapport à un repère — les communes de même taille, ou la
+   * France quand la tranche manque —, jamais dans l'absolu : « Moyen » ou
    * « Mauvais » se liraient comme un jugement, d'où ces formulations comparatives.
    */
   securityRatings: {
@@ -37,6 +38,14 @@ export const keyFigures = {
     moyen: "Dans la moyenne France",
     mediocre: "Moins bonne que la moyenne France",
     mauvais: "Nettement moins bonne que la moyenne France",
+  } satisfies Record<SecurityRating, string> as Record<SecurityRating, string>,
+  /** Même note, quand elle se fonde sur les communes de même taille (le cas courant). */
+  securityRatingsSameSize: {
+    excellent: "Bien meilleure que les communes de même taille",
+    bon: "Meilleure que les communes de même taille",
+    moyen: "Comme les communes de même taille",
+    mediocre: "Moins bonne que les communes de même taille",
+    mauvais: "Nettement moins bonne que les communes de même taille",
   } satisfies Record<SecurityRating, string> as Record<SecurityRating, string>,
   /** Fiche PDF : tuile ajoutée après le prix. */
   surfaceLabel: "Surface",

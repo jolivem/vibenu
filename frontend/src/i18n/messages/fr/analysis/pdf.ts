@@ -29,8 +29,9 @@ export const pdf = {
      * Remplace `origin` dès que la fiche porte un texte du modèle : le PDF circule sans la
      * page À propos qui l'explique. La note de sécurité du bandeau vient du même appel.
      */
-    originWithAi: (securityRating: boolean) =>
-      `Les « En bref »${securityRating ? " et l'appréciation de sécurité" : ""} sont rédigés par une intelligence artificielle à partir des seuls chiffres de cette fiche, qui viennent directement des fichiers publics.`,
+    /** L'appréciation de sécurité n'y figure plus : elle est calculée, pas rédigée. */
+    originWithAi:
+      "Les « En bref » sont rédigés par une intelligence artificielle à partir des seuls chiffres de cette fiche, qui viennent directement des fichiers publics.",
     sources:
       "Sources : IGN · DVF · DGFiP · ANIL · Géorisques · INSEE · Ministère de l'Intérieur · Météo-France · AEE · Éducation nationale.",
     /** Suivi de l'adresse de la page en ligne. */

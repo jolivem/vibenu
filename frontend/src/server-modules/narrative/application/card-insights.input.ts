@@ -58,6 +58,8 @@ import type {
   PartCompare,
   SecuriteInsightInput,
 } from "../domain/card-insights.types";
+import { createFormat } from "@/i18n/format";
+import { secondReference } from "./security-rating";
 import {
   ecartPct,
   ecartRelatif,
@@ -254,6 +256,34 @@ function buildFiscalite(localTax: LocalTaxAnalysisDto | null | undefined): Fisca
 
 // --- Sécurité ---------------------------------------------------------------
 
+/** Indicateurs transmis au modèle : ceux que la phrase commente, et rien d'autre. */
+const SECURITE_INDICATEURS_RETENUS = 2;
+/** À partir de ce nombre d'indicateurs masqués ou à zéro la dernière année, les faits sont « rares ». */
+const SECURITE_FAITS_RARES_MIN = 3;
+
+/** La valeur de la dernière année, `null` si elle est masquée — jamais une année antérieure. */
+function derniere(values: (number | null)[]): number | null {
+  return values.length > 0 ? values[values.length - 1] : null;
+}
+
+/** Sous ce seuil, en valeur absolue, l'écart se dit « proche ». */
+const SECURITE_PROCHE_PCT = 5;
+const fr = createFormat("fr");
+
+/**
+ * La comparaison d'un taux à un repère, rédigée ici plutôt que par le modèle, qui
+ * confondait les repères. Formulée sur « taux » pour ne pas avoir à accorder avec le nom de
+ * l'indicateur (« cambriolages », « destructions »…). `repere` porte son article : « du
+ * département », « des communes de même taille », « de la France ».
+ */
+function positionSecurite(ecart: { pct: number | null; multiple: number | null }, repere: string): string | null {
+  if (ecart.multiple !== null) return `taux ${fr.decimal(ecart.multiple, 1)} fois celui ${repere}`;
+  if (ecart.pct === null) return null;
+  if (Math.abs(ecart.pct) < SECURITE_PROCHE_PCT) return `taux proche de celui ${repere}`;
+  const sens = ecart.pct > 0 ? "supérieur" : "inférieur";
+  return `taux ${sens} de ${fr.int(Math.abs(ecart.pct))} % à celui ${repere}`;
+}
+
 function buildSecurite(
   security: SecurityAnalysisDto | null | undefined,
   codeInsee: string | undefined,
@@ -262,27 +292,64 @@ function buildSecurite(
   // Garde de SecurityCard : sans indicateur, pas de card.
   if (!security || security.indicateurs.length === 0) return undefined;
 
-  const { annees, indicateurs } = security;
+  const { annees, indicateurs, tranche, codeDepartement } = security;
+  // Même second repère que la card : les communes de même taille, ou la France sans tranche.
+  const memeTaille = tranche !== null && tranche !== undefined;
+  // Les repères sont nommés en clair, en français comme le reste de l'entrée : « communes de
+  // même taille » se confondait avec Paris pour un arrondissement parisien. À Paris, le
+  // département est la ville : on le dit.
+  const groupe = memeTaille ? getAnalysisMessages("fr").security.sizeGroup[tranche] : null;
+  const repereDepartement = codeDepartement === "75" ? "de Paris" : "du département";
+
+  const derniereAnnee = annees[annees.length - 1];
+
+  // Toujours la valeur de la DERNIÈRE année, jamais la dernière publiée : à Mons-en-Montois,
+  // un 0 de 2022 passait pour la valeur de 2025, masquée (1 à 4 faits), et le modèle
+  // concluait à des vols « inexistants ». Une année masquée n'a pas de taux ; un zéro publié
+  // n'a pas d'écart qui se lise (« inférieur de 100 % »). Les deux reçoivent un état rédigé.
+  const lignes = indicateurs.map((ind) => {
+    const fin = derniere(ind.commune);
+    const etat =
+      fin === null
+        ? `entre 1 et 4 faits enregistrés en ${derniereAnnee} (chiffre exact non publié)`
+        : fin === 0
+          ? `aucun fait enregistré en ${derniereAnnee}`
+          : null;
+    const ecart = etat ? null : ecartPct(fin, derniere(secondReference(security, ind)));
+    const ecartDep = etat ? null : ecartPct(fin, derniere(ind.departement));
+    // Rang : les écarts les plus nets d'abord, puis les années masquées, puis les zéros.
+    const score = etat ? (fin === null ? -1 : -2) : Math.abs(ecart ?? ecartDep ?? 0);
+    return { ind, fin, etat, score };
+  });
+  // Les indicateurs à commenter sont choisis ici, pas par le modèle : il en prenait un
+  // « plus fréquent qu'ailleurs » qui était sous ses deux repères. On garde les plus
+  // éloignés du second repère — ce que la card met en regard.
+  const retenus = [...lignes].sort((a, b) => b.score - a.score).slice(0, SECURITE_INDICATEURS_RETENUS);
+  const faitsRares = lignes.filter((l) => l.etat !== null).length >= SECURITE_FAITS_RARES_MIN;
+
   return {
     maille: isArrondissement(codeInsee) ? "arrondissement" : "commune",
-    periode: `${annees[0]}–${annees[annees.length - 1]}`,
-    indicateurs: indicateurs.map((ind) => {
-      const debut = firstNumber(ind.commune);
-      const fin = lastNumber(ind.commune);
-      const evolution = ecartPct(fin, debut);
-      const vsDepartement = ecartRelatif(fin, lastNumber(ind.departement));
-      const vsFrance = ecartRelatif(fin, lastNumber(ind.france));
+    periode: `${annees[0]}–${derniereAnnee}`,
+    ...(groupe ? { libelle_meme_taille: groupe } : {}),
+    ...(faitsRares ? { faits_rares: true } : {}),
+    indicateurs: retenus.map(({ ind, fin, etat }) => {
+      // Une tendance sur dix ans ne se lit qu'entre deux valeurs publiées non nulles : sur
+      // un ou deux faits, elle ne mesure que le hasard.
+      const evolution = etat ? null : ecartPct(fin, firstNumber(ind.commune));
+      const vsDepartement = ecartRelatif(fin, derniere(ind.departement));
+      const vsSecond = ecartRelatif(fin, derniere(secondReference(security, ind)));
 
       return {
         indicateur: ind.indicateur,
         unite: m.security.insightUnit(m.security.base[ind.base]),
         taux_derniere_annee: roundOrNull(fin, 2),
+        ...(etat ? { etat_derniere_annee: etat } : {}),
         tendance_10ans: tendance(evolution),
         evolution_10ans_pct: evolution,
-        ecart_vs_departement_pct: vsDepartement.pct,
-        multiple_vs_departement: vsDepartement.multiple,
-        ecart_vs_france_pct: vsFrance.pct,
-        multiple_vs_france: vsFrance.multiple,
+        position_vs_departement: etat ? null : positionSecurite(vsDepartement, repereDepartement),
+        ...(groupe
+          ? { position_vs_meme_taille: etat ? null : positionSecurite(vsSecond, `des ${groupe}`) }
+          : { position_vs_france: etat ? null : positionSecurite(vsSecond, "de la France") }),
         annees_masquees: ind.commune.filter((v) => v === null).length,
       };
     }),

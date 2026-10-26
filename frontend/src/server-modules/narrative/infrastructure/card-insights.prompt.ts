@@ -12,9 +12,8 @@ import type {
   CardInsightKey,
   CardInsights,
   CardInsightsPayload,
-  SecurityRating,
 } from "@/server-shared/types/card-insights";
-import { CARD_INSIGHT_KEYS, SECURITY_RATINGS } from "@/server-shared/types/card-insights";
+import { CARD_INSIGHT_KEYS } from "@/server-shared/types/card-insights";
 import type { CardInsightsInput } from "../domain/card-insights.types";
 import type { Locale } from "@/i18n/locales";
 
@@ -45,8 +44,20 @@ import type { Locale } from "@/i18n/locales";
  * v10 : nouvelle clé « air » (mesures annuelles de la station de fond la plus proche face à
  * la France et aux seuils OMS / UE, tendance sur dix ans), avec l'ozone compté en jours et
  * la seule explication causale autorisée du prompt.
+ *
+ * v11 : la sécurité se compare au département et aux communes de même taille (tranche de
+ * population, `libelle_meme_taille`), comme la card ; la France ne sert plus que de repli
+ * quand la tranche manque. La note de sécurité n'est plus demandée au modèle : elle
+ * contredisait les chiffres, le code la calcule (`security-rating.ts`). Les
+ * comparaisons arrivent déjà rédigées (`position_vs_departement`, `position_vs_meme_taille`) :
+ * avec des écarts chiffrés, le modèle prêtait l'écart au département à l'autre repère, et
+ * même à la France qu'il ne recevait plus. Les deux indicateurs commentés sont choisis par
+ * le code : seuls ceux-là lui sont transmis. Toujours la dernière année, jamais la dernière
+ * valeur publiée : un ancien 0 passait pour la valeur d'une année masquée, et le modèle
+ * écrivait « inexistants » ; années masquées et zéros arrivent en état rédigé, et
+ * `faits_rares` signale les petites communes où ils dominent.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 10;
+export const CARD_INSIGHTS_PROMPT_VERSION = 11;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
@@ -61,7 +72,7 @@ const BRIEFS: Record<CardInsightKey, { titreCard: string; consigne: string }> = 
   securite: {
     titreCard: "Sécurité",
     consigne:
-      "le ou les deux indicateurs les plus marquants : niveau actuel, sens de l'évolution sur 10 ans, position par rapport au département ou à la France",
+      "les indicateurs fournis (deux au plus, déjà choisis) : position par rapport aux communes de même taille et au département (à la France seulement si \"libelle_meme_taille\" est absent), puis sens de l'évolution sur 10 ans",
   },
   demographie: {
     titreCard: "Démographie",
@@ -118,7 +129,7 @@ RÈGLES DE FOND
 - Tu ne disposes que des données JSON fournies. Tu n'inventes RIEN : ni chiffre, ni évolution, ni comparaison qui n'y figure pas.
 - Aucune explication causale. Pas de « grâce à la proximité du centre », « en raison de la gentrification » : les données ne contiennent pas les causes. Une seule exception, décrite plus bas pour l'ozone.
 - Les champs "tendance", "tendance_…", "ecart_…", "multiple_…", "position_…", "…_dominant", "…_dominante", "tranche_sur_representee", "climat_de_reference_le_plus_proche", "polluant_a_signaler" sont DÉJÀ calculés. Reprends-les tels quels, ne les recalcule pas, ne les contredis pas.
-- Chaque phrase situe le lieu par rapport au repère fourni (France, département, ou climats de référence). Un chiffre sans repère n'apprend rien : ne le donne jamais seul.
+- Chaque phrase situe le lieu par rapport au repère fourni (France, département, communes de même taille, ou climats de référence). Un chiffre sans repère n'apprend rien : ne le donne jamais seul.
 - Seuil de saillance : en dessous de 2 points d'écart (ou 5 % en relatif), écris « proche de la moyenne » — ne dramatise pas un écart faible. Au-delà, nomme le sens de l'écart.
 - Au plus DEUX chiffres par phrase. Jamais d'énumération de pourcentages.
 
@@ -135,7 +146,7 @@ RÈGLES DE FORME
 
 LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
 - Fiscalité : ce sont des TAUX, en pourcentage d'une base propre à chaque logement. N'avance JAMAIS un montant d'impôt en euros, ni « la taxe foncière coûte… ». Le repère est le taux médian des communes (une commune sur deux a un taux plus bas) : écris « le taux médian des communes de France », jamais « la moyenne ». Reprends "position_vs_mediane_france" tel quel. Quand "ordures_menageres" vaut « aucune taxe publiée », le service est financé autrement : n'écris pas que la taxe est nulle ou gratuite. Quand "ville_entiere" est vrai, les taux sont ceux de la ville entière : dis « la ville », ne les attribue pas au quartier. La dette est celle de la commune, en euros par habitant, comparée aux communes de taille comparable.
-- Sécurité : "annees_masquees" compte les années sous secret statistique, ce qui signifie 1 à 4 faits dans l'année — donc un phénomène RARE, et non une donnée manquante. N'écris jamais « données indisponibles » à ce sujet. Ce sont des faits ENREGISTRÉS : la mesure dépend aussi du dépôt de plainte. Quand "multiple_vs_departement" ou "multiple_vs_france" est renseigné (le taux atteint au moins le double du repère), exprime cet écart en fois — « 13,6 fois plus fréquents qu'en France » — et jamais en pourcentage.
+- Sécurité : "annees_masquees" compte les années sous secret statistique, ce qui signifie 1 à 4 faits dans l'année — donc un phénomène RARE, et non une donnée manquante. N'écris jamais « données indisponibles » à ce sujet. Une valeur non publiée n'est JAMAIS zéro : n'écris jamais qu'un fait est « inexistant », « absent » ou qu'il n'y en a « aucun », sauf si "etat_derniere_annee" le dit textuellement. Quand "etat_derniere_annee" est fourni, reprends-le tel quel, sans comparaison ni tendance. Quand "faits_rares" est vrai, ouvre la phrase sur ce constat : les faits enregistrés sont peu nombreux, la plupart sous le seuil de publication (1 à 4 par an). Ce sont des faits ENREGISTRÉS : la mesure dépend aussi du dépôt de plainte. Pour situer un indicateur, reprends MOT POUR MOT "position_vs_departement" et "position_vs_meme_taille" (ou "position_vs_france" quand "libelle_meme_taille" est absent) : la comparaison y est déjà écrite, repère compris. N'en tire aucun autre chiffre, ne déplace jamais un écart d'un repère à l'autre, et ne parle pas de la France quand "position_vs_france" n'est pas fourni. Les repères y sont déjà nommés (« des villes de plus de 200 000 habitants », « du département », « de Paris ») : garde ces noms, ne les remplace jamais par un autre lieu. Seuls les indicateurs fournis (deux au plus, déjà choisis) sont à commenter : n'en évoque aucun autre.
 - Climat : il n'y a pas de moyenne France pertinente ; la comparaison se fait aux types de climat de référence fournis, en t'appuyant sur "climat_de_reference_le_plus_proche". Désigne-les par leur type (continental, méditerranéen, océanique) et ne cite aucune ville.
 - Climat, quand "climat_de_reference_le_plus_proche" vaut null : aucun des trois types ne se détache. Décris alors le climat local par ses extrêmes et sa pluviométrie, sans le rattacher à un type et sans en désigner un « le plus proche » de toi-même.
 - Qualité de l'air : ce sont des moyennes ANNUELLES mesurées à la station de fond la plus proche, pas à l'adresse : écris « dans le secteur » ou « à la station la plus proche », jamais « l'air de ce logement ». Reprends "position_vs_france" tel quel ; quand "multiple_vs_france" est fourni, dis l'écart en fois (« 2,7 fois la moyenne française », jamais « dépasse de 2,7 fois »), sinon ne calcule AUCUN rapport toi-même. Quand "provenance_mesures" est présent, la phrase DOIT le reprendre, par exemple en ouverture (« D'après une station rurale à 40 km, faute de station plus proche, … »).
@@ -150,20 +161,9 @@ LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
 CLÉS À PRODUIRE
 Le champ "cles_attendues" du JSON d'entrée liste les sections effectivement affichées. Tu produis EXACTEMENT ces clés, ni plus ni moins. Une clé non listée ne doit pas apparaître dans ta réponse.
 
-NOTE DE SÉCURITÉ — champ "securite_note"
-Si et seulement si "securite" figure dans "cles_attendues", ajoute au JSON un champ "securite_note" valant EXACTEMENT l'une de ces cinq chaînes : ${SECURITY_RATINGS.map((r) => `"${r}"`).join(", ")}.
-Elle situe le lieu PAR RAPPORT À LA FRANCE, jamais dans l'absolu : elle ne dit pas si un lieu est dangereux, mais comment il se place face à la moyenne française — c'est ainsi qu'elle est affichée (« moins bonne que la moyenne France »). Fonde-la sur les champs déjà calculés "ecart_vs_france_pct" (ou "multiple_vs_france", qui signifie au moins le double de la France) et "tendance_10ans", en pesant d'abord les indicateurs aux taux les plus élevés — ce sont eux qui font le quotidien du lieu. N'utilise PAS "ecart_vs_departement_pct" ni "multiple_vs_departement" pour la note.
-- "excellent" : sous la France de plus de 25 %, sans hausse marquée sur dix ans.
-- "bon" : sous la France, ou proche d'elle avec une baisse nette sur dix ans.
-- "moyen" : à moins de 15 % de la France, sans tendance nette.
-- "mediocre" : au-dessus de la France, ou proche d'elle avec une hausse nette sur dix ans.
-- "mauvais" : au-dessus de la France de plus de 25 %, sans baisse marquée sur dix ans.
-Quand les indicateurs se contredisent, tranche sur les plus fréquents et retiens "moyen" faute de tendance claire. La note ne doit jamais contredire la phrase "securite".
-
 FORMAT DE SORTIE (JSON OBLIGATOIRE, RIEN D'AUTRE) :
 {
 ${OUTPUT_BLOCK}
-  "securite_note": "…"   // uniquement si "securite" est demandée — une des cinq valeurs ci-dessus
 }
 
 Réponds uniquement avec le JSON, sans préambule ni commentaire.`;
@@ -173,16 +173,15 @@ Réponds uniquement avec le JSON, sans préambule ni commentaire.`;
  *
  * Le prompt reste rédigé en français : il a été réglé sur neuf versions, et le tenir en
  * deux langues obligerait à garder deux textes d'accord à chaque retouche. Seule la langue
- * de SORTIE change. Les clés du JSON et `securite_note` sont du protocole : elles ne se
- * traduisent pas.
+ * de SORTIE change. Les clés du JSON sont du protocole : elles ne se traduisent pas.
  */
 const OUTPUT_LANGUAGE_BLOCKS: Record<Exclude<Locale, "fr">, string> = {
   en: `
 
 LANGUE DE SORTIE — PRIORITAIRE SUR LES RÈGLES DE FORME CI-DESSUS
 - Rédige TOUTES les phrases en anglais britannique. Aucun mot de la réponse ne reste en français, hormis les exceptions ci-dessous.
-- Les clés du JSON restent EXACTEMENT celles de "cles_attendues" (en français), et "securite_note" garde ses valeurs françaises : ce sont des identifiants, pas du texte.
-- Traduis les formules imposées : « proche de la moyenne » → "close to the average" ; « dans ce quartier » → "in this neighbourhood" ; « ici » → "here" ; « le taux médian des communes de France » → "the median rate for French communes" ; « N fois plus fréquents qu'en France » → "N times more frequent than in France".
+- Les clés du JSON restent EXACTEMENT celles de "cles_attendues" (en français) : ce sont des identifiants, pas du texte.
+- Traduis les formules imposées : « proche de la moyenne » → "close to the average" ; « dans ce quartier » → "in this neighbourhood" ; « ici » → "here" ; « le taux médian des communes de France » → "the median rate for French communes" ; « N fois plus fréquents qu'en France » → "N times more frequent than in France" ; « les communes de même taille » → "communes of the same size" ; « taux supérieur de 51 % à celui des communes de 10 000 à 50 000 habitants » → "a rate 51% higher than in communes with 10,000 to 50,000 inhabitants" ; « taux 2 fois celui du département » → "a rate twice that of the département".
 - Mode "commune" : n'emploie jamais "neighbourhood".
 - Garde tels quels les mots "commune", "arrondissement" et "département", les noms de lieux, de candidats et de partis. Les étiquettes politiques te sont fournies en anglais : reprends-les telles quelles.
 - Nombres à l'anglaise : point décimal ("12.5%"), pas d'espace avant "%".
@@ -218,8 +217,7 @@ export function buildCardInsightsUserPrompt(
  * sa propre card. Une clé absente, vide, non-textuelle ou hors bornes est simplement
  * ignorée — sa card s'affichera sans synthèse, ce qui est un état normal de la page.
  * On ne lève que si aucune PHRASE n'est exploitable, auquel cas l'appelant dégrade en
- * silence. Une note de sécurité seule ne sauve pas la réponse : c'est un complément de
- * la card, pas un produit qui se tiendrait sans elle.
+ * silence. La note de sécurité n'en fait plus partie : le service la calcule.
  */
 export function parseCardInsightsJson(
   raw: string,
@@ -248,29 +246,6 @@ export function parseCardInsightsJson(
     throw new Error("Aucune synthèse exploitable dans la réponse LLM.");
   }
 
-  return {
-    insights: out,
-    // Pas de note sans sa card : `expected` commande ici comme pour les phrases.
-    ...(expected.includes("securite")
-      ? { securityRating: parseSecurityRating(parsed["securite_note"]) }
-      : {}),
-  };
+  return { insights: out };
 }
 
-/**
- * Ramène la note du modèle sur l'échelle, ou rend `undefined`.
- *
- * Tolère l'accent et la casse — un modèle à qui l'on demande "mediocre" répond parfois
- * « Médiocre » — mais rien au-delà : une valeur inventée (« correct », « très bon »)
- * est rejetée plutôt que rapprochée d'un cran au hasard, et la tuile disparaît. Mieux
- * vaut pas de note qu'une note qui ne veut pas dire ce qu'elle affiche.
- */
-function parseSecurityRating(value: unknown): SecurityRating | undefined {
-  if (typeof value !== "string") return undefined;
-  const normalized = value
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-  return SECURITY_RATINGS.find((rating) => rating === normalized);
-}

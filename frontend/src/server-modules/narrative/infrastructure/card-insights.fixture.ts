@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n/locales";
-import type { CardInsights, SecurityRating } from "@/server-shared/types/card-insights";
+import type { CardInsights } from "@/server-shared/types/card-insights";
 
 /**
  * Jeu de synthèses factices, activé par CARD_INSIGHTS_FIXTURE.
@@ -40,10 +40,3 @@ export const CARD_INSIGHTS_FIXTURE: Record<Locale, CardInsights> = {
   },
 };
 
-/**
- * Note de sécurité factice, rendue avec les phrases ci-dessus.
- *
- * "mauvais" : c'est le cran au libellé le plus long (« Nettement moins bonne que la
- * moyenne France »), donc celui qui éprouve la largeur de la tuile du bandeau.
- */
-export const CARD_INSIGHTS_FIXTURE_SECURITY_RATING: SecurityRating = "mauvais";

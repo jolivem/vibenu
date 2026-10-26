@@ -27,5 +27,12 @@ export const keyFigures: KeyFiguresMessages = {
     mediocre: "Worse than the French average",
     mauvais: "Much worse than the French average",
   },
+  securityRatingsSameSize: {
+    excellent: "Much better than communes of the same size",
+    bon: "Better than communes of the same size",
+    moyen: "In line with communes of the same size",
+    mediocre: "Worse than communes of the same size",
+    mauvais: "Much worse than communes of the same size",
+  },
   surfaceLabel: "Plot area",
 };

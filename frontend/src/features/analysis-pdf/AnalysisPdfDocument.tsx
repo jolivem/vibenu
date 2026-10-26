@@ -127,7 +127,7 @@ export function AnalysisPdfDocument({
 }: Props) {
   const formattedDate = m.pdf.date(generatedAt);
   // Une clé n'est produite que si sa card est rendue (cf. `card-insights.input.ts`).
-  const hasAiText = Object.values(insights).some(Boolean) || Boolean(securityRating);
+  const hasAiText = Object.values(insights).some(Boolean);
 
   const { street, locality } = splitAddress(
     data.address.label,
@@ -271,7 +271,7 @@ export function AnalysisPdfDocument({
         {/* Une seule fois pour toute la fiche, là où chaque card portait ses notes. */}
         <View wrap={false} style={pdfStyles.ficheNotes}>
           <Text style={pdfStyles.ficheNote}>
-            {hasAiText ? m.pdf.notes.originWithAi(Boolean(securityRating)) : m.pdf.notes.origin}
+            {hasAiText ? m.pdf.notes.originWithAi : m.pdf.notes.origin}
           </Text>
           <Text style={pdfStyles.ficheNote}>{m.pdf.notes.sources}</Text>
           {pageUrl && (

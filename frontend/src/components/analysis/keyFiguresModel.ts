@@ -60,13 +60,14 @@ export function buildKeyFigures(
     });
   }
 
-  // Seule tuile dont la valeur vient du modèle et non du DTO : elle s'insère donc
-  // dans la rangée au second aller-retour, quand la note arrive.
+  // Seule tuile qui n'est pas dans le DTO : la note est calculée par la route des « En bref »
+  // (`security-rating.ts`), elle s'insère donc dans la rangée au second aller-retour.
   if (securityRating) {
     add({
       section: "securite",
       label: m.securityLabel,
-      value: m.securityRatings[securityRating],
+      // Même repère que la note : les communes de même taille, la France sans tranche.
+      value: (data.security?.tranche != null ? m.securityRatingsSameSize : m.securityRatings)[securityRating],
     });
   }
 

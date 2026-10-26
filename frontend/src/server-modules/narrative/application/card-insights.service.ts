@@ -7,16 +7,14 @@ import type {
 } from "@/server-shared/types/card-insights";
 import type { LocationAnalysisDto } from "@/server-shared/types/location-analysis.dto";
 import { CardInsightsCacheProvider } from "../infrastructure/card-insights-cache.provider";
-import {
-  CARD_INSIGHTS_FIXTURE,
-  CARD_INSIGHTS_FIXTURE_SECURITY_RATING,
-} from "../infrastructure/card-insights.fixture";
+import { CARD_INSIGHTS_FIXTURE } from "../infrastructure/card-insights.fixture";
 import {
   buildCardInsightsUserPrompt,
   buildCardInsightsSystemPrompt,
   parseCardInsightsJson,
 } from "../infrastructure/card-insights.prompt";
 import { buildCardInsightsInput, expectedKeys } from "./card-insights.input";
+import { computeSecurityRating } from "./security-rating";
 import type { Locale } from "@/i18n/locales";
 
 const DEFAULT_MODEL = "mistral-small-latest";
@@ -78,7 +76,21 @@ export class CardInsightsService {
     this.baseUrl = (process.env.LLM_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, "");
   }
 
+  /**
+   * Les phrases viennent du modèle ; la note de sécurité est calculée ici, à chaque appel, y
+   * compris quand le modèle échoue ou que la réponse vient du cache. Elle ne dépend que des
+   * chiffres de la card, et une ancienne note du modèle restée en cache ne doit pas
+   * ressortir.
+   */
   async generate(data: LocationAnalysisDto, options: GenerateOptions = {}): Promise<CardInsightsDto> {
+    const result = await this.generateInsights(data, options);
+    const { securityRating: _fromModel, ...rest } = result;
+    const showsSecurity = expectedKeys(buildCardInsightsInput(data, options.codeInsee, options.lang ?? "fr")).includes("securite");
+    const securityRating = showsSecurity ? computeSecurityRating(data.security) : undefined;
+    return securityRating ? { ...rest, securityRating } : rest;
+  }
+
+  private async generateInsights(data: LocationAnalysisDto, options: GenerateOptions = {}): Promise<CardInsightsDto> {
     const lang = options.lang ?? "fr";
     const input = buildCardInsightsInput(data, options.codeInsee, lang);
     const expected = expectedKeys(input);
@@ -99,9 +111,6 @@ export class CardInsightsService {
       }
       return {
         insights,
-        ...(expected.includes("securite")
-          ? { securityRating: CARD_INSIGHTS_FIXTURE_SECURITY_RATING }
-          : {}),
         generatedAt: new Date().toISOString(),
         cached: false,
         ...(debugInput !== undefined ? { debugInput } : {}),
