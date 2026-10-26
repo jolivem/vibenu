@@ -6,7 +6,7 @@ import type {
 import { DistributionChart } from "./DistributionChart";
 import { IndicatorBlock } from "./IndicatorBlock";
 import { CardDetail } from "./readingMode";
-import { scopedBarRows, StackedBarGroup } from "./StackedBar";
+import { SegmentBarChart } from "./SegmentBarChart";
 import { HOUSING_INDICATORS, dwellingSegments, occupancySegments } from "./populationIndicators";
 import { viewForMode, type InseeView } from "./inseeChart";
 import { CardInsight } from "@/components/CardInsight";
@@ -76,18 +76,15 @@ function HousingDistributions({ view }: { view: InseeView<HousingStatsDto> }) {
   const m = view.m.housing;
   return (
     <>
-      <div className="insee-metric">
-        <h3>{m.occupancyTitle}</h3>
-        <p className="metric-unit">{m.occupancyUnit}</p>
-        <StackedBarGroup rows={scopedBarRows(view, occupancySegments)} m={view.m} />
-      </div>
+      <SegmentBarChart title={m.occupancyTitle} unit={m.occupancyUnit} view={view} segments={occupancySegments} />
 
-      <div className="insee-metric">
-        <h3>{m.dwellingTitle}</h3>
-        <p className="metric-unit">{m.dwellingUnit}</p>
-        <StackedBarGroup rows={scopedBarRows(view, dwellingSegments)} m={view.m} />
-        <p className="demographics-note">{m.dwellingNote}</p>
-      </div>
+      <SegmentBarChart
+        title={m.dwellingTitle}
+        unit={m.dwellingUnit}
+        view={view}
+        segments={dwellingSegments}
+        note={m.dwellingNote}
+      />
 
       <DistributionChart
         title={m.roomsTitle}

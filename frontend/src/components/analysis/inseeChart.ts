@@ -18,8 +18,8 @@ import { LOCAL_SERIES_COLOR } from "./chartColors";
 
 /** Le vert est « le lieu que vous consultez », dans toute la page. */
 export const LOCAL_COLOR = LOCAL_SERIES_COLOR;
-const COMMUNE_COLOR = "#a78060";
-const FRANCE_COLOR = "#6b7280";
+export const COMMUNE_COLOR = "#a78060";
+export const FRANCE_COLOR = "#6b7280";
 
 /**
  * Palette des barres empilées — les catégories d'une partition.
@@ -181,4 +181,31 @@ export function buildDistributionModel<T>({
     ...series.flatMap((s) => s.values.filter((v): v is number => v !== null)),
   );
   return { series, ...buildScales(maxValue, local.length) };
+}
+
+/**
+ * Teintes des bâtons, plus claires que celles des courbes : une surface pleine paraît bien
+ * plus sombre qu'un trait de la même couleur. Même famille de teintes, pour que le vert
+ * reste « le lieu consulté » d'un graphe à l'autre.
+ */
+const BAR_LOCAL_COLOR = "#7fb356";
+const BAR_COMMUNE_COLOR = COMMUNE_COLOR;
+const BAR_FRANCE_COLOR = "#a3a9b4";
+
+/**
+ * Une série par échelle — lieu consulté, commune si elle se distingue, France —, dans les
+ * teintes des courbes de répartition, éclaircies, pour un graphe en bâtons groupés.
+ */
+export function scaleBarSeries<T>(
+  view: InseeView<T>,
+  values: (stats: T) => (number | null)[],
+): Array<{ name: string; color: string; values: (number | null)[] }> {
+  const scales: Array<[string, T | null, string]> = [
+    [view.localName, view.scoped.iris, BAR_LOCAL_COLOR],
+    ...(view.showCommune ? ([[view.communeName, view.scoped.commune, BAR_COMMUNE_COLOR]] as Array<[string, T | null, string]>) : []),
+    [view.m.scale.france, view.scoped.france, BAR_FRANCE_COLOR],
+  ];
+  return scales
+    .filter((entry): entry is [string, T, string] => entry[1] !== null)
+    .map(([name, stats, color]) => ({ name, color, values: values(stats) }));
 }

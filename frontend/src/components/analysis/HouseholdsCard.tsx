@@ -2,9 +2,9 @@ import type { AnalysisMode, DemographicsAnalysisDto, HouseholdsStatsDto } from "
 import { DistributionChart } from "./DistributionChart";
 import { IndicatorBlock } from "./IndicatorBlock";
 import { CardDetail } from "./readingMode";
-import { scopedBarRows, StackedBarGroup } from "./StackedBar";
 import { HOUSEHOLDS_INDICATORS, compositionSegments } from "./populationIndicators";
 import { viewForMode, type InseeView } from "./inseeChart";
+import { SegmentBarChart } from "./SegmentBarChart";
 import { CardInsight } from "@/components/CardInsight";
 import type { PopulationMessages } from "@/i18n/messages/fr/analysis/population";
 
@@ -72,11 +72,7 @@ function HouseholdsDistributions({ view }: { view: InseeView<HouseholdsStatsDto>
   const m = view.m.households;
   return (
     <>
-      <div className="insee-metric">
-        <h3>{m.compositionTitle}</h3>
-        <p className="metric-unit">{m.compositionUnit}</p>
-        <StackedBarGroup rows={scopedBarRows(view, compositionSegments)} m={view.m} />
-      </div>
+      <SegmentBarChart title={m.compositionTitle} unit={m.compositionUnit} view={view} segments={compositionSegments} />
 
       <DistributionChart
         title={m.childrenTitle}
@@ -88,3 +84,4 @@ function HouseholdsDistributions({ view }: { view: InseeView<HouseholdsStatsDto>
     </>
   );
 }
+
