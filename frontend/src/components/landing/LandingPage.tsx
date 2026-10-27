@@ -36,6 +36,7 @@ export function LandingPage({
   const faqItems = m.faq.items({
     showAirQuality: FEATURES.showAirQuality,
     showRents: FEATURES.showRents,
+    showEnergy: FEATURES.showEnergy,
     hasSEOPages: FEATURES.hasSEOPages,
   });
 

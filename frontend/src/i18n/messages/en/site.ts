@@ -1,14 +1,16 @@
 import type { SiteMessages } from "../fr/site";
 
 export const site: SiteMessages = {
-  tagline: "Check a French address before you rent or buy",
+  tagline: "Prices, energy rating, risks and neighbourhood of an address",
   description:
-    "Prices, planning, neighbourhood, transport, safety, population, climate, risks: what official open data says about an address in France.",
+    "Actual sale prices, energy ratings (DPE), risks, planning, transport, safety: what public data says about an address in France. Free.",
   keywords: [
     "address check France",
     "French property",
     "property prices France",
     "DVF",
+    "DPE",
+    "energy rating",
     "cadastre",
     "PLU",
     "natural risks",

@@ -557,6 +557,16 @@ Le site existe en français (langue d'origine, URL inchangées) et en anglais so
 - `NEXT_PUBLIC_I18N_PSEUDO=1 pnpm dev` entoure de `⟦ ⟧` tout texte issu d'un dictionnaire : ce qui
   s'affiche sans crochets est resté en dur.
 
+## Référencement (moteurs et assistants)
+
+- `robots.ts` et `sitemap.ts` (dans `frontend/src/app/`) : `/analyze` n'est pas indexé, il dépend
+  d'une adresse. Le trafic de recherche vient de l'accueil, d'« À propos » et des pages commune.
+- Titre et description de l'accueil : `BRANDING` dans `site-features.ts` (français) et
+  `i18n/messages/en/site.ts`. La FAQ de l'accueil part aussi en `FAQPage` JSON-LD.
+- `/llms.txt` (`app/llms.txt/route.ts`) : présentation du site pour les assistants
+  conversationnels — contenu de l'analyse, sources, et format du lien direct vers l'analyse
+  d'une adresse. Format proposé sur llmstxt.org, sans garantie d'être lu par les grands moteurs.
+
 ## Structure du repository
 
 ```text

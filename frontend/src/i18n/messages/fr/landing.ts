@@ -12,6 +12,8 @@ interface FaqOptions {
   showAirQuality: boolean;
   /** Même règle pour les loyers : ni source annoncée ni question sans la card. */
   showRents: boolean;
+  /** Et pour le DPE. */
+  showEnergy: boolean;
   hasSEOPages: boolean;
 }
 
@@ -52,8 +54,8 @@ export const landing = {
   features: {
     immobilier: {
       blurb:
-        "Transactions DVF récentes et prix au m², situées sur la carte. Loyers d'annonce par type de bien et carte des communes alentour. Parcelle cadastrale, zone du PLU et prescriptions d'urbanisme.",
-      schemaLabel: "Prix immobiliers DVF, loyers, cadastre et zonage PLU",
+        "Transactions DVF récentes et prix au m², situées sur la carte. Loyers d'annonce et zone tendue. DPE des logements de l'adresse, un par logement. Parcelle cadastrale, zone du PLU et prescriptions d'urbanisme.",
+      schemaLabel: "Prix immobiliers DVF, loyers, zone tendue, DPE, cadastre et zonage PLU",
     },
     enseignement: {
       blurb:
@@ -173,7 +175,7 @@ export const landing = {
      * Les réponses partent aussi en `FAQPage` JSON-LD, donc potentiellement en extrait de
      * résultat Google : elles n'énumèrent que ce qui s'affiche réellement.
      */
-    items: ({ showAirQuality, showRents, hasSEOPages }: FaqOptions) => [
+    items: ({ showAirQuality, showRents, showEnergy, hasSEOPages }: FaqOptions) => [
       {
         question: `${BRANDING.name} est-il gratuit ?`,
         answer:
@@ -183,7 +185,8 @@ export const landing = {
         question: "D'où viennent les données affichées ?",
         answer:
           "Tous les chiffres proviennent de sources publiques officielles : DVF (DGFiP) pour les prix immobiliers, " +
-          (showRents ? "l'ANIL pour les loyers, " : "") +
+          (showRents ? "l'ANIL pour les loyers, le ministère de la Transition écologique pour la zone tendue, " : "") +
+          (showEnergy ? "l'ADEME pour les diagnostics de performance énergétique (DPE), " : "") +
           "Géorisques pour les risques naturels et technologiques, l'IGN et le Géoportail de l'Urbanisme pour les parcelles, le PLU et les zonages des plans de prévention du risque d'inondation, l'INSEE pour la population, les revenus, l'emploi et les logements, la Base Permanente des Équipements de l'INSEE et OpenStreetMap pour les commerces et services de proximité, transport.data.gouv.fr pour les transports, Météo-France pour le climat, " +
           (showAirQuality ? "l'Agence européenne de l'environnement pour la qualité de l'air, " : "") +
           "le SSMSI pour la délinquance, le ministère de l'Intérieur pour les élections, le ministère de l'Éducation nationale pour les collèges et lycées, la Ville de Paris pour la carte scolaire, et l'IGN pour la recherche d'adresse, les fonds de carte et les vues aériennes anciennes. Chaque chiffre reste rattaché à sa source et à sa date de publication. Seules les phrases « En bref », sous les titres de rubriques, sont rédigées par un modèle de langage : il reformule ces mêmes chiffres, il n'en invente aucun.",
@@ -205,6 +208,34 @@ export const landing = {
         question: "Combien de temps prend une analyse ?",
         answer: `Quelques secondes. ${BRANDING.name} interroge en parallèle les bases publiques et agrège les résultats sur une carte interactive.`,
       },
+      {
+        question: "Où trouver le prix au m² des ventes autour d'une adresse ?",
+        answer:
+          "Dans la rubrique Immobilier. Saisissez l'adresse : les ventes des dix dernières années à moins d'un kilomètre, enregistrées dans la base publique DVF, s'affichent sur la carte avec leur prix, leur surface et leur date, et le prix médian au m² en est tiré.",
+      },
+      ...(showEnergy
+        ? [
+            {
+              question: "Comment connaître le DPE d'un logement à partir de son adresse ?",
+              answer:
+                "Saisissez l'adresse : la rubrique « Performance énergétique » liste les diagnostics enregistrés par l'ADEME à cette adresse depuis juillet 2021, un par logement, avec la date, la surface, la classe DPE, les émissions et la consommation. Dans un immeuble, la surface permet de retrouver un appartement. Chaque diagnostic porte son numéro ADEME, qui permet de le vérifier sur l'observatoire DPE de l'ADEME.",
+            },
+          ]
+        : []),
+      {
+        question: "Comment savoir si une adresse est en zone inondable ?",
+        answer:
+          "La rubrique Risques indique, d'après Géorisques, l'exposition de l'adresse aux inondations par débordement de cours d'eau et par remontée de nappe, et la carte montre les zonages des plans de prévention du risque d'inondation publiés sur le Géoportail de l'Urbanisme. Le zonage porte sur un secteur : ce qu'un logement subit dépend surtout de son étage et de la présence d'un sous-sol.",
+      },
+      ...(showRents
+        ? [
+            {
+              question: "Comment savoir si une commune est en zone tendue ?",
+              answer:
+                "La rubrique Loyers l'indique, d'après le zonage publié par le ministère de la Transition écologique (décret du 22 décembre 2025). En zone tendue, le préavis du locataire d'un logement vide passe à un mois et, à la relocation, le loyer ne peut pas dépasser celui du locataire précédent. La « zone touristique et tendue » ne change que la fiscalité locale.",
+            },
+          ]
+        : []),
       {
         question: "Les prix au m² sont-ils fiables ?",
         answer:

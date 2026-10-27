@@ -65,14 +65,8 @@ export function RootDocument({
     name: BRANDING.name,
     url: home,
     inLanguage: LOCALE_TAGS[locale],
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${home}${home.endsWith("/") ? "" : "/"}?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
+    // Pas de `SearchAction` : l'accueil ne lit aucun paramètre `?q=`, l'action promettait
+    // une recherche qui n'existe pas (et Google a retiré ce champ de recherche fin 2024).
   };
 
   return (

@@ -224,13 +224,15 @@ const PUBLIC_BRANDING: SiteBranding = {
   name: "ClaireAdresse",
   brandFirst: "Claire",
   brandSecond: "Adresse",
-  tagline: "Analysez une adresse avant de louer ou acheter",
+  // Le <title> de l'accueil (« ClaireAdresse · … ») : les mots que l'on cherche
+  // (prix, DPE, risques, quartier) plutôt qu'une promesse, que le <h1> porte déjà.
+  tagline: "Prix, DPE, risques et quartier d'une adresse",
   // Sert de meta description, de description OG/Twitter ET de lead du hero, lue juste
   // sous le <h1> : elle doit rester une phrase, pas une énumération de douze sources.
-  // Les thèmes suivent l'ordre des sections de l'analyse (`SECTION_ORDER`) ; élections et
-  // histoire n'y figurent pas, pour tenir sous les ~160 caractères d'une meta description.
+  // Les thèmes les plus cherchés d'abord ; pas « avant d'acheter ou de louer », que le
+  // <h1> dit juste au-dessus. Autour de 160 caractères, la longueur d'un extrait Google.
   description:
-    "Prix, urbanisme, voisinage, transports, sécurité, population, climat, risques : ce que les données publiques officielles disent d'une adresse française.",
+    "Prix de vente réels, DPE des logements, risques, urbanisme, transports, sécurité : ce que les données publiques disent d'une adresse en France. Gratuit.",
   heroTitle: "Analysez une adresse",
   heroEmphasis: "avant de louer ou acheter.",
 };

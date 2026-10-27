@@ -32,8 +32,8 @@ export const landing: LandingMessages = {
   features: {
     immobilier: {
       blurb:
-        "Recent sales from the DVF register and prices per m², placed on the map. Advertised rents by type of dwelling and a map of the surrounding communes. Cadastral plot, zoning under the local plan (PLU) and planning restrictions.",
-      schemaLabel: "Property prices (DVF), rents, cadastre and PLU zoning",
+        "Recent sales from the DVF register and prices per m², placed on the map. Advertised rents and high-demand housing areas. Energy ratings (DPE) of the homes at the address, one per dwelling. Cadastral plot, zoning under the local plan (PLU) and planning restrictions.",
+      schemaLabel: "Property prices (DVF), rents, high-demand areas, energy ratings (DPE), cadastre and PLU zoning",
     },
     enseignement: {
       blurb:
@@ -141,7 +141,7 @@ export const landing: LandingMessages = {
   faq: {
     title: ["Frequently asked ", "questions", ""],
     meta: "About the service",
-    items: ({ showAirQuality, showRents, hasSEOPages }) => [
+    items: ({ showAirQuality, showRents, showEnergy, hasSEOPages }) => [
       {
         question: `Is ${BRANDING.name} free?`,
         answer:
@@ -151,7 +151,10 @@ export const landing: LandingMessages = {
         question: "Where does the data come from?",
         answer:
           "Every figure comes from an official public source: DVF (the tax authority's register of property sales) for prices, " +
-          (showRents ? "ANIL (the national housing information agency) for rents, " : "") +
+          (showRents
+            ? "ANIL (the national housing information agency) for rents, the Ministry for the Ecological Transition for high-demand housing areas (zone tendue), "
+            : "") +
+          (showEnergy ? "ADEME (the ecological transition agency) for energy performance certificates (DPE), " : "") +
           "Géorisques for natural and technological risks, IGN and the Géoportail de l'Urbanisme for plots, the local plan (PLU) and flood-risk prevention zoning, INSEE for population, income, employment and housing, INSEE's permanent database of facilities and OpenStreetMap for shops and local services, transport.data.gouv.fr for transport, Météo-France for climate, " +
           (showAirQuality ? "the European Environment Agency for air quality, " : "") +
           "SSMSI (the Interior Ministry's statistical service) for crime, the Interior Ministry for elections, the Ministry of Education for secondary schools, the City of Paris for school catchment areas, and IGN for address search, base maps and historical aerial views. Each figure stays tied to its source and publication date. Only the “In brief” sentences under the section titles are written by a language model: it rewords those same figures and invents none.",
@@ -173,6 +176,34 @@ export const landing: LandingMessages = {
         question: "How long does an analysis take?",
         answer: `A few seconds. ${BRANDING.name} queries the public databases in parallel and brings the results together on an interactive map.`,
       },
+      {
+        question: "Where can I find the price per m² of sales around an address?",
+        answer:
+          "In the Property section. Enter the address: sales from the last ten years within one kilometre, recorded in the public DVF database, appear on the map with their price, floor area and date, and the median price per m² is derived from them.",
+      },
+      ...(showEnergy
+        ? [
+            {
+              question: "How can I find the energy rating (DPE) of a home from its address?",
+              answer:
+                "Enter the address: the “Energy performance” section lists the certificates recorded by ADEME at that address since July 2021, one per dwelling, with the date, floor area, DPE class, emissions and energy use. In a block of flats, the floor area helps you find a given flat. Each certificate carries its ADEME number, which can be checked on ADEME's DPE observatory.",
+            },
+          ]
+        : []),
+      {
+        question: "How can I tell whether an address is in a flood zone?",
+        answer:
+          "The Risks section shows, from Géorisques, the address's exposure to river flooding and groundwater flooding, and the map shows the flood-risk prevention plan zones published on the Géoportail de l'Urbanisme. The zoning covers an area: what a home actually suffers depends mostly on its floor and on whether it has a basement.",
+      },
+      ...(showRents
+        ? [
+            {
+              question: "How can I tell whether a commune is a high-demand housing area (zone tendue)?",
+              answer:
+                "The Rents section says so, from the zoning published by the Ministry for the Ecological Transition (decree of 22 December 2025). In a zone tendue, the tenant's notice for an unfurnished let drops to one month and, when the home is re-let, the rent cannot exceed the previous tenant's. A “tourist and high-demand area” only changes local taxation.",
+            },
+          ]
+        : []),
       {
         question: "Are the prices per m² reliable?",
         answer:
