@@ -164,7 +164,8 @@ export class TransportDataGouvProvider implements TransportProvider {
 
       const response = await fetch(
         `${this.apiUrl}/gtfs-stops?south=${bbox.south}&north=${bbox.north}&west=${bbox.west}&east=${bbox.east}`,
-        { headers: { Accept: "application/json" } },
+        // Plafond : sans lui, un ralentissement de l'API retenait toute l'analyse.
+        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(6_000) },
       );
 
       if (!response.ok) {

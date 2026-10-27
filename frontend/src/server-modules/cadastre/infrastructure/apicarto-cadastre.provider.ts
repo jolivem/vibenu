@@ -28,6 +28,11 @@ interface ApiCartoResponse {
  * https://apicarto.ign.fr/api/doc/gpu
  */
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+/**
+ * Délai maximal d'un appel à l'API Carto. Elle répond d'ordinaire en moins d'une seconde,
+ * mais a déjà mis 20 s (27/10/2026) : sans plafond, toute l'analyse l'attendait.
+ */
+const FETCH_TIMEOUT_MS = 6_000;
 
 export class ApiCartoCadastreProvider implements CadastreProvider {
   private static cache = new InMemoryCache<CadastreAnalysis>(SEVEN_DAYS);
@@ -43,12 +48,16 @@ export class ApiCartoCadastreProvider implements CadastreProvider {
       this.fetchPrescriptions(lat, lon),
     ]);
 
-    const result = { parcel, urbanZone, prescriptions };
-    ApiCartoCadastreProvider.cache.set(cacheKey, result);
+    // `undefined` : l'appel a échoué (délai, erreur). On rend ce qu'on a, mais on ne le garde
+    // pas sept jours en cache : la parcelle manquerait une semaine pour un ralentissement.
+    const result = { parcel: parcel ?? null, urbanZone: urbanZone ?? null, prescriptions: prescriptions ?? [] };
+    if (parcel !== undefined && urbanZone !== undefined && prescriptions !== undefined) {
+      ApiCartoCadastreProvider.cache.set(cacheKey, result);
+    }
     return result;
   }
 
-  private async fetchParcel(lat: number, lon: number): Promise<CadastreParcel | null> {
+  private async fetchParcel(lat: number, lon: number): Promise<CadastreParcel | null | undefined> {
     try {
       // Build a tiny polygon (~2m) around the point — the API requires geometry intersection
       const delta = 0.00001;
@@ -78,11 +87,11 @@ export class ApiCartoCadastreProvider implements CadastreProvider {
       };
     } catch (error) {
       console.warn("API Carto cadastre/parcelle error:", error);
-      return null;
+      return undefined;
     }
   }
 
-  private async fetchUrbanZone(lat: number, lon: number): Promise<UrbanZone | null> {
+  private async fetchUrbanZone(lat: number, lon: number): Promise<UrbanZone | null | undefined> {
     try {
       const point = JSON.stringify({ type: "Point", coordinates: [lon, lat] });
       const url = `${this.baseUrl}/gpu/zone-urba?geom=${encodeURIComponent(point)}`;
@@ -97,11 +106,11 @@ export class ApiCartoCadastreProvider implements CadastreProvider {
       };
     } catch (error) {
       console.warn("API Carto gpu/zone-urba error:", error);
-      return null;
+      return undefined;
     }
   }
 
-  private async fetchPrescriptions(lat: number, lon: number): Promise<UrbanPrescription[]> {
+  private async fetchPrescriptions(lat: number, lon: number): Promise<UrbanPrescription[] | undefined> {
     try {
       const point = JSON.stringify({ type: "Point", coordinates: [lon, lat] });
       const url = `${this.baseUrl}/gpu/prescription-surf?geom=${encodeURIComponent(point)}`;
@@ -146,18 +155,19 @@ export class ApiCartoCadastreProvider implements CadastreProvider {
         });
     } catch (error) {
       console.warn("API Carto gpu/prescription-surf error:", error);
-      return [];
+      return undefined;
     }
   }
 
+  /** Lève en cas de délai dépassé ou d'erreur HTTP : l'appelant distingue l'échec de l'absence. */
   private async fetchJson<T>(url: string): Promise<T | null> {
     const response = await fetch(url, {
       headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
 
     if (!response.ok) {
-      console.warn(`API Carto error: ${response.status} for ${url}`);
-      return null;
+      throw new Error(`API Carto ${response.status} sur ${url}`);
     }
 
     return (await response.json()) as T;
