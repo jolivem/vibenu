@@ -14,6 +14,7 @@ import type {
   MunicipalesAnalysisDto,
   NeighborhoodAnalysisDto,
   RealEstateAnalysisDto,
+  EnergyAnalysisDto,
   RentAnalysisDto,
   RiskAnalysisDto,
   NearbySchoolDto,
@@ -21,6 +22,7 @@ import type {
 } from "@/types/location-analysis";
 import { airTrend, referenceRatio } from "@/components/analysis/airQualityModel";
 import { rentOf } from "@/components/analysis/rentsModel";
+import { DPE_CLASSES, poorShare } from "@/components/analysis/energyModel";
 import type { ClimateMetric } from "@/components/analysis/climateChart";
 import { climateTitle } from "@/components/analysis/climateFormat";
 import {
@@ -178,11 +180,14 @@ export function PdfImmobilierFiche({
   realEstate,
   cadastre,
   rents,
+  energy,
 }: {
   realEstate: RealEstateAnalysisDto | null;
   cadastre: CadastreAnalysisDto | null;
   /** `null` quand la card « Loyers » n'est pas rendue. */
   rents: RentAnalysisDto | null;
+  /** `null` quand la card « Performance énergétique » n'est pas rendue. */
+  energy: EnergyAnalysisDto | null;
 }) {
   const {
     cadastre: cadastreMessages,
@@ -194,6 +199,7 @@ export function PdfImmobilierFiche({
     nearby: nearbyMessages,
     population,
     rents: rentsMessages,
+    energy: energyMessages,
     risks: risksMessages,
     sections,
     pdf,
@@ -224,6 +230,26 @@ export function PdfImmobilierFiche({
             rentOf(rents, "app3")?.loyerM2 ?? null,
             rentOf(rents, "maison")?.loyerM2 ?? null,
           )}
+        </Fact>
+      )}
+      {rents?.zoneTendue && (
+        <Fact label={rentsMessages.zone.pdfLabel}>{rentsMessages.zone.pdf[rents.zoneTendue.zonage]}</Fact>
+      )}
+      {energy && (energy.commune || (energy.adresse && energy.adresse.total > 0)) && (
+        <Fact label={energyMessages.pdfLabel}>
+          {join([
+            energy.adresse &&
+              energy.adresse.total > 0 &&
+              energyMessages.pdfAddress(
+                energy.adresse.total,
+                DPE_CLASSES.filter((c) => energy.adresse!.counts[c] > 0).map((c) => [c, energy.adresse!.counts[c]]),
+              ),
+            energy.commune &&
+              energyMessages.pdfLine({
+                commune: poorShare(energy.commune),
+                france: energy.france ? poorShare(energy.france) : null,
+              }),
+          ])}
         </Fact>
       )}
       {cadastre?.parcel && (

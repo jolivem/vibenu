@@ -31,6 +31,8 @@ export interface Format {
   fixed(value: number, digits: number): string;
   /** « 1er juin 2026 » / « 1 June 2026 ». Accepte une date ISO (`2026-06-01`), lue en UTC. */
   dateLong(date: Date | string): string;
+  /** « 16/09/2026 » / « 16/09/2026 » : pour un tableau. Date ISO lue en UTC. */
+  dateShort(date: Date | string): string;
   /** Catégorie de pluriel de la langue : en français, `one` jusqu'à 2 exclu. */
   plural(value: number): Intl.LDMLPluralRule;
 }
@@ -51,6 +53,16 @@ export function createFormat(locale: Locale): Format {
     decimal: (value, maxDigits, minDigits = 0) =>
       number(value, { maximumFractionDigits: maxDigits, minimumFractionDigits: minDigits }),
     fixed: (value, digits) => value.toFixed(digits).replace(".", decimalSeparator),
+    dateShort: (date) => {
+      const iso = typeof date === "string";
+      const value = iso ? new Date(`${date}T00:00:00Z`) : date;
+      return value.toLocaleDateString(tag, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        ...(iso ? { timeZone: "UTC" } : {}),
+      });
+    },
     dateLong: (date) => {
       const iso = typeof date === "string";
       const value = iso ? new Date(`${date}T00:00:00Z`) : date;

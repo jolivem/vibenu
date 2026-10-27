@@ -43,10 +43,25 @@ export interface RentAreaFeature {
   };
 }
 
+/**
+ * Zonage « zone tendue » de la commune (décret n° 2013-392, dernière mise à jour). `tendue` :
+ * règles de location et fiscalité ; `touristique` (« zone touristique et tendue ») : la
+ * fiscalité seulement ; `non` : hors zonage.
+ */
+export type RentZoning = "tendue" | "touristique" | "non";
+
+export interface RentZoneTendue {
+  zonage: RentZoning;
+  /** Date du décret de classement, ISO. */
+  decret: string;
+}
+
 export interface RentAnalysis {
   codeCommune: string;
   nomCommune: string | null;
   annee: number;
   indicateurs: RentIndicator[];
   alentour: RentAreaFeature[];
+  /** `null` si la commune manque au fichier du zonage. */
+  zoneTendue: RentZoneTendue | null;
 }

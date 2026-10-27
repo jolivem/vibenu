@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import type { RentAnalysisDto, RentIndicatorDto } from "@/types/location-analysis";
 import type { RentsMessages } from "@/i18n/messages/fr/analysis/rents";
 import { CardInsight } from "@/components/CardInsight";
-import { rentDeltaPct, rentExamples, rentOf } from "./rentsModel";
+import { RichText } from "@/components/RichText";
+import { RELOCATION_CAP_UNTIL, rentDeltaPct, rentExamples, rentOf } from "./rentsModel";
 import { CardDetail } from "./readingMode";
 
 /** Repère des pages commune : la moyenne de la ville, absent de l'écran d'analyse. */
@@ -18,6 +19,9 @@ export interface RentBenchmark {
  *
  * Aucun repère départemental ni national : la card dit ce que coûte la location ici ; la
  * carte situe la commune parmi ses voisines, ce qui parle davantage qu'une moyenne nationale.
+ *
+ * Le zonage « zone tendue » et ce qu'il change pour la location, dans le détail seulement,
+ * sous les exemples en euros.
  *
  * En mode « L'essentiel », les loyers au m² ; les exemples en euros et la carte passent dans
  * le détail. Sur les pages commune (sans mode de lecture), tout est affiché.
@@ -46,6 +50,7 @@ export function RentsCard({
     .filter((r): r is RentIndicatorDto => r !== null);
   const house = rentOf(rents, "maison");
   const examples = rentExamples(rents);
+  const zone = rents.zoneTendue;
 
   return (
     <section className="card rents-card">
@@ -68,7 +73,7 @@ export function RentsCard({
         </div>
       )}
 
-      <CardDetail when={examples.length > 0 || Boolean(children)}>
+      <CardDetail when={zone !== null || examples.length > 0 || Boolean(children)}>
       {examples.length > 0 && (
         <div className="rents-examples">
           <p>{m.examplesLead}</p>
@@ -97,6 +102,19 @@ export function RentsCard({
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Sous les exemples, pour ne pas couper les loyers de leur traduction en euros. */}
+      {zone && (
+        <div className="rents-zone-block">
+          <p className="rents-zone">
+            <RichText text={m.zone.summary[zone.zonage]} />
+          </p>
+          <div className="rents-zone-detail">
+            {zone.zonage === "tendue" && <p>{m.zone.tendueDetail(RELOCATION_CAP_UNTIL)}</p>}
+            <p>{m.zone.source(zone.decret)}</p>
+          </div>
         </div>
       )}
 

@@ -81,6 +81,16 @@ export const about: AboutMessages = {
         desc: "Advertised rents per m², charges included, by commune and type of dwelling (Carte des loyers), estimated over a group of neighbouring communes where listings are scarce.",
       },
       {
+        name: "High-demand housing areas",
+        issuer: "Ministry for the Ecological Transition",
+        desc: "Commune zoning (zone tendue, tourist high-demand area), which sets the tenant's notice period and the cap on rent when re-letting.",
+      },
+      {
+        name: "Energy performance",
+        issuer: "ADEME",
+        desc: "Energy performance certificates (DPE) for homes, issued since July 2021: the certificates at the address, one per dwelling (without floor or door), and the breakdown of ratings in the commune.",
+      },
+      {
         name: "Local taxation",
         issuer: "DGFiP · data.economie.gouv.fr",
         desc: "Property tax and waste collection tax rates, second homes, transfer duties and municipal accounts.",

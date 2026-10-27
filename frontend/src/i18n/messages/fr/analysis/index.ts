@@ -10,6 +10,7 @@ import { pdf } from "./pdf";
 import { population } from "./population";
 import { realEstate } from "./realEstate";
 import { rents } from "./rents";
+import { energy } from "./energy";
 import { schools } from "./schools";
 import { risks } from "./risks";
 import { screen } from "./screen";
@@ -34,6 +35,7 @@ export const analysis = {
   mobility,
   realEstate,
   rents,
+  energy,
   schools,
   keyFigures,
   screen,

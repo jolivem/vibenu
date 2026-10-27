@@ -29,7 +29,8 @@ avec leurs résultats (réussite aux examens, valeur ajoutée, indice de positio
 encadrement, langues et sections) et secteur scolaire, commerces et équipements, population,
 emploi, logement et revenus du quartier, délinquance, fiscalité locale (taux de taxe foncière et
 d'ordures ménagères comparés à la médiane des communes, résidences secondaires et logements
-vacants, droits de mutation, comptes de la commune), climat, qualité de l'air, résultats des
+vacants, droits de mutation, comptes de la commune), loyers et zone tendue, performance
+énergétique des logements (DPE) à l'adresse, climat, qualité de l'air, résultats des
 élections, et cartes et photographies aériennes anciennes.
 
 Chaque indicateur est présenté dans son unité et comparé à un repère (la commune, la France),
@@ -45,7 +46,8 @@ Licence Ouverte 2.0 (Etalab) et ODbL (OpenStreetMap).
 
 immobilier, logement, adresse, quartier, commune, DVF, prix, risques, PPRI, inondation, PLU,
 urbanisme, INSEE, IRIS, BPE, transports, délinquance, climat, élections, cartographie,
-fiscalité locale, taxe foncière, comptes des communes, collèges, lycées, valeur ajoutée, IPS
+fiscalité locale, taxe foncière, comptes des communes, collèges, lycées, valeur ajoutée, IPS,
+DPE, performance énergétique, passoires thermiques, zone tendue, loyers
 
 ## Jeux de données à associer (fichiers importés dans la base)
 
@@ -73,6 +75,7 @@ fiscalité locale, taxe foncière, comptes des communes, collèges, lycées, val
 | Langues | Offre de langues dans les collèges et lycées | `import_schools.py` |
 | Sections sportives | Sections Sportives Scolaires | `import_schools.py` |
 | Lycées des métiers | Lycées des métiers | `import_schools.py` |
+| Zone tendue | Liste des communes selon le zonage TLV | `import_zone_tendue.py` |
 | Insertion des lycées pro | Inserjeunes Voie professionnelle scolaire par établissement relevant du ministère de l'éducation nationale | `import_schools.py` |
 
 Tous ces titres ont été vérifiés sur data.gouv.fr le 25 octobre 2026. Plusieurs ont des homonymes
@@ -102,3 +105,4 @@ Hors data.gouv.fr, à citer dans la description :
 | Fonds de carte, cartes anciennes, photos aériennes | Géoplateforme – WMTS et tuiles vectorielles (Plan IGN, Cassini, état-major, orthophotos historiques) |
 | Arrêts et gares | API transport.data.gouv.fr (arrêts des GTFS) |
 | Qualité de l'air à l'adresse | API Atmo Data (Atmo France) |
+| Performance énergétique (DPE) | DPE Logements existants (depuis juillet 2021) — API data-fair de l'ADEME (`data.ademe.fr`) |

@@ -125,3 +125,10 @@ export function rentMapFeatures(areas: RentAreaFeatureDto[], classes: RentClass[
   coloredCache.set(areas, colored);
   return colored;
 }
+
+/**
+ * Fin de validité du plafonnement du loyer à la relocation en zone tendue. Le décret qui le
+ * porte est reconduit chaque été pour un an (n° 2026-644 du 20 juillet 2026 : du 1er août
+ * 2026 au 31 juillet 2027) : mettre cette date à jour à chaque reconduction.
+ */
+export const RELOCATION_CAP_UNTIL = "2027-07-31";

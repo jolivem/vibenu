@@ -36,6 +36,8 @@ export interface SiteFeatures {
   showLocalTax: boolean;
   /** Card "Loyers" — loyers d'annonce par commune (ANIL), carte des communes alentour. */
   showRents: boolean;
+  /** Card "Performance énergétique" — DPE de l'ADEME, avec la carte des carrés alentour. */
+  showEnergy: boolean;
   /** Card "Municipales 2026" — résultats du scrutin local. */
   showMunicipales: boolean;
   /** Card "Transports en commun" — gares, bus, métros à proximité. */
@@ -105,6 +107,7 @@ const PUBLIC_FEATURES: SiteFeatures = {
   showSecurity: true,
   showLocalTax: true,
   showRents: true,
+  showEnergy: true,
   showRealEstate: true,
   showRisks: true,
   showAirQuality: true,
@@ -139,6 +142,7 @@ const PRO_FEATURES: SiteFeatures = {
   showSecurity: false, // usage professionnel : hors périmètre
   showLocalTax: false,
   showRents: false,
+  showEnergy: false,
   showRealEstate: false,
   showRisks: false,
   showAirQuality: false,

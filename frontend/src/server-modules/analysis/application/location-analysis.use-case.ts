@@ -14,6 +14,7 @@ import type { SchoolSectorService } from "../../school-sector/application/school
 import type { SecurityService } from "../../security/application/security.service";
 import type { LocalTaxService } from "../../local-tax/application/local-tax.service";
 import type { RentsService } from "../../rents/application/rents.service";
+import type { EnergyService } from "../../energy/application/energy.service";
 import type { SchoolsService } from "../../schools/application/schools.service";
 import type { CommuneEquipmentService } from "../../commune-equipment/application/commune-equipment.service";
 import type { AnalyzeLocationInput, LocationAnalysisService } from "./location-analysis.service";
@@ -25,6 +26,18 @@ import type {
 } from "../../../server-shared/types/location-analysis.dto";
 
 const METERS_PER_DEGREE_LAT = 111_320;
+
+/**
+ * Durée de chaque source, affichée dans la console du serveur quand `ANALYZE_TIMINGS=1` :
+ * pour trouver celle qui retient l'analyse (elle attend la plus lente). Muet sinon.
+ */
+const TIMINGS = process.env.ANALYZE_TIMINGS === "1";
+
+function timed<T>(label: string, promise: Promise<T>): Promise<T> {
+  if (!TIMINGS) return promise;
+  const start = Date.now();
+  return promise.finally(() => console.info(`[analyze] ${label} : ${Date.now() - start} ms`));
+}
 
 /**
  * Rayon de la fenêtre interrogée pour les zonages PPR, en mode adresse.
@@ -115,6 +128,7 @@ interface Dependencies {
   securityService: SecurityService;
   localTaxService: LocalTaxService;
   rentsService: RentsService;
+  energyService: EnergyService;
   schoolsService: SchoolsService;
   communeEquipmentService: CommuneEquipmentService;
 }
@@ -128,7 +142,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
 
   async execute(input: AnalyzeLocationInput): Promise<LocationAnalysisDto> {
     // Resolve address first — we need codeInsee for DVF
-    const addressDetails = await this.dependencies.addressProvider.reverseGeocode(input.lat, input.lon);
+    const addressDetails = await timed("geocodage_inverse", this.dependencies.addressProvider.reverseGeocode(input.lat, input.lon));
     const codeInsee = addressDetails?.citycode;
     const contourCitycode = input.citycode ?? codeInsee;
 
@@ -192,28 +206,40 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       }),
     );
 
-    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment, floodZones, localTax, rents, schools] =
+    const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment, floodZones, localTax, rents, schools, energy] =
       await Promise.all([
-        this.dependencies.mobilityService.getMobilityData(input.lat, input.lon),
-        this.dependencies.riskService.getRiskData(input.lat, input.lon),
-        this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee, { mode }),
-        this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon),
-        neighborhoodPromise,
-        cadastrePromise,
-        this.dependencies.demographicsService.getDemographicsData(input.lat, input.lon),
-        contourPromise,
-        this.dependencies.electionsService.getElectionsData(codeInsee),
-        this.dependencies.climateService.getClimateData(input.lat, input.lon),
-        schoolSectorPromise,
-        this.dependencies.securityService.getSecurityData(codeInsee),
-        this.dependencies.electionsService.getMunicipalesData(codeInsee),
-        communeEquipmentPromise,
-        floodZonesPromise,
+        timed("mobilite", this.dependencies.mobilityService.getMobilityData(input.lat, input.lon)),
+        timed("risques", this.dependencies.riskService.getRiskData(input.lat, input.lon)),
+        timed("dvf", this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee, { mode })),
+        timed("air", this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon)),
+        timed("voisinage", neighborhoodPromise),
+        timed("cadastre", cadastrePromise),
+        timed("demographie", this.dependencies.demographicsService.getDemographicsData(input.lat, input.lon)),
+        timed("contour", contourPromise),
+        timed("presidentielle", this.dependencies.electionsService.getElectionsData(codeInsee)),
+        timed("climat", this.dependencies.climateService.getClimateData(input.lat, input.lon)),
+        timed("secteur_scolaire", schoolSectorPromise),
+        timed("securite", this.dependencies.securityService.getSecurityData(codeInsee)),
+        timed("municipales", this.dependencies.electionsService.getMunicipalesData(codeInsee)),
+        timed("equipements", communeEquipmentPromise),
+        timed("zones_inondables", floodZonesPromise),
         // Comme les équipements : la commune cherchée, pas celle où tombe le centroïde.
-        this.dependencies.localTaxService.getLocalTax(mode === "commune" ? contourCitycode : codeInsee),
+        timed("fiscalite", this.dependencies.localTaxService.getLocalTax(mode === "commune" ? contourCitycode : codeInsee)),
         // Même code que la fiscalité ; la carte « alentour » se centre sur le point analysé.
-        this.dependencies.rentsService.getRents(mode === "commune" ? contourCitycode : codeInsee, input.lat, input.lon),
-        schoolsPromise,
+        timed("loyers", this.dependencies.rentsService.getRents(mode === "commune" ? contourCitycode : codeInsee, input.lat, input.lon)),
+        timed("ecoles", schoolsPromise),
+        // DPE : mode adresse seulement — la card parle d'abord de l'adresse ; en mode commune
+        // il ne resterait que deux barres (commune, France), sans intérêt pour un logement.
+        timed("dpe", mode === "commune"
+          ? Promise.resolve(null)
+          : this.dependencies.energyService.getEnergy({
+              lat: input.lat,
+              lon: input.lon,
+              codeCommune: codeInsee,
+              mode,
+              // Type absent (lien ancien ou partagé) : on tente, la tolérance de 2 m tranche.
+              atAddress: input.type === "housenumber" || input.type === undefined,
+            })),
       ]);
 
 
@@ -257,6 +283,7 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
       localTax,
       rents,
       schools,
+      energy,
     };
   }
 }

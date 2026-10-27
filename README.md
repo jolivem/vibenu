@@ -53,6 +53,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
 | `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Météo-France — normales par station pré-importées (PostgreSQL/PostGIS) ; moyenne nationale hardcodée |
 | `security` | Délinquance enregistrée, 10 ans, maille communale + repères département, communes de même taille (5 tranches de population, calculées à l'import) et France | SSMSI via data.gouv.fr (PostgreSQL) |
+| `energy` | Répartition des étiquettes DPE à l'adresse, dans la commune et en France | API data-fair de l'ADEME, en direct (cache mémoire 7 jours) |
 | `rents` | Loyers d'annonce par commune (appartements tous types, 1-2 pièces, 3 pièces et plus, maisons) et communes alentour pour la carte | « Carte des loyers » ANIL / ministère du Logement (PostgreSQL) ; contours de communes reconstitués depuis les IRIS |
 | `local-tax` | Fiscalité locale : taxe foncière et TEOM (2021-2025), résidences secondaires et vacance, droits de mutation, comptes de la commune | DGFiP via data.economie.gouv.fr (PostgreSQL) ; barème DMTO ressaisi dans `dmto-rates.ts` |
 | `school-sector` | Secteur de collège (donnée disponible pour Paris) | Ville de Paris (PostgreSQL/PostGIS) |
@@ -300,6 +301,9 @@ python import_local_tax.py
 # reconstruire les contours de communes depuis les IRIS — à lancer APRÈS import_iris.py
 python import_rents.py
 
+# Importer le zonage « zone tendue » (ministère de la Transition écologique, 1 CSV ~2 Mo)
+python import_zone_tendue.py
+
 # Importer les normales climatiques Météo-France 1991-2020 — ~10 min
 # Déposer d'abord les *.csv.gz décadaires dans scripts/data/climate/
 python import_climate_stations.py
@@ -387,6 +391,7 @@ pnpm dev
 | `CARD_INSIGHTS_FIXTURE` | Phrases factices sans appel au LLM. `slow` ajoute 1,2 s de latence | - |
 | `COMMUNE_LEGENDS_FIXTURE` | Idem pour les légendes des pages `/commune/*`. À poser **au build** (pages prérendues) | - |
 | `DISABLE_CACHE` | Désactive tous les caches in-memory (`1`, `true`, `yes`) | - |
+| `ANALYZE_TIMINGS` | `1` : affiche dans la console du serveur la durée de chaque source d'une analyse (`[analyze] cadastre : 4236 ms`), pour trouver celle qui la retient | - |
 | `NEXT_PUBLIC_DEBUG` | Payload envoyé au modèle sous les cards — et **court-circuite le cache des mini-synthèses** | `false` |
 | `NEXT_PUBLIC_HIDE_AIR_QUALITY` | Coupe la rubrique « Qualité de l'air » partout (card, pages `/commune/*`, PDF, landing). Le titre de section redevient « Climat » | - |
 | `NEXT_PUBLIC_SITE_VARIANT` | Variante du site : `PUBLIC` (complet) ou `PRO` (voisinage + mobilité). Relu au démarrage seulement | `PUBLIC` |
@@ -509,6 +514,25 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - Licence : Licence Ouverte 2.0
 - Mise à jour : une édition par an, en décembre, sous un nouveau jeu : mettre à jour `ANNEE` et `FILES` en tête du script, puis le relancer
 
+### Performance énergétique (DPE, ADEME)
+- **Source** : [« DPE Logements existants (depuis juillet 2021) »](https://data.ademe.fr/datasets/dpe03existant), ADEME, Licence Ouverte 2.0. ~16 millions de DPE, mis à jour chaque semaine. **Aucun import** : API data-fair interrogée en direct (`/lines` avec `geo_distance` de 2 m pour l'adresse, `/values_agg` pour la commune et la France), cache mémoire de 7 jours par adresse, par commune et pour la France
+- **Module** : `server-modules/energy/`. Card « Performance énergétique » après les Loyers, **en mode adresse seulement** (le use-case ne l'interroge pas en mode commune) ; l'essentiel : l'adresse seule, commune et France dans le détail ; ligne PDF (part de F et G). Pas de carte : une carte en carrés de 50 m autour de l'adresse a été essayée puis retirée le 27/10/2026 (peu utile pour juger un logement, lourde : jusqu'à 5 000 lignes par analyse)
+- **Filtres** : DPE d'immeuble entier exclus (`type_batiment:immeuble`, ils doublonnent les DPE d'appartements générés à partir d'eux). Les DPE remplacés sont déjà retirés de la base par l'ADEME (vérifié le 27/10/2026)
+- **« À cette adresse »** : pour un numéro de rue (ou un type absent) ; les DPE de l'identifiant BAN le plus proche du point, à moins de 2 m, sans filtre sur la qualité de géocodage (les DPE sont placés au point BAN de leur adresse, qui est aussi celui de l'analyse ; à 10 m, le n° 13 voisin passait pour le n° 11). Aussi quand le type d'adresse manque dans l'URL (lien ancien)
+- **Liste à l'adresse** (détail de la card) : un DPE par logement, le plus récent — date, surface, étiquettes énergie et climat, consommation, numéro ADEME (la période de construction, celle de la majorité des DPE, en tête de liste) avec lien vers l'observatoire DPE-Audit. **Jamais l'étage, la porte ni le complément d'adresse** : la surface suffit à l'acheteur, et c'est ce qui rapprocherait le plus d'un foyer. L'ADEME publie ces lignes avec leur adresse ; le seuil de 3 DPE d'abord prévu a été levé le 27/10/2026
+- **Doublons** : un même logement refait (même surface et même complément d'adresse normalisé) ne garde que son DPE le plus récent ; l'ADEME ne les marque pas comme remplacés (44,3 m² « Esc. A ; Étage 1 » au 23 rue du Commerce : trois DPE en trois mois). Les DPE générés depuis un DPE d'immeuble portent chacun un code de logement : pas de fusion abusive (23 rue de l'Amiral-Roussin : 296 DPE → 224 logements)
+- **Précautions affichées** : DPE réalisés (à la vente ou à la location), pas un inventaire du parc ; un DPE vaut pour un logement, pas pour l'immeuble ; depuis le 1er janvier 2026, le coefficient de l'électricité (2,3 → 1,9) peut faire gagner une classe aux logements chauffés à l'électricité, ce que les DPE antérieurs ne reflètent pas
+- **Date à tenir à jour** : calendrier d'interdiction de louer (G 2025, F 2028, E 2034 en métropole ; F et G 2028 outre-mer) dans `rentalBanCalendar` de `components/analysis/energyModel.ts`. Un projet de loi d'assouplissement était en discussion au 27/10/2026
+- Licence : Licence Ouverte 2.0
+
+### Zone tendue (zonage TLV)
+- **Source** : [« Liste des communes selon le zonage TLV »](https://www.data.gouv.fr/datasets/657c88da2947e13be0597058/), ministère de la Transition écologique. Un CSV (UTF-8, point-virgule, clé `CODGEO25`) ; on lit la colonne « Zonage TLV post décret 22/12/2025 »
+- **Import** : `scripts/import_zone_tendue.py` → `rent_zone_tendue` (`tendue` 1 430 communes, `touristique` 2 259, `non` 31 186). Lu par le module `rents`, affiché dans la card Loyers et la fiche PDF ; un arrondissement prend le classement de sa ville
+- **Précautions** : seule la catégorie « zone tendue » (annexe 1° du décret n° 2013-392) entraîne les règles de location — préavis d'un mois en location vide, loyer plafonné à la relocation. La « zone touristique et tendue » ne change que la fiscalité (TLV, majoration de la taxe d'habitation des résidences secondaires). L'encadrement du **niveau** des loyers (Paris, Lyon, Lille…) est un autre dispositif, non traité
+- **Date à tenir à jour** : le plafonnement à la relocation est reconduit chaque été par décret pour un an (n° 2026-644 : jusqu'au 31/07/2027). Mettre à jour `RELOCATION_CAP_UNTIL` dans `components/analysis/rentsModel.ts` à chaque reconduction
+- Licence : Licence Ouverte
+- Mise à jour : à chaque décret de zonage — mettre à jour `URL`, `COLONNE` et `DECRET` en tête du script, puis le relancer
+
 ### Collèges et lycées (Éducation nationale, DEPP)
 - **Source** : [data.education.gouv.fr](https://data.education.gouv.fr), ministère de l'Éducation nationale et DEPP. Chaque jeu est téléchargé en entier par l'export JSON Lines de l'API Opendatasoft ; la liste est dans `DATASETS` en tête de `scripts/import_schools.py`
 - **Import** : `scripts/import_schools.py` →
@@ -549,6 +573,7 @@ claireadresse/
 │   ├── import_crime.py               # Import délinquance SSMSI (commune + dept + France + tranches de taille)
 │   ├── import_local_tax.py           # Import fiscalité locale DGFiP (taux, délibérations, comptes)
 │   ├── import_rents.py               # Import loyers d'annonce ANIL + contours de communes
+│   ├── import_zone_tendue.py         # Import zonage zone tendue (TLV)
 │   ├── import_climate_stations.py    # Normales Météo-France 1991-2020 par station
 │   ├── import_atmo_*.py              # Indices ATMO annuels (Paris, Lyon, Marseille)
 │   ├── import_school_sectors_paris.py # Secteurs de collège (opendata.paris.fr)

@@ -20,6 +20,8 @@ import { LocalTaxCard } from "@/components/analysis/LocalTaxCard";
 import { hasLocalTaxContent } from "@/components/analysis/localTaxModel";
 import { RentsCard } from "@/components/analysis/RentsCard";
 import { hasRentContent, rentClasses, rentMapFeatures } from "@/components/analysis/rentsModel";
+import { EnergyCard } from "@/components/analysis/EnergyCard";
+import { hasEnergyContent } from "@/components/analysis/energyModel";
 import { ChartLegend } from "@/components/analysis/ChartLegend";
 import { NeighborhoodCard } from "@/components/analysis/NeighborhoodCard";
 import { DemographicsCard } from "@/components/analysis/DemographicsCard";
@@ -177,6 +179,7 @@ export function AnalysisScreen() {
       immobilier:
         (FEATURES.showRealEstate && !!data.realEstate) ||
         (FEATURES.showRents && hasRentContent(data.rents)) ||
+        (FEATURES.showEnergy && hasEnergyContent(data.energy)) ||
         (FEATURES.showCadastre && !!data.cadastre),
       enseignement: FEATURES.showSchools && hasSchools(data.schools),
       deplacer: FEATURES.showMobility,
@@ -339,6 +342,14 @@ export function AnalysisScreen() {
                             m={m.rents}
                           />
                         </RentsCard>
+                      )}
+                      {FEATURES.showEnergy && hasEnergyContent(data.energy) && (
+                        <EnergyCard
+                          energy={data.energy}
+                          m={m.energy}
+                          mode={data.mode}
+                          communeName={data.rents?.nomCommune ?? data.address.city}
+                        />
                       )}
                       {FEATURES.showCadastre && data.cadastre && (
                         <CadastreCard cadastre={data.cadastre} m={m.cadastre} />

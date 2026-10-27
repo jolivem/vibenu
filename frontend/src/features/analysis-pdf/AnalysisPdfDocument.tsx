@@ -9,6 +9,7 @@ import type { AnalysisMessages } from "@/i18n/messages/fr/analysis";
 import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
 import { hasLocalTaxContent } from "@/components/analysis/localTaxModel";
 import { hasRentContent } from "@/components/analysis/rentsModel";
+import { hasEnergyContent } from "@/components/analysis/energyModel";
 import { hasSchools } from "@/components/analysis/schoolsModel";
 import { SECTION_ORDER, type SectionId } from "@/components/analysis/sections";
 import "./registerFonts";
@@ -140,6 +141,7 @@ export function AnalysisPdfDocument({
   const showCadastre = FEATURES.showCadastre && Boolean(data.cadastre);
   const localTax = FEATURES.showLocalTax && hasLocalTaxContent(data.localTax) ? data.localTax : null;
   const rents = FEATURES.showRents && hasRentContent(data.rents) ? data.rents : null;
+  const energy = FEATURES.showEnergy && hasEnergyContent(data.energy) ? data.energy : null;
   const showNeighborhood = FEATURES.showNeighborhood && data.mode !== "commune";
   const schools = FEATURES.showSchools && hasSchools(data.schools) ? data.schools : null;
   const showCommuneEquipment =
@@ -152,7 +154,7 @@ export function AnalysisPdfDocument({
 
   // Mêmes conditions que `hasContent` dans `AnalysisScreen`, une section par entrée.
   const sections: Record<SectionId, boolean> = {
-    immobilier: showRealEstate || showCadastre || Boolean(rents),
+    immobilier: showRealEstate || showCadastre || Boolean(rents) || Boolean(energy),
     enseignement: Boolean(schools),
     proximite: showNeighborhood || showCommuneEquipment,
     deplacer: FEATURES.showMobility,
@@ -214,6 +216,7 @@ export function AnalysisPdfDocument({
             realEstate={showRealEstate ? realEstate : null}
             cadastre={showCadastre ? data.cadastre : null}
             rents={rents}
+            energy={energy}
           />
         )}
 

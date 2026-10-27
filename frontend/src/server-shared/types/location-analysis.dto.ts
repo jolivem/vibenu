@@ -190,6 +190,56 @@ export interface RentAnalysisDto {
   indicateurs: RentIndicatorDto[];
   /** Communes à moins de 8 km, pour la carte. */
   alentour: RentAreaFeatureDto[];
+  /**
+   * Zonage « zone tendue » : `tendue` = règles de location (préavis, loyer à la relocation) et
+   * fiscalité ; `touristique` = fiscalité seulement ; `non` = hors zonage. `null` si inconnu.
+   */
+  zoneTendue: { zonage: RentZoningDto; decret: string } | null;
+}
+
+export type RentZoningDto = "tendue" | "touristique" | "non";
+
+/** Étiquettes du DPE, de la meilleure à la pire. */
+export type DpeClassDto = "A" | "B" | "C" | "D" | "E" | "F" | "G";
+export type DpeCountsDto = Record<DpeClassDto, number>;
+
+export interface DpeDistributionDto {
+  total: number;
+  counts: DpeCountsDto;
+}
+
+/** Un DPE de l'adresse : sans étage, porte ni complément d'adresse. */
+export interface DpeRecordDto {
+  /** Numéro ADEME, vérifiable sur l'observatoire DPE-Audit. */
+  numero: string;
+  /** Date d'établissement, ISO. */
+  date: string;
+  energie: DpeClassDto;
+  ges: DpeClassDto | null;
+  surface: number | null;
+  /** kWh d'énergie primaire par m² et par an, cinq usages. */
+  consoM2: number | null;
+  /** Texte français de la source (« avant 1948 »…). */
+  periodeConstruction: string | null;
+  /** DPE plus anciens du même logement, écartés au profit de celui-ci. */
+  anterieurs: number;
+}
+
+/**
+ * DPE des logements existants (ADEME), réalisés depuis juillet 2021 : des diagnostics faits
+ * à la vente ou à la location, pas un inventaire du parc.
+ */
+export interface EnergyAnalysisDto {
+  /**
+   * Mode adresse sur un numéro de rue : un DPE par logement (le plus récent), du plus récent
+   * au plus ancien ; les comptes portent sur ces DPE-là.
+   */
+  adresse: { total: number; counts: DpeCountsDto; diagnostics: DpeRecordDto[] } | null;
+  codeCommune: string | null;
+  commune: DpeDistributionDto | null;
+  france: DpeDistributionDto | null;
+  /** Date ISO de dernière mise à jour du jeu chez l'ADEME. */
+  miseAJour: string | null;
 }
 
 export interface NeighborhoodPoiDto {
@@ -739,6 +789,7 @@ export interface LocationAnalysisDto {
   localTax?: LocalTaxAnalysisDto | null;
   /** Loyers d'annonce de la commune ; `null` si la source ne la connaît pas. */
   rents?: RentAnalysisDto | null;
+  energy?: EnergyAnalysisDto | null;
   /** Mode commune uniquement ; `null` en mode adresse ou si la BPE ne connaît pas le code. */
   communeEquipment?: CommuneEquipmentDto | null;
   /** Collèges et lycées alentour (ou de la commune) ; `null` si la base ne répond pas. */

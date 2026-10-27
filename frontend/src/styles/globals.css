@@ -3054,6 +3054,198 @@ html {
   color: var(--muted);
 }
 
+/* Card « Performance énergétique » : barres A-G aux couleurs de l'étiquette DPE. */
+.dpe-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.dpe-bar-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 150px) 1fr;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.dpe-bar-label {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.dpe-bar-count {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.dpe-bar {
+  display: flex;
+  width: 100%;
+  height: 22px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--hairline);
+}
+
+.dpe-bar-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 1px 0 0 var(--card);
+}
+
+.dpe-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 12px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.dpe-legend-chips {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.dpe-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.energy-note {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.energy-detail {
+  margin-top: 16px;
+  font-size: 0.9rem;
+}
+
+.energy-detail h3 {
+  margin: 14px 0 4px;
+  font-size: 0.95rem;
+}
+
+/* « Pour comparer » : les barres de la commune et de la France, avant la location. */
+.energy-detail .dpe-bars {
+  margin: 8px 0 16px;
+}
+
+.energy-detail p {
+  margin: 0 0 8px;
+}
+
+.energy-caveats {
+  margin: 10px 0;
+  padding-left: 18px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.energy-caveats li + li {
+  margin-top: 4px;
+}
+
+.energy-source {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Liste des DPE de l'adresse : un tableau qui défile horizontalement sur mobile. */
+.dpe-list {
+  margin-bottom: 18px;
+}
+
+.energy-built {
+  margin: 4px 0 6px;
+}
+
+.dpe-table-wrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.dpe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.dpe-table th {
+  padding: 4px 10px 6px 0;
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.dpe-table td {
+  padding: 5px 10px 5px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-variant-numeric: tabular-nums;
+}
+
+.dpe-table a {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.dpe-ges {
+  font-weight: 600;
+}
+
+.dpe-list-more {
+  margin-top: 8px;
+  font-size: 0.85rem;
+}
+
+.dpe-list-more summary {
+  cursor: pointer;
+  color: var(--accent, inherit);
+}
+
+/* Zonage « zone tendue » : une ligne sous les loyers, filet à gauche comme une remarque. */
+.rents-zone {
+  margin: 16px 0 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--muted-soft);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.rents-zone-detail {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.rents-zone-detail p {
+  margin: 0 0 6px;
+}
+
+.rents-zone-block {
+  margin: 16px 0;
+}
+
+.rents-zone-block .rents-zone {
+  margin-top: 0;
+}
+
 .rents-examples {
   margin-top: 16px;
   font-size: 0.92rem;

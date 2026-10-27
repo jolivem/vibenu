@@ -54,7 +54,7 @@ runs on the VPS (git pull → docker compose pull → replay migrations → rest
 ### Server: DDD modules under `frontend/src/server-modules/<domain>/`
 
 Every data domain (`address`, `mobility`, `risks`, `real-estate`, `cadastre`, `air-quality`,
-`neighborhood`, `demographics`, `elections`, `climate`, `security`, `local-tax`, `rents`, `school-sector`, `schools`,
+`neighborhood`, `demographics`, `elections`, `climate`, `security`, `local-tax`, `rents`, `energy`, `school-sector`, `schools`,
 `commune-stats`, `commune-equipment`, `summary`, `narrative`) follows the same three-layer shape:
 
 - `domain/` — types only

@@ -27,6 +27,8 @@ import { SecurityServiceImpl } from "@/server-modules/security/application/secur
 import { LocalTaxDatabaseProvider } from "@/server-modules/local-tax/infrastructure/local-tax-database.provider";
 import { RentsServiceImpl } from "@/server-modules/rents/application/rents.service.impl";
 import { RentsDatabaseProvider } from "@/server-modules/rents/infrastructure/rents-database.provider";
+import { EnergyServiceImpl } from "@/server-modules/energy/application/energy.service.impl";
+import { AdemeDpeProvider } from "@/server-modules/energy/infrastructure/ademe-dpe.provider";
 import { LocalTaxServiceImpl } from "@/server-modules/local-tax/application/local-tax.service.impl";
 import { MeteoFranceStationsProvider } from "@/server-modules/climate/infrastructure/meteo-france-stations.provider";
 import { ClimateServiceImpl } from "@/server-modules/climate/application/climate.service.impl";
@@ -62,6 +64,7 @@ const useCase = new LocationAnalysisUseCase({
   securityService: new SecurityServiceImpl(new SecurityDatabaseProvider()),
   localTaxService: new LocalTaxServiceImpl(new LocalTaxDatabaseProvider()),
   rentsService: new RentsServiceImpl(new RentsDatabaseProvider()),
+  energyService: new EnergyServiceImpl(new AdemeDpeProvider()),
   climateService: new ClimateServiceImpl(new MeteoFranceStationsProvider()),
   schoolSectorService: new SchoolSectorServiceImpl(new PostgisSchoolSectorProvider()),
   schoolsService: new SchoolsServiceImpl(new PostgisSchoolsProvider()),

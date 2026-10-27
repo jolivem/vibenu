@@ -24,6 +24,13 @@ quelques mois.
 
 ## 1. Zone tendue — effort faible
 
+**Livré le 27/10/2026.** Table `rent_zone_tendue` (migration 026, `scripts/import_zone_tendue.py`),
+lue par le module `rents` ; ligne dans la card Loyers (détail : exceptions, source ; « hors
+zone » dans le détail seulement) et dans la fiche PDF. Effets vérifiés (ANIL, décret
+n° 2026-644) : seule la catégorie « zone tendue » entraîne préavis d'un mois et plafonnement
+à la relocation, reconduit jusqu'au 31/07/2027 (`RELOCATION_CAP_UNTIL` à tenir à jour). Non
+fait : renvoi depuis la Fiscalité vers les Loyers.
+
 ### Ce qu'on a déjà
 
 La card Fiscalité affiche « Commune dans le périmètre de la taxe sur les logements vacants ».
@@ -85,6 +92,15 @@ communes. L'issue n'était pas connue au 25/10.
 ---
 
 ## 2. Performance énergétique (DPE) — effort moyen
+
+**Livré le 27/10/2026.** Module `server-modules/energy/` (API ADEME en direct, cache 7 jours),
+card « Performance énergétique » après les Loyers, ligne PDF. Une carte en carrés de 50 m
+autour de l'adresse a été faite puis retirée le même jour : peu utile pour juger un logement,
+et lourde (jusqu'à 5 000 lignes par analyse). Seuil de 3 DPE par adresse. Vérifications faites : DPE
+remplacés déjà retirés par l'ADEME ; DPE d'immeuble exclus ; DPE non géocodés à l'adresse
+exclus des lectures au point ; couverture rurale faible (11 DPE à 300 m à Montigny-Lencoup).
+Calendrier d'interdiction de louer vérifié (service-public.gouv.fr). Pas fait : « En bref »,
+année de construction, carte en mode commune.
 
 ### Source : API de l'ADEME, en direct, sans import
 

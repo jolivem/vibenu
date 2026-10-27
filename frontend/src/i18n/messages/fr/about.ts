@@ -86,6 +86,16 @@ export const about = {
         desc: "Loyers d'annonce au m², charges comprises, par commune et par type de bien (Carte des loyers), estimés sur un groupe de communes voisines quand les annonces manquent.",
       },
       {
+        name: "Zone tendue",
+        issuer: "Ministère de la Transition écologique",
+        desc: "Zonage des communes (zone tendue, zone touristique et tendue), qui décide du préavis du locataire et du plafonnement du loyer à la relocation.",
+      },
+      {
+        name: "Performance énergétique",
+        issuer: "ADEME",
+        desc: "Diagnostics de performance énergétique (DPE) des logements, réalisés depuis juillet 2021 : les diagnostics de l'adresse, un par logement (sans étage ni porte), et la répartition des étiquettes dans la commune.",
+      },
+      {
         name: "Fiscalité locale",
         issuer: "DGFiP · data.economie.gouv.fr",
         desc: "Taux de taxe foncière et d'ordures ménagères, résidences secondaires, droits de mutation et comptes des communes.",

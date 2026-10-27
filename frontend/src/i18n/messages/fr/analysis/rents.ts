@@ -1,4 +1,5 @@
-import type { RentLevelDto, RentTypeDto } from "@/types/location-analysis";
+import type { RentLevelDto, RentTypeDto, RentZoningDto } from "@/types/location-analysis";
+import type { Rich } from "../../../types";
 import { createFormat } from "../../../format";
 
 const f = createFormat("fr");
@@ -44,6 +45,44 @@ export const rents = {
   /** Légende d'une classe de la carte : « 18 – 20 ». */
   classLabel: (low: number | null, high: number | null) =>
     low === null ? `moins de ${f.decimal(high!, 1)}` : high === null ? `${f.decimal(low, 1)} et plus` : `${f.decimal(low, 1)} – ${f.decimal(high, 1)}`,
+  /**
+   * Zonage « zone tendue ». Seule la catégorie `tendue` entraîne les règles de location ; la
+   * « zone touristique et tendue » ne change que la fiscalité (ANIL, service-public.gouv.fr).
+   * L'encadrement du NIVEAU des loyers (Paris, Lyon, Lille…) est un autre dispositif, non
+   * traité ici.
+   */
+  zone: {
+    /** Dans le détail de la card, sous les exemples en euros. */
+    summary: {
+      tendue: [
+        { strong: "Commune en zone tendue." },
+        " En location vide, le préavis du locataire est d'un mois au lieu de trois. À la relocation, " +
+          "le loyer ne peut pas dépasser celui du locataire précédent.",
+      ],
+      touristique: [
+        { strong: "Commune en zone touristique et tendue." },
+        " Seule la fiscalité change : taxe sur les logements vacants, majoration possible de la taxe " +
+          "d'habitation des résidences secondaires. Le préavis réduit et le plafonnement du loyer à la " +
+          "relocation ne s'y appliquent pas.",
+      ],
+      non: [
+        { strong: "Commune hors zone tendue." },
+        " Le préavis réduit et le plafonnement du loyer à la relocation ne s'y appliquent pas.",
+      ],
+    } satisfies Record<RentZoningDto, Rich>,
+    /** Détail de la zone tendue : conditions et exceptions. */
+    tendueDetail: (until: string) =>
+      "Le préavis réduit se demande dans la lettre de congé. Le loyer peut dépasser l'ancien à la " +
+      "première mise en location, après plus de 18 mois sans locataire, après des travaux importants " +
+      `ou si l'ancien loyer était manifestement sous-évalué. Règle reconduite jusqu'au ${f.dateLong(until)}.`,
+    source: (decret: string) => `Zonage du décret du ${f.dateLong(decret)}, publié par le ministère de la Transition écologique.`,
+    pdfLabel: "Zone tendue",
+    pdf: {
+      tendue: "oui : préavis d'un mois en location vide, loyer plafonné à la relocation",
+      touristique: "zone touristique et tendue : fiscalité seulement, pas les règles de location",
+      non: "non",
+    } satisfies Record<RentZoningDto, string>,
+  },
   /** Fiche PDF. */
   pdfLabel: "Loyers",
   pdfLine: (app: number, app12: number | null, app3: number | null, maison: number | null) =>

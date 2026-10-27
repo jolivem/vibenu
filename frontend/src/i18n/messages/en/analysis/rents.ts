@@ -36,6 +36,35 @@ export const rents: RentsMessages = {
   mapAria: "Map of flat rents in the surrounding communes",
   classLabel: (low, high) =>
     low === null ? `under ${f.decimal(high!, 1)}` : high === null ? `${f.decimal(low, 1)} and over` : `${f.decimal(low, 1)} – ${f.decimal(high, 1)}`,
+  zone: {
+    summary: {
+      tendue: [
+        { strong: "Commune in a high-demand housing area (zone tendue)." },
+        " For an unfurnished let, the tenant's notice period is one month instead of three. When the home is " +
+          "re-let, the rent cannot exceed the previous tenant's.",
+      ],
+      touristique: [
+        { strong: "Commune in a tourist high-demand area (zone touristique et tendue)." },
+        " Only taxation changes: tax on vacant dwellings, possible surcharge on the second-home council tax. " +
+          "The shorter notice period and the cap on rent when re-letting do not apply.",
+      ],
+      non: [
+        { strong: "Commune outside the high-demand housing area." },
+        " The shorter notice period and the cap on rent when re-letting do not apply.",
+      ],
+    },
+    tendueDetail: (until) =>
+      "The shorter notice must be claimed in the tenant's notice letter. The rent may exceed the previous one " +
+      "for a first let, after more than 18 months without a tenant, after major works, or if the previous rent " +
+      `was clearly below market. Rule renewed until ${f.dateLong(until)}.`,
+    source: (decret) => `Zoning from the decree of ${f.dateLong(decret)}, published by the Ministry for the Ecological Transition.`,
+    pdfLabel: "High-demand area",
+    pdf: {
+      tendue: "yes: one-month notice for unfurnished lets, rent capped when re-letting",
+      touristique: "tourist high-demand area: taxation only, not the letting rules",
+      non: "no",
+    },
+  },
   pdfLabel: "Rents",
   pdfLine: (app, app12, app3, maison) =>
     `Flats ${perM2(app)}` +

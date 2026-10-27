@@ -1,4 +1,5 @@
 import { query } from "../../../server-shared/infrastructure/database/postgres";
+import { communeMere } from "../../../server-shared/domain/commune-code";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 import {
   RENT_TYPES,
@@ -7,6 +8,8 @@ import {
   type RentIndicator,
   type RentLevel,
   type RentType,
+  type RentZoneTendue,
+  type RentZoning,
 } from "../domain/rents.types";
 import type { RentsProvider } from "./rents.provider";
 
@@ -51,6 +54,11 @@ interface AreaRow {
   geojson: string;
 }
 
+interface ZoneRow {
+  zonage: RentZoning;
+  decret: string;
+}
+
 const num = (v: string | null): number | null => (v === null ? null : Number(v));
 
 export class RentsDatabaseProvider implements RentsProvider {
@@ -91,18 +99,39 @@ export class RentsDatabaseProvider implements RentsProvider {
         }];
       });
 
-      const alentour = await this.readAreas(codeInsee, annee, lat, lon);
+      const [alentour, zoneTendue] = await Promise.all([
+        this.readAreas(codeInsee, annee, lat, lon),
+        this.readZoneTendue(codeInsee),
+      ]);
       const result: RentAnalysis = {
         codeCommune: codeInsee,
         nomCommune: rows[0].nom,
         annee,
         indicateurs,
         alentour,
+        zoneTendue,
       };
       RentsDatabaseProvider.cache.set(cacheKey, result);
       return result;
     } catch (error) {
       console.warn("RentsDatabaseProvider error:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Zonage de la commune. Le fichier ne connaît que les villes entières : un arrondissement
+   * prend le classement de sa ville. `null` en cas d'échec : la card reste.
+   */
+  private async readZoneTendue(codeInsee: string): Promise<RentZoneTendue | null> {
+    try {
+      const rows = await query<ZoneRow>(
+        `SELECT zonage, to_char(decret, 'YYYY-MM-DD') AS decret FROM rent_zone_tendue WHERE code_commune = $1`,
+        [communeMere(codeInsee).code],
+      );
+      return rows[0] ? { zonage: rows[0].zonage, decret: rows[0].decret } : null;
+    } catch (error) {
+      console.warn("RentsDatabaseProvider zone tendue error:", error);
       return null;
     }
   }
