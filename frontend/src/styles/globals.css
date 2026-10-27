@@ -4069,3 +4069,9 @@ html {
     margin-left: 8px;
   }
 }
+
+/* Card Immobilier : l'exemple chiffré colle à la médiane qu'il traduit. */
+.real-estate-example {
+  margin-top: -8px;
+  color: var(--muted);
+}

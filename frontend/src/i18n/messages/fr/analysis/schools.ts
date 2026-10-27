@@ -143,9 +143,14 @@ export const schools = {
   /** Lycée professionnel : insertion des sortants. */
   insertion: (taux: number, annee: number) => `${f.decimal(taux, 0)} % en emploi 6 mois après la sortie (${annee})`,
   links: { onisep: "Fiche ONISEP" },
-  /** Pied de card : la source seule, les termes étant définis au-dessus du tableau. */
+  /**
+   * Pied de card : la source, puis l'exclusion du privé hors contrat — sans elle, le lecteur
+   * qui compte trois lycées ici et quatre dans « Équipements de la commune » (BPE de
+   * l'INSEE, qui les inclut) croit à une erreur.
+   */
   note: (level: "college" | "lycee") =>
-    `${level === "college" ? "Réussite au brevet" : "Réussite au baccalauréat"}, valeur ajoutée et indice de position sociale (IPS) : ministère de l'Éducation nationale (DEPP), dernière session publiée.`,
+    `${level === "college" ? "Réussite au brevet" : "Réussite au baccalauréat"}, valeur ajoutée et indice de position sociale (IPS) : ministère de l'Éducation nationale (DEPP), dernière session publiée. ` +
+    "Les établissements privés hors contrat ne sont pas listés : le ministère ne publie aucun résultat pour eux.",
   /** Fiche PDF : une ligne par établissement, les plus proches. */
   /** `lieu` : la distance en mode adresse, la commune voisine en mode commune, rien sinon. */
   pdfLine: (nom: string, lieu: string | null, reussite: number | null, va: number | null) =>

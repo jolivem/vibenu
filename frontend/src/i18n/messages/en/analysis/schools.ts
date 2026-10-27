@@ -123,7 +123,8 @@ export const schools: SchoolsMessages = {
   insertion: (taux, annee) => `${f.decimal(taux, 0)}% in work 6 months after leaving (${annee})`,
   links: { onisep: "ONISEP page" },
   note: (level) =>
-    `${level === "college" ? "Brevet pass rate" : "Baccalauréat pass rate"}, value added and social position index (SPI): French Ministry of Education (DEPP), latest published session.`,
+    `${level === "college" ? "Brevet pass rate" : "Baccalauréat pass rate"}, value added and social position index (SPI): French Ministry of Education (DEPP), latest published session. ` +
+    "Private schools without a state contract are not listed: the Ministry publishes no results for them.",
   pdfLine: (nom, lieu, reussite, va) =>
     nom +
     (lieu ? ` — ${lieu}` : "") +
