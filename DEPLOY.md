@@ -14,7 +14,7 @@ cd clairimmo
 cd ~/github/clairimmo
 source frontend/.env
 pg_dump -Fc --no-owner --no-acl --schema=public \
-  -f clairimmo_$(date +%Y%m%d).dump "$POSTGRES_URL"
+  -f claire_adresse.dump "$POSTGRES_URL"
 
 # ou en pointant explicitement
 pg_dump --host=localhost --port=5432 --username=bienvu \
