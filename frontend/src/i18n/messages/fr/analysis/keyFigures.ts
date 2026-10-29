@@ -48,7 +48,7 @@ export const keyFigures = {
     mauvais: "Nettement moins bonne que les communes de même taille",
   } satisfies Record<SecurityRating, string> as Record<SecurityRating, string>,
   /** Fiche PDF : tuile ajoutée après le prix. */
-  surfaceLabel: "Surface",
+  surfaceLabel: "Surface de la parcelle",
 };
 
 export type KeyFiguresMessages = typeof keyFigures;

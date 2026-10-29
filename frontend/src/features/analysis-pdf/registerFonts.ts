@@ -11,3 +11,7 @@ Font.register({
     { src: `${origin}/fonts/Fraunces-Medium.ttf`, fontWeight: 500 },
   ],
 });
+
+// Pas de coupure de mots : react-pdf suit des règles anglaises, qui donnaient
+// « AP-PARTEMENT » dans les libellés des tuiles. Un mot trop long passe à la ligne entier.
+Font.registerHyphenationCallback((word) => [word]);

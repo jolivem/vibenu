@@ -80,25 +80,34 @@ const s = StyleSheet.create({
   badgeLine: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 5, marginTop: 3 },
   badgeText: { fontSize: 9, color: COLORS.text },
   badgeMuted: { fontSize: 8.5, color: COLORS.muted },
+  // Grille de trois colonnes : six tuiles sur une ligne coupaient les libellés en deux et
+  // étiraient la note de sécurité sur huit lignes.
   figures: {
     flexDirection: "row",
-    borderTopWidth: 0.75,
-    borderBottomWidth: 0.75,
-    borderColor: COLORS.hairlineStrong,
-    paddingVertical: 8,
-    marginBottom: 10,
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 12,
   },
-  figure: { flex: 1, paddingHorizontal: 8 },
-  figureBordered: { borderLeftWidth: 0.5, borderLeftColor: COLORS.hairline },
+  figure: {
+    width: "32%",
+    // Un liseret plutôt qu'un fond : pas d'encre pour rien à l'impression.
+    borderWidth: 0.75,
+    borderColor: COLORS.hairlineStrong,
+    borderRadius: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
   figureLabel: {
     fontFamily: FONTS.sansBold,
     fontSize: 7,
-    letterSpacing: 1,
+    letterSpacing: 0.6,
     textTransform: "uppercase",
-    color: COLORS.mutedSoft,
-    marginBottom: 3,
+    color: COLORS.muted,
+    marginBottom: 4,
   },
-  figureValue: { fontFamily: FONTS.serif, fontSize: 13, color: COLORS.text },
+  figureValue: { fontFamily: FONTS.serif, fontSize: 14, color: COLORS.text, lineHeight: 1.2 },
+  /** Une phrase plutôt qu'un chiffre (la note de sécurité) : plus petite, pour tenir en deux lignes. */
+  figureValueLong: { fontSize: 10.5, lineHeight: 1.3 },
 });
 
 /** Couleurs des pastilles `.zone-badge--*`, que le PDF ne lit pas dans la feuille de style. */
@@ -159,15 +168,20 @@ function Block({
 
 // ─── En-tête ────────────────────────────────────────────────────────────────────────────
 
+/** Au-delà, la valeur d'une tuile est une phrase : « 4 937 €/m² » en a 10, la note de sécurité 50. */
+const LONG_FIGURE_VALUE = 20;
+
 /** Les tuiles du bandeau de l'écran (`buildKeyFigures`), plus d'éventuels chiffres propres au papier. */
 export function PdfKeyFigures({ figures }: { figures: Array<Pick<KeyFigure, "label" | "value">> }) {
   if (figures.length === 0) return null;
   return (
     <View style={s.figures} wrap={false}>
-      {figures.map((figure, i) => (
-        <View key={figure.label} style={[s.figure, i > 0 ? s.figureBordered : {}]}>
+      {figures.map((figure) => (
+        <View key={figure.label} style={s.figure}>
           <Text style={s.figureLabel}>{figure.label}</Text>
-          <Text style={s.figureValue}>{pdfSafe(figure.value)}</Text>
+          <Text style={[s.figureValue, figure.value.length > LONG_FIGURE_VALUE ? s.figureValueLong : {}]}>
+            {pdfSafe(figure.value)}
+          </Text>
         </View>
       ))}
     </View>
