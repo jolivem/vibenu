@@ -278,6 +278,10 @@ python import_dvf.py
 # À jouer AVANT import_insee_iris.py : les contours définissent quels IRIS existent.
 python import_iris.py
 
+# Revenu médian et taux de pauvreté officiels des communes et de la France (Filosofi 2021,
+# ~16 Mo) — remplacent la moyenne des IRIS dans les repères commune et France
+python import_filosofi_reference.py
+
 # Enrichir les IRIS : logement, emploi & qualifications, ménages — ~30 s
 # (~105 Mo de ZIP INSEE, mis en cache dans scripts/data/insee/)
 python import_insee_iris.py
@@ -446,6 +450,13 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - Variables : population, densité, tranches d'âge, revenu médian, taux de pauvreté,
   statut d'occupation, vacance, pièces, époque de construction, chômage, CSP, diplômes,
   composition des ménages
+- **Repères commune et France du revenu et de la pauvreté** : les valeurs publiées par l'INSEE
+  ([Filosofi 2021, base communes](https://www.insee.fr/fr/statistiques/7756729)), importées par
+  `scripts/import_filosofi_reference.py` dans `filosofi_reference` (migration 027). La vue
+  `insee_aggregate` en faisait la moyenne des IRIS, ce qui donnait 18,8 % de pauvreté et
+  23 323 € pour la France, quand l'INSEE publie 14,9 % et 23 080 € (France métropolitaine)
+- **Chômage** : au sens du recensement (déclaratif, 15-64 ans), environ 12 % en France ; ce
+  n'est pas le taux du BIT (environ 7 %)
 - Licence : Licence Ouverte Etalab 2.0
 - Mise à jour : annuelle
 
@@ -587,6 +598,7 @@ claireadresse/
 │   ├── import_bpe.py        # Import BPE INSEE → PostgreSQL
 │   ├── import_dvf.py        # Import DVF géolocalisé → PostgreSQL
 │   ├── import_iris.py       # Import INSEE IRIS (contours, démographie, revenus)
+│   ├── import_filosofi_reference.py # Revenu et pauvreté officiels des communes et de la France
 │   ├── import_insee_iris.py # Enrichissement IRIS : logement, emploi, ménages
 │   ├── import_elections.py  # Import Présidentielle 2022 T1 (agrégation par commune)
 │   ├── import_municipales.py         # Import Municipales 2026 (T1 + T2)

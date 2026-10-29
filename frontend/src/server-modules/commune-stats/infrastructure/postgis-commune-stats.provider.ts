@@ -318,16 +318,20 @@ export class PostgisCommuneStatsProvider {
    * des ~50 000 IRIS pour la France — devient un lookup par clé primaire. Surtout, il
    * n'existe plus qu'une seule définition de « l'agrégat commune » dans le code.
    *
-   * Nuance héritée du passage à la vue : le revenu et le taux de pauvreté y sont
-   * pondérés par la population des seuls IRIS renseignés, et non par la population
-   * totale. C'est la bonne pondération — Filosofi masque les IRIS trop peu peuplés, et
-   * les compter au dénominateur tirait la moyenne vers le bas.
+   * Revenu et taux de pauvreté : la valeur que l'INSEE publie pour le périmètre
+   * (`filosofi_reference`, migration 027), et non la moyenne de ses IRIS que porte la vue
+   * — un revenu médian ne se moyenne pas. La moyenne ne sert plus que si la table n'est
+   * pas importée.
    */
   private async queryDemographicsScope(scopeCode: string): Promise<DemographicsStats | null> {
     const rows = await query<DemoRow>(
-      `SELECT population, pop_0_14, pop_15_29, pop_30_44, pop_45_59, pop_60_74,
-              pop_75_plus, revenu_median, taux_pauvrete
-       FROM insee_aggregate WHERE scope_code = $1`,
+      `SELECT a.population, a.pop_0_14, a.pop_15_29, a.pop_30_44, a.pop_45_59, a.pop_60_74,
+              a.pop_75_plus,
+              CASE WHEN f.code IS NULL THEN a.revenu_median ELSE f.revenu_median END AS revenu_median,
+              CASE WHEN f.code IS NULL THEN a.taux_pauvrete ELSE f.taux_pauvrete END AS taux_pauvrete
+       FROM insee_aggregate a
+       LEFT JOIN filosofi_reference f ON f.code = a.scope_code
+       WHERE a.scope_code = $1`,
       [scopeCode],
     );
 

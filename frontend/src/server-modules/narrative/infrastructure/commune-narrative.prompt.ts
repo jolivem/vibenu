@@ -89,8 +89,12 @@ import {
  * v18 : nouvelle légende `legende_loyers` sous la card Location, face à la card Achat :
  * loyers d'annonce de l'arrondissement face à la moyenne de la ville (`loyers`), et le
  * contraste avec la position des prix d'achat quand elle diffère.
+ *
+ * v19 : revenu médian et pauvreté repris des valeurs publiées par l'INSEE (migration 027), et
+ * prix DVF sur cinq ans, vente par vente : les textes en cache citent les anciens chiffres
+ * (« 33 515 € » pour Paris 15e au lieu de 32 780 €). Le prompt ne change pas.
  */
-export const COMMUNE_PROMPT_VERSION = 18;
+export const COMMUNE_PROMPT_VERSION = 19;
 
 export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement (Paris, Lyon ou Marseille) pour un site d'analyse immobilière.
 Ton : clair, factuel, ni promotionnel ni alarmiste.

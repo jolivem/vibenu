@@ -56,8 +56,12 @@ import type { Locale } from "@/i18n/locales";
  * valeur publiée : un ancien 0 passait pour la valeur d'une année masquée, et le modèle
  * écrivait « inexistants » ; années masquées et zéros arrivent en état rédigé, et
  * `faits_rares` signale les petites communes où ils dominent.
+ *
+ * v12 : revenu médian et taux de pauvreté de la commune et de la France repris des valeurs
+ * publiées par l'INSEE (migration 027) ; les phrases écrites sur l'ancien repère (18,8 % de
+ * pauvreté en France au lieu de 14,9 %) doivent être réécrites. Le prompt ne change pas.
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 11;
+export const CARD_INSIGHTS_PROMPT_VERSION = 12;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;

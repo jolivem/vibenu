@@ -109,7 +109,7 @@ export function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] 
   if (stats.demo.revenuMedianPondere) {
     items.push({
       question: `Quel est le revenu médian à ${nomCourt} ?`,
-      answer: `Le revenu médian estimé à ${nomCourt} est de ${formatEur(stats.demo.revenuMedianPondere)} (moyenne pondérée des médianes IRIS, source INSEE Filosofi).`,
+      answer: `Le revenu médian à ${nomCourt} est de ${formatEur(stats.demo.revenuMedianPondere)} par unité de consommation (INSEE, Filosofi 2021).`,
     });
   }
 

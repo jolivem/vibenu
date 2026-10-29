@@ -51,7 +51,7 @@ export function CommuneAgeCard({ stats, nomCourt, legendes }: Props) {
           <span className="commune-stat-value">{formatInt(demo.populationTotale)}</span>
         </div>
         <div className="commune-stat">
-          <span className="commune-stat-label">Revenu médian estimé</span>
+          <span className="commune-stat-label">Revenu médian</span>
           <span className="commune-stat-value">{formatEur(demo.revenuMedianPondere)}</span>
           {demoFrance?.revenuMedianPondere && (
             <span className="commune-stat-meta">

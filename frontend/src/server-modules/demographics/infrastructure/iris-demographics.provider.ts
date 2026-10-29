@@ -113,14 +113,22 @@ const SQL = `
       || CASE WHEN l.code_iris IS NULL THEN '{}'::jsonb ELSE to_jsonb(l) - 'code_iris' END
       || CASE WHEN e.code_iris IS NULL THEN '{}'::jsonb ELSE to_jsonb(e) - 'code_iris' END
       || CASE WHEN m.code_iris IS NULL THEN '{}'::jsonb ELSE to_jsonb(m) - 'code_iris' END AS iris,
-    CASE WHEN ac.scope_code IS NULL THEN NULL ELSE to_jsonb(ac) END AS commune,
-    CASE WHEN af.scope_code IS NULL THEN NULL ELSE to_jsonb(af) END AS france
+    -- Revenu et pauvreté : la valeur publiée par l'INSEE (filosofi_reference) quand la table
+    -- est importée, et non la moyenne des IRIS de la vue (migration 027).
+    CASE WHEN ac.scope_code IS NULL THEN NULL
+         WHEN fc.code IS NULL THEN to_jsonb(ac)
+         ELSE to_jsonb(ac) || jsonb_build_object('revenu_median', fc.revenu_median, 'taux_pauvrete', fc.taux_pauvrete) END AS commune,
+    CASE WHEN af.scope_code IS NULL THEN NULL
+         WHEN ff.code IS NULL THEN to_jsonb(af)
+         ELSE to_jsonb(af) || jsonb_build_object('revenu_median', ff.revenu_median, 'taux_pauvrete', ff.taux_pauvrete) END AS france
   FROM iris i
   LEFT JOIN iris_logement    l ON l.code_iris = i.code_iris
   LEFT JOIN iris_emploi      e ON e.code_iris = i.code_iris
   LEFT JOIN iris_menages     m ON m.code_iris = i.code_iris
   LEFT JOIN insee_aggregate ac ON ac.scope_code = LEFT(i.code_iris, 5)
   LEFT JOIN insee_aggregate af ON af.scope_code = 'FRANCE'
+  LEFT JOIN filosofi_reference fc ON fc.code = LEFT(i.code_iris, 5)
+  LEFT JOIN filosofi_reference ff ON ff.code = 'FRANCE'
 `;
 
 export class IrisDemographicsProvider implements DemographicsProvider {
