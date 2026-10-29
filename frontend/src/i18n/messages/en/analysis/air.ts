@@ -85,7 +85,6 @@ export const air: AirMessages = {
   insightRuralSource: (km) => `measured at a rural station ${km} km away, as there is none closer`,
   insightWhoGuideline: "WHO guideline",
   insightEuTarget: "EU target value",
-  pdfLabel: "Air quality",
   pdfAnnual: (code, v, unit, kind, ratio, trend) =>
     `${shortPollutants[code]} ${value(v, unit)} (${referenceLine(kind, ratio)}` +
     (trend ? `, ${signedPercent(trend.change)} since ${trend.from})` : ")"),

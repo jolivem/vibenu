@@ -728,22 +728,26 @@ export function PdfEnvironnementFiche({
           </Fact>
         </View>
       )}
-      {airQuality && airQuality.annual.length > 0 && <PdfInsight text={airInsight} />}
+      {/* Un intertitre comme le climat : la qualité de l'air est une card à part à l'écran. */}
       {airQuality && airQuality.annual.length > 0 && (
-        <Fact label={airMessages.pdfLabel}>
-          {join(
-            airQuality.annual.map((s) =>
-              airMessages.pdfAnnual(
-                s.code,
-                s.value,
-                s.unit,
-                s.referenceKind,
-                referenceRatio(s.value, s.reference),
-                airTrend(s.history),
+        <View>
+          <Sub>{airMessages.title}</Sub>
+          <PdfInsight text={airInsight} />
+          <Fact>
+            {join(
+              airQuality.annual.map((s) =>
+                airMessages.pdfAnnual(
+                  s.code,
+                  s.value,
+                  s.unit,
+                  s.referenceKind,
+                  referenceRatio(s.value, s.reference),
+                  airTrend(s.history),
+                ),
               ),
-            ),
-          )}
-        </Fact>
+            )}
+          </Fact>
+        </View>
       )}
     </Block>
   );

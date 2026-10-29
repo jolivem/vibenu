@@ -107,7 +107,6 @@ export const air = {
   insightWhoGuideline: "valeur guide OMS",
   insightEuTarget: "valeur cible européenne",
   /** Fiche PDF. */
-  pdfLabel: "Qualité de l'air",
   pdfAnnual: (
     code: AnnualPollutantCode,
     v: number,
