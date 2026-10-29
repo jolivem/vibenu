@@ -201,7 +201,7 @@ function boxDegrees(lat: number, radiusMeters: number): number {
   return (radiusMeters / (111_320 * cos)) * 1.1;
 }
 
-type PoiRow = { name: string | null; category: string; distance_meters: number; source: string };
+type PoiRow = { name: string | null; category: string; distance_meters: number; source: string; lon: number; lat: number };
 
 type DedupedPoi = {
   name: string;
@@ -209,7 +209,16 @@ type DedupedPoi = {
   category: PoiCategory;
   distance: number;
   source: string;
+  lon: number;
+  lat: number;
 };
+
+/** Distance entre deux lieux, en mètres (approximation locale, suffisante à 100 m). */
+function metersBetween(a: { lon: number; lat: number }, b: { lon: number; lat: number }): number {
+  const dy = (b.lat - a.lat) * 111_320;
+  const dx = (b.lon - a.lon) * 111_320 * Math.cos((a.lat * Math.PI) / 180);
+  return Math.hypot(dx, dy);
+}
 
 /** Plafonds de la liste affichée. Sans plafonds, le dédoublonnage sert aux comptages. */
 type DedupeCaps = { schoolTotal: number; schoolPerLevel: number; perCategory: number };
@@ -234,8 +243,10 @@ function dedupePois(rows: PoiRow[], caps: DedupeCaps | null, trace?: string[]): 
   const candidates: DedupedPoi[] = [];
   const countByCategory: Record<string, number> = {};
   const countBySchoolLevel: Record<string, number> = {};
-  const seenNames: Set<string> = new Set();
-  const keptByCategory: Record<string, { normalizedName: string; distance: number; subtype: string; tokens: Set<string> }[]> = {};
+  const keptByCategory: Record<
+    string,
+    { normalizedName: string; distance: number; subtype: string; tokens: Set<string>; source: string; lon: number; lat: number }[]
+  > = {};
 
   for (const row of rows) {
     if (!VALID_CATEGORIES.has(row.category)) continue;
@@ -268,39 +279,40 @@ function dedupePois(rows: PoiRow[], caps: DedupeCaps | null, trace?: string[]): 
     // For schools, scope the dedup by level: a Collège Buffon and Lycée Buffon
     // are physically distinct establishments even when they share a campus and name.
     const subtype = schoolLevel ?? "";
-    const nameKey = `${row.category}:${subtype}:${normalized}`;
-    if (normalized && seenNames.has(nameKey)) {
-      if (trace && row.category === "school") trace.push(`SKIP (seen ${nameKey}): ${row.source} ${row.name} @${dist}m`);
-      continue;
-    }
+    const here = { lon: Number(row.lon), lat: Number(row.lat) };
 
+    /*
+     * Deux fiches sont le même lieu si elles sont proches L'UNE DE L'AUTRE — et non à la même
+     * distance de l'adresse : l'ancienne règle comparait les distances au centre, et fusionnait
+     * deux médecins à 200 et 230 m dans des rues opposées (2 médecins comptés à 500 m du
+     * 11 rue de l'Église, Paris 15e, pour 22 dans la BPE ; contrôle du 29/10/2026).
+     * Et seulement d'une source à l'autre (BPE et OSM décrivant le même cabinet) : dans une
+     * même source, deux fiches sont deux équipements, sauf même nom au même endroit.
+     */
     const kept = keptByCategory[row.category] ?? [];
     const tokens = significantTokens(normalized);
     const isDuplicateNearby = kept.some((k) => {
       if (k.subtype !== subtype) return false;
-      const distDiff = Math.abs(k.distance - dist);
-      if (distDiff <= PROXIMITY_DEDUPE_METERS) {
-        // Tight proximity + same subtype: very likely same POI.
+      const apart = metersBetween(k, here);
+      const sameName = Boolean(normalized) && k.normalizedName === normalized;
+      if (k.source === row.source) return sameName && apart <= PROXIMITY_DEDUPE_METERS;
+      if (apart <= PROXIMITY_DEDUPE_METERS) {
         if (!normalized || !k.normalizedName) return true;
-        if (k.normalizedName === normalized) return true;
+        if (sameName) return true;
         if (k.normalizedName.includes(normalized) || normalized.includes(k.normalizedName)) return true;
         if (sharesSignificantToken(tokens, k.tokens)) return true;
         return false;
       }
-      // Wider window: only dedup if names share a discriminating token (handles
-      // same establishment described differently in BPE vs OSM).
-      if (distDiff <= TOKEN_PROXIMITY_METERS && sharesSignificantToken(tokens, k.tokens)) {
-        return true;
-      }
-      return false;
+      // Fenêtre plus large : seulement si les noms partagent un mot distinctif (même
+      // établissement décrit autrement dans la BPE et dans OSM).
+      return apart <= TOKEN_PROXIMITY_METERS && sharesSignificantToken(tokens, k.tokens);
     });
     if (isDuplicateNearby) {
       if (trace && row.category === "school") trace.push(`SKIP (proximity): ${row.source} ${row.name} @${dist}m subtype=${subtype}`);
       continue;
     }
 
-    if (normalized) seenNames.add(nameKey);
-    kept.push({ normalizedName: normalized, distance: dist, subtype, tokens });
+    kept.push({ normalizedName: normalized, distance: dist, subtype, tokens, source: row.source, ...here });
     keptByCategory[row.category] = kept;
     countByCategory[row.category] = count + 1;
     if (schoolLevel) {
@@ -314,6 +326,7 @@ function dedupePois(rows: PoiRow[], caps: DedupeCaps | null, trace?: string[]): 
       category: row.category as PoiCategory,
       distance: dist,
       source: row.source,
+      ...here,
     });
   }
 
@@ -329,7 +342,7 @@ function dedupePois(rows: PoiRow[], caps: DedupeCaps | null, trace?: string[]): 
       const b = candidates[j];
       if (!b.normalizedName) continue;
       if (a.category === b.category) continue;
-      if (Math.abs(a.distance - b.distance) > CROSS_CATEGORY_DEDUPE_METERS) continue;
+      if (metersBetween(a, b) > CROSS_CATEGORY_DEDUPE_METERS) continue;
       if (a.normalizedName !== b.normalizedName) continue;
 
       const aPriority = SOURCE_PRIORITY[a.source] ?? 99;
@@ -363,8 +376,9 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
 
   // Bump when dedup/cap logic changes to invalidate stale entries.
   // v6 : ajout de la recherche élargie (soins, niveaux scolaires) hors du rayon.
-  private static readonly CACHE_VERSION = "v6";
-  private static readonly COUNTS_CACHE_VERSION = "counts-v1";
+  // v7 / counts-v2 : dédoublonnage sur la distance entre les lieux (et non à l'adresse).
+  private static readonly CACHE_VERSION = "v7";
+  private static readonly COUNTS_CACHE_VERSION = "counts-v2";
 
   async findNearbyPois(lat: number, lon: number, radiusMeters: number): Promise<NeighborhoodPoi[]> {
     const cacheKey = `${CombinedNeighborhoodProvider.CACHE_VERSION}:${buildGeoKey(lat, lon)}:${radiusMeters}`;
@@ -375,13 +389,14 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
       // Take top 25 per category (per source) so dense areas don't starve sparser
       // categories like schools — needed to find lycées behind many bakeries/banks.
       const rows = await query<PoiRow>(
-        `SELECT name, category, distance_meters, source
+        `SELECT name, category, distance_meters, source, lon, lat
          FROM (
-           SELECT name, category, distance_meters, source,
+           SELECT name, category, distance_meters, source, lon, lat,
                   ROW_NUMBER() OVER (PARTITION BY category, source ORDER BY distance_meters ASC, name) AS rn
            FROM (
              SELECT name, category,
                     ST_Distance(geom::geography, ST_MakePoint($1, $2)::geography) AS distance_meters,
+                    ST_X(ST_PointOnSurface(geom)) AS lon, ST_Y(ST_PointOnSurface(geom)) AS lat,
                     'osm' AS source
              FROM osm_pois
              WHERE geom && ST_Expand(ST_SetSRID(ST_MakePoint($1, $2), 4326), $4)
@@ -389,6 +404,7 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
              UNION ALL
              SELECT name, category,
                     ST_Distance(geom::geography, ST_MakePoint($1, $2)::geography) AS distance_meters,
+                    ST_X(ST_PointOnSurface(geom)) AS lon, ST_Y(ST_PointOnSurface(geom)) AS lat,
                     'bpe' AS source
              FROM bpe_equipment
              WHERE geom && ST_Expand(ST_SetSRID(ST_MakePoint($1, $2), 4326), $4)
@@ -447,9 +463,10 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
 
     try {
       const rows = await query<PoiRow>(
-        `SELECT name, category, distance_meters, source FROM (
+        `SELECT name, category, distance_meters, source, lon, lat FROM (
            SELECT name, category,
                   ST_Distance(geom::geography, ST_MakePoint($1, $2)::geography) AS distance_meters,
+                  ST_X(ST_PointOnSurface(geom)) AS lon, ST_Y(ST_PointOnSurface(geom)) AS lat,
                   'osm' AS source
              FROM osm_pois
             WHERE category = ANY($5)
@@ -458,6 +475,7 @@ export class CombinedNeighborhoodProvider implements NeighborhoodProvider {
            UNION ALL
            SELECT name, category,
                   ST_Distance(geom::geography, ST_MakePoint($1, $2)::geography) AS distance_meters,
+                  ST_X(ST_PointOnSurface(geom)) AS lon, ST_Y(ST_PointOnSurface(geom)) AS lat,
                   'bpe' AS source
              FROM bpe_equipment
             WHERE category = ANY($5)
