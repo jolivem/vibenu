@@ -32,7 +32,7 @@ Les autres sources sont à jour.
 | Fiscalité locale DGFiP | `import_local_tax.py` | importée les 3 et 4 octobre 2026 | inchangé | Non |
 | Carte scolaire de Paris | `import_school_sectors_paris.py` | 770 secteurs | inchangé depuis le 3 mars 2026 | Non |
 | Qualité de l'air, Paris | `import_atmo_paris.py` | années 2021-2025 | inchangé depuis le 11 mars 2026 | Non |
-| Normales climatiques Météo-France | `import_climate_stations.py` | fichiers décadaires `1950-2024` | mêmes fichiers, régénérés sous le même nom | Non |
+| Normales climatiques Météo-France | `import_climate_fiches.py` | fiches climatologiques 1991-2020 (`FICHECLIM_*.data`) | rééditées par Météo-France, mêmes normales jusqu'en 2031 | Non |
 
 Non vérifiés : `import_atmo_lyon.py` et `import_atmo_marseille.py`, qui lisent un fichier déposé à
 la main et non une source en ligne.

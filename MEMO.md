@@ -260,7 +260,7 @@ pnpm --filter claireadresse-backend test
 ### Climat (normales 1991-2020)
 
 - Données quotidiennes Météo-France : https://www.data.gouv.fr/datasets/donnees-climatologiques-de-base-decadaires (1950-2024)
-- Import : `python scripts/import_climate_stations.py` → table `climate_station_normales`
+- Import : `python scripts/import_climate_fiches.py` → tables `climate_station_normales` et `climate_station_monthly_normales` (fiches officielles)
 
 ### Qualité de l'air (indice ATMO annuel — pages SEO commune)
 

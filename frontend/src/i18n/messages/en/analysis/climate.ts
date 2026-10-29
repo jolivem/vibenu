@@ -61,7 +61,7 @@ export const climate: ClimateMessages = {
   stationsNote: (lines) => `Nearest weather stations — ${lines.join(" · ")}.`,
   referenceStationsNote: (pairs) =>
     `Reference cities measured at ${pairs.map((p) => `${p.station} for ${p.city}`).join(", ")}.`,
-  pdfMeasure: (label, value, france) => `${label} ${value} (France ${france})`,
+  pdfMeasure: (label, value, france) => (france ? `${label} ${value} (France ${france})` : `${label} ${value}`),
   pdfFormat: {
     temperatureC: (value) => `${f.fixed(value, 1)} °C`,
     precipitationMm: (value) => `${f.int(value)} mm`,

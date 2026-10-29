@@ -2,12 +2,15 @@
 Climat : le site face aux fiches climatologiques officielles de Météo-France (normales
 1991-2020), publiées station par station sur data.gouv.fr (« Fiches climatologiques »).
 
-Le site calcule ses normales lui-même, à partir des relevés décadaires de la station la plus
-proche. Le journaliste, lui, ouvrirait la fiche officielle. Pour chaque mesure (température
-moyenne, cumul de pluie, durée d'insolation) :
+Le site reprend ces fiches (scripts/import_climate_fiches.py). Le journaliste ouvrirait la fiche
+de la station nommée. Pour chaque mesure (température moyenne, cumul de pluie, durée
+d'insolation) :
 - si la station du site a une fiche officielle, on compare à sa valeur annuelle ;
-- sinon, on donne la valeur de la station officielle la plus proche — ce que le journaliste
-  verrait — en écart de méthode s'il est notable.
+- sinon (base ancienne, importée des relevés décadaires), on donne la valeur de la station
+  officielle la plus proche — ce que le journaliste verrait — en écart de méthode s'il est notable.
+
+Repère France : seule la température a une normale nationale publiée (12,97 °C) ; le site ne
+doit donner aucun repère France pour la pluie ni l'insolation.
 """
 
 import json
@@ -17,6 +20,8 @@ from common import CACHE, ERREUR, METHODE, OK, ARRONDI, A_RELIRE, Check, cached_
 
 BASE = "https://meteofrance.s3.sbg.io.cloud.ovh.net/data/synchro_ftp/REF_STATION"
 PAGE = "https://www.data.gouv.fr/datasets/fiches-climatologiques/"
+FRANCE_TEMPERATURE = 12.97
+FRANCE_SOURCE = "https://meteofrance.com/actualites-et-dossiers/actualites/climat/de-nouvelles-normales-pour-qualifier-le-climat-en-france"
 SECTIONS = {
     "temperature": ("temperatureC", "Température moyenne (Moyenne en °C)", 0.2),
     "precipitation": ("precipitationMm", "Précipitations : Hauteur moyenne mensuelle (mm)", 15),
@@ -92,8 +97,12 @@ def check(addr, analysis: dict) -> list[Check]:
             "le site calcule la normale sur une station sans fiche officielle ; un journaliste lirait la fiche de la station officielle la plus proche",
         ))
     nat = cl.get("national") or {}
-    out.append(Check("Climat", "repères France (température, pluie, soleil)",
-                     f"{nat.get('temperatureC')} °C · {nat.get('precipitationMm')} mm · {nat.get('sunshineHours')} h",
-                     "écrits en dur", A_RELIRE, "https://meteofrance.com/climat",
-                     "valeurs écrites dans reference-climates.ts : vérifier leur source"))
+    t = nat.get("temperatureC")
+    out.append(Check("Climat", "repère France — température", t, FRANCE_TEMPERATURE,
+                     OK if t is not None and abs(t - FRANCE_TEMPERATURE) <= 0.05 else ERREUR, FRANCE_SOURCE,
+                     "normale 1991-2020 de l'indicateur thermique national"))
+    for key in ("precipitationMm", "sunshineHours"):
+        if nat.get(key) is not None:
+            out.append(Check("Climat", f"repère France — {key}", nat[key], "aucune normale nationale publiée",
+                             ERREUR, FRANCE_SOURCE, "chiffre sans source : à retirer"))
     return out

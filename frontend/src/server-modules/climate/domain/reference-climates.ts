@@ -39,14 +39,17 @@ export const REFERENCE_CLIMATES: readonly ReferenceClimate[] = [
 ] as const;
 
 /**
- * Normales France métropolitaine 1991-2020 — valeurs officielles Météo-France
- * (https://meteofrance.com/climat), moyennes spatiales homogénéisées sur tout le
- * territoire, référence WMO.
+ * Normale France métropolitaine 1991-2020 de la température : 12,97 °C, publiée par
+ * Météo-France pour l'indicateur thermique national (« De nouvelles normales pour qualifier
+ * le climat en France » ; reprise dans chaque bilan climatique annuel) :
+ * https://meteofrance.com/actualites-et-dossiers/actualites/climat/de-nouvelles-normales-pour-qualifier-le-climat-en-france
  *
- * Source unique : la card ne les affiche plus, mais le PDF les compare toujours.
+ * Météo-France ne publie pas de normale nationale pour la pluie ni pour l'insolation : les
+ * 935 mm et 1 969 h écrits ici auparavant n'avaient pas de source retrouvable, ils ont été
+ * retirés (29/10/2026). Le PDF donne alors ces deux mesures sans repère.
  */
 export const FRANCE_NORMALES = {
   temperatureC: 13.0,
-  precipitationMm: 935,
-  sunshineHours: 1969,
+  precipitationMm: null,
+  sunshineHours: null,
 } as const;

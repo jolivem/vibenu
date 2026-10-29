@@ -29,11 +29,12 @@ export interface ClimateAnalysis {
   precipitationMm: number | null;
   /** Cumul annuel moyen d'ensoleillement (heures). NULL si station héliographe trop éloignée. */
   sunshineHours: number | null;
-  /** Normales France métropolitaine (référence Météo-France). */
+  /** Normale France métropolitaine (Météo-France) — la température seule. */
   national: {
     temperatureC: number;
-    precipitationMm: number;
-    sunshineHours: number;
+    /** Pas de normale nationale publiée par Météo-France : toujours null. */
+    precipitationMm: number | null;
+    sunshineHours: number | null;
   };
   /** Station Météo-France de référence utilisée pour ces valeurs. */
   station?: {

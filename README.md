@@ -51,7 +51,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `neighborhood` | Commerces et services proches | OSM + BPE INSEE (PostgreSQL/PostGIS) |
 | `demographics` | Données socio-démographiques (population, revenus, âge) | INSEE IRIS (PostgreSQL/PostGIS) |
 | `elections` | Résultats Présidentielle 2022 T1 (commune + agrégat national) | Ministère de l'Intérieur (PostgreSQL) |
-| `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Météo-France — normales par station pré-importées (PostgreSQL/PostGIS) ; moyenne nationale hardcodée |
+| `climate` | Normales climatiques 1991-2020 (température, pluie, soleil) | Météo-France — normales par station pré-importées (PostgreSQL/PostGIS) ; fiches climatologiques officielles ; repère France pour la température seule |
 | `security` | Délinquance enregistrée, 10 ans, maille communale + repères département, communes de même taille (5 tranches de population, calculées à l'import) et France | SSMSI via data.gouv.fr (PostgreSQL) |
 | `energy` | Répartition des étiquettes DPE à l'adresse, dans la commune et en France | API data-fair de l'ADEME, en direct (cache mémoire 7 jours) |
 | `rents` | Loyers d'annonce par commune (appartements tous types, 1-2 pièces, 3 pièces et plus, maisons) et communes alentour pour la carte | « Carte des loyers » ANIL / ministère du Logement (PostgreSQL) ; contours de communes reconstitués depuis les IRIS |
@@ -308,9 +308,9 @@ python import_rents.py
 # Importer le zonage « zone tendue » (ministère de la Transition écologique, 1 CSV ~2 Mo)
 python import_zone_tendue.py
 
-# Importer les normales climatiques Météo-France 1991-2020 — ~10 min
-# Déposer d'abord les *.csv.gz décadaires dans scripts/data/climate/
-python import_climate_stations.py
+# Importer les normales climatiques Météo-France 1991-2020 — fiches officielles, ~1 min
+# (1 574 petits fichiers, mis en cache dans scripts/data/climate/fiches/)
+python import_climate_fiches.py
 
 # Importer les indicateurs annuels des stations françaises sur 10 ans — moyennes NO2 / PM2.5 / PM10, jours de pic d'ozone (EEA, ~2 min, API publique)
 python import_air_quality_eea.py
@@ -456,18 +456,19 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
   `insee_aggregate` en faisait la moyenne des IRIS, ce qui donnait 18,8 % de pauvreté et
   23 323 € pour la France, quand l'INSEE publie 14,9 % et 23 080 € (France métropolitaine)
 - **Chômage** : au sens du recensement (déclaratif, 15-64 ans), environ 12 % en France ; ce
-  n'est pas le taux du BIT (environ 7 %)
+  n'est pas le taux du BIT (7,9 % en 2021) ; le site l'intitule « chômage déclaré (recensement) »
 - Licence : Licence Ouverte Etalab 2.0
 - Mise à jour : annuelle
 
 ### Climat (normales 1991-2020)
-- **Source locale** : [Météo-France — données SYNOP / RR quotidiennes](https://meteo.data.gouv.fr/) agrégées sur 30 ans (1991-2020) par station. Données mesurées réelles (pas de réanalyse), licence Etalab 2.0
-- **Source nationale (référence)** : [Météo-France — Climat](https://meteofrance.com/climat) ; les normales France métropolitaine 1991-2020 sont **hardcodées** dans `frontend/src/server-modules/climate/infrastructure/meteo-france-stations.provider.ts` (13,0 °C / 935 mm / 1969 h). À mettre à jour vers 2031 (nouvelle période de référence WMO 2001-2030)
-- Indicateurs : température annuelle moyenne, cumul annuel de précipitations (mm), ensoleillement annuel (heures)
-- Pré-import dans PostgreSQL via `scripts/import_climate_stations.py` → table `climate_station_normales` (~600 stations, géométrie PostGIS pour la recherche spatiale)
-- **Composition par métrique** : pour un point donné, on prend la station la plus proche **disposant de chaque indicateur**. Toutes les stations ne mesurent pas tout (l'héliographe n'équipe que ~30 stations en France) → rayon élargi pour l'ensoleillement (100 km) vs température/précipitations (30 km). La station affichée est celle de la température (la plus proche en général).
+- **Source locale** : [Météo-France — fiches climatologiques](https://www.data.gouv.fr/datasets/fiches-climatologiques/), une par station (normales officielles 1991-2020). Le site **reprend les valeurs de la fiche** — annuelles et mensuelles — et ne les recalcule pas : un lecteur qui ouvre la fiche de la station nommée retrouve les mêmes chiffres. Licence Etalab 2.0
+- **Seules les stations à fiche officielle** sont en base (1 574, dont 157 avec insolation). L'ancien import, qui calculait ses normales à partir des relevés décadaires sur 2 899 stations, a été retiré le 29/10/2026 : certaines stations n'avaient pas de fiche, ou une insolation sur des années incomplètes (Ambert : 1 054 h)
+- **Repère national** : seule la température a une normale France publiée par Météo-France, 12,97 °C ([De nouvelles normales pour qualifier le climat en France](https://meteofrance.com/actualites-et-dossiers/actualites/climat/de-nouvelles-normales-pour-qualifier-le-climat-en-france)), écrite dans `climate/domain/reference-climates.ts`. Pas de repère France pour la pluie ni l'insolation (aucune normale nationale publiée). À mettre à jour vers 2031 (période 2001-2030)
+- Indicateurs : température annuelle moyenne, cumul annuel de précipitations (mm), ensoleillement annuel (heures), et leur profil sur 12 mois
+- Import : `scripts/import_climate_fiches.py` → tables `climate_station_normales` et `climate_station_monthly_normales` (vidées puis remplies)
+- **Composition par métrique** : pour un point donné, on prend la station la plus proche **disposant de chaque indicateur**, à moins de 30 km pour la température et la pluie, de 60 km pour l'ensoleillement. Au-delà, l'indicateur n'est pas affiché. La station affichée est celle de la température
 - Cache 30 jours par coordonnées arrondies (~11 km) — en pratique les normales ne bougent jamais donc le cache n'expire utilement qu'au redémarrage du serveur
-- **Setup requis** : appliquer la migration `008-climate-station-normales.sql` puis lancer `python scripts/import_climate_stations.py` (téléchargement + agrégation 30 ans, ~10 min)
+- **Setup requis** : migrations `008-climate-station-normales.sql` et `013-climate-station-monthly.sql`, puis `python scripts/import_climate_fiches.py`
 
 ### Zones inondables — zonages PPR (Géoportail de l'Urbanisme)
 
@@ -606,7 +607,7 @@ claireadresse/
 │   ├── import_local_tax.py           # Import fiscalité locale DGFiP (taux, délibérations, comptes)
 │   ├── import_rents.py               # Import loyers d'annonce ANIL + contours de communes
 │   ├── import_zone_tendue.py         # Import zonage zone tendue (TLV)
-│   ├── import_climate_stations.py    # Normales Météo-France 1991-2020 par station
+│   ├── import_climate_fiches.py      # Normales Météo-France 1991-2020 (fiches officielles)
 │   ├── import_atmo_*.py              # Indices ATMO annuels (Paris, Lyon, Marseille)
 │   ├── import_school_sectors_paris.py # Secteurs de collège (opendata.paris.fr)
 │   ├── import_schools.py             # Collèges, lycées et données par établissement (data.education.gouv.fr)

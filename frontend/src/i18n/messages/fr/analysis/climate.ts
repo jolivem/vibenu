@@ -87,8 +87,9 @@ export const climate = {
   stationsNote: (lines: string[]) => `Stations de mesure les plus proches — ${lines.join(" · ")}.`,
   referenceStationsNote: (pairs: ReadonlyArray<{ station: string; city: string }>) =>
     `Villes de référence mesurées à ${pairs.map((p) => `${p.station} pour ${p.city}`).join(", ")}.`,
-  /** Fiche PDF : « Température 12,3 °C (France 13,1 °C) ». */
-  pdfMeasure: (label: string, value: string, france: string) => `${label} ${value} (France ${france})`,
+  /** Fiche PDF : « Température 12,3 °C (France 13,0 °C) », ou sans repère France. */
+  pdfMeasure: (label: string, value: string, france: string | null) =>
+    france ? `${label} ${value} (France ${france})` : `${label} ${value}`,
   pdfFormat: {
     temperatureC: (value: number) => `${f.fixed(value, 1)} °C`,
     precipitationMm: (value: number) => `${f.int(value)} mm`,

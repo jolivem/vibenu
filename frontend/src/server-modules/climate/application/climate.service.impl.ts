@@ -26,11 +26,11 @@ export class ClimateServiceImpl implements ClimateService {
       precipitationMm: local.precipitationMm,
       sunshineHours: local.sunshineHours,
       // Plus affiché par la card, qui compare désormais à 3 climats types. Conservé
-      // pour le PDF, qui garde ses barres annuelles face à la moyenne France.
+      // pour le PDF. Pluie et insolation n'ont pas de normale nationale officielle.
       national: {
         temperatureC: national?.temperatureC ?? FRANCE_NORMALES.temperatureC,
-        precipitationMm: national?.precipitationMm ?? FRANCE_NORMALES.precipitationMm,
-        sunshineHours: national?.sunshineHours ?? FRANCE_NORMALES.sunshineHours,
+        precipitationMm: null,
+        sunshineHours: null,
       },
       station: local.station,
       stationsByMetric: local.stationsByMetric,

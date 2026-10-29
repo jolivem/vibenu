@@ -60,7 +60,7 @@ DPE, performance énergétique, passoires thermiques, zone tendue, loyers
 | Délinquance | Bases statistiques communale, départementale et régionale de la délinquance enregistrée par la police et la gendarmerie nationales | `import_crime.py` |
 | Présidentielle 2022 | Élection présidentielle des 10 et 24 avril 2022 – Résultats définitifs du 1er tour | `import_elections.py` |
 | Municipales 2026 | Élections municipales 2026 – Résultats du premier tour / du second tour | `import_municipales.py` |
-| Climat | Données climatologiques de base – décadaires (Météo-France) | `import_climate_stations.py` |
+| Climat | Fiches climatologiques (Météo-France) | `import_climate_fiches.py` |
 | Fiscalité locale : taux | Fiscalité locale des particuliers | `import_local_tax.py` |
 | Fiscalité locale : résidences secondaires, logements vacants | Délibérations de fiscalité directe locale des communes 2026 (hors taux) | `import_local_tax.py` |
 | Comptes de la commune | Comptes individuels des communes (fichier global) 2021 · 2022 · 2023-2024 · 2025 (quatre jeux) | `import_local_tax.py` |

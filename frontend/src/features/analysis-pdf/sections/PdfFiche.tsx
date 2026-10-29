@@ -706,10 +706,10 @@ export function PdfEnvironnementFiche({
     pdf,
   } = usePdfMessages();
   const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
-  const measure = (metric: ClimateMetric, value: number | null, reference: number) => {
+  const measure = (metric: ClimateMetric, value: number | null, reference: number | null) => {
     const format = climateMessages.pdfFormat[metric];
     return value != null
-      ? climateMessages.pdfMeasure(climateMessages.metrics[metric].label, format(value), format(reference))
+      ? climateMessages.pdfMeasure(climateMessages.metrics[metric].label, format(value), reference != null ? format(reference) : null)
       : null;
   };
 

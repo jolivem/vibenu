@@ -297,11 +297,12 @@ export interface ClimateAnalysisDto {
   precipitationMm: number | null;
   /** Cumul annuel moyen d'ensoleillement (h). Souvent null (stations héliographes rares). */
   sunshineHours: number | null;
-  /** Moyennes France. Plus affichées par la card ; toujours reprises dans le PDF. */
+  /** Normale France. Plus affichée par la card ; reprise dans le PDF. */
   national: {
     temperatureC: number;
-    precipitationMm: number;
-    sunshineHours: number;
+    /** Pas de normale nationale publiée par Météo-France : toujours null. */
+    precipitationMm: number | null;
+    sunshineHours: number | null;
   };
   /** Station Météo-France de référence (mode adresse). */
   station?: {

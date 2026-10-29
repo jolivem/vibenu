@@ -9,15 +9,16 @@ const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 type MetricColumn = "temperature_c" | "precipitation_mm" | "sunshine_hours";
 
 /**
- * Rayon max par métrique. La pluviométrie et la température sont mesurées
- * dans la plupart des stations Météo-France ; l'héliographe ne couvre qu'une
- * trentaine de stations en France → on autorise un rayon plus large pour ne
- * pas perdre la donnée d'ensoleillement en zones peu instrumentées.
+ * Rayon max par métrique. Seules les stations à fiche climatologique officielle sont en base
+ * (scripts/import_climate_fiches.py) : 1 574 mesurent température et pluie, 157 seulement
+ * l'insolation. On accepte donc une station d'ensoleillement plus lointaine, sans aller au-delà
+ * de 60 km — neuf points sur dix du territoire en ont une plus près. Au-delà, la mesure n'est
+ * pas affichée : mieux vaut rien qu'une station qui ne décrit pas le lieu.
  */
 const RADIUS_METERS: Record<MetricColumn, number> = {
   temperature_c: 30_000,
   precipitation_mm: 30_000,
-  sunshine_hours: 100_000,
+  sunshine_hours: 60_000,
 };
 
 interface MetricStation {
@@ -53,11 +54,11 @@ function toNumber(v: string | null): number | null {
 
 /**
  * Provider climat basé sur les normales par station Météo-France (1991-2020)
- * pré-importées en base via scripts/import_climate_stations.py.
+ * reprises des fiches climatologiques officielles (scripts/import_climate_fiches.py).
  *
  * Stratégie : pour chaque métrique (température / précipitations / ensoleillement),
  * sélectionne la station la plus proche **qui dispose de cette métrique** (la liste
- * des stations équipées varie : ~30 héliographes seulement en France). Si aucune
+ * des stations équipées varie : 157 héliographes sur 1 574 stations). Si aucune
  * station n'est trouvée pour aucune métrique, retourne null (section masquée côté UI).
  *
  * Le profil mensuel suit la même règle : chaque mesure est lue sur la station qui a
