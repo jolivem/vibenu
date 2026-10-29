@@ -39,6 +39,8 @@ export interface SecurityIndicator {
   base: "habitants" | "logements";
   /** Taux communal par année. `null` = valeur masquée, encadrée par les bornes ci-dessous. */
   commune: (number | null)[];
+  /** Nombre de faits publié, aux mêmes années ; `null` quand le taux est masqué. */
+  faits: (number | null)[];
   /** Taux correspondant à 1 fait, sur les années masquées. `null` ailleurs. */
   borneBasse: (number | null)[];
   /** Taux correspondant à 4 faits, sur les années masquées. `null` ailleurs. */

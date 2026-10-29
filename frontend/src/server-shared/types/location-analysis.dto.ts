@@ -355,6 +355,8 @@ export interface SecurityIndicatorDto {
    * `borneBasse` / `borneHaute`, et l'écran le rend en bande d'incertitude.
    */
   commune: (number | null)[];
+  /** Nombre de faits publié, aux mêmes années ; `null` quand le taux est masqué. */
+  faits: (number | null)[];
   borneBasse: (number | null)[];
   borneHaute: (number | null)[];
   departement: (number | null)[];

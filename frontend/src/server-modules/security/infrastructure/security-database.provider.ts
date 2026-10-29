@@ -14,6 +14,7 @@ import type { SecurityProvider } from "./security.provider";
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
 interface CommuneRow {
+  nombre: number | null;
   annee: number;
   indicateur: string;
   taux_pour_mille: string | null;
@@ -49,7 +50,7 @@ export class SecurityDatabaseProvider implements SecurityProvider {
 
       const [communeRows, referenceRows] = await Promise.all([
         query<CommuneRow>(
-          `SELECT c.annee, c.indicateur, c.taux_pour_mille, c.denominateur, i.base
+          `SELECT c.annee, c.indicateur, c.nombre, c.taux_pour_mille, c.denominateur, i.base
              FROM crime_commune c
              JOIN crime_indicateur i ON i.indicateur = c.indicateur
             WHERE c.code_commune = $1 AND c.indicateur = ANY($2)
@@ -87,6 +88,7 @@ export class SecurityDatabaseProvider implements SecurityProvider {
           indicateur,
           base: rows[0].base === "logements" ? "logements" : "habitants",
           commune: empty(),
+          faits: empty(),
           borneBasse: empty(),
           borneHaute: empty(),
           departement: empty(),
@@ -100,6 +102,7 @@ export class SecurityDatabaseProvider implements SecurityProvider {
 
           if (row.taux_pour_mille !== null) {
             item.commune[i] = Number(row.taux_pour_mille);
+            item.faits[i] = row.nombre !== null ? Number(row.nombre) : null;
           } else if (row.denominateur > 0) {
             // Valeur masquée : on connaît l'encadrement, on le convertit en taux.
             const rate = (facts: number) => (facts / row.denominateur) * 1000;
