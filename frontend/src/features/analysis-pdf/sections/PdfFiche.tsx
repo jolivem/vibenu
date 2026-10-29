@@ -777,7 +777,11 @@ export function PdfRisquesFiche({ risks }: { risks: RiskAnalysisDto }) {
         return (
           <View key={risk.code} style={s.badgeLine}>
             <PdfBadge label={riskBadgeLabel(risk, risksMessages)} background={badge.background} color={badge.color} dashed={badge.dashed} />
-            <Text style={s.badgeText}>{riskName(risk, risksMessages)}</Text>
+            <Text style={s.badgeText}>
+              {risk.communeLevel
+                ? risksMessages.pdf.withCommuneLevel(riskName(risk, risksMessages), risksMessages.levels[risk.communeLevel])
+                : riskName(risk, risksMessages)}
+            </Text>
           </View>
         );
       })}

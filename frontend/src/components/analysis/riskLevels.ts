@@ -26,12 +26,18 @@ export const RISK_LEVEL_BADGES: Record<
  * « présent » rejoint les risques mis en avant : son message porte l'avertissement que
  * la gravité n'est pas publiée, et c'est justement ce qu'il faut lire.
  */
+function isCommuneSevere(r: RiskAnalysisDto["categories"][number]): boolean {
+  return r.level === "inconnu" && (r.communeLevel === "élevé" || r.communeLevel === "modéré");
+}
+
 export function splitRisks(categories: RiskAnalysisDto["categories"]) {
   return {
+    // Un risque inconnu à l'adresse mais élevé ou modéré sur la commune reste en tête : il ne
+    // doit pas disparaître parmi les « autres » parce que Géorisques ne le situe pas au point.
     highlighted: categories.filter(
-      (r) => r.level === "élevé" || r.level === "modéré" || r.level === "présent",
+      (r) => r.level === "élevé" || r.level === "modéré" || r.level === "présent" || isCommuneSevere(r),
     ),
-    minor: categories.filter((r) => r.level === "faible" || r.level === "inconnu"),
+    minor: categories.filter((r) => (r.level === "faible" || r.level === "inconnu") && !isCommuneSevere(r)),
   };
 }
 
@@ -65,6 +71,7 @@ export function riskMessage(risk: RiskCategoryDto, m: RisksMessages): string {
     level: risk.level,
     detail: risk.statusDetail ?? null,
     communeFallback: Boolean(risk.communeFallback),
+    communeLevel: risk.communeLevel ? m.levels[risk.communeLevel] : null,
     unavailable: Boolean(risk.unavailable),
   });
 }

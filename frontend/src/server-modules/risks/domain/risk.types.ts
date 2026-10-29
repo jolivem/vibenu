@@ -11,8 +11,14 @@ export interface RiskCategory {
    * retenue. Texte source, en français : il se cite, il ne se traduit pas. `null` si absent.
    */
   statusDetail?: string | null;
-  /** Vrai quand la gravité vient de la commune alors que la lecture demandée était l'adresse. */
+  /**
+   * Vrai quand Géorisques ne donne pas de niveau à l'adresse mais en donne un à la commune.
+   * Le niveau (`level`) reste alors « inconnu », comme sur la page Géorisques de l'adresse ;
+   * celui de la commune est dans `communeLevel`, et `statusDetail` porte son statut.
+   */
   communeFallback?: boolean;
+  /** Niveau publié pour la commune, quand celui de l'adresse manque (`communeFallback`). */
+  communeLevel?: "élevé" | "modéré" | "présent" | "faible";
   /** Vrai quand l'appel à Géorisques a échoué : le niveau « inconnu » est alors un repli. */
   unavailable?: boolean;
 }

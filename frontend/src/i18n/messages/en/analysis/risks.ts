@@ -51,7 +51,9 @@ export const risks: RisksMessages = {
       case "faible":
         return `Low level${scope}${suffix}.`;
       case "inconnu":
-        return "No data from Géorisques at this address. Check on georisques.gouv.fr.";
+        return p.communeLevel
+          ? `Not known at the address; at commune level: ${p.communeLevel.toLowerCase()}${suffix}. Check on georisques.gouv.fr.`
+          : "No data from Géorisques at this address. Check on georisques.gouv.fr.";
     }
   },
   explanations: {
@@ -91,6 +93,7 @@ export const risks: RisksMessages = {
   pdf: {
     othersLabel: "Other risks",
     other: (name, level) => `${name} (${level.toLowerCase()})`,
+    withCommuneLevel: (name, level) => `${name} — at municipality level: ${level.toLowerCase()}`,
     none: "No natural risk on record.",
   },
 };

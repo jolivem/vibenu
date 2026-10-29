@@ -66,12 +66,13 @@ def check(addr, analysis: dict) -> list[Check]:
         if not s:
             out.append(Check("Risques", name, "absent du site", expected, ERREUR, lien, statut_txt))
             continue
-        if s["level"] != expected:
+        if at_address == "inconnu" and at_commune not in ("inconnu", "absent"):
+            # Comme la page Géorisques de l'adresse : « inconnu », le niveau de la commune à part.
+            ok = s["level"] == "inconnu" and s.get("communeLevel") == at_commune
+            out.append(Check("Risques", name, f"{s['level']} (commune : {s.get('communeLevel')})",
+                             f"inconnu à l'adresse (commune : {at_commune})", OK if ok else ERREUR, lien, statut_txt))
+        elif s["level"] != expected:
             out.append(Check("Risques", name, s["level"], expected, ERREUR, lien, statut_txt))
-        elif at_address == "inconnu" and at_commune != "inconnu":
-            out.append(Check("Risques", name, s["level"], f"{expected} (commune) — non connu à l'adresse", METHODE, lien,
-                             "le site affiche le niveau de la commune ; la page de l'adresse dit « non connu » "
-                             "(la fiche PDF ne le précise pas)"))
         else:
             out.append(Check("Risques", name, s["level"], expected, OK, lien, statut_txt))
     return out

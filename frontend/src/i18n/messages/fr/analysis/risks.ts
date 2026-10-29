@@ -57,6 +57,8 @@ export const risks = {
     level: RiskCategoryDto["level"];
     detail: string | null;
     communeFallback: boolean;
+    /** Libellé du niveau de la commune, quand celui de l'adresse manque. */
+    communeLevel: string | null;
     unavailable: boolean;
   }) => {
     if (p.unavailable) {
@@ -78,7 +80,9 @@ export const risks = {
       case "faible":
         return `Niveau faible${scope}${suffix}.`;
       case "inconnu":
-        return "Non renseigné par Géorisques à cette adresse. À vérifier sur georisques.gouv.fr.";
+        return p.communeLevel
+          ? `Non connu à l'adresse ; à l'échelle de la commune : ${p.communeLevel.toLowerCase()}${suffix}. À vérifier sur georisques.gouv.fr.`
+          : "Non renseigné par Géorisques à cette adresse. À vérifier sur georisques.gouv.fr.";
     }
   },
   /**
@@ -141,6 +145,8 @@ export const risks = {
   pdf: {
     othersLabel: "Autres risques",
     other: (name: string, level: string) => `${name} (${level.toLowerCase()})`,
+    /** Nom d'un risque non renseigné à l'adresse, suivi du niveau de la commune. */
+    withCommuneLevel: (name: string, level: string) => `${name} — à l'échelle de la commune : ${level.toLowerCase()}`,
     none: "Aucun risque naturel recensé.",
   },
 };

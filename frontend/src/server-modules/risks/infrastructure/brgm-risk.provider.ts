@@ -210,7 +210,7 @@ export class GeorisquesRiskProvider implements RiskProvider {
 
   private mapRisque(code: string, risque: RisqueDto, requested: RiskScope): RiskCategory {
     const name = this.riskLabels[code] ?? code;
-    const { level, scope } = this.resolveLevel(risque, requested);
+    const { level, scope, communeLevel } = this.resolveLevel(risque, requested);
 
     const statusDetail =
       level === "absent"
@@ -221,9 +221,10 @@ export class GeorisquesRiskProvider implements RiskProvider {
       code,
       name,
       level,
-      message: this.buildMessage(name, level, scope, risque, requested),
+      message: this.buildMessage(name, level, scope, risque, requested, communeLevel),
       statusDetail,
       communeFallback: level !== "absent" && scope === "commune" && requested === "adresse",
+      ...(communeLevel ? { communeLevel } : {}),
     };
   }
 
@@ -241,7 +242,9 @@ export class GeorisquesRiskProvider implements RiskProvider {
     if (!s) return "inconnu";
     // Avant tout le reste : « non Concerne » contient « concerne ».
     if (s.includes("non concerne") || s.includes("non concerné")) return "absent";
-    if (s.includes("non connu") || s.includes("non connue")) return "inconnu";
+    // « Risque Inconnu » aussi : sans ce cas, il tombait en « présent » et s'affichait « Signalé »
+    // (mouvements de terrain au 12 rue Pasteur, Bordeaux ; contrôle du 29/10/2026).
+    if (s.includes("non connu") || s.includes("non connue") || s.includes("inconnu")) return "inconnu";
     if (s.includes("élevé") || s.includes("important") || s.includes("fort")) return "élevé";
     if (s.includes("modéré") || s.includes("moyen")) return "modéré";
     if (s.includes("faible")) return "faible";
@@ -264,6 +267,7 @@ export class GeorisquesRiskProvider implements RiskProvider {
   ): {
     level: RiskCategory["level"];
     scope: "adresse" | "commune";
+    communeLevel?: RiskCategory["communeLevel"];
   } {
     if (!risque.present) return { level: "absent", scope: requested };
 
@@ -279,8 +283,14 @@ export class GeorisquesRiskProvider implements RiskProvider {
     const atAddress = this.gradeFromStatut(risque.libelleStatutAdresse);
     if (atAddress !== "inconnu") return { level: atAddress, scope: "adresse" };
 
+    // Rien à l'adresse : « inconnu », comme le dit la page Géorisques de l'adresse. Le niveau
+    // de la commune est rendu à part (`communeLevel`) : il prenait la place du niveau à
+    // l'adresse, et le journaliste qui ouvrait Géorisques lisait autre chose (argiles
+    // « élevé » au 11 rue de l'Église, « non connu » sur Géorisques ; contrôle du 29/10/2026).
     const atCommune = this.gradeFromStatut(risque.libelleStatutCommune);
-    if (atCommune !== "inconnu") return { level: atCommune, scope: "commune" };
+    if (atCommune !== "inconnu" && atCommune !== "absent") {
+      return { level: "inconnu", scope: "commune", communeLevel: atCommune };
+    }
 
     return { level: "inconnu", scope: "adresse" };
   }
@@ -291,7 +301,11 @@ export class GeorisquesRiskProvider implements RiskProvider {
     scope: "adresse" | "commune",
     risque: RisqueDto,
     requested: RiskScope,
+    communeLevel?: RiskCategory["communeLevel"],
   ): string {
+    if (level === "inconnu" && communeLevel) {
+      return `Non connu à l'adresse ; à l'échelle de la commune : niveau ${communeLevel} (${risque.libelleStatutCommune ?? ""}).`;
+    }
     if (level === "absent") {
       return `Pas de ${name.toLowerCase()} identifié sur ce secteur.`;
     }
