@@ -127,12 +127,6 @@ def check(addr, analysis: dict) -> list[Check]:
             tol = 0.05 if factor == 1 else 0.1
             out.append(_cmp(f"{key} — {scale}", site, src, PAGE_RP, tol))
 
-    chom = ((demo.get("employment") or {}).get("france") or {}).get("tauxChomage")
-    if chom is not None:
-        out.append(Check("Population", "taux de chômage : définition", f"{chom} % (France)", "BIT : ~7 % en 2021",
-                         METHODE, "https://www.insee.fr/fr/statistiques/2489498",
-                         "le site donne le chômage au sens du recensement (déclaratif, 15-64 ans), "
-                         "près de deux fois le taux du BIT que les journalistes connaissent"))
 
     fi = _filo_iris(iris)
     if fi:

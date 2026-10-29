@@ -54,7 +54,7 @@ export const population: PopulationMessages = {
       title: "Poverty rate",
       unit: "share of the population below 60% of the median standard of living",
     },
-    chomage: { title: "Unemployment rate", unit: "as a % of the labour force aged 15-64" },
+    chomage: { title: "Self-reported unemployment (census)", unit: "as a % of the labour force aged 15-64" },
     activite: { title: "Activity rate", unit: "as a % of people aged 15-64" },
     diplomes: {
       title: "Higher-education graduates",
@@ -124,7 +124,7 @@ export const population: PopulationMessages = {
     footnote: [
       "The unemployment rate from the 2021 census is ",
       { strong: "self-reported" },
-      ": it counts people who say they are unemployed, not those the International Labour Office counts as such. It is structurally one to two points above the rate published each quarter, and cannot be compared with it.",
+      ": it counts people who say they are unemployed, not those the International Labour Office (ILO) counts as such. Nationwide it is 12.1%, while the ILO rate averaged 7.9% in 2021: the two cannot be compared.",
     ],
   },
   households: {

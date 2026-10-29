@@ -24,10 +24,10 @@ export function CommuneEmploymentCard({
 
       <EmploymentCharts view={view} />
       <p className="elections-footnote">
-        Le taux de chômage du recensement est <strong>déclaratif</strong> : il est
-        structurellement d&apos;un à deux points au-dessus du taux publié chaque trimestre,
-        et ne s&apos;y compare pas. Source : INSEE · Recensement de la population 2021 à
-        l&apos;IRIS.
+        Le taux de chômage du recensement est <strong>déclaratif</strong> : il vaut 12,1 % en
+        France, quand le taux du Bureau international du travail était de 7,9 % en moyenne en
+        2021 ; les deux ne se comparent pas. Source : INSEE · Recensement de la population 2021
+        à l&apos;IRIS.
       </p>
     </section>
   );

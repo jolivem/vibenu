@@ -90,7 +90,9 @@ export const population = {
       title: "Taux de pauvreté",
       unit: "part de la population sous le seuil de 60 % du niveau de vie médian",
     },
-    chomage: { title: "Taux de chômage", unit: "en % des actifs de 15-64 ans" },
+    // « déclaré (recensement) » dans le titre : le seul taux que l'on connaît est celui du BIT,
+    // 7,9 % en 2021, quand celui-ci vaut 12,1 % en France. Sans le mot, la valeur se lit fausse.
+    chomage: { title: "Chômage déclaré (recensement)", unit: "en % des actifs de 15-64 ans" },
     activite: { title: "Taux d'activité", unit: "en % des 15-64 ans" },
     diplomes: { title: "Diplômés du supérieur", unit: "en % des 15 ans et plus non scolarisés" },
     taille: { title: "Taille moyenne des ménages", unit: "personnes par ménage" },
@@ -163,7 +165,7 @@ export const population = {
     footnote: [
       "Le taux de chômage du recensement 2021 est ",
       { strong: "déclaratif" },
-      " : il compte les personnes qui se déclarent au chômage, et non celles que le Bureau international du travail recense comme telles. Il est structurellement d'un à deux points au-dessus du taux publié chaque trimestre, et ne s'y compare pas.",
+      " : il compte les personnes qui se déclarent au chômage, et non celles que le Bureau international du travail (BIT) recense comme telles. En France, il vaut 12,1 %, quand le taux du BIT était de 7,9 % en moyenne en 2021 : les deux ne se comparent pas.",
     ] as Rich,
   },
   households: {
