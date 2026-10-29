@@ -2034,6 +2034,43 @@ html {
   scroll-margin-top: 24px;
 }
 
+/* Titre de section et, sur mobile, le lien « ↑ Sommaire » en face. Le filet du titre passe
+   sur l'en-tête pour courir sous les deux. */
+.page-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+  border-bottom: 0.5px solid var(--hairline-strong);
+}
+
+.page-section-head .page-section-title {
+  margin: 0;
+  border-bottom: none;
+}
+
+/* Même allure que « Haut de page » au pied de l'analyse (`.analysis-footer-link`). */
+.page-section-top {
+  display: none;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 0.5px solid currentColor;
+  white-space: nowrap;
+}
+
+.page-section-top:hover {
+  color: var(--accent-dark, var(--accent));
+}
+
+@media (max-width: 900px) {
+  .page-section-top {
+    display: inline;
+  }
+}
+
 .page-section-title {
   font-family: var(--font-serif), var(--font-serif-fallback);
   font-size: 1.05rem;

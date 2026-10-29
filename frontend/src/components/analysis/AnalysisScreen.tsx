@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useRef, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, type MouseEvent, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import type { RentAnalysisDto, SchoolSectorDto } from "@/types/location-analysis";
@@ -39,7 +39,7 @@ import { SecurityCard } from "@/components/analysis/SecurityCard";
 import { MunicipalesCard } from "@/components/analysis/MunicipalesCard";
 import { KeyFigures, type KeyFigure } from "@/components/analysis/KeyFigures";
 import { buildKeyFigures } from "@/components/analysis/keyFiguresModel";
-import { SectionNav } from "@/components/analysis/SectionNav";
+import { SECTION_NAV_ID, SectionNav } from "@/components/analysis/SectionNav";
 import { ShareInline, ShareLinks } from "@/components/analysis/ShareLinks";
 import { SECTION_ORDER, sectionTitles, type SectionId } from "@/components/analysis/sections";
 import { DownloadPdfButton } from "@/features/analysis-pdf/DownloadPdfButton";
@@ -60,6 +60,19 @@ const LOCATOR_MAP_HEIGHT = "420px";
 const THEMATIC_MAP_HEIGHT = "340px";
 /** Plus haute que les cartes thématiques : c'est une carte qu'on regarde, pas qu'on lit. */
 const HISTORY_MAP_HEIGHT = "420px";
+
+/**
+ * Retour au sommaire par script : le saut d'ancre natif descendait la page au lieu de la
+ * remonter sur mobile, où le sommaire est replacé en tête par `order` dans un parent en
+ * `display: contents`. Le lien garde son `href` pour un navigateur sans JavaScript, et
+ * l'adresse de la page ne reçoit pas `#sommaire`.
+ */
+function scrollToSummary(event: MouseEvent<HTMLAnchorElement>) {
+  const target = document.getElementById(SECTION_NAV_ID);
+  if (!target) return;
+  event.preventDefault();
+  target.scrollIntoView({ block: "start" });
+}
 
 function AnalysisSection({
   id,
@@ -82,7 +95,18 @@ function AnalysisSection({
   const title = sectionTitles(sections, FEATURES.showAirQuality)[id];
   return (
     <section id={id} className="page-section">
-      <h2 className="page-section-title">{title}</h2>
+      <div className="page-section-head">
+        <h2 className="page-section-title">{title}</h2>
+        {/* Mobile seulement (CSS) : le sommaire n'y reste pas à l'écran. */}
+        <a
+          href={`#${SECTION_NAV_ID}`}
+          className="page-section-top"
+          aria-label={sections.backToSummaryLabel}
+          onClick={scrollToSummary}
+        >
+          {sections.backToSummary}
+        </a>
+      </div>
       <div className="page-section-body">
         {lead}
         {children}

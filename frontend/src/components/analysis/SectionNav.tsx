@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/client";
 
+/** Ancre du sommaire, visée par le lien « ↑ Sommaire » des titres de section (mobile). */
+export const SECTION_NAV_ID = "sommaire";
+
 /** Une entrée du sommaire : l'ancre et son libellé. */
 export interface NavSection {
   /** L'`id` de la `<section>` visée — l'ancre `#id`. */
@@ -65,7 +68,8 @@ export function SectionNav({
   }, [key, topOffset]);
 
   return (
-    <nav className="section-nav" aria-label={common.sectionNav}>
+    // `id` : cible du lien « ↑ Sommaire » placé, sur mobile, en face de chaque titre de section.
+    <nav id={SECTION_NAV_ID} className="section-nav" aria-label={common.sectionNav}>
       <p className="section-nav-title">{common.sectionNav}</p>
       <ol>
         {sections.map((section) => (

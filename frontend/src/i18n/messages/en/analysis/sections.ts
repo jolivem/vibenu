@@ -1,6 +1,8 @@
 import type { SectionsMessages } from "../../fr/analysis/sections";
 
 export const sections: SectionsMessages = {
+  backToSummary: "↑ Contents",
+  backToSummaryLabel: "Back to the list of sections",
   titles: {
     immobilier: "Property & planning",
     enseignement: "Schools",

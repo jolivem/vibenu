@@ -6,6 +6,12 @@ import type { SectionId } from "@/components/analysis/sections";
  * se traduisent pas : ce sont des ancres déjà partagées par lien.
  */
 export const sections = {
+  /**
+   * Lien en face du titre de chaque section, sur mobile seulement : le sommaire n'y reste
+   * pas à l'écran, et une dizaine de sections plus loin, on n'a plus de quoi y revenir.
+   */
+  backToSummary: "↑ Sommaire",
+  backToSummaryLabel: "Revenir au sommaire des sections",
   titles: {
     immobilier: "Immobilier & urbanisme",
     enseignement: "Enseignement",
