@@ -567,6 +567,13 @@ Le site existe en français (langue d'origine, URL inchangées) et en anglais so
   conversationnels — contenu de l'analyse, sources, et format du lien direct vers l'analyse
   d'une adresse. Format proposé sur llmstxt.org, sans garantie d'être lu par les grands moteurs.
 
+## Contrôle des données face aux sources publiques
+
+`scripts/verify/` compare, adresse par adresse, chaque chiffre du site en ligne (donc du PDF) à la
+source publique qu'un journaliste consulterait, en relisant les sources sans réutiliser le code
+du site. Rapport HTML avec statut et lien de vérification par chiffre : voir
+[scripts/verify/README.md](scripts/verify/README.md).
+
 ## Structure du repository
 
 ```text
