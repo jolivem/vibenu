@@ -53,6 +53,47 @@ def _cmp(label: str, site, source, lien: str, note: str = "", tol: float = 0.005
     return Check("Fiscalité", label, site, source, OK if d <= tol else ARRONDI if d <= 0.02 else ERREUR, lien, note)
 
 
+def _dmto_rates(url: str) -> dict[str, float]:
+    """
+    Taux départementaux du barème PDF de la DGFiP, lu par Ghostscript (`gs -sDEVICE=txtwrite`).
+    Première colonne : le taux relevé (5 %) quand le département l'applique ; sinon le taux de
+    droit commun seul. Corse (20) et Alsace (67/68) sont des collectivités uniques.
+    """
+    import re
+    import subprocess
+
+    pdf = cached_download(url, CACHE / "fiscalite" / url.rsplit("/", 1)[1])
+    txt = pdf.with_suffix(".txt")
+    if not txt.exists():
+        subprocess.run(["gs", "-q", "-sDEVICE=txtwrite", "-o", str(txt), str(pdf)], check=False, capture_output=True)
+    rates: dict[str, float] = {}
+    for line in txt.read_text(encoding="utf-8", errors="replace").splitlines():
+        m = re.match(r"\s*(\d{2,3}(?:/\d{2})?)\s.*?(\d,\d\d) %", line)
+        if not m:
+            continue
+        rate = float(m.group(2).replace(",", "."))
+        for d in m.group(1).split("/"):
+            rates.setdefault(d, rate)
+    # La Corse est une ligne « 20 » ; l'Alsace « 67/68 ».
+    if "20" in rates:
+        rates.setdefault("2A", rates["20"])
+        rates.setdefault("2B", rates["20"])
+    return rates
+
+
+def _dmto(dep: str, dmto: dict) -> Check:
+    url = dmto.get("sourceUrl", "")
+    try:
+        src = _dmto_rates(url).get(dep)
+    except Exception as error:  # noqa: BLE001
+        return Check("Fiscalité", "droits de mutation (part départementale)", f"{dmto['tauxDepartemental']} %", "barème illisible",
+                     A_RELIRE, url, str(error))
+    site = dmto["tauxDepartemental"]
+    return Check("Fiscalité", f"droits de mutation, département {dep}", f"{site} %", f"{src} %" if src is not None else "absent",
+                 OK if src is not None and abs(src - site) < 0.001 else ERREUR, url,
+                 f"barème au {dmto.get('valableAu')} ; vérifier qu'aucun barème plus récent n'est paru")
+
+
 def check(addr, analysis: dict) -> list[Check]:
     lt = analysis.get("localTax")
     if not lt:
@@ -94,7 +135,5 @@ def check(addr, analysis: dict) -> list[Check]:
 
     dmto = lt.get("dmto")
     if dmto:
-        out.append(Check("Fiscalité", "droits de mutation (part départementale)", f"{dmto['tauxDepartemental']} %",
-                         "barème PDF", A_RELIRE, dmto.get("sourceUrl", ""),
-                         f"écrit en dur dans le site, valable au {dmto.get('valableAu')} : comparer au barème en vigueur"))
+        out.append(_dmto(lt.get("codeDepartement") or code[:2], dmto))
     return [c for c in out if c is not None]
