@@ -60,8 +60,12 @@ import type { Locale } from "@/i18n/locales";
  * v12 : revenu médian et taux de pauvreté de la commune et de la France repris des valeurs
  * publiées par l'INSEE (migration 027) ; les phrases écrites sur l'ancien repère (18,8 % de
  * pauvreté en France au lieu de 14,9 %) doivent être réécrites. Le prompt ne change pas.
+ *
+ * v13 : le modèle ne calcule plus aucun écart (« 8 points », « 60 % de plus » : fournis en
+ * `ecart_pts` et `ecart_vs_france_pct`), « majoritaire » réservé aux parts au-delà de 50 %
+ * (« les personnes seules y sont majoritaires » pour 46 %), chômage dit « déclaré ».
  */
-export const CARD_INSIGHTS_PROMPT_VERSION = 12;
+export const CARD_INSIGHTS_PROMPT_VERSION = 13;
 
 /** Bornes de longueur d'une synthèse acceptable, en caractères. */
 const MIN_LENGTH = 20;
@@ -136,6 +140,8 @@ RÈGLES DE FOND
 - Chaque phrase situe le lieu par rapport au repère fourni (France, département, communes de même taille, ou climats de référence). Un chiffre sans repère n'apprend rien : ne le donne jamais seul.
 - Seuil de saillance : en dessous de 2 points d'écart (ou 5 % en relatif), écris « proche de la moyenne » — ne dramatise pas un écart faible. Au-delà, nomme le sens de l'écart.
 - Au plus DEUX chiffres par phrase. Jamais d'énumération de pourcentages.
+- Chaque chiffre écrit doit figurer tel quel dans les données (à l'arrondi près) : un écart, une différence ou un pourcentage que tu calculerais toi-même est INTERDIT. Les écarts utiles sont fournis ("ecart_pts", "ecart_vs_france_pct"…) ; s'il manque, ne chiffre pas l'écart.
+- « Majoritaire », « la majorité », « plus de la moitié » : seulement pour une part qui DÉPASSE 50 %. Une part de 46 % n'est pas majoritaire : écris « la catégorie la plus fréquente » ou donne la part.
 
 RÈGLES DE FORME
 - Langage courant. Interdits : IRIS, quantile, médiane pondérée, taux normalisé, corrélation, écart-type.
@@ -155,10 +161,11 @@ LECTURES PIÉGEUSES, À RESPECTER STRICTEMENT
 - Climat, quand "climat_de_reference_le_plus_proche" vaut null : aucun des trois types ne se détache. Décris alors le climat local par ses extrêmes et sa pluviométrie, sans le rattacher à un type et sans en désigner un « le plus proche » de toi-même.
 - Qualité de l'air : ce sont des moyennes ANNUELLES mesurées à la station de fond la plus proche, pas à l'adresse : écris « dans le secteur » ou « à la station la plus proche », jamais « l'air de ce logement ». Reprends "position_vs_france" tel quel ; quand "multiple_vs_france" est fourni, dis l'écart en fois (« 2,7 fois la moyenne française », jamais « dépasse de 2,7 fois »), sinon ne calcule AUCUN rapport toi-même. Quand "provenance_mesures" est présent, la phrase DOIT le reprendre, par exemple en ouverture (« D'après une station rurale à 40 km, faute de station plus proche, … »).
 - Qualité de l'air, tendances : une tendance n'existe que pour les polluants qui portent un champ "tendance". N'en attribue JAMAIS à un polluant qui n'en a pas, et ne transpose pas celle d'un polluant à un autre.
+- Qualité de l'air, seuil : pour situer une mesure par rapport à son seuil, reprends MOT POUR MOT "seuil_reference.phrase" (« 17 jours de pic d'ozone par an, sous la valeur cible européenne de 25 jours ») : n'écris jamais toi-même qu'un seuil est dépassé ou non.
 - Qualité de l'air, seuils : la "valeur guide OMS" est un objectif sanitaire exigeant, dépassé dans une grande partie du pays pour les particules — mentionne-le sans dramatiser. La "limite_ue" est le seuil réglementaire européen applicable en 2030 : quand "depassee" est vrai, dis que la limite européenne est dépassée. Quand "multiple" est fourni, exprime l'écart au seuil en fois (« deux fois la valeur guide »).
 - Qualité de l'air, ozone : il se compte en JOURS de dépassement par an, jamais en µg/m³, et sa tendance en jours ("evolution_jours", "evolution_france_jours"), jamais en pourcentage. "valeur" est le nombre TOTAL de jours, pas un excédent : écris « 29 jours de pic d'ozone par an, au-delà de la cible européenne de 25 jours », jamais « dépasse la cible de 29 jours ». Quand "ozone_plus_eleve_hors_villes" est vrai, et seulement alors, tu peux ajouter que l'ozone se forme à distance des sources de pollution et touche souvent davantage la périphérie et la campagne que les centres-villes : c'est la seule explication causale permise dans tout ce prompt.
 - Qualité de l'air, quand "polluant_a_signaler" vaut null : aucun polluant ne ressort ; dis que l'air est proche de la moyenne française (ou meilleur), sans en inventer un.
-- Emploi : le taux de chômage est celui du recensement, déclaratif, structurellement 1 à 2 points au-dessus du taux trimestriel diffusé dans les médias. Compare-le au taux France fourni, à rien d'autre.
+- Emploi : le taux de chômage est celui du recensement, déclaratif (12 % environ en France), bien au-dessus du taux du Bureau international du travail diffusé dans les médias (7,9 % en 2021). Appelle-le « chômage déclaré » et compare-le au taux France fourni, à rien d'autre.
 - Élections : décris l'écart au national, jamais l'électeur. Aucun jugement sur les habitants.
 - Municipales : quand "nuancee" est faux, les listes n'ont AUCUNE étiquette politique — l'État ne les attribue qu'au-delà d'une certaine taille de commune. Il n'y a alors ni nuance ni score national : décris les scores et la participation, sans chercher un écart qui n'existe pas et sans qualifier politiquement une liste. Quand "ville_entiere" est vrai, le résultat est celui de la ville entière et non de l'arrondissement : ne l'attribue pas au quartier.
 

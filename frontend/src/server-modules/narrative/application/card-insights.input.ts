@@ -435,7 +435,7 @@ function buildLogement(
     { libelle: "locataires du privé", pct_local: roundOrNull(local.pctLocatairesPrives), pct_france: roundOrNull(france?.pctLocatairesPrives) },
     { libelle: "logement social (HLM)", pct_local: roundOrNull(local.pctHlm), pct_france: roundOrNull(france?.pctHlm) },
     { libelle: "logés gratuitement", pct_local: roundOrNull(local.pctLogesGratuitement), pct_france: roundOrNull(france?.pctLogesGratuitement) },
-  ].filter((p) => p.pct_local !== null);
+  ].filter((p) => p.pct_local !== null).map(withGap);
 
   return {
     logements: local.logements,
@@ -497,7 +497,7 @@ function buildMenages(
     { libelle: "couples sans enfant", pct_local: roundOrNull(local.pctCouplesSansEnfant), pct_france: roundOrNull(france?.pctCouplesSansEnfant) },
     { libelle: "couples avec enfants", pct_local: roundOrNull(local.pctCouplesAvecEnfants), pct_france: roundOrNull(france?.pctCouplesAvecEnfants) },
     { libelle: "familles monoparentales", pct_local: roundOrNull(local.pctFamillesMonoparentales), pct_france: roundOrNull(france?.pctFamillesMonoparentales) },
-  ].filter((p) => p.pct_local !== null);
+  ].filter((p) => p.pct_local !== null).map(withGap);
 
   return {
     indicateurs: keepMeasured([
@@ -506,6 +506,11 @@ function buildMenages(
     composition,
     enfants_dominant: classeDominante(local.enfantsParFamille, france?.enfantsParFamille, CHILDREN_LABELS),
   };
+}
+
+/** Ajoute à une part l'écart en points avec la France, quand les deux sont connus. */
+function withGap(p: PartCompare): PartCompare {
+  return p.pct_local !== null && p.pct_france !== null ? { ...p, ecart_pts: round(p.pct_local - p.pct_france) } : p;
 }
 
 // --- Élections --------------------------------------------------------------
@@ -754,8 +759,9 @@ function airPolluant(stat: AnnualPollutantStatDto, m: AnalysisMessages): AirPoll
     moyenne_france: stat.nationalMean,
     position_vs_france: positionAir(ecartPct(stat.value, stat.nationalMean)),
     ...(() => {
-      const { multiple } = ecartRelatif(stat.value, stat.nationalMean);
-      return multiple !== null ? { multiple_vs_france: multiple } : {};
+      const { multiple, pct } = ecartRelatif(stat.value, stat.nationalMean);
+      // L'un ou l'autre : le modèle calculait lui-même « 60 % de plus » faute de l'avoir.
+      return multiple !== null ? { multiple_vs_france: multiple } : pct !== null ? { ecart_vs_france_pct: Math.round(pct) } : {};
     })(),
     seuil_reference: {
       nature: stat.referenceKind === "who" ? m.air.insightWhoGuideline : m.air.insightEuTarget,
@@ -764,6 +770,7 @@ function airPolluant(stat: AnnualPollutantStatDto, m: AnalysisMessages): AirPoll
       ...(stat.referenceKind === "who" && ratio > 1 + AIR_SEUIL_TOLERANCE ? { multiple: round(ratio) } : {}),
       position:
         ratio < 1 - AIR_SEUIL_TOLERANCE ? "sous" : ratio <= 1 + AIR_SEUIL_TOLERANCE ? "au niveau" : "au-dessus",
+      phrase: phraseSeuilAir(stat, ratio, enJours, stat.referenceKind === "who" ? m.air.insightWhoGuideline : m.air.insightEuTarget),
     },
     // L'ozone n'a qu'une cible : sa « limite » serait le même seuil, déjà donné.
     ...(stat.referenceKind === "who" ? { limite_ue: { valeur: limit, depassee: stat.value > limit } } : {}),
@@ -783,6 +790,16 @@ function airPolluant(stat: AnnualPollutantStatDto, m: AnalysisMessages): AirPoll
         }
       : {}),
   };
+}
+
+/** La comparaison d'une mesure à son seuil, écrite ici pour que le modèle la reprenne telle quelle. */
+function phraseSeuilAir(stat: AnnualPollutantStatDto, ratio: number, enJours: boolean, nature: string): string {
+  const fr = (n: number) => String(round(n)).replace(".", ",");
+  const valeur = enJours ? `${fr(stat.value)} jours de pic d'ozone par an` : `${fr(stat.value)} µg/m³ en moyenne annuelle`;
+  const seuil = enJours ? `${fr(stat.reference)} jours` : `${fr(stat.reference)} µg/m³`;
+  if (ratio < 1 - AIR_SEUIL_TOLERANCE) return `${valeur}, sous la ${nature} de ${seuil}`;
+  if (ratio <= 1 + AIR_SEUIL_TOLERANCE) return `${valeur}, au niveau de la ${nature} de ${seuil}`;
+  return `${valeur}, au-delà de la ${nature} de ${seuil}`;
 }
 
 /**

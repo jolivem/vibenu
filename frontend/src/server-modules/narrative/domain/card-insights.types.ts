@@ -52,6 +52,8 @@ export interface PartCompare {
   libelle: string;
   pct_local: number | null;
   pct_france: number | null;
+  /** Écart en points, calculé ici : le modèle le recalculait lui-même (« 8 points »). */
+  ecart_pts?: number | null;
 }
 
 // --- Sécurité ---------------------------------------------------------------
@@ -234,6 +236,8 @@ export interface AirPolluantInput {
   position_vs_france: PositionAir;
   /** Présent dès le double de la France : l'écart se dit alors « N fois », calculé ici. */
   multiple_vs_france?: number;
+  /** Écart relatif à la moyenne française, en %, quand il ne se dit pas en multiple. */
+  ecart_vs_france_pct?: number;
   seuil_reference: {
     /** « valeur guide OMS » ou, pour l'ozone, « valeur cible européenne ». */
     nature: string;
@@ -241,6 +245,12 @@ export interface AirPolluantInput {
     /** Multiple de la valeur guide OMS quand elle est dépassée de plus de 10 % ; jamais pour l'ozone. */
     multiple?: number;
     position: "sous" | "au niveau" | "au-dessus";
+    /**
+     * La comparaison au seuil, déjà écrite, à reprendre mot pour mot (« 17 jours de pic d'ozone
+     * par an, sous la valeur cible européenne de 25 jours »). Le modèle écrivait « dépasse la
+     * valeur cible de 25 jours » pour 17 jours.
+     */
+    phrase: string;
   };
   /** Valeur limite européenne (applicable en 2030) ; absente pour l'ozone. */
   limite_ue?: { valeur: number; depassee: boolean };

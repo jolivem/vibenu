@@ -15,6 +15,7 @@ import {
 } from "../infrastructure/card-insights.prompt";
 import { buildCardInsightsInput, expectedKeys } from "./card-insights.input";
 import { computeSecurityRating } from "./security-rating";
+import { validateInsights } from "./card-insights.validate";
 import type { Locale } from "@/i18n/locales";
 
 const DEFAULT_MODEL = "mistral-small-latest";
@@ -139,6 +140,10 @@ export class CardInsightsService {
       console.warn("[card-insights] generation failed:", err);
       return emptyResult(debugInput);
     }
+
+    // Relecture : une phrase qui cite un nombre absent des faits, ou qui parle de majorité
+    // sans part au-delà de 50 %, est retirée avant d'être mise en cache.
+    payload = { ...payload, insights: validateInsights(payload.insights, input as unknown as Record<string, unknown>) };
 
     if (!options.debug) {
       await this.cache.set(geoKey, data.mode, this.model, lang, payload);
