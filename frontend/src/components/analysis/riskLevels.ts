@@ -48,6 +48,11 @@ export function riskExplanation(risk: RiskCategoryDto, m: RisksMessages): string
   return m.explanations[risk.code] ?? null;
 }
 
+/** Libellé de la pastille : « Indisponible » quand la source n'a pas répondu, sinon le niveau. */
+export function riskBadgeLabel(risk: RiskCategoryDto, m: RisksMessages): string {
+  return risk.unavailable ? m.unavailableBadge : m.levels[risk.level];
+}
+
 /** Nom du risque dans la langue de la page ; à défaut, celui que le serveur envoie. */
 export function riskName(risk: RiskCategoryDto, m: RisksMessages): string {
   return m.names[risk.code] ?? risk.name;

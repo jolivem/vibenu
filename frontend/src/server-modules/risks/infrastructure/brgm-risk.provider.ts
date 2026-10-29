@@ -4,6 +4,34 @@ import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructur
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 const FIVE_MINUTES = 5 * 60 * 1000;
+/** Délai maximal d'une tentative : sans plafond, un ralentissement retenait toute l'analyse. */
+const ATTEMPT_TIMEOUT_MS = 6_000;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Écart minimal entre deux appels à `resultats_rapport_risque`, limité à un par seconde.
+ *
+ * Tous les visiteurs passent par l'adresse IP du serveur : deux analyses dans la même
+ * seconde dépassaient la limite, et Géorisques coupe alors la connexion (ECONNRESET) — puis
+ * refuse tout appel de cette adresse pendant un temps (constaté le 29/10/2026, son site
+ * restant joignable). Les appels du processus sont donc mis en file et espacés.
+ */
+const MIN_INTERVAL_MS = 1_100;
+/** Au-delà de cette attente dans la file, on renonce : mieux vaut « Indisponible » qu'une page figée. */
+const MAX_QUEUE_WAIT_MS = 5_000;
+
+let nextSlot = 0;
+
+/** Réserve le prochain créneau d'appel ; `false` si l'attente dépasserait `MAX_QUEUE_WAIT_MS`. */
+async function waitForSlot(): Promise<boolean> {
+  const now = Date.now();
+  const slot = Math.max(now, nextSlot);
+  if (slot - now > MAX_QUEUE_WAIT_MS) return false;
+  nextSlot = slot + MIN_INTERVAL_MS;
+  if (slot > now) await sleep(slot - now);
+  return true;
+}
 
 interface RisqueDto {
   present: boolean;
@@ -94,31 +122,39 @@ export class GeorisquesRiskProvider implements RiskProvider {
     const recentFallback = GeorisquesRiskProvider.fallbackCache.get(cacheKey);
     if (recentFallback) return recentFallback;
 
-    try {
-      const response = await fetch(
-        `${this.baseUrl}/resultats_rapport_risque?latlon=${lon},${lat}`,
-        {
-          headers: { Accept: "application/json" },
-          // Le Data Cache de Next survit au redéploiement, là où le cache mémoire
-          // ci-dessus est propre au processus — c'est lui qui borne réellement le
-          // nombre d'appels à une API limitée à un par seconde.
-          next: { revalidate: 86400 },
-        },
-      );
-
-      if (!response.ok) {
-        console.warn(`Géorisques API error: ${response.status} ${response.statusText}`);
-        return this.cachedFallback(cacheKey);
+    // Deux tentatives : une erreur passagère se rattrape souvent au créneau suivant. Sans
+    // elle, un seul échec affichait le repli — au 12 rue Pasteur à Bordeaux, les argiles
+    // en rouge sur la carte apparaissaient ainsi « non renseignées ».
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      if (!(await waitForSlot())) {
+        console.warn("Géorisques : file d'attente trop longue, repli");
+        break;
       }
+      try {
+        const response = await fetch(
+          `${this.baseUrl}/resultats_rapport_risque?latlon=${lon},${lat}`,
+          {
+            headers: { Accept: "application/json" },
+            signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
+            // Le Data Cache de Next survit au redéploiement, là où le cache mémoire
+            // ci-dessus est propre au processus — c'est lui qui borne réellement le
+            // nombre d'appels à une API limitée à un par seconde.
+            next: { revalidate: 86400 },
+          },
+        );
 
-      const data = (await response.json()) as GeorisquesRapportResponse;
-      const result = this.parseRapport(data, scope);
-      GeorisquesRiskProvider.cache.set(cacheKey, result);
-      return result;
-    } catch (error) {
-      console.warn("Géorisques API error, using fallback:", error);
-      return this.cachedFallback(cacheKey);
+        if (response.ok) {
+          const data = (await response.json()) as GeorisquesRapportResponse;
+          const result = this.parseRapport(data, scope);
+          GeorisquesRiskProvider.cache.set(cacheKey, result);
+          return result;
+        }
+        console.warn(`Géorisques API error (tentative ${attempt}): ${response.status} ${response.statusText}`);
+      } catch (error) {
+        console.warn(`Géorisques API error (tentative ${attempt}):`, error);
+      }
     }
+    return this.cachedFallback(cacheKey);
   }
 
   /**

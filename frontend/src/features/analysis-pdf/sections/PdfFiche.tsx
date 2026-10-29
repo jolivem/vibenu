@@ -48,7 +48,7 @@ import {
   demographicsScoped,
 } from "@/components/analysis/populationIndicators";
 import { formatProximity } from "@/components/analysis/proximityFormat";
-import { RISK_LEVEL_BADGES, riskName, splitRisks } from "@/components/analysis/riskLevels";
+import { RISK_LEVEL_BADGES, riskBadgeLabel, riskName, splitRisks } from "@/components/analysis/riskLevels";
 import { sectionTitles } from "@/components/analysis/sections";
 import { primaryExam } from "@/components/analysis/schoolsModel";
 import { COLORS, FONTS } from "../pdfStyles";
@@ -772,14 +772,14 @@ export function PdfRisquesFiche({ risks }: { risks: RiskAnalysisDto }) {
         const badge = RISK_LEVEL_BADGES[risk.level];
         return (
           <View key={risk.code} style={s.badgeLine}>
-            <PdfBadge label={risksMessages.levels[risk.level]} background={badge.background} color={badge.color} dashed={badge.dashed} />
+            <PdfBadge label={riskBadgeLabel(risk, risksMessages)} background={badge.background} color={badge.color} dashed={badge.dashed} />
             <Text style={s.badgeText}>{riskName(risk, risksMessages)}</Text>
           </View>
         );
       })}
       {minor.length > 0 && (
         <Fact label={risksMessages.pdf.othersLabel}>
-          {join(minor.map((risk) => risksMessages.pdf.other(riskName(risk, risksMessages), risksMessages.levels[risk.level])))}
+          {join(minor.map((risk) => risksMessages.pdf.other(riskName(risk, risksMessages), riskBadgeLabel(risk, risksMessages))))}
         </Fact>
       )}
       {highlighted.length === 0 && minor.length === 0 && <Fact>{risksMessages.pdf.none}</Fact>}

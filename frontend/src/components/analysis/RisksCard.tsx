@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import type { RiskAnalysisDto, RiskCategoryDto } from "@/types/location-analysis";
 import type { RisksMessages } from "@/i18n/messages/fr/analysis/risks";
-import { RISK_LEVEL_BADGES, riskExplanation, riskMessage, riskName, splitRisks } from "./riskLevels";
+import { RISK_LEVEL_BADGES, riskBadgeLabel, riskExplanation, riskMessage, riskName, splitRisks } from "./riskLevels";
 import { CardDetail } from "./readingMode";
 
-function levelBadge(level: RiskCategoryDto["level"], m: RisksMessages) {
-  return <span className={RISK_LEVEL_BADGES[level].className}>{m.levels[level]}</span>;
+function levelBadge(risk: RiskCategoryDto, m: RisksMessages) {
+  return <span className={RISK_LEVEL_BADGES[risk.level].className}>{riskBadgeLabel(risk, m)}</span>;
 }
 
 /** Ce qu'est le risque, sous son nom — cf. `riskExplanation` pour la règle d'affichage. */
@@ -72,7 +72,7 @@ export function RiskList({
           {highlighted.map((risk) => (
             <div key={risk.code} className="risk-row risk-row--highlight">
               <div className="risk-row-header">
-                {levelBadge(risk.level, m)}
+                {levelBadge(risk, m)}
                 <span className="risk-name">{riskName(risk, m)}</span>
               </div>
               <p className="risk-message">{riskMessage(risk, m)}</p>
@@ -87,7 +87,7 @@ export function RiskList({
           {minor.map((risk) => (
             <div key={risk.code} className="risk-row">
               <div className="risk-row-header">
-                {levelBadge(risk.level, m)}
+                {levelBadge(risk, m)}
                 <span className="risk-name">{riskName(risk, m)}</span>
               </div>
               <RiskExplanation risk={risk} m={m} />

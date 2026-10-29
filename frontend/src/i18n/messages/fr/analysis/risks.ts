@@ -18,6 +18,11 @@ export const risks = {
     absent: "Absent",
   } satisfies Record<RiskCategoryDto["level"], string> as Record<RiskCategoryDto["level"], string>,
   /**
+   * Pastille quand Géorisques n'a pas répondu : « Non renseigné » laissait croire que la
+   * source n'avait rien sur l'adresse (12 rue Pasteur à Bordeaux, argiles pourtant en rouge).
+   */
+  unavailableBadge: "Indisponible",
+  /**
    * Noms des risques, par code Géorisques. Un code inconnu d'ici garde le nom envoyé par le
    * serveur.
    */

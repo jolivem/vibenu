@@ -11,6 +11,7 @@ export const risks: RisksMessages = {
     inconnu: "No data",
     absent: "None",
   },
+  unavailableBadge: "Unavailable",
   names: {
     inondation: "Flood risk",
     remonteeNappe: "Groundwater flooding",
