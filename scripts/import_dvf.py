@@ -13,6 +13,16 @@ Downloads DVF geolocalised CSV files from data.gouv.fr for all departments,
 filters sales of apartments and houses from the last 10 years, imports into
 PostgreSQL, then downloads cadastre parcels to replace point geometries with
 real parcel polygons.
+
+Corrections du 29/10/2026, trouvées par scripts/verify (contrôle face aux fichiers publics) :
+- **toutes les années publiées** (2021-2025 au 29/10/2026 : l'État ne publie que cinq ans).
+  L'import s'arrêtait à la première trouvée, 2024, si bien que le site n'avait qu'une année ;
+- **une ligne par vente, surface totale de ses logements**. Le fichier a une ligne par logement
+  (et parfois plusieurs pour un même logement, une par nature de culture du terrain) : on
+  gardait la première, et le prix d'une vente de deux appartements était divisé par la surface
+  d'un seul (−18 % sur le prix médian de Boën-sur-Lignon une fois corrigé) ;
+- **table construite à côté** (`dvf_transactions_new`) puis échangée en fin d'import : le site
+  garde ses prix pendant les heures que dure l'import.
 """
 
 import os
@@ -42,6 +52,14 @@ DEPARTMENTS = [
 
 BATCH_SIZE = 1000
 
+# Table construite pendant l'import, échangée avec `dvf_transactions` à la fin.
+TABLE = "dvf_transactions_new"
+
+# Colonnes qui identifient un logement dans une vente. Un même logement revient sur plusieurs
+# lignes quand le terrain a plusieurs natures de culture : ces colonnes-là ne changent pas.
+LOGEMENT_KEY = ["id_parcelle", "numero_volume", "lot1_numero", "lot2_numero", "lot3_numero",
+                "type_local", "surface_reelle_bati", "nombre_pieces_principales"]
+
 # Minimum date: 10 years ago
 MIN_DATE = (datetime.now() - timedelta(days=365 * 10)).strftime("%Y-%m-%d")
 
@@ -58,9 +76,9 @@ def setup_database(conn):
     """Create PostGIS extension and tables."""
     with conn.cursor() as cur:
         cur.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
-        cur.execute("DROP TABLE IF EXISTS dvf_transactions;")
-        cur.execute("""
-            CREATE TABLE dvf_transactions (
+        cur.execute(f"DROP TABLE IF EXISTS {TABLE};")
+        cur.execute(f"""
+            CREATE TABLE {TABLE} (
                 id SERIAL PRIMARY KEY,
                 id_mutation VARCHAR(30) NOT NULL,
                 id_parcelle VARCHAR(20),
@@ -69,6 +87,8 @@ def setup_database(conn):
                 valeur_fonciere NUMERIC,
                 surface_bati NUMERIC,
                 type_local VARCHAR(50),
+                -- Logements de la vente (appartements et maisons), et donc de sa surface.
+                nb_logements SMALLINT,
                 code_commune VARCHAR(5),
                 longitude DOUBLE PRECISION,
                 latitude DOUBLE PRECISION,
@@ -87,30 +107,30 @@ def setup_database(conn):
     print("Tables created.")
 
 
-def download_department_dvf(dept):
-    """Download DVF CSV for a department. Returns a DataFrame or None."""
-    for year in ["2024", "2023", "2022"]:
-        url = f"{DVF_BASE_URL}/{year}/departements/{dept}.csv.gz"
-        try:
-            response = requests.get(url, timeout=60)
-            if response.status_code == 200:
-                csv_data = gzip.decompress(response.content)
-                df = pd.read_csv(io.BytesIO(csv_data), dtype=str, low_memory=False)
-                return df
-        except Exception:
-            continue
+def available_years() -> list[str]:
+    """Les millésimes publiés (un dossier par année sous DVF_BASE_URL)."""
+    import re
 
-    for year in ["2024", "2023", "2022"]:
-        url = f"{DVF_BASE_URL}/{year}/departements/{dept}.csv"
-        try:
-            response = requests.get(url, timeout=60)
-            if response.status_code == 200:
-                df = pd.read_csv(io.BytesIO(response.content), dtype=str, low_memory=False)
-                return df
-        except Exception:
-            continue
+    r = requests.get(f"{DVF_BASE_URL}/", timeout=60)
+    r.raise_for_status()
+    return sorted(set(re.findall(r">(\d{4})/<", r.text)))
 
-    return None
+
+def download_department_dvf(dept, years):
+    """Toutes les années publiées d'un département, en un seul DataFrame. None si aucune."""
+    frames = []
+    for year in years:
+        for suffix, unzip in ((".csv.gz", True), (".csv", False)):
+            url = f"{DVF_BASE_URL}/{year}/departements/{dept}{suffix}"
+            try:
+                response = requests.get(url, timeout=120)
+            except Exception:
+                continue
+            if response.status_code == 200:
+                content = gzip.decompress(response.content) if unzip else response.content
+                frames.append(pd.read_csv(io.BytesIO(content), dtype=str, low_memory=False))
+                break
+    return pd.concat(frames, ignore_index=True) if frames else None
 
 
 def process_department_dvf(conn, dept, df):
@@ -165,8 +185,15 @@ def process_department_dvf(conn, dept, df):
     else:
         df["id_parcelle_val"] = ""
 
-    # Deduplicate by id_mutation (keep first occurrence)
-    df = df.drop_duplicates(subset=["id_mutation"], keep="first")
+    # Un logement par ligne : retirer les lignes répétées d'un même logement (une par nature
+    # de culture du terrain), puis une ligne par vente avec la surface totale de ses logements.
+    key = ["id_mutation"] + [c for c in LOGEMENT_KEY if c in df.columns]
+    df = df.drop_duplicates(subset=key, keep="first")
+    df["surface_bati"] = df["surface_bati"].fillna(0)
+    totals = df.groupby("id_mutation").agg(surface_totale=("surface_bati", "sum"), nb_logements=("surface_bati", "size"))
+    df = df.drop_duplicates(subset=["id_mutation"], keep="first").set_index("id_mutation")
+    df = df.join(totals).reset_index()
+    df["surface_bati"] = df["surface_totale"]
 
     if len(df) == 0:
         return 0
@@ -180,7 +207,7 @@ def process_department_dvf(conn, dept, df):
         if not (-180 <= lon <= 180 and -90 <= lat <= 90):
             continue
 
-        surface = float(row["surface_bati"]) if pd.notna(row["surface_bati"]) else None
+        surface = float(row["surface_bati"]) if pd.notna(row["surface_bati"]) and row["surface_bati"] > 0 else None
         id_parcelle = str(row["id_parcelle_val"]) if row["id_parcelle_val"] else None
 
         rows.append((
@@ -191,6 +218,7 @@ def process_department_dvf(conn, dept, df):
             float(row["valeur_fonciere"]),
             surface,
             str(row["type_local"]),
+            int(row["nb_logements"]),
             str(row["code_commune_val"]),
             lon,
             lat,
@@ -204,15 +232,15 @@ def process_department_dvf(conn, dept, df):
             batch = rows[i:i + BATCH_SIZE]
             execute_values(
                 cur,
-                """
-                INSERT INTO dvf_transactions
+                f"""
+                INSERT INTO {TABLE}
                     (id_mutation, id_parcelle, date_mutation, nature_mutation, valeur_fonciere,
-                     surface_bati, type_local, code_commune, longitude, latitude, geometry)
+                     surface_bati, type_local, nb_logements, code_commune, longitude, latitude, geometry)
                 VALUES %s
                 """,
                 batch,
                 template="""(
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                     ST_SetSRID(ST_MakePoint(%s, %s), 4326)
                 )""",
             )
@@ -226,7 +254,7 @@ def get_dvf_parcelle_ids(conn, dept):
     dept_pattern = dept + "%"
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT DISTINCT id_parcelle FROM dvf_transactions WHERE id_parcelle LIKE %s AND id_parcelle IS NOT NULL",
+            f"SELECT DISTINCT id_parcelle FROM {TABLE} WHERE id_parcelle LIKE %s AND id_parcelle IS NOT NULL",
             (dept_pattern,)
         )
         return {row[0] for row in cur.fetchall()}
@@ -305,8 +333,8 @@ def join_geometries(conn):
     """Update DVF transactions with cadastre parcel geometries."""
     print("Joining DVF transactions with cadastre geometries...")
     with conn.cursor() as cur:
-        cur.execute("""
-            UPDATE dvf_transactions d
+        cur.execute(f"""
+            UPDATE {TABLE} d
             SET geometry = c.geometry
             FROM tmp_cadastre_parcelles c
             WHERE d.id_parcelle = c.id
@@ -326,14 +354,33 @@ def cleanup_temp(conn):
 
 
 def create_indexes(conn):
-    """Create spatial and date indexes."""
+    """Index de la nouvelle table, sous des noms provisoires (l'ancienne table garde les siens)."""
     print("Creating indexes...")
     with conn.cursor() as cur:
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_dvf_geometry ON dvf_transactions USING GIST (geometry);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_dvf_date ON dvf_transactions (date_mutation);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_dvf_parcelle ON dvf_transactions (id_parcelle);")
+        cur.execute(f"CREATE INDEX idx_dvf_new_geometry ON {TABLE} USING GIST (geometry);")
+        cur.execute(f"CREATE INDEX idx_dvf_new_date ON {TABLE} (date_mutation);")
+        cur.execute(f"CREATE INDEX idx_dvf_new_parcelle ON {TABLE} (id_parcelle);")
+        cur.execute(f"CREATE INDEX idx_dvf_new_commune ON {TABLE} (code_commune);")
     conn.commit()
     print("Indexes created.")
+
+
+def swap_tables(conn):
+    """Remplace l'ancienne table par la nouvelle, en une transaction : aucun moment sans prix."""
+    with conn.cursor() as cur:
+        cur.execute("DROP TABLE IF EXISTS dvf_transactions_old;")
+        cur.execute("ALTER TABLE IF EXISTS dvf_transactions RENAME TO dvf_transactions_old;")
+        cur.execute(f"ALTER TABLE {TABLE} RENAME TO dvf_transactions;")
+        cur.execute("DROP TABLE IF EXISTS dvf_transactions_old;")
+        for name in ("geometry", "date", "parcelle", "commune"):
+            cur.execute(f"DROP INDEX IF EXISTS idx_dvf_{name};")
+            cur.execute(f"ALTER INDEX idx_dvf_new_{name} RENAME TO idx_dvf_{name};")
+        # Clé primaire et séquence gardent sinon leur nom provisoire, et l'import suivant ne
+        # pourrait plus recréer `dvf_transactions_new` (noms uniques dans le schéma).
+        cur.execute("ALTER INDEX IF EXISTS dvf_transactions_new_pkey RENAME TO dvf_transactions_pkey;")
+        cur.execute("ALTER SEQUENCE IF EXISTS dvf_transactions_new_id_seq RENAME TO dvf_transactions_id_seq;")
+    conn.commit()
+    print("Table dvf_transactions remplacée.")
 
 
 def main():
@@ -344,9 +391,11 @@ def main():
         # Phase 1: Import DVF transactions
         print("=== Phase 1: Import DVF transactions ===")
         total_dvf = 0
+        years = available_years()
+        print(f"Millésimes publiés : {', '.join(years)}")
         for dept in DEPARTMENTS:
             print(f"Processing DVF for department {dept}...")
-            df = download_department_dvf(dept)
+            df = download_department_dvf(dept, years)
             if df is None:
                 print(f"  Warning: could not download DVF data for department {dept}")
                 continue
@@ -376,6 +425,7 @@ def main():
         # Phase 4: Cleanup and index
         cleanup_temp(conn)
         create_indexes(conn)
+        swap_tables(conn)
 
         print(f"\nImport completed. {total_dvf} DVF transactions, {total_parcels} parcels matched.")
     finally:

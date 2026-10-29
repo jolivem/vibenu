@@ -401,9 +401,12 @@ pnpm dev
 ### DVF (prix immobiliers)
 - **Source** : DVF géolocalisé depuis [data.gouv.fr](https://files.data.gouv.fr/geo-dvf/latest/csv/)
 - Données importées dans PostgreSQL/PostGIS via le script `scripts/import_dvf.py`
-- Import de toute la France (95 départements), ventes d'appartements et maisons sur 10 ans
+- Import de toute la France, ventes d'appartements et maisons, **toutes les années publiées** (l'État ne publie que les cinq dernières : 2021-2025 au 29/10/2026)
+- **Une ligne par vente** : sa surface est la somme de ses logements, chacun compté une fois (le fichier répète un logement sur plusieurs lignes quand le terrain a plusieurs natures de culture) ; colonne `nb_logements`
+- L'import construit `dvf_transactions_new` puis l'échange avec `dvf_transactions` : le site garde ses prix pendant l'import
+- Le prix médian affiché porte sur les 100 ventes les plus proches à moins d'1 km (`scripts/verify` le recalcule depuis les fichiers publics)
 - Licence : Licence Ouverte Etalab 2.0
-- **Dernier import** : millésime DVF 2024 (transactions jusqu'au 2024-12-31), importé en DB le 2026-05-02
+- **Import du 2026-05-02 incomplet** : une seule année (2024), et le prix d'une vente de plusieurs logements divisé par la surface d'un seul. Corrigé dans le script le 29/10/2026 : à relancer
 - Mise à jour : semestrielle (avril et octobre) — relancer `python scripts/import_dvf.py` pour récupérer le nouveau millésime data.gouv.fr
 
 ### EEA — indicateurs annuels par station (qualité de l'air)

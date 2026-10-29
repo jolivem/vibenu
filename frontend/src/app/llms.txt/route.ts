@@ -28,7 +28,7 @@ Chaque chiffre vient d'une source publique citée sur la page. Aucun score globa
 
 ## Ce qu'affiche l'analyse d'une adresse
 
-- Immobilier : ventes réelles des dix dernières années à moins d'un kilomètre (base DVF) et prix médian au m² ; loyers d'annonce de la commune (ANIL) et zone tendue ; DPE des logements de l'adresse, un par logement, avec date, surface, classe et consommation (ADEME) ; parcelle cadastrale et zone du PLU (IGN, Géoportail de l'Urbanisme).
+- Immobilier : ventes réelles à moins d'un kilomètre (base DVF, cinq dernières années publiées) et prix médian au m² des 100 plus proches ; loyers d'annonce de la commune (ANIL) et zone tendue ; DPE des logements de l'adresse, un par logement, avec date, surface, classe et consommation (ADEME) ; parcelle cadastrale et zone du PLU (IGN, Géoportail de l'Urbanisme).
 - Enseignement : collèges et lycées alentour, réussite aux examens, valeur ajoutée, indice de position sociale (ministère de l'Éducation nationale).
 - Proximité et transports : commerces, services, arrêts et gares, avec le temps à pied (INSEE BPE, OpenStreetMap, transport.data.gouv.fr).
 - Sécurité : faits de délinquance enregistrés, à l'échelle de la commune, comparés aux communes de même taille (SSMSI).

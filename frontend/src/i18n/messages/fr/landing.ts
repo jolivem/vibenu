@@ -211,7 +211,7 @@ export const landing = {
       {
         question: "Où trouver le prix au m² des ventes autour d'une adresse ?",
         answer:
-          "Dans la rubrique Immobilier. Saisissez l'adresse : les ventes des dix dernières années à moins d'un kilomètre, enregistrées dans la base publique DVF, s'affichent sur la carte avec leur prix, leur surface et leur date, et le prix médian au m² en est tiré.",
+          "Dans la rubrique Immobilier. Saisissez l'adresse : les ventes enregistrées dans la base publique DVF (les cinq dernières années publiées) à moins d'un kilomètre s'affichent sur la carte avec leur prix, leur surface et leur date ; le prix médian au m² est tiré des 100 plus proches.",
       },
       ...(showEnergy
         ? [

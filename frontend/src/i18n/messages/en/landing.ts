@@ -179,7 +179,7 @@ export const landing: LandingMessages = {
       {
         question: "Where can I find the price per m² of sales around an address?",
         answer:
-          "In the Property section. Enter the address: sales from the last ten years within one kilometre, recorded in the public DVF database, appear on the map with their price, floor area and date, and the median price per m² is derived from them.",
+          "In the Property section. Enter the address: sales recorded in the public DVF database (the last five published years) within one kilometre appear on the map with their price, floor area and date; the median price per m² is taken from the 100 closest.",
       },
       ...(showEnergy
         ? [
