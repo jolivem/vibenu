@@ -209,7 +209,11 @@ export class LocationAnalysisUseCase implements LocationAnalysisService {
     const [mobility, risks, realEstate, airQuality, neighborhood, cadastre, demographics, communeContour, elections, climate, schoolSector, security, municipales, communeEquipment, floodZones, localTax, rents, schools, energy] =
       await Promise.all([
         timed("mobilite", this.dependencies.mobilityService.getMobilityData(input.lat, input.lon)),
-        timed("risques", this.dependencies.riskService.getRiskData(input.lat, input.lon)),
+        // Le code sert l'historique des catastrophes naturelles : celui de la commune cherchée
+        // en mode commune, comme pour la fiscalité.
+        timed("risques", this.dependencies.riskService.getRiskData(
+          input.lat, input.lon, undefined, mode === "commune" ? contourCitycode : codeInsee,
+        )),
         timed("dvf", this.dependencies.realEstateService.getMarketData(input.lat, input.lon, codeInsee, { mode })),
         timed("air", this.dependencies.airQualityService.getAirQualityData(input.lat, input.lon)),
         timed("voisinage", neighborhoodPromise),

@@ -44,7 +44,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `address` | Recherche et géocodage inverse | Géoplateforme IGN (data.geopf.fr) |
 | `analysis` | Orchestration de l'analyse complète | - |
 | `mobility` | Transports et mobilité | transport.data.gouv.fr (GTFS) |
-| `risks` | Risques naturels/technologiques | Géorisques (georisques.gouv.fr) |
+| `risks` | Risques naturels/technologiques | Géorisques (georisques.gouv.fr) ; carte des argiles 2026 et arrêtés CatNat (GASPAR) importés |
 | `real-estate` | Contexte immobilier et prix | DVF géolocalisé (PostgreSQL/PostGIS) |
 | `cadastre` | Parcelle, zone PLU, prescriptions | API Carto IGN (apicarto.ign.fr) |
 | `air-quality` | Qualité de l'air | EEA, indicateurs annuels des stations de fond (Postgres local) |
@@ -312,6 +312,10 @@ python import_zone_tendue.py
 # (1 574 petits fichiers, mis en cache dans scripts/data/climate/fiches/)
 python import_climate_fiches.py
 
+# Géorisques en local (PLAN-GEORISQUES.md) — migration 028 d'abord
+python import_argiles.py   # carte d'exposition aux argiles 2026, ~440 Mo, ~3 min
+python import_catnat.py    # arrêtés de catastrophe naturelle (GASPAR), ~8 Mo — à relancer chaque mois
+
 # Importer les indicateurs annuels des stations françaises sur 10 ans — moyennes NO2 / PM2.5 / PM10, jours de pic d'ozone (EEA, ~2 min, API publique)
 python import_air_quality_eea.py
 
@@ -353,6 +357,7 @@ Migrations actuelles :
 - `023-rents.sql` — loyers d'annonce par commune (`rent_commune`) et contours simplifiés des communes (`commune_shape`)
 - `024-schools.sql` — collèges et lycées (`school_establishment`, indexée spatialement) et données par établissement telles que publiées (`school_data`, JSONB), avec la date de chaque chargement (`school_dataset_import`)
 - `025-crime-tranches.sql` — tranche de population de chaque commune pour le repère « communes de même taille » de la délinquance (`crime_commune_tranche`) ; les taux des tranches sont dans `crime_reference` (codes `T1` à `T5`)
+- `028-georisques-local.sql` — carte d'exposition aux argiles 2026 (`argiles_exposition`, indexée spatialement), arrêtés de catastrophe naturelle (`catnat_arrete`) et édition de chaque jeu (`georisques_import`)
 - `021-card-insights-lang.sql` — colonne `lang` du cache des mini-synthèses (une phrase par langue)
 - `022-air-quality-stations.sql` — indicateurs annuels par station de mesure (`air_quality_station_annual`, source EEA)
 - `016-municipales-2026.sql` — municipales 2026
@@ -469,6 +474,25 @@ Les deux sources sont combinées et dédupliquées pour un résultat complet :
 - **Composition par métrique** : pour un point donné, on prend la station la plus proche **disposant de chaque indicateur**, à moins de 30 km pour la température et la pluie, de 60 km pour l'ensoleillement. Au-delà, l'indicateur n'est pas affiché. La station affichée est celle de la température
 - Cache 30 jours par coordonnées arrondies (~11 km) — en pratique les normales ne bougent jamais donc le cache n'expire utilement qu'au redémarrage du serveur
 - **Setup requis** : migrations `008-climate-station-normales.sql` et `013-climate-station-monthly.sql`, puis `python scripts/import_climate_fiches.py`
+
+### Géorisques en local — argiles et catastrophes naturelles
+
+L'API `resultats_rapport_risque` est limitée à un appel par seconde, et bloque l'adresse IP
+au-delà : deux jeux sont donc importés (voir [PLAN-GEORISQUES.md](PLAN-GEORISQUES.md)).
+
+- **Carte d'exposition au retrait-gonflement des argiles 2026** (BRGM, arrêté du 9/01/2026, en
+  vigueur au 1/07/2026) : [AleaRG_2025_Fxx_L93.zip](https://files.georisques.fr/argiles/2025/AleaRG_2025_Fxx_L93.zip),
+  ~440 Mo, Licence Ouverte. 121 399 zones (faible, moyenne, forte), simplifiées à 10 m. La
+  ville de Paris n'est pas couverte. **Elle ne sert que quand le rapport Géorisques manque** :
+  quand il répond, son niveau fait foi (c'est la lecture de l'état des risques remis à
+  l'acheteur), et un désaccord avec la carte est journalisé
+- **Arrêtés de catastrophe naturelle** (base GASPAR) : [gaspar.zip](https://files.georisques.fr/GASPAR/gaspar.zip),
+  ~8 Mo, Licence Ouverte, refait au fil des publications au JO. Affichés dans la card Risques
+  (« 50 reconnaissances depuis 1982 », par péril) et le PDF, avec la date du dernier JO du
+  fichier. Maille communale : un arrondissement prend les arrêtés de sa ville. Le fichier du
+  5/10/2026 s'arrête au JO du 23/01/2026 : la card le dit
+- Les adresses de téléchargement viennent d'un service interne au site de Géorisques, non
+  documenté : les scripts échouent bruyamment si le format change
 
 ### Zones inondables — zonages PPR (Géoportail de l'Urbanisme)
 
@@ -608,6 +632,8 @@ claireadresse/
 │   ├── import_rents.py               # Import loyers d'annonce ANIL + contours de communes
 │   ├── import_zone_tendue.py         # Import zonage zone tendue (TLV)
 │   ├── import_climate_fiches.py      # Normales Météo-France 1991-2020 (fiches officielles)
+│   ├── import_argiles.py             # Carte d'exposition aux argiles 2026 (Géorisques)
+│   ├── import_catnat.py              # Arrêtés de catastrophe naturelle (GASPAR)
 │   ├── import_atmo_*.py              # Indices ATMO annuels (Paris, Lyon, Marseille)
 │   ├── import_school_sectors_paris.py # Secteurs de collège (opendata.paris.fr)
 │   ├── import_schools.py             # Collèges, lycées et données par établissement (data.education.gouv.fr)

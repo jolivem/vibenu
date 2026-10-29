@@ -80,6 +80,8 @@ export interface RiskCategoryDto {
   communeLevel?: "élevé" | "modéré" | "présent" | "faible";
   /** Vrai quand l'appel à Géorisques a échoué : le niveau « inconnu » est alors un repli. */
   unavailable?: boolean;
+  /** Niveau lu dans la carte des argiles importée, faute de rapport Géorisques. */
+  localSource?: "argiles-2026";
 }
 
 export interface RiskAnalysisDto {
@@ -93,6 +95,15 @@ export interface RiskAnalysisDto {
    * les risques en texte et n'ont pas de carte où les poser.
    */
   floodZones?: FloodZoneDto[];
+  /** Reconnaissances de catastrophe naturelle de la commune (GASPAR) ; voir `CatnatHistory`. */
+  catnat?: CatnatHistoryDto | null;
+}
+
+export interface CatnatHistoryDto {
+  total: number;
+  perils: { code: string; count: number; lastYear: number }[];
+  villeEntiere: boolean;
+  dataUpTo: string | null;
 }
 
 /** Une assiette de PPR inondation : le nom du plan, et son emprise. */

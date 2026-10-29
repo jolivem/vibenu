@@ -2,7 +2,11 @@ import type { FloodWindow, FloodZone, RiskAnalysis } from "../domain/risk.types"
 import type { RiskScope } from "../infrastructure/risk.provider";
 
 export interface RiskService {
-  getRiskData(lat: number, lon: number, scope?: RiskScope): Promise<RiskAnalysis>;
+  /**
+   * `citycode` ouvre les données importées : l'historique des catastrophes naturelles de la
+   * commune, et la carte des argiles quand le rapport Géorisques manque.
+   */
+  getRiskData(lat: number, lon: number, scope?: RiskScope, citycode?: string): Promise<RiskAnalysis>;
   /**
    * Les emprises de PPR inondation d'une fenêtre, pour la carte.
    *

@@ -48,7 +48,7 @@ import {
   demographicsScoped,
 } from "@/components/analysis/populationIndicators";
 import { formatProximity } from "@/components/analysis/proximityFormat";
-import { RISK_LEVEL_BADGES, riskBadgeLabel, riskName, splitRisks } from "@/components/analysis/riskLevels";
+import { RISK_LEVEL_BADGES, catnatLines, riskBadgeLabel, riskName, splitRisks } from "@/components/analysis/riskLevels";
 import { sectionTitles } from "@/components/analysis/sections";
 import { primaryExam } from "@/components/analysis/schoolsModel";
 import { COLORS, FONTS } from "../pdfStyles";
@@ -769,6 +769,7 @@ export function PdfRisquesFiche({ risks }: { risks: RiskAnalysisDto }) {
   } = usePdfMessages();
   const SECTION_TITLES = sectionTitles(sections, FEATURES.showAirQuality);
   const { highlighted, minor } = splitRisks(risks.categories);
+  const catnat = catnatLines(risks, risksMessages);
 
   return (
     <Block title={SECTION_TITLES.risques}>
@@ -791,6 +792,12 @@ export function PdfRisquesFiche({ risks }: { risks: RiskAnalysisDto }) {
         </Fact>
       )}
       {highlighted.length === 0 && minor.length === 0 && <Fact>{risksMessages.pdf.none}</Fact>}
+      {catnat && (
+        <>
+          <Fact label={risksMessages.catnat.title}>{join([catnat.summary, ...catnat.perils])}</Fact>
+          <Fact>{catnat.source}</Fact>
+        </>
+      )}
     </Block>
   );
 }

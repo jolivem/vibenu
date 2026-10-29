@@ -1,4 +1,7 @@
 import type { RisksMessages } from "../../fr/analysis/risks";
+import { createFormat } from "../../../format";
+
+const f = createFormat("en");
 
 export const risks: RisksMessages = {
   title: "Natural risks",
@@ -36,6 +39,10 @@ export const risks: RisksMessages = {
   message: (p) => {
     if (p.unavailable) {
       return "Géorisques data unavailable — check manually on georisques.gouv.fr.";
+    }
+    if (p.clayMap && (p.level === "élevé" || p.level === "modéré" || p.level === "faible")) {
+      const exposure = { élevé: "⚠️ High exposure", modéré: "Medium exposure", faible: "Low exposure" }[p.level];
+      return `${exposure} on the 2026 clay shrink-swell exposure map (BRGM). The Géorisques report was unavailable at the time of the analysis: check on georisques.gouv.fr.`;
     }
     const suffix = p.detail ? ` (${p.detail})` : "";
     const scope = p.communeFallback ? ", at commune level — not established at the address" : "";
@@ -89,6 +96,39 @@ export const risks: RisksMessages = {
     ruptureBarrage: "Commune within the theoretical flood wave of a large dam.",
     risqueMinier:
       "Aftermath of old mining: subsidence, localised collapses or rising water.",
+  },
+  catnat: {
+    title: "Recognised natural disasters",
+    summary: (total, villeEntiere) =>
+      total === 0
+        ? "No recognised natural disaster for the municipality since 1982."
+        : `${f.int(total)} recognised natural disaster${total > 1 ? "s" : ""} since 1982, ${villeEntiere ? "for the whole city (the decrees do not distinguish arrondissements)" : "for the municipality"}.`,
+    peril: (name, count, lastYear) => `${name}: ${f.int(count)} (latest episode in ${lastYear})`,
+    perils: {
+      ICB: "Floods and mudflows",
+      SEC: "Drought (clay soils)",
+      MVT: "Ground movements",
+      TMP: "Storm",
+      CMV: "Wave impact",
+      GLT: "Landslide",
+      PDN: "Snow load",
+      IRN: "Groundwater flooding",
+      GRL: "Hail",
+      SEI: "Earthquake",
+      AVA: "Avalanche",
+      EFA: "Subsidence or collapse",
+      VCY: "Cyclonic winds",
+      DIV: "Other",
+      ECB: "Rockfall",
+      RAZ: "Tidal wave",
+      LVT: "Debris flow",
+      COB: "Mudflow",
+      GET: "Landslide and subsidence",
+      VOL: "Volcanic eruption",
+      GER: "Landslide and rockfall",
+    },
+    source: (dataUpTo) =>
+      `GASPAR database (Géorisques)${dataUpTo ? `, decrees published in the Journal officiel up to ${f.dateLong(dataUpTo)}` : ""}. A recognition opens compensation for those affected in the municipality; it does not mean every home was hit.`,
   },
   pdf: {
     othersLabel: "Other risks",

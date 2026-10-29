@@ -1,5 +1,6 @@
 import type { RiskService } from "./risk.service";
-import type { FloodWindow, FloodZone, RiskAnalysis } from "../domain/risk.types";
+import type { FloodWindow, FloodZone, RiskAnalysis, RiskCategory } from "../domain/risk.types";
+import type { ClayExposure, PostgisLocalRiskProvider } from "../infrastructure/local-risk.provider";
 import type { RiskProvider, RiskScope } from "../infrastructure/risk.provider";
 import type { FloodZoneProvider } from "../infrastructure/flood-zone.provider";
 import type { RiskCategoryLevel } from "../../../server-shared/domain/common.types";
@@ -13,6 +14,8 @@ export class RiskServiceImpl implements RiskService {
   constructor(
     private readonly riskProvider: RiskProvider,
     private readonly floodZoneProvider?: FloodZoneProvider,
+    /** Données Géorisques importées (argiles, GASPAR). Optionnel, comme le précédent. */
+    private readonly localProvider?: PostgisLocalRiskProvider,
   ) {}
 
   async getFloodZones(window: FloodWindow): Promise<FloodZone[]> {
@@ -20,8 +23,17 @@ export class RiskServiceImpl implements RiskService {
     return this.floodZoneProvider.getFloodZones(window);
   }
 
-  async getRiskData(lat: number, lon: number, scope?: RiskScope): Promise<RiskAnalysis> {
-    const categories = await this.riskProvider.getLocationRisks(lat, lon, scope);
+  async getRiskData(lat: number, lon: number, scope?: RiskScope, citycode?: string): Promise<RiskAnalysis> {
+    const local = this.localProvider;
+    const [reported, clay, catnat] = await Promise.all([
+      this.riskProvider.getLocationRisks(lat, lon, scope),
+      // La carte des argiles se lit au point : rien à en tirer pour une page de ville.
+      local && scope !== "commune" ? local.getClayExposure(lat, lon, citycode) : Promise.resolve(null),
+      local && citycode ? local.getCatnat(citycode) : Promise.resolve(null),
+    ]);
+    const categories = reported.map((category) =>
+      category.code === "retraitGonflementArgile" ? withClayMap(category, clay) : category,
+    );
 
     // « présent » passe devant « faible » : un risque que Géorisques signale sans le
     // graduer n'est pas un risque connu comme faible. « inconnu » passe devant
@@ -55,6 +67,38 @@ export class RiskServiceImpl implements RiskService {
     return {
       categories,
       level,
+      ...(local && citycode ? { catnat } : {}),
     };
   }
+}
+
+const CLAY_LEVELS: Record<1 | 2 | 3, RiskCategory["level"]> = { 1: "faible", 2: "modéré", 3: "élevé" };
+const CLAY_WORDS: Record<0 | 1 | 2 | 3, string> = { 0: "a priori nulle", 1: "faible", 2: "moyenne", 3: "forte" };
+
+/**
+ * Les argiles, quand le rapport Géorisques a manqué : le niveau de la carte d'exposition 2026
+ * importée. Quand le rapport a répondu, il fait foi — c'est la lecture que reprend l'état des
+ * risques remis à l'acheteur — et un désaccord avec la carte est seulement journalisé.
+ */
+function withClayMap(category: RiskCategory, clay: ClayExposure | null): RiskCategory {
+  if (!clay || !clay.covered) return category;
+  if (!category.unavailable) {
+    const expected = clay.niveau === 0 ? "absent" : CLAY_LEVELS[clay.niveau];
+    if (category.level !== "inconnu" && category.level !== expected) {
+      console.warn(`Argiles : Géorisques « ${category.level} », carte 2026 « ${expected} »`);
+    }
+    return category;
+  }
+  const level = clay.niveau === 0 ? "absent" : CLAY_LEVELS[clay.niveau];
+  return {
+    code: category.code,
+    name: category.name,
+    level,
+    message:
+      `Exposition ${CLAY_WORDS[clay.niveau]} sur la carte des argiles 2026 (BRGM) ; ` +
+      "rapport Géorisques indisponible, à confirmer sur georisques.gouv.fr.",
+    statusDetail: `Exposition ${CLAY_WORDS[clay.niveau]} (carte 2026)`,
+    communeFallback: false,
+    localSource: "argiles-2026",
+  };
 }

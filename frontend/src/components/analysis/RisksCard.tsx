@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { RiskAnalysisDto, RiskCategoryDto } from "@/types/location-analysis";
 import type { RisksMessages } from "@/i18n/messages/fr/analysis/risks";
-import { RISK_LEVEL_BADGES, riskBadgeLabel, riskExplanation, riskMessage, riskName, splitRisks } from "./riskLevels";
+import { RISK_LEVEL_BADGES, catnatLines, riskBadgeLabel, riskExplanation, riskMessage, riskName, splitRisks } from "./riskLevels";
 import { CardDetail } from "./readingMode";
 
 function levelBadge(risk: RiskCategoryDto, m: RisksMessages) {
@@ -38,6 +38,8 @@ export function RisksCard({
       <RiskList risks={risks} m={m} only="highlighted" />
       {splitRisks(risks.categories).highlighted.length === 0 && <p className="risk-none">{m.noHighlighted}</p>}
 
+      <CatnatHistory risks={risks} m={m} />
+
       <CardDetail>
         <RiskList risks={risks} m={m} only="minor" />
 
@@ -46,6 +48,30 @@ export function RisksCard({
         ) : null}
       </CardDetail>
     </section>
+  );
+}
+
+/**
+ * Les catastrophes naturelles reconnues sur la commune (GASPAR). Placées dans l'essentiel :
+ * « 22 sécheresses reconnues » se lit avec la pastille des argiles, et l'état des risques
+ * remis à l'acheteur les mentionne aussi.
+ */
+function CatnatHistory({ risks, m }: { risks: RiskAnalysisDto; m: RisksMessages }) {
+  const lines = catnatLines(risks, m);
+  if (!lines) return null;
+  return (
+    <div className="risk-catnat">
+      <h3>{m.catnat.title}</h3>
+      <p>{lines.summary}</p>
+      {lines.perils.length > 0 && (
+        <ul>
+          {lines.perils.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      )}
+      <p className="risk-explain">{lines.source}</p>
+    </div>
   );
 }
 

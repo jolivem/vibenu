@@ -1,4 +1,7 @@
 import type { RiskCategoryDto } from "@/types/location-analysis";
+import { createFormat } from "../../../format";
+
+const f = createFormat("fr");
 
 /**
  * Card « Risques naturels » : titre, niveaux, noms, messages et explications. Seul le
@@ -60,9 +63,15 @@ export const risks = {
     /** Libellé du niveau de la commune, quand celui de l'adresse manque. */
     communeLevel: string | null;
     unavailable: boolean;
+    /** Niveau lu sur la carte des argiles 2026 importée, faute de rapport Géorisques. */
+    clayMap: boolean;
   }) => {
     if (p.unavailable) {
       return "Données Géorisques indisponibles — vérifier manuellement sur georisques.gouv.fr.";
+    }
+    if (p.clayMap && (p.level === "élevé" || p.level === "modéré" || p.level === "faible")) {
+      const exposure = { élevé: "⚠️ Exposition forte", modéré: "Exposition moyenne", faible: "Exposition faible" }[p.level];
+      return `${exposure} sur la carte d'exposition aux argiles 2026 (BRGM). Rapport Géorisques indisponible au moment de l'analyse : à confirmer sur georisques.gouv.fr.`;
     }
     const suffix = p.detail ? ` (${p.detail})` : "";
     // Dire d'où vient la gravité : à l'échelle de la commune, elle ne se transpose pas
@@ -141,6 +150,45 @@ export const risks = {
     risqueMinier:
       "Séquelles d'anciennes exploitations minières : affaissements, effondrements localisés ou remontées d'eau.",
   } as Record<string, string>,
+  /**
+   * Reconnaissances de l'état de catastrophe naturelle de la commune (base GASPAR). Le régime
+   * date de 1982 ; une reconnaissance porte sur un péril et une période.
+   */
+  catnat: {
+    title: "Catastrophes naturelles reconnues",
+    summary: (total: number, villeEntiere: boolean) =>
+      total === 0
+        ? "Aucune reconnaissance de l'état de catastrophe naturelle pour la commune depuis 1982."
+        : `${f.int(total)} reconnaissance${total > 1 ? "s" : ""} de l'état de catastrophe naturelle depuis 1982, ${villeEntiere ? "pour la ville entière (les arrêtés ne distinguent pas les arrondissements)" : "pour la commune"}.`,
+    peril: (name: string, count: number, lastYear: number) =>
+      `${name} : ${f.int(count)} (dernier épisode en ${lastYear})`,
+    /** Péril par code du Journal officiel ; un code inconnu d'ici s'affiche tel quel. */
+    perils: {
+      ICB: "Inondations et coulées de boue",
+      SEC: "Sécheresse (argiles)",
+      MVT: "Mouvements de terrain",
+      TMP: "Tempête",
+      CMV: "Chocs mécaniques des vagues",
+      GLT: "Glissement de terrain",
+      PDN: "Poids de la neige",
+      IRN: "Inondations par remontée de nappe",
+      GRL: "Grêle",
+      SEI: "Secousse sismique",
+      AVA: "Avalanche",
+      EFA: "Effondrement ou affaissement",
+      VCY: "Vents cycloniques",
+      DIV: "Divers",
+      ECB: "Éboulement ou chute de blocs",
+      RAZ: "Raz de marée",
+      LVT: "Lave torrentielle",
+      COB: "Coulée de boue",
+      GET: "Glissement et effondrement de terrain",
+      VOL: "Éruption volcanique",
+      GER: "Glissement et éboulement rocheux",
+    } as Record<string, string>,
+    source: (dataUpTo: string | null) =>
+      `Base GASPAR (Géorisques)${dataUpTo ? `, arrêtés publiés au Journal officiel jusqu'au ${f.dateLong(dataUpTo)}` : ""}. Une reconnaissance ouvre l'indemnisation des sinistrés de la commune ; elle ne dit pas que chaque logement a été touché.`,
+  },
   /** Fiche PDF. */
   pdf: {
     othersLabel: "Autres risques",

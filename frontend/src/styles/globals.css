@@ -4280,6 +4280,26 @@ html {
   color: var(--muted);
 }
 
+/* Catastrophes naturelles reconnues de la commune, sous les risques mis en avant. */
+.risk-catnat {
+  margin-top: 16px;
+  font-size: 0.875rem;
+}
+
+.risk-catnat h3 {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+}
+
+.risk-catnat p {
+  margin: 0;
+}
+
+.risk-catnat ul {
+  margin: 6px 0;
+  padding-left: 18px;
+}
+
 /* Sécurité, essentiel, téléphone : la valeur et ses repères passent sous le nom, qui
    sinon se tasse sur trois lignes à côté d'eux. */
 @media (max-width: 560px) {

@@ -33,6 +33,8 @@ Les autres sources sont à jour.
 | Carte scolaire de Paris | `import_school_sectors_paris.py` | 770 secteurs | inchangé depuis le 3 mars 2026 | Non |
 | Qualité de l'air, Paris | `import_atmo_paris.py` | années 2021-2025 | inchangé depuis le 11 mars 2026 | Non |
 | Normales climatiques Météo-France | `import_climate_fiches.py` | fiches climatologiques 1991-2020 (`FICHECLIM_*.data`) | rééditées par Météo-France, mêmes normales jusqu'en 2031 | Non |
+| Argiles, carte d'exposition 2026 (Géorisques) | `import_argiles.py` | `AleaRG_2025_Fxx_L93.zip`, importée le 29/10/2026 | aucune nouvelle édition annoncée | Non |
+| Catastrophes naturelles (GASPAR) | `import_catnat.py` | fichier du 5/10/2026, dernier JO le 23/01/2026 | refait au fil des JO : **à relancer chaque mois** | Oui, mensuel |
 
 Non vérifiés : `import_atmo_lyon.py` et `import_atmo_marseille.py`, qui lisent un fichier déposé à
 la main et non une source en ligne.

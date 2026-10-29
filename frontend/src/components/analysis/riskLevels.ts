@@ -59,6 +59,20 @@ export function riskBadgeLabel(risk: RiskCategoryDto, m: RisksMessages): string 
   return risk.unavailable ? m.unavailableBadge : m.levels[risk.level];
 }
 
+/**
+ * L'historique des catastrophes naturelles en lignes : le résumé, puis une ligne par péril
+ * (« Sécheresse (argiles) : 22 (dernier épisode en 2022) »). `null` sans donnée importée.
+ */
+export function catnatLines(risks: RiskAnalysisDto, m: RisksMessages): { summary: string; perils: string[]; source: string } | null {
+  const c = risks.catnat;
+  if (!c) return null;
+  return {
+    summary: m.catnat.summary(c.total, c.villeEntiere),
+    perils: c.perils.map((p) => m.catnat.peril(m.catnat.perils[p.code] ?? p.code, p.count, p.lastYear)),
+    source: m.catnat.source(c.dataUpTo),
+  };
+}
+
 /** Nom du risque dans la langue de la page ; à défaut, celui que le serveur envoie. */
 export function riskName(risk: RiskCategoryDto, m: RisksMessages): string {
   return m.names[risk.code] ?? risk.name;
@@ -73,5 +87,6 @@ export function riskMessage(risk: RiskCategoryDto, m: RisksMessages): string {
     communeFallback: Boolean(risk.communeFallback),
     communeLevel: risk.communeLevel ? m.levels[risk.communeLevel] : null,
     unavailable: Boolean(risk.unavailable),
+    clayMap: risk.localSource === "argiles-2026",
   });
 }

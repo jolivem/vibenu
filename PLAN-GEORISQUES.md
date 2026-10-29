@@ -1,6 +1,6 @@
 # Géorisques : dépendre moins de l'API
 
-Statut (29/10/2026) : **plan à valider**. Les adresses et les volumes ont été relevés le
+Statut (29/10/2026) : **validé, phase 1 en cours** (voir « Décisions » en fin de document). Les adresses et les volumes ont été relevés le
 29/10/2026.
 
 ## Pourquoi
@@ -95,8 +95,19 @@ par une petite emprise autour du point. Testé au 12 rue Pasteur :
 - **Téléchargement** : les adresses viennent d'un service interne au site de Géorisques, non
   documenté. Elles peuvent changer ; le script d'import doit échouer bruyamment.
 
-## Questions à trancher
+## Décisions (29/10/2026)
 
-1. Phase 1 : les quatre jeux (argiles, radon, séisme, GASPAR), ou d'abord argiles et GASPAR ?
-2. L'historique des catastrophes naturelles : dans la card Risques, ou dans une card à part ?
-3. Le WFS au point : à tester sérieusement comme remplaçant de l'API, ou seulement en secours ?
+1. **Phase 1 : argiles et GASPAR d'abord.** Radon et zonage sismique viendront ensuite.
+2. **L'historique des catastrophes naturelles va dans la card Risques**, sous les risques.
+3. **Le WFS au point reste un secours**, non branché tant qu'on ne connaît pas sa limite
+   d'appels : les données importées passent en premier, l'API complète les libellés officiels.
+
+## Avancement
+
+- **Phase 1, argiles et GASPAR — faite le 29/10/2026.** Migration 028, `import_argiles.py`,
+  `import_catnat.py`, `PostgisLocalRiskProvider`. La carte des argiles remplace le repli
+  « Indisponible » quand l'API ne répond pas (12 rue Pasteur : « Exposition forte ») ;
+  l'historique des catastrophes naturelles est dans la card Risques et le PDF.
+- À faire : radon et zonage sismique (phase 1 bis) ; contrôle `scripts/verify` de l'historique
+  face à l'API `gaspar/catnat` ; vérifier la fraîcheur de GASPAR (le fichier du 5/10/2026
+  s'arrête au JO du 23/01/2026).

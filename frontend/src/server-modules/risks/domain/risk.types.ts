@@ -21,6 +21,26 @@ export interface RiskCategory {
   communeLevel?: "élevé" | "modéré" | "présent" | "faible";
   /** Vrai quand l'appel à Géorisques a échoué : le niveau « inconnu » est alors un repli. */
   unavailable?: boolean;
+  /**
+   * Niveau lu dans une donnée importée, faute de rapport Géorisques : `argiles-2026`, la carte
+   * d'exposition aux argiles (table `argiles_exposition`). Absent quand le niveau vient de l'API.
+   */
+  localSource?: "argiles-2026";
+}
+
+/**
+ * Les reconnaissances de l'état de catastrophe naturelle de la commune (base GASPAR,
+ * table `catnat_arrete`), depuis la création du régime en 1982.
+ */
+export interface CatnatHistory {
+  /** Nombre de reconnaissances : un arrêté, un péril, une période. */
+  total: number;
+  /** Par péril, du plus fréquent au plus rare. `code` : code du JO (ICB, SEC…). */
+  perils: { code: string; count: number; lastYear: number }[];
+  /** Vrai pour un arrondissement : GASPAR ne connaît que la ville (75056, 69123, 13055). */
+  villeEntiere: boolean;
+  /** Dernière publication au JO présente dans le fichier importé (AAAA-MM-JJ). */
+  dataUpTo: string | null;
 }
 
 export interface RiskAnalysis {
@@ -34,6 +54,8 @@ export interface RiskAnalysis {
    * les catégories, et n'ont donc aucune géométrie à charger.
    */
   floodZones?: FloodZone[];
+  /** Historique des catastrophes naturelles de la commune ; `null` si la table manque. */
+  catnat?: CatnatHistory | null;
 }
 
 /**
