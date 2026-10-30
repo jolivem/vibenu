@@ -361,6 +361,9 @@ def create_indexes(conn):
         cur.execute(f"CREATE INDEX idx_dvf_new_date ON {TABLE} (date_mutation);")
         cur.execute(f"CREATE INDEX idx_dvf_new_parcelle ON {TABLE} (id_parcelle);")
         cur.execute(f"CREATE INDEX idx_dvf_new_commune ON {TABLE} (code_commune);")
+        # Le point de la vente, tel que la recherche par rayon l'écrit (migration 029) :
+        # sans lui, chaque analyse lit la table entière.
+        cur.execute(f"CREATE INDEX idx_dvf_new_point ON {TABLE} USING GIST ((ST_MakePoint(longitude, latitude)::geography));")
     conn.commit()
     print("Indexes created.")
 
@@ -372,7 +375,7 @@ def swap_tables(conn):
         cur.execute("ALTER TABLE IF EXISTS dvf_transactions RENAME TO dvf_transactions_old;")
         cur.execute(f"ALTER TABLE {TABLE} RENAME TO dvf_transactions;")
         cur.execute("DROP TABLE IF EXISTS dvf_transactions_old;")
-        for name in ("geometry", "date", "parcelle", "commune"):
+        for name in ("geometry", "date", "parcelle", "commune", "point"):
             cur.execute(f"DROP INDEX IF EXISTS idx_dvf_{name};")
             cur.execute(f"ALTER INDEX idx_dvf_new_{name} RENAME TO idx_dvf_{name};")
         # Clé primaire et séquence gardent sinon leur nom provisoire, et l'import suivant ne
