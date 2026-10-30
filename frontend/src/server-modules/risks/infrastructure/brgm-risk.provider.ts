@@ -4,8 +4,21 @@ import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructur
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 const FIVE_MINUTES = 5 * 60 * 1000;
-/** Délai maximal d'une tentative : sans plafond, un ralentissement retenait toute l'analyse. */
-const ATTEMPT_TIMEOUT_MS = 6_000;
+/**
+ * Délai maximal d'une tentative : sans plafond, un ralentissement retenait toute l'analyse.
+ * L'API répond d'ordinaire en moins d'une seconde.
+ */
+const ATTEMPT_TIMEOUT_MS = 4_000;
+/**
+ * Pause après un délai dépassé. Quand Géorisques bloque l'adresse IP du serveur, il ne
+ * refuse pas l'appel : il le laisse pendre, plusieurs minutes durant (constaté le
+ * 30/10/2026). Chaque analyse attendait alors deux fois 6 s pour rien — 12 s avant
+ * l'affichage — et ces appels prolongeaient le blocage. Pendant la pause, le repli est
+ * immédiat : la carte des argiles importée et « Indisponible » pour le reste.
+ */
+const PAUSE_AFTER_TIMEOUT_MS = 2 * 60 * 1000;
+
+let pausedUntil = 0;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -122,9 +135,12 @@ export class GeorisquesRiskProvider implements RiskProvider {
     const recentFallback = GeorisquesRiskProvider.fallbackCache.get(cacheKey);
     if (recentFallback) return recentFallback;
 
+    if (Date.now() < pausedUntil) return this.cachedFallback(cacheKey);
+
     // Deux tentatives : une erreur passagère se rattrape souvent au créneau suivant. Sans
     // elle, un seul échec affichait le repli — au 12 rue Pasteur à Bordeaux, les argiles
-    // en rouge sur la carte apparaissaient ainsi « non renseignées ».
+    // en rouge sur la carte apparaissaient ainsi « non renseignées ». Pas après un délai
+    // dépassé : c'est le signe d'un blocage, qui ne se lève pas en une seconde.
     for (let attempt = 1; attempt <= 2; attempt++) {
       if (!(await waitForSlot())) {
         console.warn("Géorisques : file d'attente trop longue, repli");
@@ -151,6 +167,11 @@ export class GeorisquesRiskProvider implements RiskProvider {
         }
         console.warn(`Géorisques API error (tentative ${attempt}): ${response.status} ${response.statusText}`);
       } catch (error) {
+        if (error instanceof Error && error.name === "TimeoutError") {
+          pausedUntil = Date.now() + PAUSE_AFTER_TIMEOUT_MS;
+          console.warn(`Géorisques : pas de réponse en ${ATTEMPT_TIMEOUT_MS / 1000} s, appels suspendus 2 min`);
+          break;
+        }
         console.warn(`Géorisques API error (tentative ${attempt}):`, error);
       }
     }
