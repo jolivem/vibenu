@@ -48,7 +48,8 @@ check climate_station_normales 1000
 check crime_commune 1000
 
 echo "==> pg_dump vers $DUMP (caches des textes de l'IA exclus)"
-pg_dump -Fc --no-owner --no-acl --schema=public \
+# --verbose : une ligne par table sur la sortie d'erreur, pour suivre l'avancement.
+pg_dump --verbose -Fc --no-owner --no-acl --schema=public \
   --exclude-table-data=card_insights_cache \
   --exclude-table-data=commune_narrative_cache \
   --exclude-table-data=narrative_cache \

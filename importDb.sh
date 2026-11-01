@@ -60,7 +60,7 @@ mkdir -p maintenance && touch maintenance/ON
 
 if [[ "$BACKUP" -eq 1 ]]; then
   echo "==> sauvegarde complète de la production : $BACKUP_FILE"
-  pg pg_dump -U "$DB_USER" -d "$DB_NAME" -Fc > "$BACKUP_FILE"
+  pg pg_dump --verbose -U "$DB_USER" -d "$DB_NAME" -Fc > "$BACKUP_FILE"
   echo "    $(du -h "$BACKUP_FILE" | cut -f1)"
 fi
 
@@ -88,14 +88,15 @@ sql "CREATE EXTENSION IF NOT EXISTS postgis;" > /dev/null
 
 echo "==> restauration du dump (plusieurs minutes)"
 # pg_restore rend un code non nul pour de simples avertissements (objet déjà présent…) :
-# on garde ses messages et on juge sur les comptages ci-dessous.
+# on garde ses messages et on juge sur les comptages ci-dessous. --verbose affiche
+# l'avancement (une ligne par table et par index), recopié dans le journal.
 set +e
-pg pg_restore -U "$DB_USER" -d "$DB_NAME" --no-owner --no-privileges /tmp/import.dump \
-  2> "/tmp/pg_restore-${STAMP}.log"
-RESTORE_CODE=$?
+pg pg_restore --verbose -U "$DB_USER" -d "$DB_NAME" --no-owner --no-privileges /tmp/import.dump 2>&1 \
+  | tee "/tmp/pg_restore-${STAMP}.log"
+RESTORE_CODE=${PIPESTATUS[0]}
 set -e
 if [[ "$RESTORE_CODE" -ne 0 ]]; then
-  echo "    pg_restore a signalé $(grep -c 'error' "/tmp/pg_restore-${STAMP}.log" || true) erreur(s) : /tmp/pg_restore-${STAMP}.log"
+  echo "    pg_restore a signalé $(grep -ci 'error' "/tmp/pg_restore-${STAMP}.log" || true) erreur(s) : /tmp/pg_restore-${STAMP}.log"
 fi
 
 echo "==> rechargement des caches de la production"
