@@ -127,7 +127,8 @@ def check(addr, analysis: dict) -> list[Check]:
         if d is None or d > RADIUS or price <= 0 or surface <= 0:
             continue
         # Le type de la vente est celui de sa première ligne de logement, comme à l'import.
-        sales.append((d, price / surface, len(lots), first["type_local"]))
+        sales.append((d, price / surface, len(lots), first["type_local"],
+                      (first["date_mutation"], round(price), round(surface), first.get("id_parcelle") or None)))
     sales.sort()
 
     period = f"{years[0]}-{years[-1]}" if years else "?"
@@ -138,7 +139,7 @@ def check(addr, analysis: dict) -> list[Check]:
                      OK if site_years == period else ERREUR, lien, "les deux derniers millésimes publiés"))
 
     nearest = sales[:LIMIT]
-    kept = [(d, p, n, t) for d, p, n, t in nearest if 0 < p < MAX_PRICE_M2]
+    kept = [(d, p, n, t, sale) for d, p, n, t, sale in nearest if 0 < p < MAX_PRICE_M2]
     site_count = re_.get("nearbyTransactionsCount") or 0
     out.append(Check("Prix DVF", "nombre de ventes", site_count, len(kept),
                      OK if site_count == len(kept) else ERREUR, lien, f"la source publique couvre {period}"))
@@ -150,10 +151,24 @@ def check(addr, analysis: dict) -> list[Check]:
                          OK if gap_m <= 3 else ARRONDI if gap_m <= 10 else ERREUR, lien,
                          "distance de la vente retenue la plus lointaine"))
 
+    # Vente par vente : ce que montrent le tableau « adresse par adresse » et la bulle de la
+    # carte (date, prix, surface, parcelle) doit être une vente des fichiers publics. Un
+    # décalage de date d'un jour (fuseau horaire) passait sous les contrôles de médiane.
+    public_sales = {sale for *_, sale in kept}
+    shown = [(s["date"], s["price"], s["surface"], b.get("parcelId"))
+             for b in re_.get("buildings") or [] for s in b.get("sales") or []]
+    unknown = [x for x in shown if x not in public_sales]
+    out.append(Check(
+        "Prix DVF", "ventes du tableau (date, prix, surface, parcelle)",
+        f"{len(shown) - len(unknown)}/{len(shown)} retrouvées", f"{len(public_sales)} ventes publiques",
+        OK if not unknown and len(shown) == len(public_sales) else ERREUR, lien,
+        ("absentes des fichiers publics : " + "; ".join(f"{d} {p} € {m} m² {pid}" for d, p, m, pid in unknown[:5])) if unknown else "",
+    ))
+
     markets = re_.get("markets") or {}
     for kind, type_local in KINDS.items():
-        prices = [p for _, p, _, t in kept if t == type_local]
-        multi = sum(1 for _, _, n, t in kept if t == type_local and n > 1)
+        prices = [p for _, p, _, t, _ in kept if t == type_local]
+        multi = sum(1 for _, _, n, t, _ in kept if t == type_local and n > 1)
         site = markets.get(kind) or {}
         label = "appartements" if kind == "appartement" else "maisons"
         out.append(Check("Prix DVF", f"{label} — nombre de ventes", site.get("count", 0), len(prices),
