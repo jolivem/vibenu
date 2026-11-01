@@ -17,7 +17,7 @@ import {
 } from "./basemaps";
 import { LayerTogglePanel } from "./RiskLayerToggle";
 import type { OverlayLayerConfig } from "./RiskLayerToggle";
-import type { CadastreParcelDto, DvfTransactionFeatureDto, FloodZoneDto, GeoJsonGeometryDto, RentAreaFeatureDto, RiskAnalysisDto } from "@/types/location-analysis";
+import type { CadastreParcelDto, DvfBuildingDto, DvfTransactionFeatureDto, FloodZoneDto, GeoJsonGeometryDto, RentAreaFeatureDto, RiskAnalysisDto } from "@/types/location-analysis";
 import { useI18n } from "@/i18n/client";
 import { RENT_CLASS_COLORS } from "@/components/analysis/rentsModel";
 
@@ -226,6 +226,11 @@ function fitSchools(
   );
 }
 
+/** Texte inséré dans une bulle MapLibre (`setHTML`) : l'adresse vient d'une source externe. */
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
 interface MapProps {
   lat: number;
   lon: number;
@@ -233,6 +238,8 @@ interface MapProps {
   transports?: Array<{ lat: number; lon: number; type: string; name: string }>;
   cadastreParcel?: CadastreParcelDto | null;
   dvfTransactions?: DvfTransactionFeatureDto[];
+  /** Les ventes de chaque immeuble, que la bulle d'une parcelle DVF liste toutes. */
+  dvfBuildings?: DvfBuildingDto[];
   irisGeojson?: string | null;
   communeContour?: GeoJsonGeometryDto | null;
   schoolSector?: GeoJsonGeometryDto | null;
@@ -299,12 +306,15 @@ interface MapProps {
   zoom?: number;
 }
 
-export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, irisGeojson, communeContour, schoolSector, risks, floodZones, rentAreas, schools, onReady, height = "400px", showLayerToggle = true, showRiskToggles = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
+export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParcel, dvfTransactions, dvfBuildings, irisGeojson, communeContour, schoolSector, risks, floodZones, rentAreas, schools, onReady, height = "400px", showLayerToggle = true, showRiskToggles = true, showBaseLayers = false, layerToggleHint, basemap = LOCATOR_BASEMAP, initialLayers, zoom }: MapProps) {
   const { map: m } = useI18n();
   // Les infobulles sont construites dans des gestionnaires posés une fois à la création
   // de la carte : ils lisent les messages par cette ref, sans dépendre du rendu.
   const messagesRef = useRef(m);
   messagesRef.current = m;
+  // Lu au clic seulement : inutile de reconstruire la carte quand il change.
+  const dvfBuildingsRef = useRef(dvfBuildings);
+  dvfBuildingsRef.current = dvfBuildings;
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const onReadyRef = useRef(onReady);
@@ -1021,16 +1031,21 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
       const m = map.current;
       m.on("click", `${DVF_LAYER_ID}-fill`, (e) => {
         if (!e.features?.length) return;
-        const props = e.features[0].properties;
+        // Une parcelle = un immeuble : la bulle liste toutes ses ventes, lues par sa clé.
+        const key = String(e.features[0].properties.buildingKey);
+        const building = dvfBuildingsRef.current?.find((b) => b.key === key);
+        if (!building?.sales.length) return;
+        const years = building.sales.map((s) => Number(s.date.slice(0, 4)));
         const popup = messagesRef.current.dvfPopup({
-          pricePerSqm: Number(props.pricePerSqm),
-          price: Number(props.price),
-          surface: String(props.surface),
-          date: String(props.date),
-          propertyType: String(props.propertyType),
+          address: building.building?.address ?? null,
+          salesCount: building.sales.length,
+          from: Math.min(...years),
+          to: Math.max(...years),
+          medianPricePerSqm: building.medianPricePerSqm,
+          sales: building.sales,
         });
-        const html = `<strong>${popup.title}</strong><br/>${popup.lines.join("<br/>")}`;
-        new maplibregl.Popup()
+        const html = `<strong>${escapeHtml(popup.title)}</strong><br/>${popup.lines.map(escapeHtml).join("<br/>")}`;
+        new maplibregl.Popup({ className: "dvf-popup", maxWidth: "360px" })
           .setLngLat(e.lngLat)
           .setHTML(html)
           .addTo(m);

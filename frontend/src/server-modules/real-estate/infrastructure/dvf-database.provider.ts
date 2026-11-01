@@ -1,34 +1,72 @@
-import type { RealEstateProvider } from "./real-estate.provider";
-import type { DvfTransactionFeature } from "../domain/real-estate.types";
+import type { RealEstateProvider, RealEstateMarketData } from "./real-estate.provider";
+import type { DvfTransactionFeature, PropertyKind, PropertyKindMarket } from "../domain/real-estate.types";
+import { groupByParcel, median, type LocatedSale } from "../application/dvfBuildings";
 import { query } from "../../../server-shared/infrastructure/database/postgres";
 import { InMemoryCache, buildGeoKey } from "../../../server-shared/infrastructure/cache/in-memory-cache";
 
-const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+const ONE_DAY = 24 * 60 * 60 * 1000;
+const SEVEN_DAYS = 7 * ONE_DAY;
+
+/**
+ * Nombre de millésimes retenus autour d'une adresse : les deux derniers publiés.
+ *
+ * Avec les cinq publiés (2021-2025), les 100 ventes les plus proches tenaient à Paris dans
+ * une centaine de mètres — une poignée d'immeubles — et mêlaient des prix de 2021 aux prix
+ * récents. Deux millésimes redonnent un voisinage (~200 m à Paris) et des prix actuels.
+ */
+const RECENT_YEARS = 2;
+
+/**
+ * Ventes retenues autour d'une adresse : les 50 plus proches, tous types confondus. Chaque
+ * type de bien a ensuite sa médiane parmi elles — autant d'appartements et de maisons que
+ * le voisinage en compte.
+ */
+const NEARBY_SALES = 50;
+
+/** En dessous, pas de médiane pour le type : « 9 ventes de maisons », sans prix. */
+export const MIN_SALES_FOR_MEDIAN = 10;
+
+/** Type de bien de DVF (`type_local`) → clé du DTO. */
+const KINDS: Record<PropertyKind, string> = { appartement: "Appartement", maison: "Maison" };
 
 interface DvfRow {
   id_mutation: string;
-  date_mutation: string | Date;
+  id_parcelle: string | null;
+  date_mutation: string;
   valeur_fonciere: number;
   surface_bati: number;
   type_local: string;
+  nb_logements: number | null;
   longitude: number;
   latitude: number;
   distance_meters: number;
   geojson: string | null;
 }
 
-interface DvfResult {
-  nearbyTransactionsCount: number;
-  medianPricePerSquareMeter: number;
-  transactionFeatures: DvfTransactionFeature[];
-}
+// La date en texte : lue comme objet Date, minuit à Paris devenait la veille en UTC
+// (`toISOString`), et chaque vente s'affichait un jour trop tôt (28/09 pour le 29/09/2025).
+const COLUMNS = `id_mutation, id_parcelle, to_char(date_mutation, 'YYYY-MM-DD') AS date_mutation, valeur_fonciere, surface_bati, type_local,
+                nb_logements, longitude, latitude, ST_AsGeoJSON(geometry) AS geojson`;
 
 /**
  * Real estate provider using DVF data stored in PostgreSQL.
  * Parcel geometries come from cadastre (joined at import time).
  */
 export class DvfDatabaseProvider implements RealEstateProvider {
-  private static cache = new InMemoryCache<DvfResult>(SEVEN_DAYS);
+  private static cache = new InMemoryCache<RealEstateMarketData>(SEVEN_DAYS);
+  private static latestYearCache = new InMemoryCache<number>(ONE_DAY);
+
+  /** Dernier millésime présent en base, lu par l'index sur la date. */
+  private async latestYear(): Promise<number> {
+    const cached = DvfDatabaseProvider.latestYearCache.get("latest");
+    if (cached) return cached;
+    const rows = await query<{ year: number | null }>(
+      `SELECT EXTRACT(YEAR FROM MAX(date_mutation))::int AS year FROM dvf_transactions`,
+    );
+    const year = rows[0]?.year ?? new Date().getFullYear() - 1;
+    DvfDatabaseProvider.latestYearCache.set("latest", year);
+    return year;
+  }
 
   async getNearbyTransactions(lat: number, lon: number, radiusMeters: number) {
     const cacheKey = buildGeoKey(lat, lon);
@@ -36,10 +74,10 @@ export class DvfDatabaseProvider implements RealEstateProvider {
     if (cached) return cached;
 
     try {
+      const to = await this.latestYear();
+      const from = to - RECENT_YEARS + 1;
       const rows = await query<DvfRow>(
-        `SELECT id_mutation, date_mutation, valeur_fonciere, surface_bati, type_local,
-                longitude, latitude,
-                ST_AsGeoJSON(geometry) AS geojson,
+        `SELECT ${COLUMNS},
                 ST_Distance(
                   ST_MakePoint(longitude, latitude)::geography,
                   ST_MakePoint($1, $2)::geography
@@ -50,19 +88,19 @@ export class DvfDatabaseProvider implements RealEstateProvider {
                   ST_MakePoint($1, $2)::geography,
                   $3
                )
-           AND date_mutation >= NOW() - INTERVAL '10 years'
+           AND date_mutation >= make_date($4, 1, 1)
            AND valeur_fonciere > 0
            AND surface_bati > 0
          ORDER BY distance_meters ASC
-         LIMIT 100`,
-        [lon, lat, radiusMeters],
+         LIMIT $5`,
+        [lon, lat, radiusMeters, from, NEARBY_SALES],
       );
 
       if (rows.length === 0) {
         return this.getFallbackData();
       }
 
-      const result = this.analyzeTransactions(rows);
+      const result = this.analyzeTransactions(rows, { from, to });
       DvfDatabaseProvider.cache.set(cacheKey, result);
       return result;
     } catch (error) {
@@ -78,10 +116,7 @@ export class DvfDatabaseProvider implements RealEstateProvider {
 
     try {
       const rows = await query<DvfRow>(
-        `SELECT id_mutation, date_mutation, valeur_fonciere, surface_bati, type_local,
-                longitude, latitude,
-                ST_AsGeoJSON(geometry) AS geojson,
-                0 AS distance_meters
+        `SELECT ${COLUMNS}, 0 AS distance_meters
          FROM dvf_transactions
          WHERE code_commune = $1
            AND date_mutation >= NOW() - INTERVAL '10 years'
@@ -96,7 +131,9 @@ export class DvfDatabaseProvider implements RealEstateProvider {
         return this.getFallbackData();
       }
 
-      const result = this.analyzeTransactions(rows);
+      const result = this.analyzeTransactions(rows, null);
+      // Pas de distance en mode commune : les immeubles les plus vendus d'abord.
+      result.buildings?.sort((a, b) => b.sales.length - a.sales.length);
       DvfDatabaseProvider.cache.set(cacheKey, result);
       return result;
     } catch (error) {
@@ -105,9 +142,8 @@ export class DvfDatabaseProvider implements RealEstateProvider {
     }
   }
 
-  private analyzeTransactions(rows: DvfRow[]): DvfResult {
-    const pricesPerSqm: number[] = [];
-    const features: DvfTransactionFeature[] = [];
+  private analyzeTransactions(rows: DvfRow[], period: { from: number; to: number } | null): RealEstateMarketData {
+    const sales: LocatedSale[] = [];
 
     for (const row of rows) {
       const price = Number(row.valeur_fonciere);
@@ -117,54 +153,65 @@ export class DvfDatabaseProvider implements RealEstateProvider {
       const pricePerSqm = price / surface;
       if (pricePerSqm <= 0 || pricePerSqm >= 50_000) continue;
 
-      pricesPerSqm.push(pricePerSqm);
+      const date = String(row.date_mutation);
 
-      const date = row.date_mutation instanceof Date
-        ? row.date_mutation.toISOString().split("T")[0]
-        : String(row.date_mutation);
-
-      // Use real cadastre geometry (Polygon/MultiPolygon) if available, fallback to small square
-      let geometry: DvfTransactionFeature["geometry"];
-      if (row.geojson) {
-        try {
-          const parsed = JSON.parse(row.geojson);
-          if (parsed.type === "Polygon" || parsed.type === "MultiPolygon") {
-            geometry = parsed;
-          } else {
-            geometry = this.buildSquareGeometry(Number(row.longitude), Number(row.latitude));
-          }
-        } catch {
-          geometry = this.buildSquareGeometry(Number(row.longitude), Number(row.latitude));
-        }
-      } else {
-        geometry = this.buildSquareGeometry(Number(row.longitude), Number(row.latitude));
-      }
-
-      features.push({
-        type: "Feature",
-        geometry,
-        properties: {
-          pricePerSqm: Math.round(pricePerSqm),
-          price: Math.round(price),
-          surface: Math.round(surface),
-          date,
-          propertyType: String(row.type_local),
-        },
+      sales.push({
+        saleId: row.id_mutation,
+        parcelId: row.id_parcelle,
+        distanceMeters: Number(row.distance_meters),
+        geometry: this.parseGeometry(row),
+        date,
+        propertyType: String(row.type_local),
+        surface: Math.round(surface),
+        price: Math.round(price),
+        pricePerSqm: Math.round(pricePerSqm),
+        exactPricePerSqm: pricePerSqm,
+        dwellings: row.nb_logements == null ? null : Number(row.nb_logements),
       });
     }
 
-    if (pricesPerSqm.length === 0) {
+    if (sales.length === 0) {
       return this.getFallbackData();
     }
 
-    pricesPerSqm.sort((a, b) => a - b);
-    const median = pricesPerSqm[Math.floor(pricesPerSqm.length / 2)];
+    const { buildings, features } = groupByParcel(sales);
+    const market = (kind: PropertyKind) => this.kindMarket(sales.filter((s) => s.propertyType === KINDS[kind]));
 
     return {
-      nearbyTransactionsCount: pricesPerSqm.length,
-      medianPricePerSquareMeter: Math.round(median),
-      transactionFeatures: features.slice(0, 50),
+      nearbyTransactionsCount: sales.length,
+      markets: { appartement: market("appartement"), maison: market("maison") },
+      ...(period
+        ? { period, radiusMeters: Math.ceil(Math.max(...sales.map((s) => s.distanceMeters))) }
+        : {}),
+      transactionFeatures: features,
+      buildings,
     };
+  }
+
+  /**
+   * Le marché d'un type : médiane des €/m² non arrondis (scripts/verify la recalcule ainsi
+   * depuis les fichiers publics). `null` sans aucune vente.
+   */
+  private kindMarket(sales: LocatedSale[]): PropertyKindMarket | null {
+    if (sales.length === 0) return null;
+    return {
+      count: sales.length,
+      medianPricePerSqm:
+        sales.length >= MIN_SALES_FOR_MEDIAN ? Math.round(median(sales.map((s) => s.exactPricePerSqm))) : null,
+    };
+  }
+
+  /** Contour cadastral de la parcelle, ou un petit carré autour du point à défaut. */
+  private parseGeometry(row: DvfRow): DvfTransactionFeature["geometry"] {
+    if (row.geojson) {
+      try {
+        const parsed = JSON.parse(row.geojson);
+        if (parsed.type === "Polygon" || parsed.type === "MultiPolygon") return parsed;
+      } catch {
+        // Contour illisible : le carré ci-dessous.
+      }
+    }
+    return this.buildSquareGeometry(Number(row.longitude), Number(row.latitude));
   }
 
   private buildSquareGeometry(lon: number, lat: number): DvfTransactionFeature["geometry"] {
@@ -181,11 +228,12 @@ export class DvfDatabaseProvider implements RealEstateProvider {
     };
   }
 
-  private getFallbackData(): DvfResult {
+  private getFallbackData(): RealEstateMarketData {
     return {
       nearbyTransactionsCount: 0,
-      medianPricePerSquareMeter: 0,
+      markets: { appartement: null, maison: null },
       transactionFeatures: [],
+      buildings: [],
     };
   }
 }

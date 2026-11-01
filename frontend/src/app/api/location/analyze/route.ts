@@ -8,6 +8,7 @@ import { GeorisquesRiskProvider } from "@/server-modules/risks/infrastructure/br
 import { PostgisLocalRiskProvider } from "@/server-modules/risks/infrastructure/local-risk.provider";
 import { GpuFloodZoneProvider } from "@/server-modules/risks/infrastructure/gpu-flood-zone.provider";
 import { DvfDatabaseProvider } from "@/server-modules/real-estate/infrastructure/dvf-database.provider";
+import { PostgisBuildingInfoProvider } from "@/server-modules/real-estate/infrastructure/bdnb-building.provider";
 import { SummaryBuilderService } from "@/server-modules/summary/application/summary-builder.service";
 import { MobilityServiceImpl } from "@/server-modules/mobility/application/mobility.service.impl";
 import { RiskServiceImpl } from "@/server-modules/risks/application/risk.service.impl";
@@ -55,7 +56,7 @@ const useCase = new LocationAnalysisUseCase({
   communeContourProvider: new CommuneContourProvider(),
   mobilityService: new MobilityServiceImpl(new TransportDataGouvProvider()),
   riskService: new RiskServiceImpl(new GeorisquesRiskProvider(), new GpuFloodZoneProvider(), new PostgisLocalRiskProvider()),
-  realEstateService: new RealEstateServiceImpl(new DvfDatabaseProvider()),
+  realEstateService: new RealEstateServiceImpl(new DvfDatabaseProvider(), new PostgisBuildingInfoProvider()),
   airQualityService: new AirQualityServiceImpl(new EeaAirStationsProvider()),
   neighborhoodService: new NeighborhoodServiceImpl(new CombinedNeighborhoodProvider()),
   summaryService: new SummaryBuilderService(),

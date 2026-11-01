@@ -338,7 +338,7 @@ export function AnalysisScreen() {
                   {hasContent.immobilier && (
                     <AnalysisSection id="immobilier">
                       {FEATURES.showRealEstate && realEstate && (
-                        <RealEstateCard realEstate={realEstate} m={m.realEstate}>
+                        <RealEstateCard realEstate={realEstate} m={m.realEstate} addressParcel={data.cadastre?.parcel}>
                           {realEstate.transactionFeatures?.length ? (
                             <LazyMap height={THEMATIC_MAP_HEIGHT}>
                               <Map
@@ -346,6 +346,7 @@ export function AnalysisScreen() {
                                 lon={data.map.center.lon}
                                 label={data.address.label}
                                 dvfTransactions={realEstate.transactionFeatures}
+                                dvfBuildings={realEstate.buildings}
                                 communeContour={data.map.communeContour}
                                 basemap={THEMATIC_BASEMAP}
                                 initialLayers={[DVF_LAYER_ID]}

@@ -10,7 +10,7 @@ export class MockRealEstateProvider implements RealEstateProvider {
   private sample() {
     return {
       nearbyTransactionsCount: 14,
-      medianPricePerSquareMeter: 6150,
+      markets: { appartement: { count: 14, medianPricePerSqm: 6150 }, maison: null },
       transactionFeatures: [],
     };
   }

@@ -7,7 +7,8 @@ const f = createFormat("fr");
 /** Bandeau de chiffres clés, en tête de l'analyse et de la fiche PDF. */
 export const keyFigures = {
   ariaLabel: "Chiffres clés",
-  priceLabel: "Prix médian",
+  /** Prix médian du type de bien le plus vendu autour de l'adresse. */
+  priceLabels: { appartement: "Prix appartement", maison: "Prix maison" },
   price: (pricePerSquareMeter: number) => `${f.spaced(Math.round(pricePerSquareMeter))} €/m²`,
   /**
    * Loyer d'annonce des appartements, charges comprises. Pas « médian » : l'ANIL publie un

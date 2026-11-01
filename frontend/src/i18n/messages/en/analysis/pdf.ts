@@ -26,8 +26,12 @@ export const pdf: PdfMessages = {
   },
   property: {
     marketLabel: "Market",
-    median: (pricePerSquareMeter) => `median price €${f.int(pricePerSquareMeter)}/m²`,
-    transactions: (count) => `${count} nearby sale${count === 1 ? "" : "s"}`,
+    kinds: { appartement: "flats", maison: "houses" },
+    kindMedian: (kind, pricePerSquareMeter, count) =>
+      `${kind} €${f.int(pricePerSquareMeter)}/m² (${count} sale${count === 1 ? "" : "s"})`,
+    kindTooFew: (kind, count) => `${kind}: ${count} sale${count === 1 ? "" : "s"}, too few for a median price`,
+    nearby: (count, from, to, radius) =>
+      `${count} nearest sale${count === 1 ? "" : "s"} (${from === to ? to : `${from}-${to}`}, within ${f.int(radius)} m)`,
     noSale: "no recent sale on record",
     parcelLabel: "Plot",
     parcel: (surface, section, numero) => `${surface} · section ${section} no. ${numero}`,

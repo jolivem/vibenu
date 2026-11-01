@@ -3,6 +3,7 @@ import type { LocationAnalysisDto, SecurityRating } from "@/types/location-analy
 import { FEATURES } from "@/lib/site-features";
 import type { KeyFigure } from "./KeyFigures";
 import { hasRentContent, rentOf } from "./rentsModel";
+import { headlineMarket } from "./realEstateModel";
 import type { SectionId } from "./sections";
 
 /**
@@ -26,9 +27,11 @@ export function buildKeyFigures(
 
   // Un prix nul n'est pas un prix : c'est l'absence de ventes connues. La tuile
   // « 0 €/m² » se lisait comme une donnée.
-  const medianPrice = data.realEstate?.medianPricePerSquareMeter;
-  if (medianPrice != null && medianPrice > 0) {
-    add({ section: "immobilier", label: m.priceLabel, value: m.price(medianPrice) });
+  // Le type le plus vendu autour de l'adresse, nommé : une médiane mêlant appartements et
+  // maisons ne décrivait ni l'un ni l'autre.
+  const headline = data.realEstate ? headlineMarket(data.realEstate) : null;
+  if (headline && headline.pricePerSqm > 0) {
+    add({ section: "immobilier", label: m.priceLabels[headline.kind], value: m.price(headline.pricePerSqm) });
   }
 
   // Le loyer des appartements tous types, à côté du prix de vente : les deux chiffres qu'on

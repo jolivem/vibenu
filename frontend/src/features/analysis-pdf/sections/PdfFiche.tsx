@@ -51,6 +51,7 @@ import { formatProximity } from "@/components/analysis/proximityFormat";
 import { RISK_LEVEL_BADGES, catnatLines, riskBadgeLabel, riskName, splitRisks } from "@/components/analysis/riskLevels";
 import { sectionTitles } from "@/components/analysis/sections";
 import { primaryExam } from "@/components/analysis/schoolsModel";
+import { marketsShown } from "@/components/analysis/realEstateModel";
 import { COLORS, FONTS } from "../pdfStyles";
 import { PdfBadge, PdfCardBox, PdfCardTitle, pdfSafe } from "./PdfCard";
 import { PdfInsight } from "./PdfInsight";
@@ -223,16 +224,23 @@ export function PdfImmobilierFiche({
   const zone = cadastre?.urbanZone ?? null;
   const type = zone ? pluZoneType(zone.type, cadastreMessages) : null;
   const longLabel = zone ? pluZoneLongLabel(zone.label) : null;
-  const median = realEstate?.medianPricePerSquareMeter;
-  const transactions = realEstate?.nearbyTransactionsCount ?? 0;
+  const markets = realEstate ? marketsShown(realEstate) : [];
 
   return (
     <Block title={SECTION_TITLES.immobilier}>
       {realEstate && (
         <Fact label={pdf.property.marketLabel}>
           {join([
-            median != null && median > 0 && pdf.property.median(median),
-            Boolean(transactions) && pdf.property.transactions(transactions),
+            ...markets.map(({ kind, market }) =>
+              market.medianPricePerSqm !== null
+                ? pdf.property.kindMedian(pdf.property.kinds[kind], market.medianPricePerSqm, market.count)
+                : pdf.property.kindTooFew(pdf.property.kinds[kind], market.count),
+            ),
+            markets.length > 0 &&
+              realEstate.period &&
+              realEstate.radiusMeters !== undefined &&
+              Boolean(realEstate.nearbyTransactionsCount) &&
+              pdf.property.nearby(realEstate.nearbyTransactionsCount ?? 0, realEstate.period.from, realEstate.period.to, realEstate.radiusMeters),
           ]) || pdf.property.noSale}
         </Fact>
       )}

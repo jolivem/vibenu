@@ -73,16 +73,41 @@ export const map = {
       ...(p.reussite !== null ? [`Réussite à l'examen : ${f.decimal(p.reussite, 0)} %`] : []),
     ],
   }),
-  /** Infobulle d'une vente DVF : le prix au m² en titre, puis une ligne par information. */
-  dvfPopup: (p: { pricePerSqm: number; price: number; surface: string; date: string; propertyType: string }) => ({
-    title: `${f.spaced(p.pricePerSqm)} €/m²`,
-    lines: [
-      `Prix : ${f.spaced(p.price)} €`,
-      `Surface : ${p.surface} m²`,
-      `Date : ${p.date}`,
-      map.propertyTypes[p.propertyType] ?? p.propertyType,
-    ],
-  }),
+  /**
+   * Infobulle d'une parcelle de la carte DVF : toutes ses ventes, de la plus récente à la plus
+   * ancienne. Le titre dit combien et sur quelles années ; `address` (BDNB) peut manquer.
+   */
+  dvfPopup: (p: {
+    address: string | null;
+    salesCount: number;
+    from: number;
+    to: number;
+    medianPricePerSqm: number;
+    sales: Array<{ date: string; propertyType: string; surface: number; price: number; pricePerSqm: number }>;
+  }) =>
+    // Une seule vente : le rendu d'origine, le prix au m² en titre puis une ligne par information.
+    p.sales.length === 1
+      ? {
+          title: `${f.int(p.sales[0].pricePerSqm)} €/m²`,
+          lines: [
+            ...(p.address ? [p.address] : []),
+            `Prix : ${f.int(p.sales[0].price)} €`,
+            `Surface : ${p.sales[0].surface} m²`,
+            `Date : ${f.dateShort(p.sales[0].date)}`,
+            map.propertyTypes[p.sales[0].propertyType] ?? p.sales[0].propertyType,
+          ],
+        }
+      : {
+          title: `${p.salesCount} ventes, ${p.from === p.to ? p.to : `${p.from}-${p.to}`}`,
+          lines: [
+            ...(p.address ? [p.address] : []),
+            `Médiane : ${f.int(p.medianPricePerSqm)} €/m²`,
+            ...p.sales.map(
+              (s) =>
+                `${f.dateShort(s.date)} · ${map.propertyTypes[s.propertyType] ?? s.propertyType} · ${s.surface} m² · ${f.int(s.price)} € · ${f.int(s.pricePerSqm)} €/m²`,
+            ),
+          ],
+        },
   /** Types de bien de la base DVF, par libellé source. Un type inconnu d'ici s'affiche tel quel. */
   propertyTypes: {
     Appartement: "Appartement",

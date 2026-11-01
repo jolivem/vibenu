@@ -114,22 +114,77 @@ export interface FloodZoneDto {
   geometry: GeoJsonGeometryDto;
 }
 
+/** Période de construction, au découpage du Registre national des copropriétés. */
+export type BuildingPeriodCodeDto =
+  | "AVANT_1949"
+  | "DE_1949_A_1960"
+  | "DE_1961_A_1974"
+  | "DE_1975_A_1993"
+  | "DE_1994_A_2000"
+  | "DE_2001_A_2010"
+  | "APRES_2011";
+
+/** Un contour de parcelle, coloré par la médiane des ventes qu'elle porte. */
 export interface DvfTransactionFeatureDto {
   type: "Feature";
   geometry: GeoJsonGeometryDto;
   properties: {
+    /** Clé de l'immeuble dans `RealEstateAnalysisDto.buildings`. */
+    buildingKey: string;
     pricePerSqm: number;
-    price: number;
-    surface: number;
-    date: string;
-    propertyType: string;
+    salesCount: number;
   };
 }
 
+export interface DvfSaleDto {
+  date: string;
+  propertyType: string;
+  surface: number;
+  price: number;
+  pricePerSqm: number;
+  dwellings: number | null;
+}
+
+/** Fiche de l'immeuble (BDNB). `usage` est le libellé des Fichiers fonciers, en français. */
+export interface BuildingInfoDto {
+  usage: string | null;
+  dwellings: number | null;
+  floors: number | null;
+  periodCode: BuildingPeriodCodeDto | null;
+  periodSource: "rnc" | "fichiers-fonciers" | null;
+  address: string | null;
+}
+
+/** Les ventes d'une même parcelle — le plus souvent, d'un même immeuble. */
+export interface DvfBuildingDto {
+  key: string;
+  parcelId: string | null;
+  distanceMeters: number;
+  medianPricePerSqm: number;
+  /** De la plus récente à la plus ancienne. */
+  sales: DvfSaleDto[];
+  building: BuildingInfoDto | null;
+}
+
+export type PropertyKindDto = "appartement" | "maison";
+
+/** Le marché d'un type de bien. `medianPricePerSqm` est `null` sous 10 ventes. */
+export interface PropertyKindMarketDto {
+  count: number;
+  medianPricePerSqm: number | null;
+}
+
 export interface RealEstateAnalysisDto {
+  /** Ventes retenues, tous types confondus. */
   nearbyTransactionsCount?: number;
-  medianPricePerSquareMeter?: number;
+  /** Une médiane par type de bien ; `null` quand aucune vente de ce type. */
+  markets?: Record<PropertyKindDto, PropertyKindMarketDto | null>;
+  /** Millésimes DVF retenus, en mode adresse. */
+  period?: { from: number; to: number };
+  /** Distance de la vente retenue la plus lointaine, en mode adresse. */
+  radiusMeters?: number;
   transactionFeatures?: DvfTransactionFeatureDto[];
+  buildings?: DvfBuildingDto[];
 }
 
 export type AnnualPollutantCode = "no2" | "pm25" | "pm10" | "o3";

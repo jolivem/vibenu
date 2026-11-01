@@ -8,11 +8,11 @@ transport.data.gouv.fr, Atmo, IGN) ne sont pas concernées : elles sont toujours
 
 ## En bref
 
-Trois sources ont des données plus récentes que ce qui est importé :
+Deux sources ont des données plus récentes que ce qui est importé (DVF, en retard lors de
+cette revue, est à jour depuis l'import du 29/10/2026) :
 
-1. **DVF** — l'année 2025 est publiée, le script ne la connaît pas.
-2. **Recensement INSEE à l'IRIS** — le millésime 2022 est paru, le site utilise 2021.
-3. **OpenStreetMap** — l'extrait importé a presque six mois.
+1. **Recensement INSEE à l'IRIS** — le millésime 2022 est paru, le site utilise 2021.
+2. **OpenStreetMap** — l'extrait importé a presque six mois.
 
 Les autres sources sont à jour.
 
@@ -20,7 +20,7 @@ Les autres sources sont à jour.
 
 | Source | Script | Utilisé par le site | Disponible en ligne | À intégrer ? |
 |---|---|---|---|---|
-| Ventes DVF géolocalisées | `import_dvf.py` | ventes 2024 seulement (base locale) | année 2025 complète, publiée le 18 mai 2026 | **Oui** |
+| Ventes DVF géolocalisées | `import_dvf.py` | 2021-2025, importées le 29/10/2026 ; le site retient les deux derniers millésimes | prochain millésime au printemps 2027 | Non |
 | Recensement à l'IRIS (logement, activité, diplômes, ménages, population) | `import_insee_iris.py`, `import_iris.py` | millésime 2021 | millésime 2022, paru le 16 octobre 2025 | **Oui**, avec précaution |
 | OpenStreetMap (commerces et services) | `import_osm.py` | extrait du 15 avril 2026 | extrait du 4 octobre 2026 (quotidien) | Oui, pour des commerces à jour |
 | Contours IRIS (IGN) | `import_iris.py` | édition 2024 | éditions 2025 et 2026 | Non pour l'instant |
@@ -34,6 +34,7 @@ Les autres sources sont à jour.
 | Qualité de l'air, Paris | `import_atmo_paris.py` | années 2021-2025 | inchangé depuis le 11 mars 2026 | Non |
 | Normales climatiques Météo-France | `import_climate_fiches.py` | fiches climatologiques 1991-2020 (`FICHECLIM_*.data`) | rééditées par Météo-France, mêmes normales jusqu'en 2031 | Non |
 | Argiles, carte d'exposition 2026 (Géorisques) | `import_argiles.py` | `AleaRG_2025_Fxx_L93.zip`, importée le 29/10/2026 | aucune nouvelle édition annoncée | Non |
+| Immeubles vendus (BDNB, CSTB) | `import_bdnb.py` | millésime 2026-02.b, importé le 1/11/2026 | environ deux millésimes par an | Non (à relancer au prochain millésime et après chaque import DVF) |
 | Catastrophes naturelles (GASPAR) | `import_catnat.py` | fichier du 5/10/2026, dernier JO le 23/01/2026 | refait au fil des JO : **à relancer chaque mois** | Oui, mensuel |
 
 Non vérifiés : `import_atmo_lyon.py` et `import_atmo_marseille.py`, qui lisent un fichier déposé à

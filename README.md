@@ -45,7 +45,7 @@ L'utilisateur saisit une adresse en France et obtient :
 | `analysis` | Orchestration de l'analyse complète | - |
 | `mobility` | Transports et mobilité | transport.data.gouv.fr (GTFS) |
 | `risks` | Risques naturels/technologiques | Géorisques (georisques.gouv.fr) ; carte des argiles 2026 et arrêtés CatNat (GASPAR) importés |
-| `real-estate` | Contexte immobilier et prix | DVF géolocalisé (PostgreSQL/PostGIS) |
+| `real-estate` | Contexte immobilier et prix | DVF géolocalisé, BDNB (PostgreSQL/PostGIS) |
 | `cadastre` | Parcelle, zone PLU, prescriptions | API Carto IGN (apicarto.ign.fr) |
 | `air-quality` | Qualité de l'air | EEA, indicateurs annuels des stations de fond (Postgres local) |
 | `neighborhood` | Commerces et services proches | OSM + BPE INSEE (PostgreSQL/PostGIS) |
@@ -142,7 +142,7 @@ Le mode est **calculé une seule fois** dans `LocationAnalysisUseCase` et **expo
 |---|---|---|
 | Carte (zoom) | Marker bleu + zoom 17 (parcelle) ou 14 | Contour communal IGN bleu pâle 10 % + bordure 2 px, `fitBounds` automatique, marker masqué |
 | Cadastre | Parcelle + zone PLU à l'adresse | Sauté (sans objet sur un territoire entier) |
-| DVF (immobilier) | Rayon 1 km autour du point | Toutes les transactions de la commune (`WHERE code_commune = ?`) |
+| DVF (immobilier) | Les 50 ventes les plus proches à moins d'1 km, deux derniers millésimes, une médiane par type de bien ; tableau adresse par adresse | Toutes les transactions de la commune (`WHERE code_commune = ?`) |
 | Mobilité (bus) | Liste des arrêts dans 1 km avec distance + temps de marche | **Masquée** (les arrêts sont mesurés depuis le centroïde, peu pertinents) |
 | Mobilité (gare) | Gare la plus proche dans 20 km, avec distance + temps | Nom de la gare seul, sans distance |
 
@@ -273,6 +273,10 @@ python import_bpe.py
 
 # Importer DVF (prix immobiliers) — ~15-30 min
 python import_dvf.py
+
+# Fiche des immeubles vendus (BDNB) — migration 030 d'abord, APRÈS import_dvf.py
+# (ne garde que les parcelles vendues) ; ~16 Mo lus par département, ~12 min
+python import_bdnb.py
 
 # Importer IRIS (contours, démographie, revenus) — ~5 min
 # À jouer AVANT import_insee_iris.py : les contours définissent quels IRIS existent.
@@ -413,10 +417,18 @@ pnpm dev
 - Import de toute la France, ventes d'appartements et maisons, **toutes les années publiées** (l'État ne publie que les cinq dernières : 2021-2025 au 29/10/2026)
 - **Une ligne par vente** : sa surface est la somme de ses logements, chacun compté une fois (le fichier répète un logement sur plusieurs lignes quand le terrain a plusieurs natures de culture) ; colonne `nb_logements`
 - L'import construit `dvf_transactions_new` puis l'échange avec `dvf_transactions` : le site garde ses prix pendant l'import
-- Le prix médian affiché porte sur les 100 ventes les plus proches à moins d'1 km (`scripts/verify` le recalcule depuis les fichiers publics)
+- **Les 50 ventes les plus proches** à moins d'1 km, tous types confondus, **sur les deux derniers millésimes** (2024-2025 au 1/11/2026 ; `NEARBY_SALES`, `RECENT_YEARS` et `MIN_SALES_FOR_MEDIAN` dans `dvf-database.provider.ts`), puis **une médiane par type de bien** parmi elles (appartements, maisons) — pas de médiane sous 10 ventes du type. Mélangées, elles ne décrivaient aucun des deux marchés (à Boën-sur-Lignon, appartements à 917 €/m², maisons à 1 150). La card dit le nombre de ventes de chaque type, la période et le rayon ; `scripts/verify` les recalcule depuis les fichiers publics **départementaux** (une vente peut couvrir plusieurs communes)
+- Les ventes sont regroupées par parcelle (le plus souvent un immeuble) : un contour par parcelle sur la carte, coloré par la médiane de ses ventes, et une bulle qui les liste toutes ; le détail de la card les donne immeuble par immeuble
 - Licence : Licence Ouverte Etalab 2.0
 - **Import du 2026-05-02 incomplet** : une seule année (2024), et le prix d'une vente de plusieurs logements divisé par la surface d'un seul. Corrigé dans le script le 29/10/2026 : à relancer
 - Mise à jour : semestrielle (avril et octobre) — relancer `python scripts/import_dvf.py` pour récupérer le nouveau millésime data.gouv.fr
+
+### BDNB — fiche des immeubles vendus
+- **Source** : Base de données nationale des bâtiments (CSTB), version open, millésime 2026-02.b, [archives par département](https://bdnb.io/download/) — Licence Ouverte 2.0
+- **Import** : `scripts/import_bdnb.py` lit à distance (requêtes HTTP « Range ») quatre tables de chaque archive départementale : `rel_batiment_groupe_parcelle`, `batiment_groupe_ffo_bat` (Fichiers fonciers), `batiment_groupe_rnc` (Registre national des copropriétés), `batiment_groupe_adresse` → table `bdnb_parcelle`, une ligne par parcelle vendue (2,66 millions). Reprend là où il s'est arrêté (`bdnb_import`) ; `--force` refait tout
+- **Règles** : plusieurs groupes de bâtiments sur une parcelle → celui qui a le plus de logements. Période de construction : celle du registre des copropriétés quand l'immeuble y est, sinon l'année des Fichiers fonciers ramenée au même découpage (au 2-4 rue Sainte-Lucie, Paris 15e, les Fichiers fonciers disent 2021, le registre 1961-1974)
+- **Pourquoi pas l'API** (api.bdnb.io) : 10 lignes par appel et 120 appels par minute — une vingtaine d'appels pour une analyse à Paris. `scripts/verify` (`checks/bdnb.py`) s'en sert pour contrôler trois immeubles par adresse
+- Mise à jour : à chaque millésime BDNB (environ deux par an) — changer `MILLESIME` et relancer ; et après chaque import DVF, pour les nouvelles parcelles vendues
 
 ### EEA — indicateurs annuels par station (qualité de l'air)
 - L'indice quotidien Atmo France a été retiré (octobre 2026) : « moyen » presque partout, l'API ne gardait que J-1 / J / J+1 et ne couvrait pas l'Occitanie
@@ -622,6 +634,7 @@ claireadresse/
 │   ├── import_osm.py        # Import OpenStreetMap POIs → PostgreSQL
 │   ├── import_bpe.py        # Import BPE INSEE → PostgreSQL
 │   ├── import_dvf.py        # Import DVF géolocalisé → PostgreSQL
+│   ├── import_bdnb.py       # Fiche des immeubles vendus (BDNB : logements, niveaux, période)
 │   ├── import_iris.py       # Import INSEE IRIS (contours, démographie, revenus)
 │   ├── import_filosofi_reference.py # Revenu et pauvreté officiels des communes et de la France
 │   ├── import_insee_iris.py # Enrichissement IRIS : logement, emploi, ménages

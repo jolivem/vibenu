@@ -3256,6 +3256,126 @@ html {
   color: var(--accent, inherit);
 }
 
+/* Ventes DVF, immeuble par immeuble : une ligne d'en-tête par parcelle, puis ses ventes. */
+.dvf-list {
+  margin-top: 14px;
+}
+
+/* Sous la carte, qui déborde jusqu'au bas de la card (marge négative) : on reprend ce
+   débord, plus un interligne, et la carte retrouve son filet de fermeture. */
+.card-map + .card-detail > .dvf-list {
+  margin-top: calc(var(--card-pad-y) + 24px);
+}
+
+.card-map:has(+ .card-detail > .dvf-list) {
+  border-bottom: 0.5px solid var(--hairline);
+}
+
+.dvf-note {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 4px 0 6px;
+}
+
+.dvf-table-wrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.dvf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.dvf-table thead th {
+  padding: 4px 10px 6px 0;
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.dvf-table td {
+  padding: 4px 10px 4px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dvf-table .num {
+  text-align: right;
+}
+
+.dvf-building th {
+  padding: 12px 0 4px;
+  text-align: left;
+  font-weight: normal;
+  border-bottom: 1px solid var(--border);
+}
+
+.dvf-building-name {
+  display: block;
+  font-weight: 600;
+}
+
+.dvf-building-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.dvf-building-facts [title] {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+.dvf-list-more {
+  margin-top: 8px;
+  font-size: 0.85rem;
+}
+
+.dvf-list-more summary {
+  cursor: pointer;
+  color: var(--accent, inherit);
+}
+
+/* Bulle d'un immeuble de la carte DVF : jusqu'à une vingtaine de ventes, elle défile. */
+.dvf-popup .maplibregl-popup-content {
+  max-height: 260px;
+  overflow-y: auto;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  /* Une vente par bloc, chaque valeur précédée de son intitulé. */
+  .dvf-table thead {
+    display: none;
+  }
+  .dvf-table tr:not(.dvf-building) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .dvf-table td {
+    border: 0;
+    padding: 1px 0;
+    text-align: left !important;
+  }
+  .dvf-table td::before {
+    content: attr(data-label);
+    margin-right: 6px;
+    color: var(--muted);
+  }
+  .dvf-building th {
+    display: block;
+  }
+}
+
 /* Zonage « zone tendue » : une ligne sous les loyers, filet à gauche comme une remarque. */
 .rents-zone {
   margin: 16px 0 0;

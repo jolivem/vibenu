@@ -1,10 +1,6 @@
-import type { DvfTransactionFeature } from "../domain/real-estate.types";
+import type { BuildingInfo, RealEstateAnalysis } from "../domain/real-estate.types";
 
-export interface RealEstateMarketData {
-  nearbyTransactionsCount?: number;
-  medianPricePerSquareMeter?: number;
-  transactionFeatures?: DvfTransactionFeature[];
-}
+export type RealEstateMarketData = RealEstateAnalysis;
 
 export interface RealEstateProvider {
   getNearbyTransactions(
@@ -16,4 +12,9 @@ export interface RealEstateProvider {
 
   /** Toutes les transactions DVF d'une commune, filtrées par code INSEE. */
   getCommuneTransactions(codeInsee: string): Promise<RealEstateMarketData>;
+}
+
+/** Fiche des immeubles, par identifiant de parcelle. */
+export interface BuildingInfoProvider {
+  getBuildings(parcelIds: string[]): Promise<Map<string, BuildingInfo>>;
 }

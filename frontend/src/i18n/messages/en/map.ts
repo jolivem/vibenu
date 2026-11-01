@@ -57,15 +57,29 @@ export const map: MapMessages = {
       ...(p.reussite !== null ? [`Exam pass rate: ${f.decimal(p.reussite, 0)}%`] : []),
     ],
   }),
-  dvfPopup: (p) => ({
-    title: `€${f.int(p.pricePerSqm)}/m²`,
-    lines: [
-      `Price: €${f.int(p.price)}`,
-      `Floor area: ${p.surface} m²`,
-      `Date: ${p.date}`,
-      propertyTypes[p.propertyType] ?? p.propertyType,
-    ],
-  }),
+  dvfPopup: (p) =>
+    p.sales.length === 1
+      ? {
+          title: `€${f.int(p.sales[0].pricePerSqm)}/m²`,
+          lines: [
+            ...(p.address ? [p.address] : []),
+            `Price: €${f.int(p.sales[0].price)}`,
+            `Floor area: ${p.sales[0].surface} m²`,
+            `Date: ${f.dateShort(p.sales[0].date)}`,
+            propertyTypes[p.sales[0].propertyType] ?? p.sales[0].propertyType,
+          ],
+        }
+      : {
+          title: `${p.salesCount} sales, ${p.from === p.to ? p.to : `${p.from}-${p.to}`}`,
+          lines: [
+            ...(p.address ? [p.address] : []),
+            `Median: €${f.int(p.medianPricePerSqm)}/m²`,
+            ...p.sales.map(
+              (s) =>
+                `${f.dateShort(s.date)} · ${propertyTypes[s.propertyType] ?? s.propertyType} · ${s.surface} m² · €${f.int(s.price)} · €${f.int(s.pricePerSqm)}/m²`,
+            ),
+          ],
+        },
   propertyTypes,
   floodZonePopupTitle: "Flood zone",
   floodPerimeterPopup: {

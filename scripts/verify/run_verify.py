@@ -17,7 +17,7 @@ from datetime import datetime
 
 from common import A_RELIRE, ARRONDI, ERREUR, METHODE, OK, OUT, STATUTS, Address, Check, load_json, save_json, checks_to_dicts
 
-DOMAINES = ["risks", "dpe", "dvf", "rents", "cadastre", "fiscalite", "schools", "security", "population", "elections", "climate", "air", "mobility", "insights"]
+DOMAINES = ["risks", "dpe", "dvf", "bdnb", "rents", "cadastre", "fiscalite", "schools", "security", "population", "elections", "climate", "air", "mobility", "insights"]
 
 LIBELLES = {
     ERREUR: ("❌", "Erreur"),

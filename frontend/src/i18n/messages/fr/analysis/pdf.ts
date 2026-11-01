@@ -39,9 +39,15 @@ export const pdf = {
   },
   property: {
     marketLabel: "Marché",
-    median: (pricePerSquareMeter: number) => `prix médian ${f.spaced(Math.round(pricePerSquareMeter))} €/m²`,
-    transactions: (count: number) =>
-      `${count} transaction${count > 1 ? "s" : ""} proche${count > 1 ? "s" : ""}`,
+    /** Une médiane par type de bien. */
+    kinds: { appartement: "appartements", maison: "maisons" } as Record<"appartement" | "maison", string>,
+    kindMedian: (kind: string, pricePerSquareMeter: number, count: number) =>
+      `${kind} ${f.spaced(pricePerSquareMeter)} €/m² (${count} vente${count > 1 ? "s" : ""})`,
+    kindTooFew: (kind: string, count: number) =>
+      `${kind} : ${count} vente${count > 1 ? "s" : ""}, trop peu pour un prix médian`,
+    /** Mode adresse : sur quelles ventes portent les médianes. */
+    nearby: (count: number, from: number, to: number, radius: number) =>
+      `${count} vente${count > 1 ? "s" : ""} la${count > 1 ? "s" : ""} plus proche${count > 1 ? "s" : ""} (${from === to ? to : `${from}-${to}`}, rayon de ${f.int(radius)} m)`,
     noSale: "aucune vente récente recensée",
     parcelLabel: "Parcelle",
     parcel: (surface: string, section: string, numero: string) =>
