@@ -31,7 +31,7 @@ export function RealEstateCard({ realEstate, m, addressParcel, children }: Props
               <p className="real-estate-example">{m.example(EXAMPLE_SURFACES[kind], examplePrice(kind, market.medianPricePerSqm))}</p>
             </>
           ) : (
-            <p className="real-estate-example">{m.tooFew(m.kinds[kind], market.count)}</p>
+            <p className="real-estate-too-few">{m.tooFew(m.kinds[kind], market.count)}</p>
           )}
         </div>
       ))}

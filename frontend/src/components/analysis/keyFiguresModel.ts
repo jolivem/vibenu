@@ -3,7 +3,7 @@ import type { LocationAnalysisDto, SecurityRating } from "@/types/location-analy
 import { FEATURES } from "@/lib/site-features";
 import type { KeyFigure } from "./KeyFigures";
 import { hasRentContent, rentOf } from "./rentsModel";
-import { headlineMarket } from "./realEstateModel";
+import { marketsShown } from "./realEstateModel";
 import type { SectionId } from "./sections";
 
 /**
@@ -29,9 +29,17 @@ export function buildKeyFigures(
   // « 0 €/m² » se lisait comme une donnée.
   // Le type le plus vendu autour de l'adresse, nommé : une médiane mêlant appartements et
   // maisons ne décrivait ni l'un ni l'autre.
-  const headline = data.realEstate ? headlineMarket(data.realEstate) : null;
-  if (headline && headline.pricePerSqm > 0) {
-    add({ section: "immobilier", label: m.priceLabels[headline.kind], value: m.price(headline.pricePerSqm) });
+  // Les deux médianes tiennent dans une tuile, une ligne chacune.
+  const prices = data.realEstate ? marketsShown(data.realEstate).filter(({ market }) => (market.medianPricePerSqm ?? 0) > 0) : [];
+  if (prices.length > 1) {
+    add({
+      section: "immobilier",
+      label: m.pricesLabel,
+      value: prices.map(({ kind, market }) => m.priceLine(kind, market.medianPricePerSqm!)).join("\n"),
+    });
+  } else if (prices.length === 1) {
+    const { kind, market } = prices[0];
+    add({ section: "immobilier", label: m.priceLabels[kind], value: m.price(market.medianPricePerSqm!) });
   }
 
   // Le loyer des appartements tous types, à côté du prix de vente : les deux chiffres qu'on

@@ -39,7 +39,10 @@ export function KeyFigures({ figures, ariaLabel }: { figures: KeyFigure<string>[
           className="key-figure"
         >
           <span className="key-figure-label">{figure.label}</span>
-          <span className="key-figure-value">{figure.value}</span>
+          {/* Une valeur sur plusieurs lignes (« \n ») : les deux prix, appartements et maisons. */}
+          <span className={figure.value.includes("\n") ? "key-figure-value key-figure-value--lines" : "key-figure-value"}>
+            {figure.value}
+          </span>
         </a>
       ))}
     </nav>

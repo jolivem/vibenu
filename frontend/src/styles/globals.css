@@ -1957,6 +1957,13 @@ html {
   color: var(--accent);
 }
 
+/* Deux valeurs dans une tuile (prix des appartements et des maisons) : une par ligne, plus petites. */
+.key-figure-value--lines {
+  white-space: pre-line;
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
 /* Mobile : deux colonnes fixes ; une dernière tuile seule sur sa ligne prend toute la largeur. */
 @media (max-width: 560px) {
   .key-figures {
@@ -4442,5 +4449,17 @@ html {
 /* Card Immobilier : l'exemple chiffré colle à la médiane qu'il traduit. */
 .real-estate-example {
   margin-top: -8px;
+  color: var(--muted);
+}
+
+/* Type de bien sans médiane (moins de 10 ventes) : une ligne à part entière, en retrait. */
+.real-estate-too-few {
+  color: var(--muted);
+}
+
+/* Sur quelles ventes portent les médianes : une note, comme les sources des autres cards. */
+.real-estate-period {
+  margin-top: 12px;
+  font-size: 0.85rem;
   color: var(--muted);
 }

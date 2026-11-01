@@ -6,6 +6,8 @@ const f = createFormat("en");
 export const keyFigures: KeyFiguresMessages = {
   ariaLabel: "Key figures",
   priceLabels: { appartement: "Flat price", maison: "House price" },
+  pricesLabel: "Price per m²",
+  priceLine: (kind, pricePerSquareMeter) => `${kind === "appartement" ? "Flat" : "House"} €${f.int(pricePerSquareMeter)}`,
   price: (pricePerSquareMeter) => `€${f.int(pricePerSquareMeter)}/m²`,
   rentLabel: "Flat rent",
   rent: (perM2) => `€${f.fixed(perM2, 1)}/m²`,

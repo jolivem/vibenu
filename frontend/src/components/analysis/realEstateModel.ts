@@ -69,14 +69,3 @@ export function marketsShown(realEstate: RealEstateAnalysisDto): Array<{ kind: P
     return market ? [{ kind, market }] : [];
   });
 }
-
-/**
- * Le prix à mettre en avant (chiffres clés) : celui du type le plus vendu autour de
- * l'adresse, parmi ceux qui ont une médiane.
- */
-export function headlineMarket(realEstate: RealEstateAnalysisDto): { kind: PropertyKindDto; pricePerSqm: number } | null {
-  const withMedian = marketsShown(realEstate).filter(({ market }) => market.medianPricePerSqm !== null);
-  if (withMedian.length === 0) return null;
-  const best = withMedian.reduce((a, b) => (b.market.count > a.market.count ? b : a));
-  return { kind: best.kind, pricePerSqm: best.market.medianPricePerSqm! };
-}

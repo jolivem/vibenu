@@ -9,6 +9,10 @@ export const keyFigures = {
   ariaLabel: "Chiffres clés",
   /** Prix médian du type de bien le plus vendu autour de l'adresse. */
   priceLabels: { appartement: "Prix appartement", maison: "Prix maison" },
+  /** Tuile à deux prix, quand appartements et maisons ont chacun leur médiane. */
+  pricesLabel: "Prix au m²",
+  priceLine: (kind: "appartement" | "maison", pricePerSquareMeter: number) =>
+    `${kind === "appartement" ? "Appart." : "Maison"} ${f.spaced(Math.round(pricePerSquareMeter))} €`,
   price: (pricePerSquareMeter: number) => `${f.spaced(Math.round(pricePerSquareMeter))} €/m²`,
   /**
    * Loyer d'annonce des appartements, charges comprises. Pas « médian » : l'ANIL publie un
