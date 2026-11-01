@@ -68,17 +68,21 @@ export const map: MapMessages = {
             `Date: ${f.dateShort(p.sales[0].date)}`,
             propertyTypes[p.sales[0].propertyType] ?? p.sales[0].propertyType,
           ],
+          rows: [],
         }
       : {
           title: `${p.salesCount} sales, ${p.from === p.to ? p.to : `${p.from}-${p.to}`}`,
           lines: [
             ...(p.address ? [p.address] : []),
             `Median: €${f.int(p.medianPricePerSqm)}/m²`,
-            ...p.sales.map(
-              (s) =>
-                `${f.dateShort(s.date)} · ${propertyTypes[s.propertyType] ?? s.propertyType} · ${s.surface} m² · €${f.int(s.price)} · €${f.int(s.pricePerSqm)}/m²`,
-            ),
           ],
+          rows: p.sales.map((s) => [
+            f.dateShort(s.date),
+            propertyTypes[s.propertyType] ?? s.propertyType,
+            `${s.surface} m²`,
+            `€${f.int(s.price)}`,
+            `€${f.int(s.pricePerSqm)}/m²`,
+          ]),
         },
   propertyTypes,
   floodZonePopupTitle: "Flood zone",

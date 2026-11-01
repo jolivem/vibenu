@@ -1044,8 +1044,15 @@ export function Map({ lat, lon, label, transports = NO_TRANSPORTS, cadastreParce
           medianPricePerSqm: building.medianPricePerSqm,
           sales: building.sales,
         });
-        const html = `<strong>${escapeHtml(popup.title)}</strong><br/>${popup.lines.map(escapeHtml).join("<br/>")}`;
-        new maplibregl.Popup({ className: "dvf-popup", maxWidth: "360px" })
+        // Les ventes en tableau : une ligne par vente, des colonnes alignées, aucune coupure
+        // au milieu d'un prix (« 5 638 / €/m² »).
+        const table = popup.rows.length
+          ? `<table class="dvf-popup-sales">${popup.rows
+              .map((cells) => `<tr>${cells.map((c, i) => `<td${i >= 2 ? ' class="num"' : ""}>${escapeHtml(c)}</td>`).join("")}</tr>`)
+              .join("")}</table>`
+          : "";
+        const html = `<strong>${escapeHtml(popup.title)}</strong><br/>${popup.lines.map(escapeHtml).join("<br/>")}${table}`;
+        new maplibregl.Popup({ className: "dvf-popup", maxWidth: "460px" })
           .setLngLat(e.lngLat)
           .setHTML(html)
           .addTo(m);

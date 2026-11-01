@@ -3357,6 +3357,27 @@ html {
   font-size: 0.8rem;
 }
 
+/* Ses ventes en tableau : cellules sur une ligne, montants alignés à droite. */
+.dvf-popup-sales {
+  margin-top: 6px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.dvf-popup-sales td {
+  padding: 2px 10px 2px 0;
+  white-space: nowrap;
+  border-top: 1px solid var(--hairline);
+}
+
+.dvf-popup-sales td:last-child {
+  padding-right: 0;
+}
+
+.dvf-popup-sales .num {
+  text-align: right;
+}
+
 @media (max-width: 640px) {
   /* Une vente par bloc, chaque valeur précédée de son intitulé. */
   .dvf-table thead {

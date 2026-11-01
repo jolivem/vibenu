@@ -233,7 +233,7 @@ export function PdfImmobilierFiche({
           {join([
             ...markets.map(({ kind, market }) =>
               market.medianPricePerSqm !== null
-                ? pdf.property.kindMedian(pdf.property.kinds[kind], market.medianPricePerSqm, market.count)
+                ? pdf.property.kindMedian(pdf.property.kinds[kind], market.medianPricePerSqm)
                 : pdf.property.kindTooFew(pdf.property.kinds[kind], market.count),
             ),
             markets.length > 0 &&
@@ -800,12 +800,8 @@ export function PdfRisquesFiche({ risks }: { risks: RiskAnalysisDto }) {
         </Fact>
       )}
       {highlighted.length === 0 && minor.length === 0 && <Fact>{risksMessages.pdf.none}</Fact>}
-      {catnat && (
-        <>
-          <Fact label={risksMessages.catnat.title}>{join([catnat.summary, ...catnat.perils])}</Fact>
-          <Fact>{catnat.source}</Fact>
-        </>
-      )}
+      {/* Sans la note de source : elle reste sur la page en ligne, la fiche est une synthèse. */}
+      {catnat && <Fact label={risksMessages.catnat.title}>{join([catnat.summary, ...catnat.perils])}</Fact>}
     </Block>
   );
 }

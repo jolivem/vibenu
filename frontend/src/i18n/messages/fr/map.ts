@@ -84,8 +84,9 @@ export const map = {
     to: number;
     medianPricePerSqm: number;
     sales: Array<{ date: string; propertyType: string; surface: number; price: number; pricePerSqm: number }>;
-  }) =>
+  }): { title: string; lines: string[]; rows: string[][] } =>
     // Une seule vente : le rendu d'origine, le prix au m² en titre puis une ligne par information.
+    // Plusieurs : un tableau (`rows`, une ligne par vente), dont les cellules ne se coupent pas.
     p.sales.length === 1
       ? {
           title: `${f.int(p.sales[0].pricePerSqm)} €/m²`,
@@ -96,17 +97,21 @@ export const map = {
             `Date : ${f.dateShort(p.sales[0].date)}`,
             map.propertyTypes[p.sales[0].propertyType] ?? p.sales[0].propertyType,
           ],
+          rows: [],
         }
       : {
           title: `${p.salesCount} ventes, ${p.from === p.to ? p.to : `${p.from}-${p.to}`}`,
           lines: [
             ...(p.address ? [p.address] : []),
             `Médiane : ${f.int(p.medianPricePerSqm)} €/m²`,
-            ...p.sales.map(
-              (s) =>
-                `${f.dateShort(s.date)} · ${map.propertyTypes[s.propertyType] ?? s.propertyType} · ${s.surface} m² · ${f.int(s.price)} € · ${f.int(s.pricePerSqm)} €/m²`,
-            ),
           ],
+          rows: p.sales.map((s) => [
+            f.dateShort(s.date),
+            map.propertyTypes[s.propertyType] ?? s.propertyType,
+            `${s.surface} m²`,
+            `${f.int(s.price)} €`,
+            `${f.int(s.pricePerSqm)} €/m²`,
+          ]),
         },
   /** Types de bien de la base DVF, par libellé source. Un type inconnu d'ici s'affiche tel quel. */
   propertyTypes: {

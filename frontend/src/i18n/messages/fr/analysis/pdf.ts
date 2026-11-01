@@ -38,11 +38,11 @@ export const pdf = {
     onlineLead: "Détail, graphes et cartes : ",
   },
   property: {
-    marketLabel: "Marché",
+    marketLabel: "Prix de vente",
     /** Une médiane par type de bien. */
     kinds: { appartement: "appartements", maison: "maisons" } as Record<"appartement" | "maison", string>,
-    kindMedian: (kind: string, pricePerSquareMeter: number, count: number) =>
-      `${kind} ${f.spaced(pricePerSquareMeter)} €/m² (${count} vente${count > 1 ? "s" : ""})`,
+    /** Le prix seul : le nombre de ventes de chaque type reste sur la page en ligne. */
+    kindMedian: (kind: string, pricePerSquareMeter: number) => `${kind} ${f.spaced(pricePerSquareMeter)} €/m²`,
     kindTooFew: (kind: string, count: number) =>
       `${kind} : ${count} vente${count > 1 ? "s" : ""}, trop peu pour un prix médian`,
     /** Mode adresse : sur quelles ventes portent les médianes. */
