@@ -47,7 +47,7 @@ export const pdf = {
       `${kind} : ${count} vente${count > 1 ? "s" : ""}, trop peu pour un prix médian`,
     /** Mode adresse : sur quelles ventes portent les médianes. */
     nearby: (count: number, from: number, to: number, radius: number) =>
-      `${count} vente${count > 1 ? "s" : ""} la${count > 1 ? "s" : ""} plus proche${count > 1 ? "s" : ""} (${from === to ? to : `${from}-${to}`}, rayon de ${f.int(radius)} m)`,
+      `${count} vente${count > 1 ? "s" : ""} ${count > 1 ? "les" : "la"} plus proche${count > 1 ? "s" : ""} (${from === to ? to : `${from}-${to}`}, rayon de ${f.int(radius)} m)`,
     noSale: "aucune vente récente recensée",
     parcelLabel: "Parcelle",
     parcel: (surface: string, section: string, numero: string) =>
