@@ -32,6 +32,7 @@ export const pdf: PdfMessages = {
     nearby: (count, from, to, radius) =>
       `${count} nearest sale${count === 1 ? "" : "s"} (${from === to ? to : `${from}-${to}`}, within ${f.int(radius)} m)`,
     noSale: "no recent sale on record",
+    notPublished: "not published in Alsace-Moselle (sales recorded in the local land register, outside DVF)",
     parcelLabel: "Plot",
     parcel: (surface, section, numero) => `${surface} · section ${section} no. ${numero}`,
     zoneLabel: "PLU zone:",

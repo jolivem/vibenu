@@ -338,7 +338,7 @@ export function AnalysisScreen() {
                   {hasContent.immobilier && (
                     <AnalysisSection id="immobilier">
                       {FEATURES.showRealEstate && realEstate && (
-                        <RealEstateCard realEstate={realEstate} m={m.realEstate} addressParcel={data.cadastre?.parcel}>
+                        <RealEstateCard realEstate={realEstate} m={m.realEstate} mode={data.mode} addressParcel={data.cadastre?.parcel}>
                           {realEstate.transactionFeatures?.length ? (
                             <LazyMap height={THEMATIC_MAP_HEIGHT}>
                               <Map

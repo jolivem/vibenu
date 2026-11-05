@@ -24,6 +24,9 @@ export const realEstate = {
   /** Mode commune. */
   communeBasis: (count: number) => `Calculées sur les ${f.int(count)} ventes les plus récentes de la commune.`,
   noSale: "Aucune vente récente recensée à moins de 1 km.",
+  /** Alsace-Moselle : les ventes ne sont pas publiées, ce n'est pas qu'il n'y en a pas. */
+  notPublished: (commune: boolean) =>
+    `En Alsace et en Moselle, les ventes immobilières relèvent du Livre foncier et ne sont pas publiées dans la base DVF : pas de prix de vente pour cette ${commune ? "commune" : "adresse"}.`,
   mapHint:
     "Cliquez sur une parcelle colorée pour afficher ses ventes. Zoomez ou dézoomez pour les faire apparaître si nécessaire.",
   /** Le tableau des ventes, adresse par adresse (détail de la card). */

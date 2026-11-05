@@ -75,6 +75,12 @@ export interface PropertyKindMarket {
 }
 
 export interface RealEstateAnalysis {
+  /**
+   * Ventes non publiées pour ce territoire : en Alsace-Moselle (57, 67, 68), elles relèvent du
+   * Livre foncier et l'État ne les diffuse pas dans DVF. Rien n'est cherché, et la card le dit
+   * au lieu de « aucune vente récente », qui laissait croire qu'il ne s'était rien vendu.
+   */
+  notPublished?: "alsace-moselle";
   /** Ventes retenues, tous types confondus. */
   nearbyTransactionsCount?: number;
   /**

@@ -3,6 +3,9 @@ import type { RealEstateAnalysis } from "../domain/real-estate.types";
 import type { BuildingInfoProvider, RealEstateProvider } from "../infrastructure/real-estate.provider";
 import type { AnalysisMode } from "../../../server-shared/types/location-analysis.dto";
 
+/** Départements du Livre foncier : Moselle, Bas-Rhin, Haut-Rhin. DVF ne les publie pas. */
+const LIVRE_FONCIER_DEPARTMENTS = ["57", "67", "68"];
+
 export class RealEstateServiceImpl implements RealEstateService {
   constructor(
     private readonly realEstateProvider: RealEstateProvider,
@@ -16,6 +19,17 @@ export class RealEstateServiceImpl implements RealEstateService {
     codeInsee?: string,
     options?: { mode?: AnalysisMode },
   ): Promise<RealEstateAnalysis> {
+    // Décidé sur la commune de l'adresse : une vente d'un département voisin, à moins d'1 km,
+    // ne ferait pas un prix pour Strasbourg ou Metz.
+    if (codeInsee && LIVRE_FONCIER_DEPARTMENTS.includes(codeInsee.slice(0, 2))) {
+      return {
+        notPublished: "alsace-moselle",
+        nearbyTransactionsCount: 0,
+        markets: { appartement: null, maison: null },
+        transactionFeatures: [],
+        buildings: [],
+      };
+    }
     const market = options?.mode === "commune" && codeInsee
       ? await this.realEstateProvider.getCommuneTransactions(codeInsee)
       : await this.realEstateProvider.getNearbyTransactions(lat, lon, 1000, codeInsee);

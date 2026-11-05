@@ -7,13 +7,15 @@ import { EXAMPLE_SURFACES, examplePrice, isAddressParcel, marketsShown, parcelPa
 interface Props {
   realEstate: RealEstateAnalysisDto;
   m: RealEstateMessages;
+  /** Mode de l'analyse : le message d'Alsace-Moselle parle de l'adresse ou de la commune. */
+  mode?: "address" | "commune";
   /** Parcelle de l'adresse (cadastre) : ses ventes sont dites « à l'adresse ». */
   addressParcel?: { section: string; numero: string } | null;
   /** Carte thématique, rendue en fin de card et débordant jusqu'à ses bords. */
   children?: ReactNode;
 }
 
-export function RealEstateCard({ realEstate, m, addressParcel, children }: Props) {
+export function RealEstateCard({ realEstate, m, mode, addressParcel, children }: Props) {
   const { period, buildings, nearbyTransactionsCount: count } = realEstate;
   const markets = marketsShown(realEstate);
   // Le tableau ne sert qu'autour d'une adresse : en mode commune, l'ordre par distance n'a
@@ -22,7 +24,11 @@ export function RealEstateCard({ realEstate, m, addressParcel, children }: Props
   return (
     <section className="card">
       <h2>{m.title}</h2>
-      {markets.length === 0 && <p>{m.noSale}</p>}
+      {realEstate.notPublished ? (
+        <p>{m.notPublished(mode === "commune")}</p>
+      ) : (
+        markets.length === 0 && <p>{m.noSale}</p>
+      )}
       {markets.map(({ kind, market }) => (
         <div key={kind} className="real-estate-market">
           {market.medianPricePerSqm !== null ? (

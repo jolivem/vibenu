@@ -15,6 +15,8 @@ export const realEstate: RealEstateMessages = {
     `Based on the ${f.int(count)} nearest sale${s(count)}, ${from === to ? `in ${to}` : `${from} to ${to}`}, within ${f.int(radius)} m.`,
   communeBasis: (count) => `Based on the ${f.int(count)} most recent sales in the municipality.`,
   noSale: "No recent sale on record within 1 km.",
+  notPublished: (commune) =>
+    `In Alsace and Moselle, property sales are recorded in the local land register (Livre foncier) and are not published in the DVF database: no sale prices for this ${commune ? "municipality" : "address"}.`,
   mapHint:
     "Click a coloured plot to see its sales. Zoom in or out to bring them into view if needed.",
   list: {

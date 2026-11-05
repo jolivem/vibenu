@@ -175,6 +175,8 @@ export interface PropertyKindMarketDto {
 }
 
 export interface RealEstateAnalysisDto {
+  /** Ventes non publiées pour ce territoire (Alsace-Moselle : Livre foncier, hors DVF). */
+  notPublished?: "alsace-moselle";
   /** Ventes retenues, tous types confondus. */
   nearbyTransactionsCount?: number;
   /** Une médiane par type de bien ; `null` quand aucune vente de ce type. */
