@@ -10,6 +10,7 @@ import type { CityDef } from "@/lib/commune-slugs";
 import type { ClimateAnalysis } from "@/server-modules/climate/domain/climate.types";
 import type { MunicipalesAnalysis } from "@/server-modules/elections/domain/municipales.types";
 import type { RiskAnalysis } from "@/server-modules/risks/domain/risk.types";
+import type { AirQualityStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import type { FaqItem } from "./CommuneFaqSection";
 import { formatEur, formatInt } from "./format";
 
@@ -19,6 +20,7 @@ export interface HubFaqInput {
   municipales: MunicipalesAnalysis | null;
   climate: ClimateAnalysis | null;
   risks: RiskAnalysis | null;
+  airQuality: AirQualityStats | null;
 }
 
 export function buildHubFaqItems({
@@ -27,6 +29,7 @@ export function buildHubFaqItems({
   municipales,
   climate,
   risks,
+  airQuality,
 }: HubFaqInput): FaqItem[] {
   const items: FaqItem[] = [];
   const ville = cityDef.nomAffiche;
@@ -69,6 +72,17 @@ export function buildHubFaqItems({
     items.push({
       question: `Quelle est la température moyenne à ${ville} ?`,
       answer: `La température moyenne annuelle à ${ville} est de ${climate.temperatureC.toFixed(1).replace(".", ",")} °C, sur les normales Météo-France 1991-2020.${pluie}`,
+    });
+  }
+
+  const latest = airQuality?.historique[0];
+  if (latest) {
+    const acceptables = latest.joursBonne + latest.joursMoyenne;
+    const degrades =
+      latest.joursDegradee + latest.joursMauvaise + latest.joursTresMauvaise + latest.joursExtremementMauvaise;
+    items.push({
+      question: `Quelle est la qualité de l'air à ${ville} ?`,
+      answer: `En ${latest.annee}, ${ville} a enregistré ${acceptables} jours de qualité de l'air bonne ou moyenne et ${degrades} jours dégradés ou plus, selon l'indice ATMO de ${cityDef.airSourceLabel}. La mesure vaut pour la ville entière, tous arrondissements compris.`,
     });
   }
 

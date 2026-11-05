@@ -4,6 +4,7 @@ import { CITIES } from "@/lib/commune-slugs";
 import { CardInsight } from "@/components/CardInsight";
 import { SecurityIndicatorChart } from "@/components/analysis/SecurityCard";
 import { security } from "@/i18n/messages/fr/analysis/security";
+import { SourceLine } from "./SourceLine";
 
 interface Props {
   /** Légende IA de la section, rendue côté serveur. */
@@ -49,17 +50,9 @@ export function CommuneSecurityCard({ stats, securite, legendes }: Props) {
         })}
       </div>
 
-      <p className="elections-footnote">
-        Faits enregistrés par la police et la gendarmerie à l&apos;échelle de
-        l&apos;arrondissement, comparés à {cityDef.nomAffiche} entière et à la France. Il
-        s&apos;agit de faits <strong>enregistrés</strong> : la mesure dépend aussi de la
-        propension à porter plainte et de la présence policière.
-      </p>
-      <p className="elections-footnote">
-        Les effectifs de 1 à 4 faits ne sont pas publiés (secret statistique) : ils apparaissent
-        en fourchette sur les courbes. Source : Ministère de l&apos;Intérieur (SSMSI) · Bases
-        statistiques de la délinquance enregistrée, {annees[0]}–{annees[annees.length - 1]}.
-      </p>
+      <SourceLine anchor="securite">
+        ministère de l&apos;Intérieur (SSMSI), faits enregistrés {annees[0]}–{annees[annees.length - 1]}
+      </SourceLine>
     </section>
   );
 }

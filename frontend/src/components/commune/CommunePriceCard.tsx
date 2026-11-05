@@ -1,8 +1,9 @@
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
-import { formatEur, formatDelta, pctDelta } from "./format";
+import { formatEur, formatDelta, formatInt, pctDelta } from "./format";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
+import { SourceLine } from "./SourceLine";
 
 interface Props {
   /** Légende IA de la section, rendue côté serveur. */
@@ -68,9 +69,7 @@ export function CommunePriceCard({ stats, nomCourt, legendes }: Props) {
         </div>
       )}
 
-      <p className="elections-footnote">
-        Source : DVF · appartements vendus au cours des 24 derniers mois.
-      </p>
+      <SourceLine anchor="prix">DVF, {formatInt(prix.nbTransactions)} appartements vendus en 24 mois</SourceLine>
     </section>
   );
 }

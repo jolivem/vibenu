@@ -148,20 +148,8 @@ export function buildFaqItems(stats: CommuneStats, nomCourt: string): FaqItem[] 
     });
   }
 
-  if (stats.airQuality && stats.airQuality.historique.length > 0) {
-    const cityDef = CITIES[stats.city];
-    const latest = stats.airQuality.historique[0];
-    const joursAcceptables = latest.joursBonne + latest.joursMoyenne;
-    const joursDegradesOuPire =
-      latest.joursDegradee +
-      latest.joursMauvaise +
-      latest.joursTresMauvaise +
-      latest.joursExtremementMauvaise;
-    items.push({
-      question: `Quelle est la qualité de l'air à ${nomCourt} ?`,
-      answer: `En ${latest.annee}, ${cityDef.nomAffiche} a enregistré ${joursAcceptables} jours de qualité de l'air bonne ou moyenne et ${joursDegradesOuPire} jours dégradés ou plus, selon l'indice ATMO de ${cityDef.airSourceLabel}. La même mesure couvre l'ensemble de la ville, ${nomCourt} compris.`,
-    });
-  }
+  // Pas de question sur la qualité de l'air : l'indice ATMO couvre la ville entière, la réponse
+  // était la même sur tous les arrondissements. Elle est posée sur le hub.
 
   if (stats.elections) {
     const top = stats.elections.candidats.slice(0, 2);

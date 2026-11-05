@@ -3,6 +3,7 @@ import { EmploymentCharts } from "@/components/analysis/EmploymentCard";
 import type { InseeView } from "@/components/analysis/inseeChart";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
+import { SourceLine } from "./SourceLine";
 
 /**
  * Emploi et qualifications de l'arrondissement face à la France — les graphes de la card
@@ -23,12 +24,7 @@ export function CommuneEmploymentCard({
       <CardInsight text={legendes?.legende_emploi} animate={false} />
 
       <EmploymentCharts view={view} />
-      <p className="elections-footnote">
-        Le taux de chômage du recensement est <strong>déclaratif</strong> : il vaut 12,1 % en
-        France, quand le taux du Bureau international du travail était de 7,9 % en moyenne en
-        2021 ; les deux ne se comparent pas. Source : INSEE · Recensement de la population 2021
-        à l&apos;IRIS.
-      </p>
+      <SourceLine anchor="emploi">INSEE, recensement 2021 (chômage déclaré)</SourceLine>
     </section>
   );
 }

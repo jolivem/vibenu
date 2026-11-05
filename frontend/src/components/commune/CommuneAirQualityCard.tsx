@@ -4,15 +4,12 @@ import type {
   CommuneStats,
 } from "@/server-modules/commune-stats/domain/commune-stats.types";
 import { CITIES } from "@/lib/commune-slugs";
-import { CardInsight } from "@/components/CardInsight";
-import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
+import { SourceLine } from "./SourceLine";
 
 interface Props {
   stats: CommuneStats;
   /** Passé séparément : la page a déjà vérifié la présence de l'historique. */
   airQuality: AirQualityStats;
-  /** Légende IA de la section, rendue côté serveur. */
-  legendes?: CommuneLegendes;
 }
 
 type CategoryKey =
@@ -65,7 +62,7 @@ function StackedBar({ year, height }: { year: AirQualityAtmoYear; height: number
  * pour rien. Sans historique, la section entière n'est plus montée — c'est la page qui
  * l'arbitre, dans `communeSectionContent`.
  */
-export function CommuneAirQualityCard({ stats, airQuality, legendes }: Props) {
+export function CommuneAirQualityCard({ stats, airQuality }: Props) {
   const cityDef = CITIES[stats.city];
   const { historique } = airQuality;
   const latest = historique[0];
@@ -75,7 +72,6 @@ export function CommuneAirQualityCard({ stats, airQuality, legendes }: Props) {
     <section className="card">
       <h2>Indice ATMO</h2>
 
-      <CardInsight text={legendes?.legende_air} animate={false} />
 
       <div className="commune-air-wrap">
         <div className="commune-air-latest">
@@ -123,11 +119,7 @@ export function CommuneAirQualityCard({ stats, airQuality, legendes }: Props) {
         )}
       </div>
 
-      <p className="elections-footnote">
-        L&apos;indice ATMO synthétise quotidiennement les concentrations de polluants
-        (PM2.5, PM10, NO₂, O₃, SO₂) en une catégorie. La même mesure couvre l&apos;ensemble
-        de {cityDef.nomAffiche}. Source : {cityDef.airSourceLabel}.
-      </p>
+      <SourceLine anchor="qualite-air">{cityDef.airSourceLabel}, indice ATMO de {cityDef.nomAffiche}</SourceLine>
     </section>
   );
 }

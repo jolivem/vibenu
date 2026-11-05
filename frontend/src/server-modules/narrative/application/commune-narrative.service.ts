@@ -27,8 +27,8 @@ export interface CommuneNarrativeService {
  *
  * Elles s'ajoutent au contenu sans le remplacer, y compris à une entrée servie par le
  * cache : on peut donc juger le rendu des légendes sans régénérer l'éditorial, ni
- * appeler le fournisseur. Une clé est volontairement absente — "legende_air" — pour que
- * le chemin « section rendue sans légende » reste visible à chaque essai.
+ * appeler le fournisseur. La qualité de l'air, qui illustrait le chemin « section rendue
+ * sans légende », a quitté ces pages : toutes les clés y figurent désormais.
  */
 const LEGENDS_FIXTURE: CommuneLegendes = {
   legende_prix: "Le prix au mètre carré dépasse d'environ un cinquième la moyenne de la ville, et il progresse plus vite qu'elle depuis deux ans.",

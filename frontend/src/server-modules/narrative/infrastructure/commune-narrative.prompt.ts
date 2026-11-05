@@ -93,8 +93,12 @@ import {
  * v19 : revenu médian et pauvreté repris des valeurs publiées par l'INSEE (migration 027), et
  * prix DVF sur cinq ans, vente par vente : les textes en cache citent les anciens chiffres
  * (« 33 515 € » pour Paris 15e au lieu de 32 780 €). Le prompt ne change pas.
+ *
+ * v20 : la qualité de l'air quitte les pages d'arrondissement pour le hub (l'indice ATMO
+ * vaut pour la ville entière et se lisait à l'identique sur chaque page) : plus de clé
+ * `legende_air` ni de bloc `qualite_air_ville` dans l'entrée.
  */
-export const COMMUNE_PROMPT_VERSION = 19;
+export const COMMUNE_PROMPT_VERSION = 20;
 
 export const COMMUNE_SYSTEM_PROMPT = `Tu rédiges une fiche descriptive d'arrondissement (Paris, Lyon ou Marseille) pour un site d'analyse immobilière.
 Ton : clair, factuel, ni promotionnel ni alarmiste.
@@ -145,7 +149,6 @@ FORMAT DE SORTIE (JSON OBLIGATOIRE, RIEN D'AUTRE) :
   "legende_menages": "...",      // 1-2 phrases : taille des ménages et composition dominante des foyers, face à la France
   "legende_equipements": "...",  // 1-2 phrases : les domaines où la densité d'équipements se démarque, en plus comme en moins
   "legende_securite": "...",     // 1-2 phrases : les 1 ou 2 indicateurs de délinquance les plus marquants face à la ville et à la France, et leur tendance
-  "legende_air": "...",          // 1-2 phrases : niveau de qualité de l'air et sens de son évolution
   "legende_elections": "..."     // 1-2 phrases : participation et écart au national des 1 ou 2 candidats les plus marquants
 }
 
@@ -264,24 +267,8 @@ export function buildCommuneUserPrompt(input: CommuneNarrativeInput): string {
     })),
     // Mêmes chiffres que le tableau de la section : écarts et tendances déjà tranchés.
     securite: securiteInput(stats),
-    // Coupé avec la rubrique : sans ce garde, l'éditorial « cadre_de_vie » continuerait
-    // de commenter un air dont la page ne montre plus rien.
-    qualite_air_ville: FEATURES.showAirQuality && stats.airQuality && stats.airQuality.historique.length > 0
-      ? {
-          note: `Indice ATMO agrégé pour ${cityDef.nomAffiche} entière — même valeur pour tous les arrondissements de la ville. À commenter brièvement dans "cadre_de_vie".`,
-          source: cityDef.airSourceLabel,
-          derniere_annee: stats.airQuality.historique[0].annee,
-          jours_par_categorie_derniere_annee: {
-            bon: stats.airQuality.historique[0].joursBonne,
-            moyen: stats.airQuality.historique[0].joursMoyenne,
-            degrade: stats.airQuality.historique[0].joursDegradee,
-            mauvais: stats.airQuality.historique[0].joursMauvaise,
-            tres_mauvais: stats.airQuality.historique[0].joursTresMauvaise,
-            extremement_mauvais: stats.airQuality.historique[0].joursExtremementMauvaise,
-          },
-          total_jours_mesures: stats.airQuality.historique[0].totalJours,
-        }
-      : null,
+    // Plus de bloc `qualite_air_ville` : l'indice ATMO est passé sur le hub (même valeur pour
+    // tous les arrondissements), et « cadre_de_vie » ne doit pas commenter un air absent.
     elections: stats.elections
       ? {
           scrutin: stats.elections.scrutin,
@@ -333,7 +320,6 @@ const SECTION_PAR_LEGENDE: Record<CommuneLegendKey, CommuneSectionId> = {
   legende_menages: "demographie",
   legende_equipements: "equipements",
   legende_securite: "securite",
-  legende_air: "qualite-air",
   legende_elections: "elections",
 };
 

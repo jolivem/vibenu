@@ -3,6 +3,7 @@ import { HousingCharts } from "@/components/analysis/HousingCard";
 import type { InseeView } from "@/components/analysis/inseeChart";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
+import { SourceLine } from "./SourceLine";
 
 /**
  * Le parc de logements de l'arrondissement face à la France — mêmes graphes que la card
@@ -27,12 +28,7 @@ export function CommuneHousingCard({
       <CardInsight text={legendes?.legende_logement} animate={false} />
 
       <HousingCharts view={view} />
-      <p className="elections-footnote">
-        Le parc de logements recensé par l&apos;INSEE en 2021. Les effectifs du recensement
-        sont des estimations pondérées, arrondies à l&apos;unité : les parts peuvent ne pas
-        boucler exactement à 100 %. Source : INSEE · Recensement de la population 2021,
-        base logement à l&apos;IRIS.
-      </p>
+      <SourceLine anchor="logement">INSEE, recensement 2021</SourceLine>
     </section>
   );
 }

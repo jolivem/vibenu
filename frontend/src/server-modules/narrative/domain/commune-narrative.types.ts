@@ -23,7 +23,6 @@ export const COMMUNE_LEGEND_KEYS = [
   "legende_menages",
   "legende_equipements",
   "legende_securite",
-  "legende_air",
   "legende_elections",
 ] as const;
 

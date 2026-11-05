@@ -415,6 +415,14 @@ html {
   color: var(--accent);
 }
 
+/* Rang de l'arrondissement dans sa ville, en tête de section. */
+.commune-rank {
+  margin: 0 0 16px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
 .commune-lead {
   font-size: 18px;
   line-height: 1.55;
@@ -851,52 +859,67 @@ html {
   border-top: 0.5px solid var(--hairline);
 }
 
-.commune-related-list {
-  list-style: none;
-  margin: 0 0 32px;
-  padding: 0;
+/* Voisins comparés : la page courante en tête, en gras. */
+/* Défilement horizontal dans le cadre plutôt que sur la page, sur mobile. */
+.commune-neighbours-wrap {
   max-width: 1100px;
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  margin: 0 auto 24px;
+  overflow-x: auto;
 }
 
-.commune-related-list a {
-  display: inline-block;
-  padding: 8px 16px;
-  border: 0.5px solid var(--hairline-strong);
-  border-radius: 999px;
-  background: var(--card);
-  color: var(--text);
-  text-decoration: none;
+.commune-neighbours {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 14px;
-  transition: border-color 0.15s ease;
+  font-variant-numeric: tabular-nums;
 }
 
-.commune-related-list a:hover {
-  border-color: var(--accent);
+.commune-neighbours th,
+.commune-neighbours td {
+  padding: 8px 10px;
+  border-bottom: 0.5px solid var(--hairline);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.commune-neighbours th:first-child {
+  text-align: left;
+}
+
+.commune-neighbours thead th {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.commune-neighbours a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 3px;
+}
+
+.commune-neighbours a:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+.commune-cta-row > a:not(.commune-cta-btn) {
   color: var(--accent);
 }
 
-.commune-cta {
-  max-width: 1100px;
-  margin: 24px auto 0;
-  padding: 24px 28px;
-  background: var(--accent-light);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+.commune-neighbours tr.is-current th,
+.commune-neighbours tr.is-current td {
+  font-weight: 600;
 }
 
-.commune-cta p {
-  margin: 0;
-  font-size: 16px;
-  color: var(--text);
+.commune-cta-row {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px 20px;
+  flex-wrap: wrap;
 }
 
 .commune-cta-btn {
@@ -2492,24 +2515,6 @@ html {
    curseur, et le pôle droit change de longueur à chaque époque. */
 .era-blend-pole {
   white-space: nowrap;
-}
-
-/* Pages commune : les époques décrites en clair sous la carte. Contenu indexable, et la
-   seule partie de la section qui survit sans JavaScript. */
-.commune-era-list {
-  list-style: none;
-  padding: 0;
-  margin: 24px auto 0;
-  max-width: 760px;
-  display: grid;
-  gap: 12px;
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: var(--muted);
-}
-
-.commune-era-list strong {
-  color: var(--text);
 }
 
 /* Graphe multi-séries en courbes, partagé par la répartition par âge et le profil
@@ -4483,4 +4488,16 @@ html {
   margin-top: 12px;
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+/* Page « Méthode et sources » des pages commune : une colonne de cards de texte. */
+.methode-page {
+  display: grid;
+  gap: 16px;
+  max-width: 820px;
+}
+
+.methode-page .card p {
+  line-height: 1.6;
+  margin: 0 0 10px;
 }

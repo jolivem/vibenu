@@ -3,6 +3,7 @@ import { CITIES } from "@/lib/commune-slugs";
 import { equipementsAffichables, formatInt, formatDensityPer10k, formatDelta } from "./format";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
+import { SourceLine } from "./SourceLine";
 
 interface Props {
   /** Légende IA de la section, rendue côté serveur. */
@@ -63,16 +64,7 @@ export function CommuneEquipmentsCard({ stats, legendes }: Props) {
           );
         })}
       </div>
-      <p className="elections-footnote">
-        Densité pour 10 000 habitants, comparée à la moyenne {cityDef.adjectif} (équipements
-        rapportés à la population). Les écarts &lt; 5 % ne sont pas affichés.
-      </p>
-      <p className="elections-footnote">
-        La BPE rattache certains équipements à l&apos;adresse de leur gestionnaire : à
-        l&apos;échelle d&apos;un arrondissement, les nombres peuvent être surestimés ou
-        sous-estimés. L&apos;écart n&apos;est pas calculé quand un arrondissement concentre plus
-        de la moitié des équipements de sa ville dans une catégorie. Source : INSEE BPE.
-      </p>
+      <SourceLine anchor="equipements">INSEE, base permanente des équipements</SourceLine>
     </section>
   );
 }

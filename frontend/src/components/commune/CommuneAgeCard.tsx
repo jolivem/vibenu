@@ -5,6 +5,7 @@ import { population } from "@/i18n/messages/fr/analysis/population";
 import { formatEur, formatInt, formatPct } from "./format";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
+import { SourceLine } from "./SourceLine";
 
 interface Props {
   /** Légende IA de la section, rendue côté serveur. */
@@ -87,10 +88,7 @@ export function CommuneAgeCard({ stats, nomCourt, legendes }: Props) {
         />
       </div>
 
-      <p className="elections-footnote">
-        Moyennes pondérées par population calculées à partir des quartiers IRIS (INSEE) ;
-        comparaison avec la France entière agrégée par la même méthode.
-      </p>
+      <SourceLine anchor="population">INSEE, recensement et Filosofi 2021</SourceLine>
     </section>
   );
 }

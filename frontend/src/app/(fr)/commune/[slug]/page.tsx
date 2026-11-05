@@ -27,19 +27,25 @@ import { CommuneHouseholdsCard } from "@/components/commune/CommuneHouseholdsCar
 import { CommuneHousingCard } from "@/components/commune/CommuneHousingCard";
 import { CommuneEquipmentsCard } from "@/components/commune/CommuneEquipmentsCard";
 import { CommuneSecurityCard } from "@/components/commune/CommuneSecurityCard";
-import { CommuneAirQualityCard } from "@/components/commune/CommuneAirQualityCard";
 import { CommuneElectionsCard } from "@/components/commune/CommuneElectionsCard";
 import { CommuneNarrativeCard } from "@/components/commune/CommuneNarrativeCard";
 import { CommuneHistoryCard } from "@/components/commune/CommuneHistoryCard";
 import { buildFaqItems, CommuneFaqSection } from "@/components/commune/CommuneFaqSection";
 import { CommuneRelatedLinks } from "@/components/commune/CommuneRelatedLinks";
 import { formatEur, formatInt } from "@/components/commune/format";
+import {
+  chapeau,
+  faqPrixRang,
+  lignesVoisins,
+  loadCityStats,
+  phraseRangs,
+  rangCourt,
+  rangDe,
+} from "@/components/commune/cityComparison";
 import { buildCommuneKeyFigures } from "@/components/commune/keyFigures";
 import {
   COMMUNE_SECTION_TITLES,
-  communeRubriquesAnnoncees,
   communeSectionContent,
-  enumererFr,
   tronquerPropre,
   type CommuneSectionId,
 } from "@/components/commune/sections";
@@ -77,25 +83,31 @@ export async function generateMetadata({
   if (!commune || isCityHubSlug(commune.slug)) {
     return { title: "Page introuvable" };
   }
-  // On essaie de récupérer les stats (cached) pour enrichir la description
-  let descParts: string[] = [];
+  // Une description faite des chiffres qui distinguent l'arrondissement, rang compris : les
+  // 45 descriptions ne se ressemblent plus qu'à leurs libellés. Stats en cache 24 h.
+  const descParts: string[] = [];
   try {
-    const stats = await getCommuneStatsService().getStats(commune.codeCommune);
-    if (stats.prix.prixM2Median) descParts.push(`${formatEur(stats.prix.prixM2Median)}/m²`);
+    const [stats, city] = await Promise.all([
+      getCommuneStatsService().getStats(commune.codeCommune),
+      loadCityStats(commune.city),
+    ]);
+    const avecRang = (texte: string, id: Parameters<typeof rangDe>[2]) => {
+      const r = rangCourt(rangDe(city, commune.codeCommune, id));
+      return r ? `${texte} (${r})` : texte;
+    };
+    if (stats.prix.prixM2Median) descParts.push(avecRang(`appartement ${formatEur(stats.prix.prixM2Median)}/m²`, "prix"));
+    if (stats.demo.revenuMedianPondere) descParts.push(avecRang(`revenu médian ${formatEur(stats.demo.revenuMedianPondere)}`, "revenu"));
     if (stats.demo.populationTotale > 0) descParts.push(`${formatInt(stats.demo.populationTotale)} habitants`);
-    if (stats.demo.revenuMedianPondere) descParts.push(`${formatEur(stats.demo.revenuMedianPondere)} de revenu médian`);
   } catch {
-    // tolérant : si la DB n'est pas dispo, fallback générique
+    // tolérant : si la DB n'est pas dispo, description générique
   }
-  // Même liste que le chapeau de la page, et pour la même raison : une énumération figée
-  // finit par promettre une rubrique que le build a coupée.
-  const rubriques = enumererFr(communeRubriquesAnnoncees());
   const desc = descParts.length > 0
-    ? `${descParts.join(" · ")}. Analyse complète du ${commune.nomCourt} : ${rubriques}.`
-    : `Analyse complète du ${commune.nomCourt} : ${rubriques}. Données publiques.`;
+    ? `${commune.nomCourt} : ${descParts.join(", ")}. Prix, loyers, sécurité, population et élections, chiffrés.`
+    : `${commune.nomCourt} : prix, loyers, sécurité, population et élections, chiffrés à partir des données publiques.`;
 
   return {
-    title: `${commune.nomAffiche} — Prix immobilier, démographie, cadre de vie`,
+    // La forme des requêtes vues dans Search Console : « vivre à Marseille 10e », « avis … ».
+    title: `Vivre à ${commune.nomCourt} : avis chiffré, prix, loyers, sécurité`,
     description: tronquerPropre(desc, 158),
     alternates: { canonical: `/commune/${commune.slug}` },
     openGraph: {
@@ -129,6 +141,15 @@ function CommuneSection({
   );
 }
 
+/**
+ * Le rang de l'arrondissement dans sa ville, en tête de section : la seule prose de la page
+ * qui ne se lit sur aucune autre (cf. `cityComparison.ts`).
+ */
+function RankLine({ phrase }: { phrase: string }) {
+  if (!phrase) return null;
+  return <p className="commune-rank">{phrase}</p>;
+}
+
 export default async function CommunePage({
   params,
 }: {
@@ -147,14 +168,17 @@ export default async function CommunePage({
   const contourProvider = new CommuneContourProvider();
 
   const stats = await statsService.getStats(commune.codeCommune);
-  const [narrative, contour] = await Promise.all([
+  const [narrative, contour, city] = await Promise.all([
     narrativeService.getNarrative({
       codeCommune: commune.codeCommune,
       nomAffiche: commune.nomAffiche,
       stats,
     }),
     contourProvider.getContour(commune.codeCommune),
+    loadCityStats(commune.city),
   ]);
+  const rangsPrix = phraseRangs(city, commune, ["prix", "loyer"]);
+  const rangsPopulation = phraseRangs(city, commune, ["revenu", "population", "chomage", "proprietaires"]);
 
   // Les légendes voyagent avec la narrative : même appel au modèle, même cache. Une
   // page sans narrative se rend simplement sans légende, comme avant.
@@ -163,7 +187,8 @@ export default async function CommunePage({
   // Les questions servent de garde de section autant que de contenu : construites ici,
   // elles alimentent le balisage `FAQPage` et la liste rendue, qui ne peuvent plus
   // diverger.
-  const faqItems = buildFaqItems(stats, commune.nomCourt);
+  const faqPrix = faqPrixRang(city, commune, stats);
+  const faqItems = [...(faqPrix ? [faqPrix] : []), ...buildFaqItems(stats, commune.nomCourt)];
   const inseeViews = communeInseeViews(stats, commune.nomCourt);
 
   // Le point de décision unique : les cards n'ont plus de garde interne, elles ne sont
@@ -248,7 +273,7 @@ export default async function CommunePage({
         </div>
       </nav>
 
-      <CommuneHero commune={commune} />
+      <CommuneHero commune={commune} lead={chapeau(city, commune, stats)} />
 
       <div className="page-shell">
         <KeyFigures figures={keyFigures} ariaLabel="Chiffres clés" />
@@ -269,6 +294,7 @@ export default async function CommunePage({
           <div className="page-sections">
             {content["prix-immobilier"] && (
               <CommuneSection id="prix-immobilier">
+                <RankLine phrase={rangsPrix} />
                 {stats.prix.prixM2Median !== null && (
                   <CommunePriceCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
                 )}
@@ -281,6 +307,7 @@ export default async function CommunePage({
                       stats.loyersVille ? { adjectif: CITIES[stats.city].adjectif, values: stats.loyersVille } : null
                     }
                     insight={legendes?.legende_loyers}
+                    zoneDetail={false}
                   />
                 )}
               </CommuneSection>
@@ -301,6 +328,7 @@ export default async function CommunePage({
 
             {content.demographie && (
               <CommuneSection id="demographie">
+                <RankLine phrase={rangsPopulation} />
                 <CommuneAgeCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
                 {inseeViews.employment && (
                   <CommuneEmploymentCard view={inseeViews.employment} legendes={legendes} />
@@ -324,16 +352,6 @@ export default async function CommunePage({
               </CommuneSection>
             )}
 
-            {content["qualite-air"] && stats.airQuality && (
-              <CommuneSection id="qualite-air">
-                <CommuneAirQualityCard
-                  stats={stats}
-                  airQuality={stats.airQuality}
-                  legendes={legendes}
-                />
-              </CommuneSection>
-            )}
-
             {content.histoire && contour && (
               <CommuneSection id="histoire">
                 <CommuneHistoryCard commune={commune} contour={contour} />
@@ -348,14 +366,14 @@ export default async function CommunePage({
           </div>
         </div>
 
-        <CommuneRelatedLinks commune={commune} />
+        <CommuneRelatedLinks commune={commune} voisins={lignesVoisins(city, commune)} />
       </div>
 
       <footer className="landing-footer">
         <div className="landing-footer-brand">
           <Brand variant="footer" />
         </div>
-        <span>Données publiques · DVF · INSEE · {CITIES[commune.city].airSourceLabel}</span>
+        <span>Données publiques · DVF · INSEE · ministère de l&apos;Intérieur</span>
         <div className="landing-footer-links">
           <Link href="/">Analyser une adresse</Link>
           {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}

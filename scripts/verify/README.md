@@ -33,6 +33,19 @@ Les fichiers publics téléchargés (DVF, SSMSI, INSEE, ANIL, élections, Mété
 dans `out/cache/` : la première exécution est longue (plusieurs centaines de Mo), les suivantes
 non. `out/` n'est pas versionné.
 
+## Texte commun aux pages d'arrondissement
+
+Hors du rapport : `similarite_communes.py` mesure, paire par paire, la part de texte identique
+entre deux arrondissements d'une même ville. Google écarte les pages trop semblables
+(« Explorée, actuellement non indexée ») ; l'objectif est de rester sous 20 % de blocs
+identiques.
+
+```bash
+../venv/bin/python similarite_communes.py                          # site en ligne
+../venv/bin/python similarite_communes.py --site http://localhost:3111
+../venv/bin/python similarite_communes.py --detail paris-6e,paris-7e   # ce qui reste commun
+```
+
 ## Lire le rapport
 
 | Statut | Sens | Que faire |

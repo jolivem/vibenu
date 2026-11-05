@@ -22,11 +22,22 @@ export interface CommuneInseeViews {
   housing: InseeView<HousingStats> | null;
 }
 
+/**
+ * Les messages de l'analyse sans les notes de méthode des graphes : sur les 45 pages, elles
+ * étaient le même texte recopié, et elles vivent désormais sur `/commune/methode`. Une note
+ * vide n'est pas rendue (`{note && …}`).
+ */
+const m: typeof population = {
+  ...population,
+  employment: { ...population.employment, cspNote: "" },
+  housing: { ...population.housing, dwellingNote: "", epochNote: "" },
+};
+
 export function communeInseeViews(stats: CommuneStats, nomCourt: string): CommuneInseeViews {
   const scale = { nomCommune: nomCourt, communeIrisCount: 1 };
   return {
-    employment: FEATURES.showEmployment ? viewForMode(stats.employment, "commune", scale, population) : null,
-    households: FEATURES.showHouseholds ? viewForMode(stats.households, "commune", scale, population) : null,
-    housing: FEATURES.showHousing ? viewForMode(stats.housing, "commune", scale, population) : null,
+    employment: FEATURES.showEmployment ? viewForMode(stats.employment, "commune", scale, m) : null,
+    households: FEATURES.showHouseholds ? viewForMode(stats.households, "commune", scale, m) : null,
+    housing: FEATURES.showHousing ? viewForMode(stats.housing, "commune", scale, m) : null,
   };
 }

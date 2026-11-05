@@ -32,6 +32,7 @@ export function RentsCard({
   title,
   benchmark,
   insight,
+  zoneDetail = true,
   children,
 }: {
   rents: RentAnalysisDto;
@@ -42,6 +43,12 @@ export function RentsCard({
   benchmark?: RentBenchmark | null;
   /** « En bref » des pages commune (légende `legende_loyers`), rendu côté serveur. */
   insight?: string | null;
+  /**
+   * Pages commune : `false` réduit le zonage à la ligne courte de la fiche PDF. Le résumé et
+   * le détail (conditions, décret) étaient recopiés à l'identique sur tous les arrondissements ;
+   * ils vivent sur `/commune/methode`.
+   */
+  zoneDetail?: boolean;
   /** Carte des communes alentour et sa légende (`.card-map`), construites par l'écran (client). */
   children?: ReactNode;
 }) {
@@ -108,13 +115,21 @@ export function RentsCard({
       {/* Sous les exemples, pour ne pas couper les loyers de leur traduction en euros. */}
       {zone && (
         <div className="rents-zone-block">
-          <p className="rents-zone">
-            <RichText text={m.zone.summary[zone.zonage]} />
-          </p>
-          <div className="rents-zone-detail">
-            {zone.zonage === "tendue" && <p>{m.zone.tendueDetail(RELOCATION_CAP_UNTIL)}</p>}
-            <p>{m.zone.source(zone.decret)}</p>
-          </div>
+          {zoneDetail ? (
+            <p className="rents-zone">
+              <RichText text={m.zone.summary[zone.zonage]} />
+            </p>
+          ) : (
+            <p className="rents-zone">
+              <strong>{m.zone.pdfLabel}</strong> — {m.zone.pdf[zone.zonage]}.
+            </p>
+          )}
+          {zoneDetail && (
+            <div className="rents-zone-detail">
+              {zone.zonage === "tendue" && <p>{m.zone.tendueDetail(RELOCATION_CAP_UNTIL)}</p>}
+              <p>{m.zone.source(zone.decret)}</p>
+            </div>
+          )}
         </div>
       )}
 

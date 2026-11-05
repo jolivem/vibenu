@@ -115,8 +115,9 @@ text:
 - **Each domain sits at the scale where it is actually unique.** An arrondissement page
   carries what differs between arrondissements — prices, equipment, security, population
   (age, employment, households, housing), presidential election, history. The three city
-  hubs carry what does not: climate (one Météo-France station covers the whole city),
-  natural risks (read at `scope: "commune"`), and the 2026 municipal election, whose data
+  hubs carry what does not: climate (one Météo-France station covers the whole city), air
+  quality (the ATMO index is city-wide; Paris only), natural risks (read at
+  `scope: "commune"`), and the 2026 municipal election, whose data
   has **no rows per arrondissement** — the ministry's files are cut by *secteur*, which does
   not map onto INSEE codes. Putting those three on 45 pages would have published the same
   block twenty times over.
@@ -130,8 +131,15 @@ text:
   ("Achat") then the analysis's `RentsCard` titled "Location", which on these pages only
   receives a city benchmark (arrondissements' rents averaged, weighted by listings) and its
   "En bref" (`legende_loyers`). The analysis card keeps no comparison.
+- **No duplicated prose across arrondissements.** Google dropped 20 of the 45 pages as
+  near-duplicates ("Explorée, actuellement non indexée") when two of them shared 41 % of
+  their text. Method notes therefore live once on `/commune/methode` (`components/commune/methode.ts`);
+  each card keeps a one-line `SourceLine` linking to its anchor. Page-specific prose comes from
+  `cityComparison.ts` (rank among the city's arrondissements, computed in TS): lead, one rank
+  sentence per section, "is it expensive?" FAQ, neighbours table. Re-measure with
+  `scripts/verify/similarite_communes.py` (target: < 20 % identical blocks per pair).
 - **Still missing on arrondissement pages**: PDF export, and "En bref" on a few cards.
-- `app/sitemap.ts` and `app/commune/page.tsx` still ignore `hasSEOPages`.
+- `app/commune/page.tsx` still ignores `hasSEOPages`.
 
 ### Client
 

@@ -2,10 +2,7 @@
 
 import type { GeoJsonGeometryDto } from "@/types/location-analysis";
 import { HistoricalMap } from "@/components/map/HistoricalMap";
-import { HISTORICAL_ERAS } from "@/components/map/historicalLayers";
-import { map } from "@/i18n/messages/fr/map";
-
-const eras = map.history.eras;
+import { SourceLine } from "./SourceLine";
 
 interface Props {
   commune: { nomAffiche: string; nomCourt: string; lat: number; lon: number };
@@ -21,8 +18,9 @@ interface Props {
  * désormais dans `communeSectionContent`, avec tous les autres ; la carte de situation
  * lisant le même contour, les deux vues cartographiques apparaissent toujours ensemble.
  *
- * La liste des époques est rendue en clair sous la carte : c'est du texte indexable, et
- * la seule partie du contenu qui survit à un navigateur sans JavaScript.
+ * La liste des époques, avec leur présentation, n'est plus recopiée sous la carte : ~300 mots
+ * identiques sur les 45 pages. Elle vit sur `/commune/methode#histoire` ; la frise de la carte
+ * garde le contexte de l'époque affichée.
  */
 export function CommuneHistoryCard({ commune, contour }: Props) {
   return (
@@ -41,18 +39,7 @@ export function CommuneHistoryCard({ commune, contour }: Props) {
         />
       </div>
 
-      <ul className="commune-era-list">
-        {HISTORICAL_ERAS.map((era) => (
-          <li key={era.id}>
-            <strong>
-              {eras[era.id].label}, {eras[era.id].period}
-            </strong>{" "}
-            — {eras[era.id].context}
-          </li>
-        ))}
-      </ul>
-
-      <p className="elections-footnote">Cartes anciennes · IGN Géoplateforme.</p>
+      <SourceLine anchor="histoire">IGN Géoplateforme, cartes et photographies anciennes</SourceLine>
     </section>
   );
 }

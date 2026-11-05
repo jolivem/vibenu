@@ -55,16 +55,5 @@ export function buildCommuneKeyFigures(
     add({ section: "elections", label: "Participation", value: formatPct(stats.elections.tauxParticipation, 1) });
   }
 
-  // Les deux catégories hautes de l'indice ATMO sur l'année la plus récente : c'est le
-  // chiffre que la card met elle-même en avant.
-  const derniereAnnee = stats.airQuality?.historique[0];
-  if (derniereAnnee) {
-    add({
-      section: "qualite-air",
-      label: "Jours bons ou moyens",
-      value: `${formatInt(derniereAnnee.joursBonne + derniereAnnee.joursMoyenne)} j`,
-    });
-  }
-
   return activeSections.flatMap((id) => figures[id] ?? []);
 }

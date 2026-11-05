@@ -3,6 +3,7 @@ import { HouseholdsCharts } from "@/components/analysis/HouseholdsCard";
 import type { InseeView } from "@/components/analysis/inseeChart";
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
+import { SourceLine } from "./SourceLine";
 
 /**
  * Composition des ménages de l'arrondissement face à la France — mêmes graphes que la
@@ -23,9 +24,7 @@ export function CommuneHouseholdsCard({
       <CardInsight text={legendes?.legende_menages} animate={false} />
 
       <HouseholdsCharts view={view} />
-      <p className="elections-footnote">
-        Source : INSEE · Recensement de la population 2021 à l&apos;IRIS.
-      </p>
+      <SourceLine anchor="logement">INSEE, recensement 2021</SourceLine>
     </section>
   );
 }

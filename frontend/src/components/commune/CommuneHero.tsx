@@ -1,21 +1,22 @@
 import type { CommuneSlugEntry } from "@/lib/commune-slugs";
-import { communeRubriquesAnnoncees, enumererFr } from "./sections";
 
 interface Props {
   commune: CommuneSlugEntry;
+  /**
+   * Population, prix et revenu de l'arrondissement avec leur rang (`cityComparison.chapeau`).
+   * Le chapeau était la même énumération de rubriques sur les 45 pages.
+   */
+  lead: string;
 }
 
-export function CommuneHero({ commune }: Props) {
+export function CommuneHero({ commune, lead }: Props) {
   return (
     <section className="commune-hero">
       <span className="landing-eyebrow">
         {commune.parentNom ? `${commune.parentNom} · Arrondissement` : "Métropole"}
       </span>
       <h1 className="commune-title">{commune.nomAffiche}</h1>
-      <p className="commune-lead">
-        Analyse complète de l&apos;arrondissement :{" "}
-        {enumererFr(communeRubriquesAnnoncees())}. Données publiques actualisées.
-      </p>
+      {lead && <p className="commune-lead">{lead}</p>}
     </section>
   );
 }

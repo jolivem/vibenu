@@ -7,7 +7,10 @@
  *
  * - les identifiants sont ceux déjà servis et indexés (`prix-immobilier`, `qualite-air`…),
  *   ce sont des ancres publiques qu'on ne renomme pas pour le plaisir de la symétrie ;
- * - les titres divergent des leurs : la page commune n'a ni climat, ni cadastre, ni PLU.
+ * - les titres divergent des leurs : la page commune n'a ni climat, ni cadastre, ni PLU ;
+ * - la qualité de l'air (indice ATMO) n'y est plus : la mesure couvre la ville entière et se
+ *   lisait à l'identique sur tous ses arrondissements. Elle est passée sur le hub, comme le
+ *   climat. L'ancre `qualite-air` a donc disparu de ces pages.
  *
  * L'ordre, lui, est celui de l'analyse — le logement, puis les gens, puis le cadre
  * physique — pour qu'un lecteur qui passe de l'une à l'autre retrouve son chemin.
@@ -24,7 +27,6 @@ export const COMMUNE_SECTION_ORDER = [
   "securite",
   "demographie",
   "elections",
-  "qualite-air",
   "histoire",
   "faq",
 ] as const;
@@ -37,7 +39,6 @@ export const COMMUNE_SECTION_TITLES: Record<CommuneSectionId, string> = {
   securite: "Sécurité",
   demographie: "Population",
   elections: "Élections",
-  "qualite-air": "Qualité de l'air",
   histoire: "Histoire",
   faq: "Questions fréquentes",
 };
@@ -75,8 +76,6 @@ export function communeSectionContent({
     // La card Âge est le plancher de la section ; emploi, ménages et logement ne font que s'y ajouter.
     demographie: stats.demo.populationTotale > 0,
     elections: FEATURES.showElections && candidatsTop(stats).length > 0,
-    "qualite-air":
-      FEATURES.showAirQuality && (stats.airQuality?.historique.length ?? 0) > 0,
     histoire: FEATURES.showHistory && contour !== null,
     faq: nbFaqItems > 0,
   };
@@ -110,7 +109,6 @@ export function communeRubriquesAnnoncees(): string[] {
     "population",
     "logement",
     ...(FEATURES.showElections ? ["élections"] : []),
-    ...(FEATURES.showAirQuality ? ["qualité de l'air"] : []),
   ];
 }
 

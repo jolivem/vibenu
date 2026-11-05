@@ -2,6 +2,7 @@ import type { CommuneStats, ElectionsStats } from "@/server-modules/commune-stat
 import { CardInsight } from "@/components/CardInsight";
 import type { CommuneLegendes } from "@/server-modules/narrative/domain/commune-narrative.types";
 import { candidatsTop } from "./format";
+import { SourceLine } from "./SourceLine";
 
 interface Props {
   /** Légende IA de la section, rendue côté serveur. */
@@ -127,9 +128,7 @@ export function CommuneElectionsCard({ stats, elections, legendes }: Props) {
           })}
         </ul>
 
-        <p className="elections-footnote">
-          Source : Ministère de l&apos;Intérieur · Comparaison commune ↔ France à la même échelle.
-        </p>
+        <SourceLine anchor="elections">ministère de l&apos;Intérieur</SourceLine>
       </div>
     </section>
   );

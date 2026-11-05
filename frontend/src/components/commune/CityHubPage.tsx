@@ -4,7 +4,9 @@ import {
   getArrondissementsByCity,
   type City,
 } from "@/lib/commune-slugs";
-import { getCommuneStatsService } from "@/server-modules/commune-stats/application/commune-stats.service";
+import type { AirQualityStats, CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
+import { loadCityStats } from "./cityComparison";
+import { CommuneAirQualityCard } from "./CommuneAirQualityCard";
 import { formatEur, formatInt } from "@/components/commune/format";
 import { Brand } from "@/components/Brand";
 import { FEATURES } from "@/lib/site-features";
@@ -38,32 +40,31 @@ interface ArrondissementSummary {
   populationTotale: number;
 }
 
-async function loadSummaries(city: City): Promise<ArrondissementSummary[]> {
-  const service = getCommuneStatsService();
-  const arrondissements = getArrondissementsByCity(city);
-  const results = await Promise.allSettled(
-    arrondissements.map(async (c) => {
-      const stats = await service.getStats(c.codeCommune);
-      return {
-        slug: c.slug,
-        codeCommune: c.codeCommune,
-        nomCourt: c.nomCourt,
-        prixM2Median: stats.prix.prixM2Median,
-        populationTotale: stats.demo.populationTotale,
-      };
-    }),
-  );
-  return results.map((r, i) =>
-    r.status === "fulfilled"
-      ? r.value
-      : {
-          slug: arrondissements[i].slug,
-          codeCommune: arrondissements[i].codeCommune,
-          nomCourt: arrondissements[i].nomCourt,
-          prixM2Median: null,
-          populationTotale: 0,
-        },
-  );
+/**
+ * Les stats de chaque arrondissement (cache 24 h, partagé avec leurs pages), résumées pour
+ * l'annuaire. L'indice ATMO, identique pour toute la ville, est lu sur le premier.
+ */
+async function loadCity(city: City): Promise<{
+  summaries: ArrondissementSummary[];
+  airQuality: AirQualityStats | null;
+  someStats: CommuneStats | null;
+}> {
+  const loaded = await loadCityStats(city);
+  const parCode = new Map(loaded.map((a) => [a.entry.codeCommune, a.stats]));
+  const summaries = getArrondissementsByCity(city).map((c) => {
+    const stats = parCode.get(c.codeCommune);
+    return {
+      slug: c.slug,
+      codeCommune: c.codeCommune,
+      nomCourt: c.nomCourt,
+      prixM2Median: stats?.prix.prixM2Median ?? null,
+      populationTotale: stats?.demo.populationTotale ?? 0,
+    };
+  });
+  const someStats = loaded.find((a) => a.stats.airQuality)?.stats ?? loaded[0]?.stats ?? null;
+  // Coupe-circuit appliqué ici : la section comme la question de FAQ lisent cette valeur.
+  const airQuality = FEATURES.showAirQuality ? (someStats?.airQuality ?? null) : null;
+  return { summaries, airQuality, someStats };
 }
 
 /**
@@ -111,8 +112,8 @@ export async function CityHubPage({ city }: Props) {
   // `commune-stats` n'est jamais interrogé sur un code de ville : `insee_aggregate` n'a
   // pas de ligne pour 75056, 69123 ni 13055 — ses scopes sont les arrondissements. Les
   // chiffres du hub se dérivent donc de ses arrondissements.
-  const [summaries, climate, risks, municipales] = await Promise.all([
-    loadSummaries(city),
+  const [{ summaries, airQuality, someStats }, climate, risks, municipales] = await Promise.all([
+    loadCity(city),
     safely(() =>
       new ClimateServiceImpl(new MeteoFranceStationsProvider()).getClimateData(
         cityDef.lat,
@@ -139,6 +140,7 @@ export async function CityHubPage({ city }: Props) {
     municipales,
     climate,
     risks,
+    airQuality,
   });
 
   const content = cityHubSectionContent({
@@ -146,6 +148,7 @@ export async function CityHubPage({ city }: Props) {
     municipales,
     climate,
     risks,
+    airQuality,
     nbFaqItems: faqItems.length,
     climatMesure: climate?.monthly ? hasClimateSeries(climate.monthly) : false,
   });
@@ -303,6 +306,12 @@ export async function CityHubPage({ city }: Props) {
             {content.climat && climate && (
               <HubSection id="climat">
                 <CityHubClimateCard climate={climate} nomAffiche={cityDef.nomAffiche} />
+              </HubSection>
+            )}
+
+            {content["qualite-air"] && airQuality && someStats && (
+              <HubSection id="qualite-air">
+                <CommuneAirQualityCard stats={someStats} airQuality={airQuality} />
               </HubSection>
             )}
 
