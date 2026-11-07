@@ -26,7 +26,14 @@ export function CityHubClimateCard({
   // longtemps été l'analyse d'un logement. Sur une page de ville, le nom de la ville est
   // le libellé juste — et le réécrire ici évite de faire traverser un libellé d'affichage
   // à trois couches serveur.
-  const named = { ...monthly, local: { ...monthly.local, name: nomAffiche } };
+  //
+  // Marseille est aussi une ville de référence (station de Marignane) : sur son propre hub,
+  // elle apparaissait deux fois sous le même nom — courbe redondante, et clé React en double.
+  const named = {
+    ...monthly,
+    local: { ...monthly.local, name: nomAffiche },
+    references: monthly.references.filter((ref) => ref.name !== nomAffiche),
+  };
   const stationLines = climateStationLines(climate, climateMessages);
 
   return (
