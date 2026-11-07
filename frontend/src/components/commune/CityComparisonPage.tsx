@@ -11,6 +11,8 @@ import { formatCellule, formatNombre } from "@/lib/comparison/format";
 import type { Comparaison, IndicateurComparableId } from "@/lib/comparison/types";
 import { Brand } from "@/components/Brand";
 import { SectionNav } from "@/components/analysis/SectionNav";
+import { SectionTopLink } from "@/components/analysis/SectionTopLink";
+import { sections as sectionsFr } from "@/i18n/messages/fr/analysis/sections";
 import { loadCityStats } from "./cityComparison";
 import { COMMUNE_INDICATEURS, denominateurSecurite } from "./communeIndicators";
 import {
@@ -219,7 +221,10 @@ function ThemeBlock({
 function ComparatifSection({ id, children }: { id: ComparatifSectionId; children: React.ReactNode }) {
   return (
     <section id={id} className="page-section">
-      <h2 className="page-section-title">{COMPARATIF_SECTION_TITLES[id]}</h2>
+      <div className="page-section-head">
+        <h2 className="page-section-title">{COMPARATIF_SECTION_TITLES[id]}</h2>
+        <SectionTopLink label={sectionsFr.backToSummary} ariaLabel={sectionsFr.backToSummaryLabel} />
+      </div>
       <div className="page-section-body">{children}</div>
     </section>
   );

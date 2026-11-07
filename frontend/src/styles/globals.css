@@ -191,7 +191,8 @@ html {
   width: 100%;
   background: #fff;
   color: var(--text);
-  border: 0.5px solid var(--hairline-strong);
+  /* Liseré vert au repos : c'est le seul geste attendu sur l'accueil, il doit se voir. */
+  border: 1.5px solid var(--accent);
   border-radius: 999px;
   padding: 16px 24px;
   font-size: 16px;
@@ -937,17 +938,20 @@ html {
   color: var(--accent);
 }
 
+/* Fond vert pâle, texte vert : le vert plein sous texte blanc pesait trop. Un vert plein
+   plus clair aurait fait tomber le contraste du texte blanc sous le seuil de lecture. */
 .commune-cta-btn {
   padding: 12px 22px;
-  background: var(--accent);
-  color: white;
+  background: #e3efd3;
+  color: #33690f;
+  border: 1px solid #c8dfac;
   border-radius: 10px;
   text-decoration: none;
   font-weight: 500;
 }
 
 .commune-cta-btn:hover {
-  background: #3d7813;
+  background: #d4e7bd;
 }
 
 @media (max-width: 900px) {
@@ -4705,7 +4709,9 @@ html {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   font-size: 11px;
-  font-weight: 600;
+  /* La valeur reste discrète : c'est le nom de l'arrondissement, dessous, qui doit ressortir. */
+  font-weight: 400;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   margin-bottom: 4px;
@@ -4713,8 +4719,9 @@ html {
 
 .vbars-bar {
   display: block;
-  width: 100%;
-  max-width: 34px;
+  /* Barres fines, séparées par du blanc : pleine colonne, le graphe pesait. */
+  width: 55%;
+  max-width: 18px;
   /* Le vert du site éclairci : vingt colonnes pleines en --accent pesaient sur la page. */
   background: #a3cc7c;
   border-radius: 3px 3px 0 0;
@@ -4743,8 +4750,9 @@ html {
   flex: 1 1 0;
   min-width: 0;
   text-align: center;
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
   white-space: nowrap;
 }
 
@@ -4798,6 +4806,11 @@ html {
     height: 190px;
   }
 
+  /* Colonnes de 15 px environ pour Paris : la barre en garde un peu plus. */
+  .vbars-bar {
+    width: 70%;
+  }
+
   .vbars-value {
     font-size: 10px;
     margin-bottom: 2px;
@@ -4819,6 +4832,29 @@ html {
   }
 }
 
+/* Seules les deux extrêmes portent leur valeur, à l'horizontale, centrée sur la barre.
+   Sur téléphone, où la colonne est plus étroite que le chiffre, la plus haute déborde vers
+   la droite (ses voisines sont plus basses), la plus basse vers la gauche. */
+.vbars-value.is-max,
+.vbars-value.is-min {
+  writing-mode: horizontal-tb;
+  transform: none;
+  font-size: 12px;
+  padding: 0 2px;
+}
+
+/* De la place sur les côtés pour un chiffre plus large que sa colonne (Paris, 20 colonnes) :
+   sinon le cadre de défilement le rogne. */
+.vbars-inner {
+  padding-inline: 14px;
+}
+
+@media (max-width: 600px) {
+  .vbars-inner { padding-inline: 0; }
+  .vbars-value.is-max { align-self: flex-start; }
+  .vbars-value.is-min { align-self: flex-end; }
+}
+
 .vbars-ref.is-second,
 .vbars-legend li.is-second::before {
   border-top-style: dotted;
@@ -4828,7 +4864,8 @@ html {
 /* ── Téléphone (600 px et moins) : plus de contenu à l'écran, pour tout le site ──
    Mesuré à 390 px : 20 px de marge de page plus 24 px de marge de carte ne laissaient aux
    graphes et aux cartes que 302 px, et la première rubrique de l'analyse commençait à
-   1 541 px du haut. Marges ramenées à 12 px, en-têtes resserrés, sommaire sur une ligne.
+   1 541 px du haut. Marges ramenées à 12 px, en-têtes resserrés. Le sommaire garde ses
+   pastilles sur plusieurs lignes : une ligne qui défilait cachait des sections.
    L'écran large et la tablette ne changent pas ; le PDF a sa propre mise en page. */
 @media (max-width: 600px) {
   .page-shell {
@@ -4857,19 +4894,15 @@ html {
     margin-bottom: 20px;
   }
 
-  /* Le sommaire sur une seule ligne qui défile : six lignes de pastilles prenaient 208 px.
-     Le fondu à droite coupe la pastille suivante, pour qu'on devine qu'il y en a d'autres. */
-  .section-nav ol {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-    -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
-    mask-image: linear-gradient(to right, #000 85%, transparent);
-  }
-
-  .section-nav ol::-webkit-scrollbar {
-    display: none;
+  /* Les cartes, elles, gardent une large bande libre de chaque côté (≈ 48 px jusqu'au bord
+     de l'écran) : un doigt posé sur une carte la déplace au lieu de faire défiler la page,
+     il faut pouvoir passer à côté. Seule la carte rétrécit, pas ses consignes ni ses
+     calques. */
+  .card-map .map-wrapper,
+  .card-map .lazy-map-skeleton,
+  .map-section .map-wrapper,
+  .map-section .lazy-map-skeleton {
+    margin-inline: 22px;
   }
 
   /* Choix du fond de carte et calques : côte à côte plutôt qu'empilés. */

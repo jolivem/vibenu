@@ -22,7 +22,7 @@ export interface VerticalBarReference {
 }
 
 /** Part de la hauteur laissée à la plus haute barre : le reste accueille son chiffre. */
-const HAUTEUR_MAX = 72;
+const HAUTEUR_MAX = 86;
 
 /**
  * Le classement d'un indicateur en colonnes, de la plus haute à la plus basse.
@@ -31,7 +31,8 @@ const HAUTEUR_MAX = 72;
  * sous la largeur nécessaire le graphe défile dans son cadre au lieu de rétrécir. Axe à zéro,
  * une seule couleur ; les repères (ville, France) sont des lignes, pas des colonnes de plus,
  * nommées en légende sous le graphe : posé sur la ligne, le libellé masquait des chiffres.
- * Les chiffres sont dans le tableau qui suit : le graphe est masqué aux lecteurs d'écran.
+ * Valeur au-dessus des seules barres extrêmes (la plus haute, la plus basse) : toutes
+ * chargeaient le graphe, et les chiffres sont dans le tableau qui suit (et en infobulle). Le graphe est masqué aux lecteurs d'écran.
  */
 export function VerticalBars({
   rows,
@@ -52,9 +53,12 @@ export function VerticalBars({
       <div className="vbars-scroll">
         <div className="vbars-inner" style={{ minWidth: `${triees.length * 13}px` }}>
           <div className="vbars-plot" aria-hidden="true">
-            {triees.map((r) => (
+            {triees.map((r, i) => (
               <div key={r.id} className="vbars-col" title={`${r.nom} : ${r.texte}`}>
-                <span className="vbars-value">{r.nombre}</span>
+                {i === 0 && <span className="vbars-value is-max">{r.nombre}</span>}
+                {i > 0 && i === triees.length - 1 && (
+                  <span className="vbars-value is-min">{r.nombre}</span>
+                )}
                 <span className="vbars-bar" style={{ height: hauteur(r.valeur) }} />
               </div>
             ))}
