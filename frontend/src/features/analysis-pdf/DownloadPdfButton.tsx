@@ -126,7 +126,20 @@ export function DownloadPdfButton({
       onClick={handleClick}
       disabled={loading || pending}
     >
-      {pending ? m.waitingForInsights : loading ? m.generating : m.idle}
+      {pending ? (
+        m.waitingForInsights
+      ) : loading ? (
+        m.generating
+      ) : (
+        // Libellé long à l'écran large, court sur téléphone ; le long reste lu par les
+        // lecteurs d'écran dans les deux cas.
+        <>
+          <span className="pdf-label">{m.idle}</span>
+          <span className="pdf-label-short" aria-hidden="true">
+            {m.idleShort}
+          </span>
+        </>
+      )}
     </button>
   );
 }

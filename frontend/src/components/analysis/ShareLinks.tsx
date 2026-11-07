@@ -191,7 +191,8 @@ export function ShareLinks({ label, m }: { label: string; m: ShareMessages }) {
     <details className="share-menu" ref={detailsRef}>
       <summary className="share-trigger">
         <ShareTriggerIcon />
-        {m.trigger}
+        {/* Masqué à l'œil sur téléphone (l'icône suffit), toujours lu par les lecteurs d'écran. */}
+        <span className="share-trigger-label">{m.trigger}</span>
       </summary>
       <div className="share-panel">
         <p className="share-panel-title">{m.panelTitle}</p>

@@ -56,6 +56,8 @@ export const screen = {
   },
   pdfButton: {
     idle: "Télécharger PDF",
+    /** Sur téléphone, où la barre du haut tient sur une ligne. */
+    idleShort: "PDF",
     generating: "Génération...",
     /** Clic reçu pendant la génération des « En bref » : le PDF part dès leur arrivée. */
     waitingForInsights: "Préparation des synthèses...",

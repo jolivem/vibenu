@@ -43,6 +43,7 @@ export const screen: ScreenMessages = {
   },
   pdfButton: {
     idle: "Download PDF",
+    idleShort: "PDF",
     generating: "Generating...",
     waitingForInsights: "Preparing the summaries...",
   },
