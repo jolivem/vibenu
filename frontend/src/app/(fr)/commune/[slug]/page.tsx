@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { comparatifPath } from "@/components/commune/comparatifSections";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
@@ -145,9 +146,13 @@ function CommuneSection({
  * Le rang de l'arrondissement dans sa ville, en tête de section : la seule prose de la page
  * qui ne se lit sur aucune autre (cf. `cityComparison.ts`).
  */
-function RankLine({ phrase }: { phrase: string }) {
+function RankLine({ phrase, href }: { phrase: string; href: string }) {
   if (!phrase) return null;
-  return <p className="commune-rank">{phrase}</p>;
+  return (
+    <p className="commune-rank">
+      {phrase} <Link href={href}>Voir le comparatif</Link>
+    </p>
+  );
 }
 
 export default async function CommunePage({
@@ -294,7 +299,7 @@ export default async function CommunePage({
           <div className="page-sections">
             {content["prix-immobilier"] && (
               <CommuneSection id="prix-immobilier">
-                <RankLine phrase={rangsPrix} />
+                <RankLine phrase={rangsPrix} href={`${comparatifPath(commune.city)}#achat-location`} />
                 {stats.prix.prixM2Median !== null && (
                   <CommunePriceCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
                 )}
@@ -328,7 +333,7 @@ export default async function CommunePage({
 
             {content.demographie && (
               <CommuneSection id="demographie">
-                <RankLine phrase={rangsPopulation} />
+                <RankLine phrase={rangsPopulation} href={`${comparatifPath(commune.city)}#population`} />
                 <CommuneAgeCard stats={stats} nomCourt={commune.nomCourt} legendes={legendes} />
                 {inseeViews.employment && (
                   <CommuneEmploymentCard view={inseeViews.employment} legendes={legendes} />
@@ -366,7 +371,11 @@ export default async function CommunePage({
           </div>
         </div>
 
-        <CommuneRelatedLinks commune={commune} voisins={lignesVoisins(city, commune)} />
+        <CommuneRelatedLinks
+          commune={commune}
+          voisins={lignesVoisins(city, commune)}
+          avecAir={FEATURES.showAirQuality && stats.airQuality !== null}
+        />
       </div>
 
       <footer className="landing-footer">

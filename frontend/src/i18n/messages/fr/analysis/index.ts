@@ -16,6 +16,7 @@ import { risks } from "./risks";
 import { screen } from "./screen";
 import { sections } from "./sections";
 import { security } from "./security";
+import { comparison } from "./comparison";
 
 /**
  * Tous les messages de la page d'analyse, un domaine par fichier. Chargés par le
@@ -40,6 +41,7 @@ export const analysis = {
   keyFigures,
   screen,
   pdf,
+  comparison,
 };
 
 export type AnalysisMessages = typeof analysis;

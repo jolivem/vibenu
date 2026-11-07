@@ -1,0 +1,108 @@
+import type { IndicateurComparableId, Unite } from "@/lib/comparison/types";
+
+/**
+ * Libellés des comparaisons (`lib/comparison/`) : le comparatif des arrondissements d'une
+ * ville, et la future comparaison d'adresses, qui partagent indicateurs et unités.
+ */
+export const comparison = {
+  /** En-tête de colonne, court : il tient dans un tableau de dix colonnes. */
+  indicateurs: {
+    prixAppartement: "Prix appart.",
+    ventesAppartement: "Ventes",
+    loyerAppartement: "Loyer appart.",
+    population: "Habitants",
+    revenuMedian: "Revenu médian",
+    tauxPauvrete: "Pauvreté",
+    part0_14: "0-14 ans",
+    part75Plus: "75 ans et +",
+    couplesAvecEnfants: "Couples avec enfants",
+    proprietaires: "Propriétaires",
+    hlm: "HLM",
+    residencesSecondaires: "Rés. secondaires",
+    logementsVacants: "Vacants",
+    chomage: "Chômage",
+    diplomesSuperieur: "Diplômés du sup.",
+    cambriolages: "Cambriolages",
+    violencesPhysiques: "Violences physiques",
+    volsDansVehicules: "Vols dans les véhicules",
+    cambriolagesFaits: "Cambriolages, faits",
+    violencesPhysiquesFaits: "Violences, faits",
+    volsDansVehiculesFaits: "Vols véh., faits",
+    participationPresidentielle: "Participation",
+  } satisfies Record<IndicateurComparableId, string> as Record<IndicateurComparableId, string>,
+  /** Titre d'un graphe, au-dessus de sa ligne d'unité (`definitions`). */
+  titres: {
+    prixAppartement: "Prix d'un appartement",
+    ventesAppartement: "Ventes d'appartements",
+    loyerAppartement: "Loyer d'un appartement",
+    population: "Habitants",
+    revenuMedian: "Revenu médian",
+    tauxPauvrete: "Taux de pauvreté",
+    part0_14: "Enfants de 0 à 14 ans",
+    part75Plus: "75 ans et plus",
+    couplesAvecEnfants: "Couples avec enfants",
+    proprietaires: "Propriétaires",
+    hlm: "Logements HLM",
+    residencesSecondaires: "Résidences secondaires",
+    logementsVacants: "Logements vacants",
+    chomage: "Chômage",
+    diplomesSuperieur: "Diplômés du supérieur",
+    cambriolages: "Cambriolages de logement",
+    violencesPhysiques: "Violences physiques",
+    volsDansVehicules: "Vols dans les véhicules",
+    cambriolagesFaits: "Cambriolages de logement",
+    violencesPhysiquesFaits: "Violences physiques",
+    volsDansVehiculesFaits: "Vols dans les véhicules",
+    participationPresidentielle: "Participation",
+  } satisfies Record<IndicateurComparableId, string> as Record<IndicateurComparableId, string>,
+  /** Ce que mesure exactement la colonne, en infobulle de l'en-tête. */
+  definitions: {
+    prixAppartement: "Prix médian au m² des appartements vendus sur 24 mois (DVF)",
+    ventesAppartement: "Nombre d'appartements vendus sur 24 mois (DVF)",
+    loyerAppartement: "Loyer d'annonce d'un appartement non meublé, charges comprises, par m² et par mois (ANIL)",
+    population: "Population (INSEE)",
+    revenuMedian: "Revenu disponible médian par unité de consommation, par an (INSEE Filosofi)",
+    tauxPauvrete: "Part des habitants sous le seuil de pauvreté (INSEE Filosofi)",
+    part0_14: "Part des habitants de 0 à 14 ans",
+    part75Plus: "Part des habitants de 75 ans et plus",
+    couplesAvecEnfants: "Part des ménages formés d'un couple avec enfants (INSEE)",
+    proprietaires: "Part des résidences principales occupées par leur propriétaire",
+    hlm: "Part des résidences principales louées en HLM",
+    residencesSecondaires: "Part des logements qui sont des résidences secondaires ou occasionnelles",
+    logementsVacants: "Part des logements vacants",
+    chomage: "Chômeurs parmi les actifs de 15 à 64 ans, déclarés au recensement (INSEE)",
+    diplomesSuperieur: "Part des diplômés bac+2 et plus, parmi les 15 ans et plus sortis de l'école (INSEE)",
+    cambriolages: "Cambriolages de logement enregistrés, pour 1 000 logements (SSMSI)",
+    violencesPhysiques: "Violences physiques hors cadre familial enregistrées, pour 1 000 habitants (SSMSI)",
+    volsDansVehicules: "Vols dans les véhicules enregistrés, pour 1 000 habitants (SSMSI)",
+    cambriolagesFaits: "Nombre de cambriolages de logement enregistrés (SSMSI)",
+    violencesPhysiquesFaits: "Nombre de victimes de violences physiques hors cadre familial enregistrées (SSMSI)",
+    volsDansVehiculesFaits: "Nombre de véhicules visés par un vol enregistré (SSMSI)",
+    participationPresidentielle: "Participation au 1er tour de la présidentielle 2022",
+  } satisfies Record<IndicateurComparableId, string> as Record<IndicateurComparableId, string>,
+  unites: {
+    eurM2: (v: string) => `${v} €/m²`,
+    eurM2Mois: (v: string) => `${v} €/m²`,
+    eurAn: (v: string) => `${v} €`,
+    pct: (v: string) => `${v} %`,
+    habitants: (v: string) => v,
+    ventes: (v: string) => v,
+    pour1000Habitants: (v: string) => `${v} ‰`,
+    pour1000Logements: (v: string) => `${v} ‰`,
+    faits: (v: string) => v,
+  } satisfies Record<Unite, (v: string) => string> as Record<Unite, (v: string) => string>,
+  references: {
+    departement: "Département",
+    france: "France",
+  },
+  manquant: "—",
+  masque: "secret stat.",
+  masqueTitre: "1 à 4 faits : chiffre non publié (secret statistique)",
+  /** Bouton d'en-tête de colonne. */
+  trier: (colonne: string) => `Trier par ${colonne}`,
+  /** Bouton qui déplie le tableau sous les graphes. */
+  tableau: "Tous les chiffres (tableau triable)",
+  ordreInitial: "Revenir à l'ordre initial",
+};
+
+export type ComparisonMessages = typeof comparison;

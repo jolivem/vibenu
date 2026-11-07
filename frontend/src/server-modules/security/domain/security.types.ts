@@ -41,6 +41,12 @@ export interface SecurityIndicator {
   commune: (number | null)[];
   /** Nombre de faits publié, aux mêmes années ; `null` quand le taux est masqué. */
   faits: (number | null)[];
+  /**
+   * Dénominateur du taux (population ou logements INSEE retenus par le SSMSI), aux mêmes
+   * années, publié même quand le taux est masqué. Le recalculer depuis le taux arrondi à
+   * quatre décimales donnait deux populations différentes pour un même arrondissement.
+   */
+  denominateur: (number | null)[];
   /** Taux correspondant à 1 fait, sur les années masquées. `null` ailleurs. */
   borneBasse: (number | null)[];
   /** Taux correspondant à 4 faits, sur les années masquées. `null` ailleurs. */

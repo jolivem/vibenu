@@ -3,6 +3,7 @@ import type { CommuneSlugEntry } from "@/lib/commune-slugs";
 import { analyzeUrlForCommune } from "@/lib/commune-routing";
 import type { LigneVoisin } from "./cityComparison";
 import { formatEur } from "./format";
+import { comparatifPath } from "./comparatifSections";
 import { createFormat } from "@/i18n/format";
 
 const fr = createFormat("fr");
@@ -11,6 +12,13 @@ interface Props {
   commune: CommuneSlugEntry;
   /** La page courante en premier, puis ses voisins (`cityComparison.lignesVoisins`). */
   voisins: LigneVoisin[];
+  /** L'indice ATMO n'existe que pour Paris : ne pas promettre « air » sur le hub de Lyon. */
+  avecAir: boolean;
+}
+
+/** Ce que porte le hub de la ville, pour le libellé du lien qui y mène. */
+export function sujetsHub(avecAir: boolean): string {
+  return avecAir ? "climat, air, risques, municipales" : "climat, risques, municipales";
 }
 
 const loyer = (v: number | null) => (v === null ? "—" : `${fr.fixed(v, 1)} €/m²`);
@@ -22,7 +30,7 @@ const loyer = (v: number | null) => (v === null ? "—" : `${fr.fixed(v, 1)} €
  * Les voisins sont comparés en chiffres plutôt que listés : une liste de liens était le même
  * bloc d'une page à l'autre, un tableau de prix, de loyers et de revenus ne l'est pas.
  */
-export function CommuneRelatedLinks({ commune, voisins }: Props) {
+export function CommuneRelatedLinks({ commune, voisins, avecAir }: Props) {
   return (
     <section className="commune-related" id="autour">
       <h2 className="page-section-title">Arrondissements voisins</h2>
@@ -62,12 +70,13 @@ export function CommuneRelatedLinks({ commune, voisins }: Props) {
       <div className="commune-cta-row">
         {commune.parentSlug && commune.parentNom && (
           <Link href={`/commune/${commune.parentSlug}`} className="commune-cta-btn">
-            {commune.parentNom} : climat, air, risques, municipales →
+            {commune.parentNom} : {sujetsHub(avecAir)} →
           </Link>
         )}
         <Link href={analyzeUrlForCommune(commune)} className="commune-cta-btn">
           Analyser une adresse de {commune.nomCourt} →
         </Link>
+        <Link href={comparatifPath(commune.city)}>Tous les arrondissements comparés</Link>
         <Link href="/commune/methode">Méthode et sources</Link>
       </div>
     </section>

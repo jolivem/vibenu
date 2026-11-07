@@ -1,4 +1,5 @@
-import { ALL_COMMUNE_SLUGS } from "@/lib/commune-slugs";
+import { ALL_CITY_SLUGS, ALL_COMMUNE_SLUGS, CITIES } from "@/lib/commune-slugs";
+import { comparatifPath } from "@/components/commune/comparatifSections";
 import { BRANDING, FEATURES } from "@/lib/site-features";
 
 /**
@@ -17,7 +18,13 @@ export const dynamic = "force-dynamic";
 export function GET() {
   const siteUrl = process.env.SITE_URL || "http://localhost:3000";
   const communes = FEATURES.hasSEOPages
-    ? ALL_COMMUNE_SLUGS.map((c) => `- [${c.nomAffiche}](${siteUrl}/commune/${c.slug})`).join("\n")
+    ? [
+        ...ALL_CITY_SLUGS.map(
+          (city) =>
+            `- [Les arrondissements de ${CITIES[city].nomAffiche} comparés](${siteUrl}${comparatifPath(city)}) : prix, loyers, revenus, logement, emploi, sécurité, en tableaux triables`,
+        ),
+        ...ALL_COMMUNE_SLUGS.map((c) => `- [${c.nomAffiche}](${siteUrl}/commune/${c.slug})`),
+      ].join("\n")
     : "";
 
   const body = `# ${BRANDING.name}

@@ -30,6 +30,7 @@ import {
   type CityHubSectionId,
 } from "./hubSections";
 import { SITE_URL } from "@/lib/site-url";
+import { comparatifPath } from "./comparatifSections";
 
 
 interface ArrondissementSummary {
@@ -290,6 +291,12 @@ export async function CityHubPage({ city }: Props) {
                     Prix médian au m² sur 24 mois (DVF) et population (INSEE, données IRIS
                     agrégées). Cliquez un arrondissement pour sa fiche détaillée.
                   </p>
+                  <div className="commune-cta-row">
+                    <Link href={comparatifPath(city)} className="commune-cta-btn">
+                      Comparer les {sorted.length} arrondissements : prix, loyers, revenus,
+                      sécurité →
+                    </Link>
+                  </div>
                 </section>
               </HubSection>
             )}

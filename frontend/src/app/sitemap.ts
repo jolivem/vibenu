@@ -3,7 +3,8 @@ import type { MetadataRoute } from "next";
 export const dynamic = "force-dynamic";
 
 import { LOCALES, ROUTES, languageAlternates, type RouteId } from "@/i18n/locales";
-import { ALL_COMMUNE_SLUGS } from "@/lib/commune-slugs";
+import { ALL_COMMUNE_SLUGS, ALL_CITY_SLUGS } from "@/lib/commune-slugs";
+import { comparatifPath } from "@/components/commune/comparatifSections";
 import { FEATURES } from "@/lib/site-features";
 
 /** Pages traduites et indexables. `/analyze` ne l'est pas : elle dépend d'une adresse. */
@@ -18,7 +19,7 @@ const TRANSLATED: Array<{ route: RouteId; changeFrequency: "weekly" | "monthly";
  * ignorer un `lastmod` qui change toujours, et ne relisait plus le sitemap depuis mai.
  */
 const PAGES_UPDATED = new Date("2026-11-04");
-const COMMUNE_PAGES_UPDATED = new Date("2026-11-04");
+const COMMUNE_PAGES_UPDATED = new Date("2026-11-06");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = process.env.SITE_URL || "http://localhost:3000";
@@ -56,6 +57,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
         lastModified: COMMUNE_PAGES_UPDATED,
         changeFrequency: "monthly",
         priority: commune.parentSlug === null ? 0.9 : 0.8,
+      });
+    }
+    for (const city of ALL_CITY_SLUGS) {
+      entries.push({
+        url: `${siteUrl}${comparatifPath(city)}`,
+        lastModified: COMMUNE_PAGES_UPDATED,
+        changeFrequency: "monthly",
+        priority: 0.8,
       });
     }
     entries.push({

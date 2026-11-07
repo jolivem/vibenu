@@ -16,10 +16,11 @@ import {
   type City,
   type CommuneSlugEntry,
 } from "@/lib/commune-slugs";
-import { FEATURES } from "@/lib/site-features";
 import { getCommuneStatsService } from "@/server-modules/commune-stats/application/commune-stats.service";
 import type { CommuneStats } from "@/server-modules/commune-stats/domain/commune-stats.types";
-import { hasRentContent, rentOf } from "@/components/analysis/rentsModel";
+import { position, rangs, type Rang } from "@/lib/comparison/rank";
+import type { IndicateurComparableId } from "@/lib/comparison/types";
+import { COMMUNE_INDICATEURS } from "./communeIndicators";
 import { formatEur, formatInt } from "./format";
 import type { FaqItem } from "./CommuneFaqSection";
 
@@ -41,7 +42,8 @@ export async function loadCityStats(city: City): Promise<ArrondissementStats[]> 
 export type IndicateurId = "prix" | "loyer" | "revenu" | "population" | "proprietaires" | "chomage";
 
 interface Indicateur {
-  value: (stats: CommuneStats) => number | null;
+  /** L'indicateur du catalogue (`communeIndicators.ts`), qui lit le chiffre. */
+  source: IndicateurComparableId;
   /** Prédicat du haut du classement ; `o` vaut "" au 1er rang, « 3e » sinon. */
   haut: (o: string) => string;
   bas: (o: string) => string;
@@ -49,66 +51,53 @@ interface Indicateur {
   critere: string;
 }
 
-const positif = (v: number | null | undefined): number | null =>
-  v !== null && v !== undefined && Number.isFinite(v) && v > 0 ? v : null;
-
 const INDICATEURS: Record<IndicateurId, Indicateur> = {
   prix: {
-    value: (s) => positif(s.prix.prixM2Median),
+    source: "prixAppartement",
     haut: (o) => `est le ${o}plus cher à l'achat`,
     bas: (o) => `est le ${o}moins cher à l'achat`,
     critere: "le prix à l'achat",
   },
   loyer: {
-    value: (s) =>
-      FEATURES.showRents && hasRentContent(s.loyers) ? positif(rentOf(s.loyers, "app")?.loyerM2) : null,
+    source: "loyerAppartement",
     haut: (o) => `a le ${o}loyer le plus élevé`,
     bas: (o) => `a le ${o}loyer le plus bas`,
     critere: "les loyers",
   },
   revenu: {
-    value: (s) => positif(s.demo.revenuMedianPondere),
+    source: "revenuMedian",
     haut: (o) => `est le ${o}plus aisé`,
     bas: (o) => `est le ${o}plus modeste`,
     critere: "le revenu médian",
   },
   population: {
-    value: (s) => positif(s.demo.populationTotale),
+    source: "population",
     haut: (o) => `est le ${o}plus peuplé`,
     bas: (o) => `est le ${o}moins peuplé`,
     critere: "la population",
   },
   proprietaires: {
-    value: (s) => positif(s.housing?.commune?.pctProprietaires),
+    source: "proprietaires",
     haut: (o) => `compte la ${o}plus forte part de propriétaires`,
     bas: (o) => `compte la ${o}plus faible part de propriétaires`,
     critere: "la part de propriétaires",
   },
   chomage: {
-    value: (s) => positif(s.employment?.commune?.tauxChomage),
+    source: "chomage",
     haut: (o) => `a le ${o}taux de chômage le plus élevé`,
     bas: (o) => `a le ${o}taux de chômage le plus bas`,
     critere: "le taux de chômage",
   },
 };
 
-/** En dessous, un rang ne dit plus rien. */
-const MIN_CLASSES = 5;
+const valeur = (id: IndicateurId, stats: CommuneStats) => COMMUNE_INDICATEURS[INDICATEURS[id].source].value(stats);
 
-export interface Rang {
-  /** 1 = valeur la plus haute. */
-  rang: number;
-  total: number;
-}
+export type { Rang };
 
 export function rangDe(city: ArrondissementStats[], code: string, id: IndicateurId): Rang | null {
-  const { value } = INDICATEURS[id];
-  const valeurs = city
-    .map((a) => ({ code: a.entry.codeCommune, v: value(a.stats) }))
-    .filter((x): x is { code: string; v: number } => x.v !== null);
-  const moi = valeurs.find((x) => x.code === code);
-  if (!moi || valeurs.length < MIN_CLASSES) return null;
-  return { rang: 1 + valeurs.filter((x) => x.v > moi.v).length, total: valeurs.length };
+  const r = rangs(city.map((a) => valeur(id, a.stats)));
+  const i = city.findIndex((a) => a.entry.codeCommune === code);
+  return i < 0 ? null : r[i];
 }
 
 const ordinal = (n: number) => (n === 1 ? "" : `${n}e `);
@@ -116,17 +105,8 @@ const ordinal = (n: number) => (n === 1 ? "" : `${n}e `);
 /**
  * « est le 3e plus cher à l'achat », ou, au milieu du classement, « se classe 9e pour les
  * loyers ». Sans le « des 20 arrondissements de Paris », que la phrase dit une seule fois.
- *
- * Haut et bas se partagent chacun le premier tiers : ce qui est entre les deux n'est ni l'un
- * ni l'autre, et le dire ainsi évite le « 10e moins cher » qui se lit comme un superlatif.
+ * Haut, milieu et bas : `position()`, par tiers.
  */
-function position({ rang, total }: Rang): "haut" | "bas" | "milieu" {
-  const tiers = Math.ceil(total / 3);
-  if (rang <= tiers) return "haut";
-  if (total - rang + 1 <= tiers) return "bas";
-  return "milieu";
-}
-
 function predicat(id: IndicateurId, r: Rang): string {
   const ind = INDICATEURS[id];
   switch (position(r)) {
@@ -183,14 +163,14 @@ export function chapeau(city: ArrondissementStats[], entry: CommuneSlugEntry, st
   if (stats.demo.populationTotale > 0) {
     parts.push(`${entry.nomCourt} compte ${formatInt(stats.demo.populationTotale)} habitants.`);
   }
-  const prix = INDICATEURS.prix.value(stats);
+  const prix = valeur("prix", stats);
   if (prix !== null) {
     const r = rangCourt(rangDe(city, entry.codeCommune, "prix"));
     parts.push(
       `Prix médian d'un appartement : ${formatEur(prix)}/m²${r ? `, ${r} arrondissements du plus cher au moins cher` : ""}.`,
     );
   }
-  const revenu = INDICATEURS.revenu.value(stats);
+  const revenu = valeur("revenu", stats);
   if (revenu !== null) {
     const r = rangCourt(rangDe(city, entry.codeCommune, "revenu"));
     parts.push(
@@ -216,9 +196,9 @@ export function lignesVoisins(city: ArrondissementStats[], entry: CommuneSlugEnt
     return [
       {
         entry: a.entry,
-        prix: INDICATEURS.prix.value(a.stats),
-        loyer: INDICATEURS.loyer.value(a.stats),
-        revenu: INDICATEURS.revenu.value(a.stats),
+        prix: valeur("prix", a.stats),
+        loyer: valeur("loyer", a.stats),
+        revenu: valeur("revenu", a.stats),
       },
     ];
   });
@@ -233,11 +213,11 @@ export function faqPrixRang(
   entry: CommuneSlugEntry,
   stats: CommuneStats,
 ): FaqItem | null {
-  const prix = INDICATEURS.prix.value(stats);
+  const prix = valeur("prix", stats);
   const r = rangDe(city, entry.codeCommune, "prix");
   if (prix === null || !r) return null;
   const ville = CITIES[entry.city].nomAffiche;
-  const repere = positif(stats.prixBenchmarkVille.prixM2Median);
+  const repere = COMMUNE_INDICATEURS.prixAppartement.references?.ville?.(stats) ?? null;
   const ecart =
     repere === null
       ? ""

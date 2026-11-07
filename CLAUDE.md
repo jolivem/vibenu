@@ -93,7 +93,7 @@ text:
 
 | | Analysis, commune mode | SEO commune pages |
 |---|---|---|
-| URL | `/analyze?type=municipality&citycode=…` | `/commune/paris` (hub), `/commune/paris-15e`… |
+| URL | `/analyze?type=municipality&citycode=…` | `/commune/paris` (hub), `/commune/paris/arrondissements` (comparison), `/commune/paris-15e`… |
 | Communes | every commune, Paris/Lyon/Marseille arrondissements included | Paris, Lyon, Marseille and their arrondissements only |
 | Rendering | client-side, data fetched on demand | server; arrondissements ISR 24 h, hubs `force-dynamic` |
 | Data | `LocationAnalysisDto` (`mode === "commune"`) via the use-case | `CommuneStats` via `commune-stats` (throws for any other commune) |
@@ -124,9 +124,22 @@ text:
 - Both families reuse the analysis's bare sub-components (`EmploymentCharts`,
   `HouseholdsCharts`, `HousingCharts`, `SecurityIndicatorChart`, `ClimateCharts`,
   `RiskList`, `MunicipalesLists`) — exported without card frame, title or source notes.
-- **Two disjoint anchor namespaces**, never crossed: `components/commune/sections.ts` for
-  arrondissements, `hubSections.ts` for hubs. Both are exhaustive `Record`s — adding an id
-  does not compile until it has a title *and* a display condition.
+- **Three disjoint anchor namespaces**, never crossed: `components/commune/sections.ts` for
+  arrondissements, `hubSections.ts` for hubs, `comparatifSections.ts` for the comparison
+  pages. All are exhaustive `Record`s — adding an id does not compile until it has a title
+  *and* a display condition.
+- **City comparison** (`/commune/<city>/arrondissements`, `CityComparisonPage`): every
+  arrondissement side by side, one section per theme: one vertical bar chart per indicator
+  (`VerticalBars`, laid out like the site's other charts — title and unit on the left, chart
+  centred in `--line-chart-max`, city and France as dashed lines), then the sortable table
+  folded in a `<details>` (still in the HTML for indexing), sentences and FAQ computed in TS (`comparatifTextes.ts`). Its FAQ
+  must not repeat the hub's questions. It sits on a shared base meant for a future
+  multi-address comparison: `lib/comparison/` (indicator ids, units, ranks, no text), labels
+  in `i18n/messages/<locale>/analysis/comparison.ts`, and a per-source catalogue —
+  `components/commune/communeIndicators.ts` reads `CommuneStats` and also feeds the rank
+  sentences of `cityComparison.ts`; an address comparison would add one reading
+  `LocationAnalysisDto` with the same ids. `ComparisonTable` is a client component that
+  receives preformatted strings, so it carries neither language nor units.
 - **"Achat & location"** (anchor `prix-immobilier`, kept for indexing): the DVF price card
   ("Achat") then the analysis's `RentsCard` titled "Location", which on these pages only
   receives a city benchmark (arrondissements' rents averaged, weighted by listings) and its

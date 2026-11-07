@@ -89,6 +89,7 @@ export class SecurityDatabaseProvider implements SecurityProvider {
           base: rows[0].base === "logements" ? "logements" : "habitants",
           commune: empty(),
           faits: empty(),
+          denominateur: empty(),
           borneBasse: empty(),
           borneHaute: empty(),
           departement: empty(),
@@ -100,6 +101,7 @@ export class SecurityDatabaseProvider implements SecurityProvider {
           const i = indexOf.get(Number(row.annee));
           if (i === undefined) continue;
 
+          item.denominateur[i] = row.denominateur > 0 ? Number(row.denominateur) : null;
           if (row.taux_pour_mille !== null) {
             item.commune[i] = Number(row.taux_pour_mille);
             item.faits[i] = row.nombre !== null ? Number(row.nombre) : null;

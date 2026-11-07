@@ -922,6 +922,21 @@ html {
   flex-wrap: wrap;
 }
 
+.commune-cta-row--center {
+  justify-content: center;
+}
+
+/* Lien secondaire sous une rangée de boutons centrée. */
+.commune-cta-aside {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 14px;
+}
+
+.commune-cta-aside a {
+  color: var(--accent);
+}
+
 .commune-cta-btn {
   padding: 12px 22px;
   background: var(--accent);
@@ -4500,4 +4515,317 @@ html {
 .methode-page .card p {
   line-height: 1.6;
   margin: 0 0 10px;
+}
+
+/* ── Comparatif des arrondissements (/commune/<ville>/arrondissements) ── */
+
+.commune-rank a {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* Un graphe du comparatif : titre et unité à gauche, graphe et légende dans la colonne des
+   graphes du site (`--line-chart-max`), centrée — comme `.security-metric`. */
+.comparison-metric + .comparison-metric {
+  margin-top: 26px;
+}
+
+.comparison-metric > .vbars {
+  max-width: var(--line-chart-max);
+  margin: 0 auto;
+}
+
+/* Note sous un graphe : elle appartient au graphe et se centre avec lui. */
+.comparison-metric > .comparison-note {
+  max-width: var(--line-chart-max);
+  margin: 8px auto 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Le tableau, replié sous les graphes. */
+.comparison-details {
+  margin: 24px 0 8px;
+  border-top: 0.5px solid var(--hairline);
+  padding-top: 14px;
+}
+
+.comparison-details > summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.comparison-details[open] > summary {
+  margin-bottom: 12px;
+}
+
+/* Tableau triable : défilement horizontal dans le cadre, première colonne fixe. */
+.comparison-table-wrap {
+  overflow-x: auto;
+  margin: 0 0 8px;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.comparison-table caption {
+  text-align: left;
+  font-size: 13px;
+  color: var(--muted);
+  padding-bottom: 8px;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 7px 10px;
+  border-bottom: 0.5px solid var(--hairline);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.comparison-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left;
+  background: var(--card);
+}
+
+.comparison-table thead th {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--muted);
+  vertical-align: bottom;
+}
+
+.comparison-table thead button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.comparison-table thead th[aria-sort="ascending"],
+.comparison-table thead th[aria-sort="descending"] {
+  color: var(--text);
+}
+
+.comparison-sort {
+  margin-left: 4px;
+  font-size: 10px;
+  color: var(--muted-soft);
+}
+
+.comparison-table tbody th {
+  font-weight: 500;
+}
+
+.comparison-table tbody a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 3px;
+}
+
+.comparison-table tbody a:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+.comparison-table tbody tr:hover th,
+.comparison-table tbody tr:hover td {
+  background: var(--accent-light);
+}
+
+.comparison-table tfoot th,
+.comparison-table tfoot td {
+  color: var(--muted);
+  font-style: italic;
+  border-bottom: 0;
+  border-top: 0.5px solid var(--hairline-strong);
+}
+
+@media (max-width: 600px) {
+  .comparison-table {
+    font-size: 13px;
+  }
+
+  .comparison-table th,
+  .comparison-table td {
+    padding: 6px 8px;
+  }
+}
+
+.landing-eyebrow a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.landing-eyebrow a:hover {
+  color: var(--accent);
+}
+
+/* Classement en colonnes : valeur à la verticale au-dessus de la barre, nom court dessous. */
+.vbars {
+  margin: 0;
+}
+
+.vbars-scroll {
+  overflow-x: auto;
+}
+
+.vbars-plot {
+  position: relative;
+  height: 190px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  border-bottom: 0.5px solid var(--hairline-strong);
+}
+
+.vbars-col {
+  flex: 1 1 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  min-width: 0;
+}
+
+.vbars-value {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+
+.vbars-bar {
+  display: block;
+  width: 100%;
+  max-width: 34px;
+  /* Le vert du site éclairci : vingt colonnes pleines en --accent pesaient sur la page. */
+  background: #a3cc7c;
+  border-radius: 3px 3px 0 0;
+}
+
+.vbars-col:hover .vbars-bar {
+  opacity: 0.8;
+}
+
+/* Repère (ville, France) : une ligne en travers, derrière les chiffres ; nommé en légende. */
+.vbars-ref {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--muted);
+  pointer-events: none;
+}
+
+.vbars-labels {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.vbars-label {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.vbars-label a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.vbars-label a:hover {
+  color: var(--accent);
+}
+
+.vbars-value {
+  position: relative;
+  z-index: 1;
+  background: var(--card);
+  padding: 2px 0;
+}
+
+.vbars-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 10px 0 0;
+  padding: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.vbars-legend li::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-top: 1px dashed var(--muted);
+}
+
+/* Sur téléphone, les vingt colonnes de Paris tiennent dans la largeur : noms à la verticale
+   comme les chiffres, colonnes jointives, marge de carte réduite. Le défilement ne reste
+   qu'en filet de sécurité, sous 13 px par colonne. */
+@media (max-width: 600px) {
+  .comparison-card {
+    --card-pad-x: 14px;
+  }
+
+  .vbars-plot,
+  .vbars-labels {
+    gap: 1px;
+  }
+
+  .vbars-plot {
+    height: 190px;
+  }
+
+  .vbars-value {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  .vbars-labels {
+    align-items: flex-start;
+  }
+
+  .vbars-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-align: right;
+    font-size: 10px;
+    line-height: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.vbars-ref.is-second,
+.vbars-legend li.is-second::before {
+  border-top-style: dotted;
+  border-top-width: 2px;
 }

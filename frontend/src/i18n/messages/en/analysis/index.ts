@@ -17,6 +17,7 @@ import { risks } from "./risks";
 import { screen } from "./screen";
 import { sections } from "./sections";
 import { security } from "./security";
+import { comparison } from "./comparison";
 
 export const analysis: AnalysisMessages = {
   sections,
@@ -37,4 +38,5 @@ export const analysis: AnalysisMessages = {
   keyFigures,
   screen,
   pdf,
+  comparison,
 };
