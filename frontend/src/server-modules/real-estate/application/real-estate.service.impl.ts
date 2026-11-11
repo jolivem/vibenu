@@ -1,10 +1,17 @@
 import type { RealEstateService } from "./real-estate.service";
-import type { RealEstateAnalysis } from "../domain/real-estate.types";
+import type { DvfNotPublished, RealEstateAnalysis } from "../domain/real-estate.types";
 import type { BuildingInfoProvider, RealEstateProvider } from "../infrastructure/real-estate.provider";
 import type { AnalysisMode } from "../../../server-shared/types/location-analysis.dto";
 
 /** Départements du Livre foncier : Moselle, Bas-Rhin, Haut-Rhin. DVF ne les publie pas. */
 const LIVRE_FONCIER_DEPARTMENTS = ["57", "67", "68"];
+
+/** Territoire hors DVF d'après le code INSEE de la commune (3 chiffres outre-mer). */
+function notPublishedFor(codeInsee: string): DvfNotPublished | null {
+  if (LIVRE_FONCIER_DEPARTMENTS.includes(codeInsee.slice(0, 2))) return "alsace-moselle";
+  if (codeInsee.startsWith("976")) return "mayotte";
+  return null;
+}
 
 export class RealEstateServiceImpl implements RealEstateService {
   constructor(
@@ -21,9 +28,10 @@ export class RealEstateServiceImpl implements RealEstateService {
   ): Promise<RealEstateAnalysis> {
     // Décidé sur la commune de l'adresse : une vente d'un département voisin, à moins d'1 km,
     // ne ferait pas un prix pour Strasbourg ou Metz.
-    if (codeInsee && LIVRE_FONCIER_DEPARTMENTS.includes(codeInsee.slice(0, 2))) {
+    const notPublished = codeInsee ? notPublishedFor(codeInsee) : null;
+    if (notPublished) {
       return {
-        notPublished: "alsace-moselle",
+        notPublished,
         nearbyTransactionsCount: 0,
         markets: { appartement: null, maison: null },
         transactionFeatures: [],

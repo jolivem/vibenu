@@ -241,7 +241,7 @@ export function PdfImmobilierFiche({
               realEstate.radiusMeters !== undefined &&
               Boolean(realEstate.nearbyTransactionsCount) &&
               pdf.property.nearby(realEstate.nearbyTransactionsCount ?? 0, realEstate.period.from, realEstate.period.to, realEstate.radiusMeters),
-          ]) || (realEstate.notPublished ? pdf.property.notPublished : pdf.property.noSale)}
+          ]) || (realEstate.notPublished ? pdf.property.notPublished[realEstate.notPublished] : pdf.property.noSale)}
         </Fact>
       )}
       {rents && rentApp && (

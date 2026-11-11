@@ -168,6 +168,9 @@ export interface DvfBuildingDto {
 
 export type PropertyKindDto = "appartement" | "maison";
 
+/** Territoires absents de DVF (Alsace-Moselle : Livre foncier ; Mayotte : hors DVF). */
+export type DvfNotPublishedDto = "alsace-moselle" | "mayotte";
+
 /** Le marché d'un type de bien. `medianPricePerSqm` est `null` sous 10 ventes. */
 export interface PropertyKindMarketDto {
   count: number;
@@ -175,8 +178,8 @@ export interface PropertyKindMarketDto {
 }
 
 export interface RealEstateAnalysisDto {
-  /** Ventes non publiées pour ce territoire (Alsace-Moselle : Livre foncier, hors DVF). */
-  notPublished?: "alsace-moselle";
+  /** Ventes non publiées pour ce territoire. */
+  notPublished?: DvfNotPublishedDto;
   /** Ventes retenues, tous types confondus. */
   nearbyTransactionsCount?: number;
   /** Une médiane par type de bien ; `null` quand aucune vente de ce type. */

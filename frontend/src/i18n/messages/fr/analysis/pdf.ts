@@ -1,3 +1,4 @@
+import type { DvfNotPublishedDto } from "@/types/location-analysis";
 import { createFormat } from "../../../format";
 
 const f = createFormat("fr");
@@ -49,8 +50,11 @@ export const pdf = {
     nearby: (count: number, from: number, to: number, radius: number) =>
       `${count} vente${count > 1 ? "s" : ""} ${count > 1 ? "les" : "la"} plus proche${count > 1 ? "s" : ""} (${from === to ? to : `${from}-${to}`}, rayon de ${f.int(radius)} m)`,
     noSale: "aucune vente récente recensée",
-    /** Alsace-Moselle. */
-    notPublished: "non publiés en Alsace-Moselle (ventes inscrites au Livre foncier, hors base DVF)",
+    /** Territoires hors DVF. */
+    notPublished: {
+      "alsace-moselle": "non publiés en Alsace-Moselle (ventes inscrites au Livre foncier, hors base DVF)",
+      mayotte: "non publiés à Mayotte (hors base DVF)",
+    } satisfies Record<DvfNotPublishedDto, string>,
     parcelLabel: "Parcelle",
     parcel: (surface: string, section: string, numero: string) =>
       `${surface} · section ${section} n° ${numero}`,

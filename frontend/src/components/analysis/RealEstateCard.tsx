@@ -25,7 +25,7 @@ export function RealEstateCard({ realEstate, m, mode, addressParcel, children }:
     <section className="card">
       <h2>{m.title}</h2>
       {realEstate.notPublished ? (
-        <p>{m.notPublished(mode === "commune")}</p>
+        <p>{m.notPublished[realEstate.notPublished](mode === "commune")}</p>
       ) : (
         markets.length === 0 && <p>{m.noSale}</p>
       )}

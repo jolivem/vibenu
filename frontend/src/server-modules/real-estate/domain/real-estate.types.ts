@@ -1,3 +1,6 @@
+/** Territoires absents de DVF : chacun a sa raison, donc sa phrase. */
+export type DvfNotPublished = "alsace-moselle" | "mayotte";
+
 /**
  * Période de construction, au découpage du Registre national des copropriétés. L'année des
  * Fichiers fonciers est ramenée à ce découpage quand l'immeuble n'est pas au registre.
@@ -77,10 +80,11 @@ export interface PropertyKindMarket {
 export interface RealEstateAnalysis {
   /**
    * Ventes non publiées pour ce territoire : en Alsace-Moselle (57, 67, 68), elles relèvent du
-   * Livre foncier et l'État ne les diffuse pas dans DVF. Rien n'est cherché, et la card le dit
-   * au lieu de « aucune vente récente », qui laissait croire qu'il ne s'était rien vendu.
+   * Livre foncier et l'État ne les diffuse pas dans DVF ; Mayotte (976) n'y figure pas non plus.
+   * Rien n'est cherché, et la card le dit au lieu de « aucune vente récente », qui laissait
+   * croire qu'il ne s'était rien vendu.
    */
-  notPublished?: "alsace-moselle";
+  notPublished?: DvfNotPublished;
   /** Ventes retenues, tous types confondus. */
   nearbyTransactionsCount?: number;
   /**
