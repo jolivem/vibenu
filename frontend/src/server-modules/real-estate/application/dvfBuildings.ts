@@ -10,10 +10,14 @@ export interface LocatedSale extends DvfSale {
   exactPricePerSqm: number;
 }
 
-/** Médiane telle que la card la calcule : l'élément central, sans interpolation. */
+/**
+ * Médiane usuelle : l'élément central, ou la moyenne des deux valeurs centrales si leur nombre
+ * est pair — la convention de PERCENTILE_CONT(0.5) des pages commune.
+ */
 export function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
-  return sorted[Math.floor(sorted.length / 2)];
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
 /**

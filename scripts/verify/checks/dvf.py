@@ -13,6 +13,7 @@ mutation dont la surface est la somme de ses logements (chacun compté une fois)
 
 import csv
 import gzip
+import statistics
 from collections import defaultdict
 from datetime import date
 
@@ -63,11 +64,9 @@ def _lines(dep: str, years: list[int]):
             yield from csv.DictReader(f)
 
 
-def _median_upper(values: list[float]) -> float | None:
-    if not values:
-        return None
-    v = sorted(values)
-    return v[len(v) // 2]
+def _median(values: list[float]) -> float | None:
+    # Médiane usuelle (moyenne des deux centrales si n pair), comme median() de dvfBuildings.ts.
+    return statistics.median(values) if values else None
 
 
 def check(addr, analysis: dict) -> list[Check]:
@@ -175,7 +174,7 @@ def check(addr, analysis: dict) -> list[Check]:
                          OK if site.get("count", 0) == len(prices) else ERREUR, lien, f"parmi les {LIMIT} plus proches"))
         if not prices:
             continue
-        redo = _median_upper(prices) if len(prices) >= MIN_FOR_MEDIAN else None
+        redo = _median(prices) if len(prices) >= MIN_FOR_MEDIAN else None
         site_median = site.get("medianPricePerSqm")
         if redo is None or site_median is None:
             out.append(Check("Prix DVF", f"{label} — prix médian €/m²", site_median, None if redo is None else round(redo),
