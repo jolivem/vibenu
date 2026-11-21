@@ -1,0 +1,375 @@
+{
+  "generatedAt": "2026-11-21",
+  "millesime": 2025,
+  "millesimeAvant": 2021,
+  "seuilVentes": 30,
+  "filtres": {
+    "surfaceMin": 9,
+    "surfaceMax": 300,
+    "prixM2Min": 1000,
+    "prixM2Max": 30000
+  },
+  "nbArrondissements": 45,
+  "villes": [
+    {
+      "id": "paris",
+      "nom": "Paris",
+      "ventes": 30094,
+      "median": 9714,
+      "medianAvant": 10862,
+      "evolutionPct": -11,
+      "plusCher": "75106",
+      "moinsCher": "75119",
+      "nbArrondissements": 20,
+      "rapport": 1.8,
+      "ecartEuros": 6072,
+      "arrondissements": [
+        {
+          "code": "75106",
+          "ventes": 777,
+          "median": 14115,
+          "medianAvant": 14967,
+          "evolutionPct": -6
+        },
+        {
+          "code": "75107",
+          "ventes": 924,
+          "median": 13927,
+          "medianAvant": 14657,
+          "evolutionPct": -5
+        },
+        {
+          "code": "75104",
+          "ventes": 571,
+          "median": 12763,
+          "medianAvant": 13056,
+          "evolutionPct": -2
+        },
+        {
+          "code": "75101",
+          "ventes": 282,
+          "median": 12071,
+          "medianAvant": 13107,
+          "evolutionPct": -8
+        },
+        {
+          "code": "75108",
+          "ventes": 680,
+          "median": 12032,
+          "medianAvant": 12840,
+          "evolutionPct": -6
+        },
+        {
+          "code": "75103",
+          "ventes": 740,
+          "median": 11915,
+          "medianAvant": 12548,
+          "evolutionPct": -5
+        },
+        {
+          "code": "75105",
+          "ventes": 919,
+          "median": 11739,
+          "medianAvant": 12778,
+          "evolutionPct": -8
+        },
+        {
+          "code": "75102",
+          "ventes": 384,
+          "median": 11136,
+          "medianAvant": 11987,
+          "evolutionPct": -7
+        },
+        {
+          "code": "75116",
+          "ventes": 2461,
+          "median": 10890,
+          "medianAvant": 11647,
+          "evolutionPct": -6
+        },
+        {
+          "code": "75109",
+          "ventes": 1168,
+          "median": 10833,
+          "medianAvant": 11765,
+          "evolutionPct": -8
+        },
+        {
+          "code": "75117",
+          "ventes": 2572,
+          "median": 10062,
+          "medianAvant": 11316,
+          "evolutionPct": -11
+        },
+        {
+          "code": "75111",
+          "ventes": 2467,
+          "median": 9922,
+          "medianAvant": 11000,
+          "evolutionPct": -10
+        },
+        {
+          "code": "75115",
+          "ventes": 3140,
+          "median": 9468,
+          "medianAvant": 10690,
+          "evolutionPct": -11
+        },
+        {
+          "code": "75114",
+          "ventes": 1618,
+          "median": 9418,
+          "medianAvant": 10663,
+          "evolutionPct": -12
+        },
+        {
+          "code": "75110",
+          "ventes": 1491,
+          "median": 9278,
+          "medianAvant": 10597,
+          "evolutionPct": -12
+        },
+        {
+          "code": "75112",
+          "ventes": 1644,
+          "median": 9020,
+          "medianAvant": 10273,
+          "evolutionPct": -12
+        },
+        {
+          "code": "75118",
+          "ventes": 3164,
+          "median": 8824,
+          "medianAvant": 10202,
+          "evolutionPct": -14
+        },
+        {
+          "code": "75113",
+          "ventes": 1521,
+          "median": 8636,
+          "medianAvant": 9761,
+          "evolutionPct": -12
+        },
+        {
+          "code": "75120",
+          "ventes": 2002,
+          "median": 8333,
+          "medianAvant": 9600,
+          "evolutionPct": -13
+        },
+        {
+          "code": "75119",
+          "ventes": 1569,
+          "median": 8043,
+          "medianAvant": 9328,
+          "evolutionPct": -14
+        }
+      ]
+    },
+    {
+      "id": "lyon",
+      "nom": "Lyon",
+      "ventes": 7012,
+      "median": 4468,
+      "medianAvant": 5087,
+      "evolutionPct": -12,
+      "plusCher": "69386",
+      "moinsCher": "69385",
+      "nbArrondissements": 9,
+      "rapport": 1.5,
+      "ecartEuros": 1747,
+      "arrondissements": [
+        {
+          "code": "69386",
+          "ventes": 673,
+          "median": 5450,
+          "medianAvant": 6273,
+          "evolutionPct": -13
+        },
+        {
+          "code": "69382",
+          "ventes": 458,
+          "median": 4984,
+          "medianAvant": 6222,
+          "evolutionPct": -20
+        },
+        {
+          "code": "69384",
+          "ventes": 508,
+          "median": 4806,
+          "medianAvant": 5667,
+          "evolutionPct": -15
+        },
+        {
+          "code": "69381",
+          "ventes": 431,
+          "median": 4773,
+          "medianAvant": 5680,
+          "evolutionPct": -16
+        },
+        {
+          "code": "69387",
+          "ventes": 1306,
+          "median": 4517,
+          "medianAvant": 5000,
+          "evolutionPct": -10
+        },
+        {
+          "code": "69383",
+          "ventes": 1389,
+          "median": 4500,
+          "medianAvant": 5116,
+          "evolutionPct": -12
+        },
+        {
+          "code": "69388",
+          "ventes": 972,
+          "median": 3965,
+          "medianAvant": 4426,
+          "evolutionPct": -10
+        },
+        {
+          "code": "69389",
+          "ventes": 685,
+          "median": 3769,
+          "medianAvant": 4167,
+          "evolutionPct": -10
+        },
+        {
+          "code": "69385",
+          "ventes": 590,
+          "median": 3703,
+          "medianAvant": 4209,
+          "evolutionPct": -12
+        }
+      ]
+    },
+    {
+      "id": "marseille",
+      "nom": "Marseille",
+      "ventes": 10737,
+      "median": 3250,
+      "medianAvant": 2921,
+      "evolutionPct": 11,
+      "plusCher": "13207",
+      "moinsCher": "13215",
+      "nbArrondissements": 16,
+      "rapport": 3.2,
+      "ecartEuros": 3430,
+      "arrondissements": [
+        {
+          "code": "13207",
+          "ventes": 674,
+          "median": 5021,
+          "medianAvant": 4182,
+          "evolutionPct": 20
+        },
+        {
+          "code": "13208",
+          "ventes": 1294,
+          "median": 4302,
+          "medianAvant": 3889,
+          "evolutionPct": 11
+        },
+        {
+          "code": "13206",
+          "ventes": 927,
+          "median": 3915,
+          "medianAvant": 3441,
+          "evolutionPct": 14
+        },
+        {
+          "code": "13205",
+          "ventes": 1009,
+          "median": 3433,
+          "medianAvant": 3077,
+          "evolutionPct": 12
+        },
+        {
+          "code": "13212",
+          "ventes": 704,
+          "median": 3377,
+          "medianAvant": 3191,
+          "evolutionPct": 6
+        },
+        {
+          "code": "13202",
+          "ventes": 414,
+          "median": 3260,
+          "medianAvant": 3059,
+          "evolutionPct": 7
+        },
+        {
+          "code": "13201",
+          "ventes": 712,
+          "median": 3194,
+          "medianAvant": 2827,
+          "evolutionPct": 13
+        },
+        {
+          "code": "13216",
+          "ventes": 99,
+          "median": 3154,
+          "medianAvant": 2707,
+          "evolutionPct": 17
+        },
+        {
+          "code": "13209",
+          "ventes": 833,
+          "median": 3125,
+          "medianAvant": 2794,
+          "evolutionPct": 12
+        },
+        {
+          "code": "13204",
+          "ventes": 994,
+          "median": 2899,
+          "medianAvant": 2577,
+          "evolutionPct": 12
+        },
+        {
+          "code": "13211",
+          "ventes": 429,
+          "median": 2746,
+          "medianAvant": 2346,
+          "evolutionPct": 17
+        },
+        {
+          "code": "13210",
+          "ventes": 787,
+          "median": 2688,
+          "medianAvant": 2542,
+          "evolutionPct": 6
+        },
+        {
+          "code": "13213",
+          "ventes": 742,
+          "median": 2641,
+          "medianAvant": 2557,
+          "evolutionPct": 3
+        },
+        {
+          "code": "13203",
+          "ventes": 496,
+          "median": 1862,
+          "medianAvant": 1797,
+          "evolutionPct": 4
+        },
+        {
+          "code": "13214",
+          "ventes": 334,
+          "median": 1778,
+          "medianAvant": 1692,
+          "evolutionPct": 5
+        },
+        {
+          "code": "13215",
+          "ventes": 289,
+          "median": 1591,
+          "medianAvant": 1691,
+          "evolutionPct": -6
+        }
+      ]
+    }
+  ]
+}

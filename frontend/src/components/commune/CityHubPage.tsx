@@ -344,6 +344,7 @@ export async function CityHubPage({ city }: Props) {
         <span>Données publiques · DVF · INSEE · {cityDef.airSourceLabel}</span>
         <div className="landing-footer-links">
           <Link href="/">Analyser une adresse</Link>
+          {FEATURES.hasArticles && <Link href="/articles">Articles</Link>}
           {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
         </div>
       </footer>

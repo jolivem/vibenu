@@ -12,6 +12,7 @@ export const landing: LandingMessages = {
     howItWorks: "How it works",
     explore: "Explore by commune",
     faq: "Questions",
+    articles: "Articles (in French)",
     about: "About",
   },
   hero: {

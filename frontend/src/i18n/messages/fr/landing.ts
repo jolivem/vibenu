@@ -26,6 +26,7 @@ export const landing = {
     howItWorks: "Comment ça marche",
     explore: "Explorer par commune",
     faq: "Questions",
+    articles: "Articles",
     about: "À propos",
   },
   hero: {

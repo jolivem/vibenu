@@ -385,6 +385,7 @@ export default async function CommunePage({
         <span>Données publiques · DVF · INSEE · ministère de l&apos;Intérieur</span>
         <div className="landing-footer-links">
           <Link href="/">Analyser une adresse</Link>
+          {FEATURES.hasArticles && <Link href="/articles">Articles</Link>}
           {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
         </div>
       </footer>

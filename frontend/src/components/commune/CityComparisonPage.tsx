@@ -36,6 +36,7 @@ import { ComparisonTable, type ComparisonTableRow } from "./ComparisonTable";
 import { VerticalBars, type VerticalBarReference, type VerticalBarRow } from "./VerticalBars";
 import { CommuneFaqSection } from "./CommuneFaqSection";
 import { SourceLine } from "./SourceLine";
+import { meta as articlePrix } from "@/content/articles/prix-m2-arrondissements-paris-lyon-marseille/meta";
 import { sujetsHub } from "./CommuneRelatedLinks";
 
 const fmt = createFormat("fr");
@@ -214,6 +215,13 @@ function ThemeBlock({
         />
       </details>
       <SourceLine anchor={t.methode}>{source}</SourceLine>
+      {theme === "achat-location" && FEATURES.hasArticles && (
+        <p className="comparison-article">
+          <Link href={`/articles/${articlePrix.slug}`}>
+            Paris, Lyon, Marseille : l&apos;évolution des prix par arrondissement depuis 2021
+          </Link>
+        </p>
+      )}
     </section>
   );
 }
@@ -332,6 +340,7 @@ export async function CityComparisonPage({ city }: { city: City }) {
         <span>Données publiques · DVF · ANIL · INSEE · SSMSI · ministère de l&apos;Intérieur</span>
         <div className="landing-footer-links">
           <Link href="/">Analyser une adresse</Link>
+          {FEATURES.hasArticles && <Link href="/articles">Articles</Link>}
           {FEATURES.hasAboutPage && <Link href="/a-propos">À propos</Link>}
         </div>
       </footer>

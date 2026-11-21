@@ -240,6 +240,14 @@ curl -i https://api.mistral.ai/v1/chat/completions \
   -d '{"model":"mistral-small-latest","messages":[{"role":"user","content":"Bonjour"}]}'
 ```
 
+## Articles (`/articles`)
+
+Palmarès chiffrés et guides pratiques, en français, écrits par l'auteur à partir des données
+du site. Les chiffres sont figés dans un `data.json` par article, calculé par
+`scripts/articles/<nom>.py` (le site ne lit jamais la base pour un article) ; le contrôle
+`python scripts/articles/check_articles.py` vérifie que chaque nombre du texte figure dans
+l'instantané. Mode d'emploi : [frontend/src/content/articles/README.md](frontend/src/content/articles/README.md).
+
 ## Export PDF
 
 Un bouton **« Télécharger PDF »** dans la barre supérieure de l'écran d'analyse génère un PDF vectoriel du rapport complet, texte sélectionnable, directement dans le navigateur.

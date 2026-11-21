@@ -6,6 +6,7 @@ import { LOCALES, ROUTES, languageAlternates, type RouteId } from "@/i18n/locale
 import { ALL_COMMUNE_SLUGS, ALL_CITY_SLUGS } from "@/lib/commune-slugs";
 import { comparatifPath } from "@/components/commune/comparatifSections";
 import { FEATURES } from "@/lib/site-features";
+import { ARTICLES } from "@/content/articles";
 
 /** Pages traduites et indexables. `/analyze` ne l'est pas : elle dépend d'une adresse. */
 const TRANSLATED: Array<{ route: RouteId; changeFrequency: "weekly" | "monthly"; priority: number }> = [
@@ -73,6 +74,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.3,
     });
+  }
+
+  // Articles : en français seulement ; `lastModified` = date de mise à jour de l'article.
+  if (FEATURES.hasArticles && ARTICLES.length > 0) {
+    entries.push({
+      url: `${siteUrl}/articles`,
+      lastModified: new Date(ARTICLES.map((a) => a.meta.updated).sort().at(-1)!),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    });
+    for (const { meta } of ARTICLES) {
+      entries.push({
+        url: `${siteUrl}/articles/${meta.slug}`,
+        lastModified: new Date(meta.updated),
+        changeFrequency: "monthly",
+        priority: 0.8,
+      });
+    }
   }
   return entries;
 }

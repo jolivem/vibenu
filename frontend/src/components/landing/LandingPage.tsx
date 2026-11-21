@@ -239,6 +239,12 @@ export function LandingPage({
         <span>{m.footer.baseline}</span>
         <div className="landing-footer-links">
           {FEATURES.hasLandingExploreSection && <a href="#explorer">{m.nav.explore}</a>}
+          {FEATURES.hasArticles && (
+            // Rubrique en français seulement, comme `/commune/*`.
+            <Link href="/articles" hrefLang="fr">
+              {m.nav.articles}
+            </Link>
+          )}
           {FEATURES.hasAboutPage && <Link href={localizedHref(locale, "about")}>{m.nav.about}</Link>}
           {/* Répété ici : la navigation du haut est masquée sur mobile. */}
           <LanguageSwitcher route="home" />

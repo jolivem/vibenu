@@ -154,6 +154,19 @@ text:
 - **Still missing on arrondissement pages**: PDF export, and "En bref" on a few cards.
 - `app/commune/page.tsx` still ignores `hasSEOPages`.
 
+### Articles (`/articles`)
+
+Palmarès chiffrés et guides, French-only like `/commune/*` (inline strings), gated by
+`FEATURES.hasArticles`. Content in `frontend/src/content/articles/<slug>/` (`meta.ts`,
+`index.mdx`, `figures.tsx`, `data.json`); the registry `content/articles/index.ts` drives the
+index, sitemap, `llms.txt` and static params. **Numbers are frozen**: `scripts/articles/*.py`
+writes `data.json` from the DB (the build never reads the DB), and
+`scripts/articles/check_articles.py` fails if the prose quotes a number absent from it —
+derived facts (ratios, changes) are computed by the script, not by hand. Text is written by
+the author with AI help, never batch-generated. Links to communes go through `communeHref`.
+`mdx` must stay in `pageExtensions` (otherwise MDX resolves the project's React 18 and
+prerendering fails). Workflow: `content/articles/README.md`.
+
 ### Client
 
 - `app/` — App Router, split into the `(fr)` and `(en)/en` route groups (see "Languages"). `api/` routes (`address/search`, `location/analyze`,

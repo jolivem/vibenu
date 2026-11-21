@@ -1,6 +1,7 @@
 import { ALL_CITY_SLUGS, ALL_COMMUNE_SLUGS, CITIES } from "@/lib/commune-slugs";
 import { comparatifPath } from "@/components/commune/comparatifSections";
 import { BRANDING, FEATURES } from "@/lib/site-features";
+import { ARTICLES } from "@/content/articles";
 
 /**
  * `/llms.txt` : une présentation du site pour les assistants conversationnels, au format
@@ -25,6 +26,10 @@ export function GET() {
         ),
         ...ALL_COMMUNE_SLUGS.map((c) => `- [${c.nomAffiche}](${siteUrl}/commune/${c.slug})`),
       ].join("\n")
+    : "";
+
+  const articles = FEATURES.hasArticles
+    ? ARTICLES.map((a) => `- [${a.meta.title}](${siteUrl}/articles/${a.meta.slug}) : ${a.meta.description}`).join("\n")
     : "";
 
   const body = `# ${BRANDING.name}
@@ -59,7 +64,7 @@ Pour une commune entière : type=municipality et le code INSEE de la commune dan
 
 - [Accueil et questions fréquentes](${siteUrl}/)
 - [À propos : méthode et liste des sources](${siteUrl}/a-propos)
-${communes ? `\n## Pages des communes (Paris, Lyon, Marseille et leurs arrondissements)\n\n${communes}\n` : ""}`;
+${articles ? `\n## Articles (palmarès chiffrés et guides, chiffres datés)\n\n${articles}\n` : ""}${communes ? `\n## Pages des communes (Paris, Lyon, Marseille et leurs arrondissements)\n\n${communes}\n` : ""}`;
 
   return new Response(body, {
     headers: {
