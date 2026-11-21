@@ -57,3 +57,7 @@ scripts/france-latest.osm.pbf
 # Chemin ancré : sans le « / » initial, la règle emporterait aussi tout dossier « data »
 # ou « climate » du code source — c'est ce qui a rendu invisible le module climat entier.
 /scripts/data/
+# Carrousels LinkedIn : régénérés par presse/linkedin/*.py (seuls le script et post.md sont suivis)
+presse/linkedin/*/carrousel.html
+presse/linkedin/*/carrousel.pdf
+presse/linkedin/*/visuel-*.png
