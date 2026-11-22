@@ -15,7 +15,7 @@ function ville(id: VilleId) {
 }
 
 const euros = (n: number) => `${fmt.spaced(n)} €/m²`;
-const pct = (n: number | null) => (n === null ? "—" : `${n > 0 ? "+" : n < 0 ? "−" : ""}${fmt.int(Math.abs(n))} %`);
+const pct = (n: number | null) => (n === null ? "—" : `${n > 0 ? "+" : n < 0 ? "−" : ""}${fmt.int(Math.abs(n))} %`);
 const nomCourt = (code: string) => getCommuneByCodeInsee(code)?.nomCourt ?? code;
 
 /** Les trois évolutions, en tête d'article. */

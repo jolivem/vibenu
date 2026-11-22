@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import type { ArticleMeta } from "./types";
 import { meta as prixArrondissements } from "./prix-m2-arrondissements-paris-lyon-marseille/meta";
 import { meta as ensoleillement } from "./villes-les-plus-ensoleillees-de-france/meta";
+import { meta as zoneTendue } from "./zone-tendue-liste-des-communes/meta";
 
 /**
  * Le registre des articles publiés, du plus récent au plus ancien : source unique de
@@ -14,6 +15,10 @@ interface ArticleEntry {
 }
 
 export const ARTICLES: ArticleEntry[] = [
+  {
+    meta: zoneTendue,
+    load: () => import("./zone-tendue-liste-des-communes/index.mdx"),
+  },
   {
     meta: ensoleillement,
     load: () => import("./villes-les-plus-ensoleillees-de-france/index.mdx"),

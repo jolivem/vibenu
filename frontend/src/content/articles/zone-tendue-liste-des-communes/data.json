@@ -1,0 +1,4841 @@
+{
+  "generatedAt": "2026-11-22",
+  "decret": "2025-12-22",
+  "anneePopulation": 2025,
+  "nbCommunesFrance": 34875,
+  "populationFrance": 69212764,
+  "seuilTableau": 10000,
+  "tendue": {
+    "nbCommunes": 1430,
+    "population": 26627877,
+    "partPopulationPct": 38,
+    "nbMajoration": 545,
+    "partMajorationPct": 38,
+    "tauxMajorationMoyen": 47,
+    "nbMajorationMax": 300,
+    "plusPeuplees": [
+      {
+        "code": "75056",
+        "nom": "Paris",
+        "dep": "75",
+        "population": 2129257,
+        "majoration": 60.0
+      },
+      {
+        "code": "13055",
+        "nom": "Marseille",
+        "dep": "13",
+        "population": 883466,
+        "majoration": 60.0
+      },
+      {
+        "code": "69123",
+        "nom": "Lyon",
+        "dep": "69",
+        "population": 526912,
+        "majoration": 60.0
+      },
+      {
+        "code": "31555",
+        "nom": "Toulouse",
+        "dep": "31",
+        "population": 516735,
+        "majoration": 20.0
+      },
+      {
+        "code": "06088",
+        "nom": "Nice",
+        "dep": "06",
+        "population": 356603,
+        "majoration": 60.0
+      },
+      {
+        "code": "44109",
+        "nom": "Nantes",
+        "dep": "44",
+        "population": 329809,
+        "majoration": 60.0
+      },
+      {
+        "code": "34172",
+        "nom": "Montpellier",
+        "dep": "34",
+        "population": 310611,
+        "majoration": 60.0
+      },
+      {
+        "code": "67482",
+        "nom": "Strasbourg",
+        "dep": "67",
+        "population": 294564,
+        "majoration": 60.0
+      },
+      {
+        "code": "33063",
+        "nom": "Bordeaux",
+        "dep": "33",
+        "population": 268822,
+        "majoration": 60.0
+      },
+      {
+        "code": "59350",
+        "nom": "Lille",
+        "dep": "59",
+        "population": 240523,
+        "majoration": null
+      },
+      {
+        "code": "35238",
+        "nom": "Rennes",
+        "dep": "35",
+        "population": 231985,
+        "majoration": 60.0
+      },
+      {
+        "code": "83137",
+        "nom": "Toulon",
+        "dep": "83",
+        "population": 182535,
+        "majoration": 20.0
+      },
+      {
+        "code": "69266",
+        "nom": "Villeurbanne",
+        "dep": "69",
+        "population": 163260,
+        "majoration": 60.0
+      },
+      {
+        "code": "38185",
+        "nom": "Grenoble",
+        "dep": "38",
+        "population": 158601,
+        "majoration": 60.0
+      },
+      {
+        "code": "97411",
+        "nom": "Saint-Denis",
+        "dep": "974",
+        "population": 157674,
+        "majoration": null
+      }
+    ],
+    "parDepartement": [
+      {
+        "dep": "69",
+        "nom": "Rhône",
+        "nbCommunes": 102
+      },
+      {
+        "dep": "78",
+        "nom": "Yvelines",
+        "nbCommunes": 86
+      },
+      {
+        "dep": "91",
+        "nom": "Essonne",
+        "nbCommunes": 81
+      },
+      {
+        "dep": "31",
+        "nom": "Haute-Garonne",
+        "nbCommunes": 79
+      },
+      {
+        "dep": "33",
+        "nom": "Gironde",
+        "nbCommunes": 77
+      },
+      {
+        "dep": "77",
+        "nom": "Seine-et-Marne",
+        "nbCommunes": 75
+      },
+      {
+        "dep": "74",
+        "nom": "Haute-Savoie",
+        "nbCommunes": 72
+      },
+      {
+        "dep": "13",
+        "nom": "Bouches-du-Rhône",
+        "nbCommunes": 69
+      },
+      {
+        "dep": "95",
+        "nom": "Val-d'Oise",
+        "nbCommunes": 66
+      },
+      {
+        "dep": "06",
+        "nom": "Alpes-Maritimes",
+        "nbCommunes": 60
+      },
+      {
+        "dep": "59",
+        "nom": "Nord",
+        "nbCommunes": 60
+      },
+      {
+        "dep": "94",
+        "nom": "Val-de-Marne",
+        "nbCommunes": 47
+      },
+      {
+        "dep": "84",
+        "nom": "Vaucluse",
+        "nbCommunes": 44
+      },
+      {
+        "dep": "38",
+        "nom": "Isère",
+        "nbCommunes": 39
+      },
+      {
+        "dep": "44",
+        "nom": "Loire-Atlantique",
+        "nbCommunes": 39
+      },
+      {
+        "dep": "93",
+        "nom": "Seine-Saint-Denis",
+        "nbCommunes": 39
+      },
+      {
+        "dep": "92",
+        "nom": "Hauts-de-Seine",
+        "nbCommunes": 36
+      },
+      {
+        "dep": "73",
+        "nom": "Savoie",
+        "nbCommunes": 35
+      },
+      {
+        "dep": "34",
+        "nom": "Hérault",
+        "nbCommunes": 35
+      },
+      {
+        "dep": "83",
+        "nom": "Var",
+        "nbCommunes": 35
+      },
+      {
+        "dep": "64",
+        "nom": "Pyrénées-Atlantiques",
+        "nbCommunes": 27
+      },
+      {
+        "dep": "01",
+        "nom": "Ain",
+        "nbCommunes": 26
+      },
+      {
+        "dep": "14",
+        "nom": "Calvados",
+        "nbCommunes": 24
+      },
+      {
+        "dep": "60",
+        "nom": "Oise",
+        "nbCommunes": 23
+      },
+      {
+        "dep": "67",
+        "nom": "Bas-Rhin",
+        "nbCommunes": 23
+      },
+      {
+        "dep": "45",
+        "nom": "Loiret",
+        "nbCommunes": 19
+      },
+      {
+        "dep": "35",
+        "nom": "Ille-et-Vilaine",
+        "nbCommunes": 16
+      },
+      {
+        "dep": "30",
+        "nom": "Gard",
+        "nbCommunes": 15
+      },
+      {
+        "dep": "972",
+        "nom": "Martinique",
+        "nbCommunes": 15
+      },
+      {
+        "dep": "66",
+        "nom": "Pyrénées-Orientales",
+        "nbCommunes": 14
+      },
+      {
+        "dep": "17",
+        "nom": "Charente-Maritime",
+        "nbCommunes": 11
+      },
+      {
+        "dep": "971",
+        "nom": "Guadeloupe",
+        "nbCommunes": 11
+      },
+      {
+        "dep": "974",
+        "nom": "La Réunion",
+        "nbCommunes": 9
+      },
+      {
+        "dep": "2B",
+        "nom": "Haute-Corse",
+        "nbCommunes": 7
+      },
+      {
+        "dep": "2A",
+        "nom": "Corse-du-Sud",
+        "nbCommunes": 5
+      },
+      {
+        "dep": "40",
+        "nom": "Landes",
+        "nbCommunes": 3
+      },
+      {
+        "dep": "973",
+        "nom": "Guyane",
+        "nbCommunes": 3
+      },
+      {
+        "dep": "82",
+        "nom": "Tarn-et-Garonne",
+        "nbCommunes": 2
+      },
+      {
+        "dep": "75",
+        "nom": "Paris",
+        "nbCommunes": 1
+      }
+    ],
+    "nbDepartements": 39,
+    "tableau": [
+      {
+        "code": "75056",
+        "nom": "Paris",
+        "dep": "75",
+        "population": 2129257,
+        "majoration": 60.0
+      },
+      {
+        "code": "13055",
+        "nom": "Marseille",
+        "dep": "13",
+        "population": 883466,
+        "majoration": 60.0
+      },
+      {
+        "code": "69123",
+        "nom": "Lyon",
+        "dep": "69",
+        "population": 526912,
+        "majoration": 60.0
+      },
+      {
+        "code": "31555",
+        "nom": "Toulouse",
+        "dep": "31",
+        "population": 516735,
+        "majoration": 20.0
+      },
+      {
+        "code": "06088",
+        "nom": "Nice",
+        "dep": "06",
+        "population": 356603,
+        "majoration": 60.0
+      },
+      {
+        "code": "44109",
+        "nom": "Nantes",
+        "dep": "44",
+        "population": 329809,
+        "majoration": 60.0
+      },
+      {
+        "code": "34172",
+        "nom": "Montpellier",
+        "dep": "34",
+        "population": 310611,
+        "majoration": 60.0
+      },
+      {
+        "code": "67482",
+        "nom": "Strasbourg",
+        "dep": "67",
+        "population": 294564,
+        "majoration": 60.0
+      },
+      {
+        "code": "33063",
+        "nom": "Bordeaux",
+        "dep": "33",
+        "population": 268822,
+        "majoration": 60.0
+      },
+      {
+        "code": "59350",
+        "nom": "Lille",
+        "dep": "59",
+        "population": 240523,
+        "majoration": null
+      },
+      {
+        "code": "35238",
+        "nom": "Rennes",
+        "dep": "35",
+        "population": 231985,
+        "majoration": 60.0
+      },
+      {
+        "code": "83137",
+        "nom": "Toulon",
+        "dep": "83",
+        "population": 182535,
+        "majoration": 20.0
+      },
+      {
+        "code": "69266",
+        "nom": "Villeurbanne",
+        "dep": "69",
+        "population": 163260,
+        "majoration": 60.0
+      },
+      {
+        "code": "38185",
+        "nom": "Grenoble",
+        "dep": "38",
+        "population": 158601,
+        "majoration": 60.0
+      },
+      {
+        "code": "97411",
+        "nom": "Saint-Denis",
+        "dep": "974",
+        "population": 157674,
+        "majoration": null
+      },
+      {
+        "code": "30189",
+        "nom": "Nîmes",
+        "dep": "30",
+        "population": 152612,
+        "majoration": 40.0
+      },
+      {
+        "code": "13001",
+        "nom": "Aix-en-Provence",
+        "dep": "13",
+        "population": 151033,
+        "majoration": null
+      },
+      {
+        "code": "93066",
+        "nom": "Saint-Denis",
+        "dep": "93",
+        "population": 149781,
+        "majoration": 60.0
+      },
+      {
+        "code": "74010",
+        "nom": "Annecy",
+        "dep": "74",
+        "population": 134131,
+        "majoration": 60.0
+      },
+      {
+        "code": "92012",
+        "nom": "Boulogne-Billancourt",
+        "dep": "92",
+        "population": 121391,
+        "majoration": 60.0
+      },
+      {
+        "code": "45234",
+        "nom": "Orléans",
+        "dep": "45",
+        "population": 118816,
+        "majoration": null
+      },
+      {
+        "code": "93048",
+        "nom": "Montreuil",
+        "dep": "93",
+        "population": 111333,
+        "majoration": 60.0
+      },
+      {
+        "code": "14118",
+        "nom": "Caen",
+        "dep": "14",
+        "population": 110520,
+        "majoration": null
+      },
+      {
+        "code": "95018",
+        "nom": "Argenteuil",
+        "dep": "95",
+        "population": 107563,
+        "majoration": 40.0
+      },
+      {
+        "code": "97415",
+        "nom": "Saint-Paul",
+        "dep": "974",
+        "population": 107501,
+        "majoration": 60.0
+      },
+      {
+        "code": "59512",
+        "nom": "Roubaix",
+        "dep": "59",
+        "population": 99926,
+        "majoration": null
+      },
+      {
+        "code": "59599",
+        "nom": "Tourcoing",
+        "dep": "59",
+        "population": 99758,
+        "majoration": null
+      },
+      {
+        "code": "92050",
+        "nom": "Nanterre",
+        "dep": "92",
+        "population": 98745,
+        "majoration": 40.0
+      },
+      {
+        "code": "94081",
+        "nom": "Vitry-sur-Seine",
+        "dep": "94",
+        "population": 95761,
+        "majoration": 60.0
+      },
+      {
+        "code": "94028",
+        "nom": "Créteil",
+        "dep": "94",
+        "population": 93288,
+        "majoration": null
+      },
+      {
+        "code": "84007",
+        "nom": "Avignon",
+        "dep": "84",
+        "population": 93176,
+        "majoration": 48.6
+      },
+      {
+        "code": "92004",
+        "nom": "Asnières-sur-Seine",
+        "dep": "92",
+        "population": 92100,
+        "majoration": 60.0
+      },
+      {
+        "code": "92025",
+        "nom": "Colombes",
+        "dep": "92",
+        "population": 91287,
+        "majoration": null
+      },
+      {
+        "code": "93001",
+        "nom": "Aubervilliers",
+        "dep": "93",
+        "population": 89662,
+        "majoration": null
+      },
+      {
+        "code": "93005",
+        "nom": "Aulnay-sous-Bois",
+        "dep": "93",
+        "population": 86727,
+        "majoration": null
+      },
+      {
+        "code": "97416",
+        "nom": "Saint-Pierre",
+        "dep": "974",
+        "population": 86140,
+        "majoration": null
+      },
+      {
+        "code": "78646",
+        "nom": "Versailles",
+        "dep": "78",
+        "population": 85610,
+        "majoration": 20.0
+      },
+      {
+        "code": "97422",
+        "nom": "Le Tampon",
+        "dep": "974",
+        "population": 82875,
+        "majoration": null
+      },
+      {
+        "code": "92026",
+        "nom": "Courbevoie",
+        "dep": "92",
+        "population": 82547,
+        "majoration": 60.0
+      },
+      {
+        "code": "92063",
+        "nom": "Rueil-Malmaison",
+        "dep": "92",
+        "population": 82289,
+        "majoration": 50.0
+      },
+      {
+        "code": "17300",
+        "nom": "La Rochelle",
+        "dep": "17",
+        "population": 81986,
+        "majoration": 60.0
+      },
+      {
+        "code": "94017",
+        "nom": "Champigny-sur-Marne",
+        "dep": "94",
+        "population": 78672,
+        "majoration": 60.0
+      },
+      {
+        "code": "33281",
+        "nom": "Mérignac",
+        "dep": "33",
+        "population": 77993,
+        "majoration": 20.0
+      },
+      {
+        "code": "06004",
+        "nom": "Antibes",
+        "dep": "06",
+        "population": 77618,
+        "majoration": 50.0
+      },
+      {
+        "code": "94068",
+        "nom": "Saint-Maur-des-Fossés",
+        "dep": "94",
+        "population": 76882,
+        "majoration": null
+      },
+      {
+        "code": "2A004",
+        "nom": "Ajaccio",
+        "dep": "2A",
+        "population": 76164,
+        "majoration": 60.0
+      },
+      {
+        "code": "97209",
+        "nom": "Fort-de-France",
+        "dep": "972",
+        "population": 75799,
+        "majoration": null
+      },
+      {
+        "code": "06029",
+        "nom": "Cannes",
+        "dep": "06",
+        "population": 74820,
+        "majoration": null
+      },
+      {
+        "code": "44184",
+        "nom": "Saint-Nazaire",
+        "dep": "44",
+        "population": 74778,
+        "majoration": 60.0
+      },
+      {
+        "code": "93051",
+        "nom": "Noisy-le-Grand",
+        "dep": "93",
+        "population": 72064,
+        "majoration": null
+      },
+      {
+        "code": "93029",
+        "nom": "Drancy",
+        "dep": "93",
+        "population": 71552,
+        "majoration": 50.0
+      },
+      {
+        "code": "95127",
+        "nom": "Cergy",
+        "dep": "95",
+        "population": 69965,
+        "majoration": 30.0
+      },
+      {
+        "code": "92044",
+        "nom": "Levallois-Perret",
+        "dep": "92",
+        "population": 68945,
+        "majoration": 50.0
+      },
+      {
+        "code": "92040",
+        "nom": "Issy-les-Moulineaux",
+        "dep": "92",
+        "population": 68375,
+        "majoration": 40.0
+      },
+      {
+        "code": "33318",
+        "nom": "Pessac",
+        "dep": "33",
+        "population": 67670,
+        "majoration": 60.0
+      },
+      {
+        "code": "91228",
+        "nom": "Évry-Courcouronnes",
+        "dep": "91",
+        "population": 67041,
+        "majoration": 20.0
+      },
+      {
+        "code": "69259",
+        "nom": "Vénissieux",
+        "dep": "69",
+        "population": 66891,
+        "majoration": null
+      },
+      {
+        "code": "92024",
+        "nom": "Clichy",
+        "dep": "92",
+        "population": 65344,
+        "majoration": 60.0
+      },
+      {
+        "code": "94041",
+        "nom": "Ivry-sur-Seine",
+        "dep": "94",
+        "population": 64763,
+        "majoration": 40.0
+      },
+      {
+        "code": "92002",
+        "nom": "Antony",
+        "dep": "92",
+        "population": 64757,
+        "majoration": 30.0
+      },
+      {
+        "code": "97302",
+        "nom": "Cayenne",
+        "dep": "973",
+        "population": 64236,
+        "majoration": null
+      },
+      {
+        "code": "83126",
+        "nom": "La Seyne-sur-Mer",
+        "dep": "83",
+        "population": 63600,
+        "majoration": 40.0
+      },
+      {
+        "code": "59009",
+        "nom": "Villeneuve-d'Ascq",
+        "dep": "59",
+        "population": 62936,
+        "majoration": 60.0
+      },
+      {
+        "code": "73065",
+        "nom": "Chambéry",
+        "dep": "73",
+        "population": 61808,
+        "majoration": 60.0
+      },
+      {
+        "code": "93055",
+        "nom": "Pantin",
+        "dep": "93",
+        "population": 61126,
+        "majoration": 60.0
+      },
+      {
+        "code": "92051",
+        "nom": "Neuilly-sur-Seine",
+        "dep": "92",
+        "population": 60169,
+        "majoration": 50.0
+      },
+      {
+        "code": "93007",
+        "nom": "Le Blanc-Mesnil",
+        "dep": "93",
+        "population": 60051,
+        "majoration": null
+      },
+      {
+        "code": "83061",
+        "nom": "Fréjus",
+        "dep": "83",
+        "population": 59331,
+        "majoration": 60.0
+      },
+      {
+        "code": "95585",
+        "nom": "Sarcelles",
+        "dep": "95",
+        "population": 58798,
+        "majoration": null
+      },
+      {
+        "code": "94076",
+        "nom": "Villejuif",
+        "dep": "94",
+        "population": 58411,
+        "majoration": 20.0
+      },
+      {
+        "code": "94046",
+        "nom": "Maisons-Alfort",
+        "dep": "94",
+        "population": 57726,
+        "majoration": 25.0
+      },
+      {
+        "code": "92023",
+        "nom": "Clamart",
+        "dep": "92",
+        "population": 57389,
+        "majoration": null
+      },
+      {
+        "code": "77284",
+        "nom": "Meaux",
+        "dep": "77",
+        "population": 57121,
+        "majoration": null
+      },
+      {
+        "code": "83069",
+        "nom": "Hyères",
+        "dep": "83",
+        "population": 56240,
+        "majoration": 30.0
+      },
+      {
+        "code": "93008",
+        "nom": "Bobigny",
+        "dep": "93",
+        "population": 55404,
+        "majoration": 60.0
+      },
+      {
+        "code": "97414",
+        "nom": "Saint-Louis",
+        "dep": "974",
+        "population": 55154,
+        "majoration": null
+      },
+      {
+        "code": "77108",
+        "nom": "Chelles",
+        "dep": "77",
+        "population": 54665,
+        "majoration": null
+      },
+      {
+        "code": "64102",
+        "nom": "Bayonne",
+        "dep": "64",
+        "population": 54584,
+        "majoration": 60.0
+      },
+      {
+        "code": "91174",
+        "nom": "Corbeil-Essonnes",
+        "dep": "91",
+        "population": 53962,
+        "majoration": null
+      },
+      {
+        "code": "93031",
+        "nom": "Épinay-sur-Seine",
+        "dep": "93",
+        "population": 53699,
+        "majoration": null
+      },
+      {
+        "code": "06027",
+        "nom": "Cagnes-sur-Mer",
+        "dep": "06",
+        "population": 53303,
+        "majoration": 20.0
+      },
+      {
+        "code": "93070",
+        "nom": "Saint-Ouen-sur-Seine",
+        "dep": "93",
+        "population": 53164,
+        "majoration": 60.0
+      },
+      {
+        "code": "94033",
+        "nom": "Fontenay-sous-Bois",
+        "dep": "94",
+        "population": 53083,
+        "majoration": 60.0
+      },
+      {
+        "code": "69256",
+        "nom": "Vaulx-en-Velin",
+        "dep": "69",
+        "population": 52647,
+        "majoration": null
+      },
+      {
+        "code": "97101",
+        "nom": "Les Abymes",
+        "dep": "971",
+        "population": 52185,
+        "majoration": 25.0
+      },
+      {
+        "code": "78586",
+        "nom": "Sartrouville",
+        "dep": "78",
+        "population": 51941,
+        "majoration": null
+      },
+      {
+        "code": "13004",
+        "nom": "Arles",
+        "dep": "13",
+        "population": 51840,
+        "majoration": 60.0
+      },
+      {
+        "code": "93071",
+        "nom": "Sevran",
+        "dep": "93",
+        "population": 51802,
+        "majoration": 60.0
+      },
+      {
+        "code": "44162",
+        "nom": "Saint-Herblain",
+        "dep": "44",
+        "population": 51282,
+        "majoration": 50.0
+      },
+      {
+        "code": "93010",
+        "nom": "Bondy",
+        "dep": "93",
+        "population": 51239,
+        "majoration": null
+      },
+      {
+        "code": "92036",
+        "nom": "Gennevilliers",
+        "dep": "92",
+        "population": 51082,
+        "majoration": null
+      },
+      {
+        "code": "91377",
+        "nom": "Massy",
+        "dep": "91",
+        "population": 50929,
+        "majoration": 20.0
+      },
+      {
+        "code": "06069",
+        "nom": "Grasse",
+        "dep": "06",
+        "population": 49508,
+        "majoration": 20.0
+      },
+      {
+        "code": "92073",
+        "nom": "Suresnes",
+        "dep": "92",
+        "population": 49462,
+        "majoration": null
+      },
+      {
+        "code": "69290",
+        "nom": "Saint-Priest",
+        "dep": "69",
+        "population": 49425,
+        "majoration": null
+      },
+      {
+        "code": "13056",
+        "nom": "Martigues",
+        "dep": "13",
+        "population": 49346,
+        "majoration": 60.0
+      },
+      {
+        "code": "94080",
+        "nom": "Vincennes",
+        "dep": "94",
+        "population": 48841,
+        "majoration": 40.0
+      },
+      {
+        "code": "13005",
+        "nom": "Aubagne",
+        "dep": "13",
+        "population": 48124,
+        "majoration": null
+      },
+      {
+        "code": "2B033",
+        "nom": "Bastia",
+        "dep": "2B",
+        "population": 48041,
+        "majoration": 50.0
+      },
+      {
+        "code": "92048",
+        "nom": "Meudon",
+        "dep": "92",
+        "population": 47358,
+        "majoration": 50.0
+      },
+      {
+        "code": "93027",
+        "nom": "La Courneuve",
+        "dep": "93",
+        "population": 47211,
+        "majoration": 60.0
+      },
+      {
+        "code": "78551",
+        "nom": "Saint-Germain-en-Laye",
+        "dep": "78",
+        "population": 46981,
+        "majoration": 20.0
+      },
+      {
+        "code": "33522",
+        "nom": "Talence",
+        "dep": "33",
+        "population": 46892,
+        "majoration": null
+      },
+      {
+        "code": "93046",
+        "nom": "Livry-Gargan",
+        "dep": "93",
+        "population": 46711,
+        "majoration": 20.0
+      },
+      {
+        "code": "92049",
+        "nom": "Montrouge",
+        "dep": "92",
+        "population": 46540,
+        "majoration": 35.0
+      },
+      {
+        "code": "94022",
+        "nom": "Choisy-le-Roi",
+        "dep": "94",
+        "population": 46309,
+        "majoration": 20.0
+      },
+      {
+        "code": "93064",
+        "nom": "Rosny-sous-Bois",
+        "dep": "93",
+        "population": 46141,
+        "majoration": null
+      },
+      {
+        "code": "93053",
+        "nom": "Noisy-le-Sec",
+        "dep": "93",
+        "population": 46044,
+        "majoration": 60.0
+      },
+      {
+        "code": "94002",
+        "nom": "Alfortville",
+        "dep": "94",
+        "population": 45725,
+        "majoration": 40.0
+      },
+      {
+        "code": "34301",
+        "nom": "Sète",
+        "dep": "34",
+        "population": 45676,
+        "majoration": 60.0
+      },
+      {
+        "code": "13103",
+        "nom": "Salon-de-Provence",
+        "dep": "13",
+        "population": 45080,
+        "majoration": null
+      },
+      {
+        "code": "13047",
+        "nom": "Istres",
+        "dep": "13",
+        "population": 44692,
+        "majoration": null
+      },
+      {
+        "code": "92062",
+        "nom": "Puteaux",
+        "dep": "92",
+        "population": 44454,
+        "majoration": null
+      },
+      {
+        "code": "78361",
+        "nom": "Mantes-la-Jolie",
+        "dep": "78",
+        "population": 44392,
+        "majoration": 60.0
+      },
+      {
+        "code": "44143",
+        "nom": "Rezé",
+        "dep": "44",
+        "population": 44055,
+        "majoration": 60.0
+      },
+      {
+        "code": "69034",
+        "nom": "Caluire-et-Cuire",
+        "dep": "69",
+        "population": 44029,
+        "majoration": null
+      },
+      {
+        "code": "77288",
+        "nom": "Melun",
+        "dep": "77",
+        "population": 43919,
+        "majoration": null
+      },
+      {
+        "code": "92007",
+        "nom": "Bagneux",
+        "dep": "92",
+        "population": 43814,
+        "majoration": null
+      },
+      {
+        "code": "64024",
+        "nom": "Anglet",
+        "dep": "64",
+        "population": 43383,
+        "majoration": 60.0
+      },
+      {
+        "code": "69029",
+        "nom": "Bron",
+        "dep": "69",
+        "population": 43198,
+        "majoration": null
+      },
+      {
+        "code": "95268",
+        "nom": "Garges-lès-Gonesse",
+        "dep": "95",
+        "population": 42479,
+        "majoration": null
+      },
+      {
+        "code": "33550",
+        "nom": "Villenave-d'Ornon",
+        "dep": "33",
+        "population": 42476,
+        "majoration": null
+      },
+      {
+        "code": "93006",
+        "nom": "Bagnolet",
+        "dep": "93",
+        "population": 41918,
+        "majoration": 60.0
+      },
+      {
+        "code": "83050",
+        "nom": "Draguignan",
+        "dep": "83",
+        "population": 41608,
+        "majoration": 50.0
+      },
+      {
+        "code": "31149",
+        "nom": "Colomiers",
+        "dep": "31",
+        "population": 41391,
+        "majoration": null
+      },
+      {
+        "code": "59650",
+        "nom": "Wattrelos",
+        "dep": "59",
+        "population": 41073,
+        "majoration": null
+      },
+      {
+        "code": "78498",
+        "nom": "Poissy",
+        "dep": "78",
+        "population": 41071,
+        "majoration": null
+      },
+      {
+        "code": "93032",
+        "nom": "Gagny",
+        "dep": "93",
+        "population": 41021,
+        "majoration": null
+      },
+      {
+        "code": "93072",
+        "nom": "Stains",
+        "dep": "93",
+        "population": 40683,
+        "majoration": null
+      },
+      {
+        "code": "59378",
+        "nom": "Marcq-en-Barœul",
+        "dep": "59",
+        "population": 40673,
+        "majoration": null
+      },
+      {
+        "code": "06030",
+        "nom": "Le Cannet",
+        "dep": "06",
+        "population": 40570,
+        "majoration": 60.0
+      },
+      {
+        "code": "93078",
+        "nom": "Villepinte",
+        "dep": "93",
+        "population": 39748,
+        "majoration": null
+      },
+      {
+        "code": "77373",
+        "nom": "Pontault-Combault",
+        "dep": "77",
+        "population": 39163,
+        "majoration": 60.0
+      },
+      {
+        "code": "93050",
+        "nom": "Neuilly-sur-Marne",
+        "dep": "93",
+        "population": 38889,
+        "majoration": null
+      },
+      {
+        "code": "74281",
+        "nom": "Thonon-les-Bains",
+        "dep": "74",
+        "population": 38692,
+        "majoration": 30.0
+      },
+      {
+        "code": "93073",
+        "nom": "Tremblay-en-France",
+        "dep": "93",
+        "population": 38380,
+        "majoration": null
+      },
+      {
+        "code": "69149",
+        "nom": "Oullins-Pierre-Bénite",
+        "dep": "69",
+        "population": 38261,
+        "majoration": null
+      },
+      {
+        "code": "38421",
+        "nom": "Saint-Martin-d'Hères",
+        "dep": "38",
+        "population": 38253,
+        "majoration": 60.0
+      },
+      {
+        "code": "95252",
+        "nom": "Franconville",
+        "dep": "95",
+        "population": 38172,
+        "majoration": null
+      },
+      {
+        "code": "91589",
+        "nom": "Savigny-sur-Orge",
+        "dep": "91",
+        "population": 38028,
+        "majoration": null
+      },
+      {
+        "code": "74012",
+        "nom": "Annemasse",
+        "dep": "74",
+        "population": 37986,
+        "majoration": 60.0
+      },
+      {
+        "code": "13028",
+        "nom": "La Ciotat",
+        "dep": "13",
+        "population": 37969,
+        "majoration": 20.0
+      },
+      {
+        "code": "83129",
+        "nom": "Six-Fours-les-Plages",
+        "dep": "83",
+        "population": 37344,
+        "majoration": 60.0
+      },
+      {
+        "code": "83118",
+        "nom": "Saint-Raphaël",
+        "dep": "83",
+        "population": 37215,
+        "majoration": 20.0
+      },
+      {
+        "code": "13117",
+        "nom": "Vitrolles",
+        "dep": "13",
+        "population": 36997,
+        "majoration": 60.0
+      },
+      {
+        "code": "38151",
+        "nom": "Échirolles",
+        "dep": "38",
+        "population": 36926,
+        "majoration": 60.0
+      },
+      {
+        "code": "97408",
+        "nom": "La Possession",
+        "dep": "974",
+        "population": 36834,
+        "majoration": 49.0
+      },
+      {
+        "code": "69282",
+        "nom": "Meyzieu",
+        "dep": "69",
+        "population": 36791,
+        "majoration": null
+      },
+      {
+        "code": "60175",
+        "nom": "Creil",
+        "dep": "60",
+        "population": 36740,
+        "majoration": null
+      },
+      {
+        "code": "78172",
+        "nom": "Conflans-Sainte-Honorine",
+        "dep": "78",
+        "population": 36727,
+        "majoration": null
+      },
+      {
+        "code": "91027",
+        "nom": "Athis-Mons",
+        "dep": "91",
+        "population": 36725,
+        "majoration": 60.0
+      },
+      {
+        "code": "69264",
+        "nom": "Villefranche-sur-Saône",
+        "dep": "69",
+        "population": 36640,
+        "majoration": null
+      },
+      {
+        "code": "92020",
+        "nom": "Châtillon",
+        "dep": "92",
+        "population": 36457,
+        "majoration": 20.0
+      },
+      {
+        "code": "91477",
+        "nom": "Palaiseau",
+        "dep": "91",
+        "population": 36350,
+        "majoration": 20.0
+      },
+      {
+        "code": "94078",
+        "nom": "Villeneuve-Saint-Georges",
+        "dep": "94",
+        "population": 36287,
+        "majoration": null
+      },
+      {
+        "code": "91549",
+        "nom": "Sainte-Geneviève-des-Bois",
+        "dep": "91",
+        "population": 36015,
+        "majoration": null
+      },
+      {
+        "code": "97418",
+        "nom": "Sainte-Marie",
+        "dep": "974",
+        "population": 36014,
+        "majoration": null
+      },
+      {
+        "code": "92019",
+        "nom": "Châtenay-Malabry",
+        "dep": "92",
+        "population": 35924,
+        "majoration": null
+      },
+      {
+        "code": "97307",
+        "nom": "Matoury",
+        "dep": "973",
+        "population": 35728,
+        "majoration": null
+      },
+      {
+        "code": "93063",
+        "nom": "Romainville",
+        "dep": "93",
+        "population": 35380,
+        "majoration": null
+      },
+      {
+        "code": "94058",
+        "nom": "Le Perreux-sur-Marne",
+        "dep": "94",
+        "population": 34961,
+        "majoration": null
+      },
+      {
+        "code": "67447",
+        "nom": "Schiltigheim",
+        "dep": "67",
+        "population": 34614,
+        "majoration": 25.0
+      },
+      {
+        "code": "95063",
+        "nom": "Bezons",
+        "dep": "95",
+        "population": 34408,
+        "majoration": 60.0
+      },
+      {
+        "code": "78621",
+        "nom": "Trappes",
+        "dep": "78",
+        "population": 34379,
+        "majoration": null
+      },
+      {
+        "code": "78440",
+        "nom": "Les Mureaux",
+        "dep": "78",
+        "population": 34324,
+        "majoration": null
+      },
+      {
+        "code": "97407",
+        "nom": "Le Port",
+        "dep": "974",
+        "population": 33940,
+        "majoration": null
+      },
+      {
+        "code": "78311",
+        "nom": "Houilles",
+        "dep": "78",
+        "population": 33916,
+        "majoration": null
+      },
+      {
+        "code": "13054",
+        "nom": "Marignane",
+        "dep": "13",
+        "population": 33404,
+        "majoration": null
+      },
+      {
+        "code": "94052",
+        "nom": "Nogent-sur-Marne",
+        "dep": "94",
+        "population": 33264,
+        "majoration": null
+      },
+      {
+        "code": "33449",
+        "nom": "Saint-Médard-en-Jalles",
+        "dep": "33",
+        "population": 33239,
+        "majoration": 60.0
+      },
+      {
+        "code": "94079",
+        "nom": "Villiers-sur-Marne",
+        "dep": "94",
+        "population": 32704,
+        "majoration": null
+      },
+      {
+        "code": "73008",
+        "nom": "Aix-les-Bains",
+        "dep": "73",
+        "population": 32697,
+        "majoration": null
+      },
+      {
+        "code": "78423",
+        "nom": "Montigny-le-Bretonneux",
+        "dep": "78",
+        "population": 32623,
+        "majoration": null
+      },
+      {
+        "code": "78490",
+        "nom": "Plaisir",
+        "dep": "78",
+        "population": 32315,
+        "majoration": null
+      },
+      {
+        "code": "94073",
+        "nom": "Thiais",
+        "dep": "94",
+        "population": 32234,
+        "majoration": null
+      },
+      {
+        "code": "95500",
+        "nom": "Pontoise",
+        "dep": "95",
+        "population": 32118,
+        "majoration": null
+      },
+      {
+        "code": "95306",
+        "nom": "Herblay-sur-Seine",
+        "dep": "95",
+        "population": 32077,
+        "majoration": null
+      },
+      {
+        "code": "06123",
+        "nom": "Saint-Laurent-du-Var",
+        "dep": "06",
+        "population": 31853,
+        "majoration": 60.0
+      },
+      {
+        "code": "69286",
+        "nom": "Rillieux-la-Pape",
+        "dep": "69",
+        "population": 31764,
+        "majoration": null
+      },
+      {
+        "code": "78158",
+        "nom": "Le Chesnay-Rocquencourt",
+        "dep": "78",
+        "population": 31684,
+        "majoration": null
+      },
+      {
+        "code": "84031",
+        "nom": "Carpentras",
+        "dep": "84",
+        "population": 31558,
+        "majoration": null
+      },
+      {
+        "code": "94038",
+        "nom": "L'Haÿ-les-Roses",
+        "dep": "94",
+        "population": 31550,
+        "majoration": 20.0
+      },
+      {
+        "code": "91657",
+        "nom": "Vigneux-sur-Seine",
+        "dep": "91",
+        "population": 31384,
+        "majoration": 5.0
+      },
+      {
+        "code": "97103",
+        "nom": "Baie-Mahault",
+        "dep": "971",
+        "population": 31366,
+        "majoration": null
+      },
+      {
+        "code": "91687",
+        "nom": "Viry-Châtillon",
+        "dep": "91",
+        "population": 31318,
+        "majoration": 60.0
+      },
+      {
+        "code": "33039",
+        "nom": "Bègles",
+        "dep": "33",
+        "population": 31313,
+        "majoration": 60.0
+      },
+      {
+        "code": "95280",
+        "nom": "Goussainville",
+        "dep": "95",
+        "population": 31084,
+        "majoration": 37.0
+      },
+      {
+        "code": "77445",
+        "nom": "Savigny-le-Temple",
+        "dep": "77",
+        "population": 30874,
+        "majoration": null
+      },
+      {
+        "code": "94016",
+        "nom": "Cachan",
+        "dep": "94",
+        "population": 30794,
+        "majoration": 60.0
+      },
+      {
+        "code": "06083",
+        "nom": "Menton",
+        "dep": "06",
+        "population": 30723,
+        "majoration": 60.0
+      },
+      {
+        "code": "78146",
+        "nom": "Chatou",
+        "dep": "78",
+        "population": 30504,
+        "majoration": null
+      },
+      {
+        "code": "91521",
+        "nom": "Ris-Orangis",
+        "dep": "91",
+        "population": 30448,
+        "majoration": 60.0
+      },
+      {
+        "code": "92046",
+        "nom": "Malakoff",
+        "dep": "92",
+        "population": 30372,
+        "majoration": 60.0
+      },
+      {
+        "code": "31557",
+        "nom": "Tournefeuille",
+        "dep": "31",
+        "population": 30353,
+        "majoration": null
+      },
+      {
+        "code": "92064",
+        "nom": "Saint-Cloud",
+        "dep": "92",
+        "population": 30330,
+        "majoration": 40.0
+      },
+      {
+        "code": "78297",
+        "nom": "Guyancourt",
+        "dep": "78",
+        "population": 30195,
+        "majoration": null
+      },
+      {
+        "code": "93077",
+        "nom": "Villemomble",
+        "dep": "93",
+        "population": 30132,
+        "majoration": null
+      },
+      {
+        "code": "92035",
+        "nom": "La Garenne-Colombes",
+        "dep": "92",
+        "population": 30098,
+        "majoration": 30.0
+      },
+      {
+        "code": "69275",
+        "nom": "Décines-Charpieu",
+        "dep": "69",
+        "population": 30082,
+        "majoration": null
+      },
+      {
+        "code": "91201",
+        "nom": "Draveil",
+        "dep": "91",
+        "population": 30068,
+        "majoration": null
+      },
+      {
+        "code": "84087",
+        "nom": "Orange",
+        "dep": "84",
+        "population": 30000,
+        "majoration": null
+      },
+      {
+        "code": "92009",
+        "nom": "Bois-Colombes",
+        "dep": "92",
+        "population": 29677,
+        "majoration": null
+      },
+      {
+        "code": "93014",
+        "nom": "Clichy-sous-Bois",
+        "dep": "93",
+        "population": 29632,
+        "majoration": null
+      },
+      {
+        "code": "94034",
+        "nom": "Fresnes",
+        "dep": "94",
+        "population": 29432,
+        "majoration": null
+      },
+      {
+        "code": "95219",
+        "nom": "Ermont",
+        "dep": "95",
+        "population": 29368,
+        "majoration": null
+      },
+      {
+        "code": "95680",
+        "nom": "Villiers-le-Bel",
+        "dep": "95",
+        "population": 29367,
+        "majoration": null
+      },
+      {
+        "code": "92060",
+        "nom": "Le Plessis-Robinson",
+        "dep": "92",
+        "population": 29066,
+        "majoration": 20.0
+      },
+      {
+        "code": "44190",
+        "nom": "Saint-Sébastien-sur-Loire",
+        "dep": "44",
+        "population": 28996,
+        "majoration": null
+      },
+      {
+        "code": "44114",
+        "nom": "Orvault",
+        "dep": "44",
+        "population": 28949,
+        "majoration": 40.0
+      },
+      {
+        "code": "94018",
+        "nom": "Charenton-le-Pont",
+        "dep": "94",
+        "population": 28936,
+        "majoration": 40.0
+      },
+      {
+        "code": "06155",
+        "nom": "Vallauris",
+        "dep": "06",
+        "population": 28808,
+        "majoration": 60.0
+      },
+      {
+        "code": "92075",
+        "nom": "Vanves",
+        "dep": "92",
+        "population": 28794,
+        "majoration": 50.0
+      },
+      {
+        "code": "91691",
+        "nom": "Yerres",
+        "dep": "91",
+        "population": 28631,
+        "majoration": null
+      },
+      {
+        "code": "93047",
+        "nom": "Montfermeil",
+        "dep": "93",
+        "population": 28391,
+        "majoration": null
+      },
+      {
+        "code": "94044",
+        "nom": "Limeil-Brévannes",
+        "dep": "94",
+        "population": 27900,
+        "majoration": null
+      },
+      {
+        "code": "94071",
+        "nom": "Sucy-en-Brie",
+        "dep": "94",
+        "population": 27879,
+        "majoration": null
+      },
+      {
+        "code": "67218",
+        "nom": "Illkirch-Graffenstaden",
+        "dep": "67",
+        "population": 27822,
+        "majoration": null
+      },
+      {
+        "code": "31069",
+        "nom": "Blagnac",
+        "dep": "31",
+        "population": 27798,
+        "majoration": null
+      },
+      {
+        "code": "59328",
+        "nom": "Lambersart",
+        "dep": "59",
+        "population": 27558,
+        "majoration": null
+      },
+      {
+        "code": "33529",
+        "nom": "La Teste-de-Buch",
+        "dep": "33",
+        "population": 27486,
+        "majoration": 35.0
+      },
+      {
+        "code": "97113",
+        "nom": "Le Gosier",
+        "dep": "971",
+        "population": 27438,
+        "majoration": null
+      },
+      {
+        "code": "97309",
+        "nom": "Remire-Montjoly",
+        "dep": "973",
+        "population": 27384,
+        "majoration": null
+      },
+      {
+        "code": "95176",
+        "nom": "Cormeilles-en-Parisis",
+        "dep": "95",
+        "population": 27320,
+        "majoration": 20.0
+      },
+      {
+        "code": "95607",
+        "nom": "Taverny",
+        "dep": "95",
+        "population": 27245,
+        "majoration": 60.0
+      },
+      {
+        "code": "95582",
+        "nom": "Sannois",
+        "dep": "95",
+        "population": 27119,
+        "majoration": null
+      },
+      {
+        "code": "95277",
+        "nom": "Gonesse",
+        "dep": "95",
+        "population": 27059,
+        "majoration": null
+      },
+      {
+        "code": "91103",
+        "nom": "Brétigny-sur-Orge",
+        "dep": "91",
+        "population": 27023,
+        "majoration": null
+      },
+      {
+        "code": "33119",
+        "nom": "Cenon",
+        "dep": "33",
+        "population": 27015,
+        "majoration": 60.0
+      },
+      {
+        "code": "77514",
+        "nom": "Villeparisis",
+        "dep": "77",
+        "population": 26906,
+        "majoration": null
+      },
+      {
+        "code": "77083",
+        "nom": "Champs-sur-Marne",
+        "dep": "77",
+        "population": 26803,
+        "majoration": 60.0
+      },
+      {
+        "code": "34145",
+        "nom": "Lunel",
+        "dep": "34",
+        "population": 26676,
+        "majoration": 60.0
+      },
+      {
+        "code": "77058",
+        "nom": "Bussy-Saint-Georges",
+        "dep": "77",
+        "population": 26647,
+        "majoration": null
+      },
+      {
+        "code": "78208",
+        "nom": "Élancourt",
+        "dep": "78",
+        "population": 26597,
+        "majoration": null
+      },
+      {
+        "code": "83062",
+        "nom": "La Garde",
+        "dep": "83",
+        "population": 26596,
+        "majoration": null
+      },
+      {
+        "code": "33192",
+        "nom": "Gradignan",
+        "dep": "33",
+        "population": 26583,
+        "majoration": null
+      },
+      {
+        "code": "91286",
+        "nom": "Grigny",
+        "dep": "91",
+        "population": 26556,
+        "majoration": null
+      },
+      {
+        "code": "64122",
+        "nom": "Biarritz",
+        "dep": "64",
+        "population": 26498,
+        "majoration": 60.0
+      },
+      {
+        "code": "44215",
+        "nom": "Vertou",
+        "dep": "44",
+        "population": 26487,
+        "majoration": null
+      },
+      {
+        "code": "95203",
+        "nom": "Eaubonne",
+        "dep": "95",
+        "population": 26288,
+        "majoration": null
+      },
+      {
+        "code": "13063",
+        "nom": "Miramas",
+        "dep": "13",
+        "population": 26262,
+        "majoration": null
+      },
+      {
+        "code": "84035",
+        "nom": "Cavaillon",
+        "dep": "84",
+        "population": 26236,
+        "majoration": null
+      },
+      {
+        "code": "91114",
+        "nom": "Brunoy",
+        "dep": "91",
+        "population": 26226,
+        "majoration": null
+      },
+      {
+        "code": "31395",
+        "nom": "Muret",
+        "dep": "31",
+        "population": 26223,
+        "majoration": 20.0
+      },
+      {
+        "code": "34057",
+        "nom": "Castelnau-le-Lez",
+        "dep": "34",
+        "population": 25843,
+        "majoration": 60.0
+      },
+      {
+        "code": "91692",
+        "nom": "Les Ulis",
+        "dep": "91",
+        "population": 25740,
+        "majoration": 60.0
+      },
+      {
+        "code": "95572",
+        "nom": "Saint-Ouen-l'Aumône",
+        "dep": "95",
+        "population": 25728,
+        "majoration": 60.0
+      },
+      {
+        "code": "92078",
+        "nom": "Villeneuve-la-Garenne",
+        "dep": "92",
+        "population": 25634,
+        "majoration": null
+      },
+      {
+        "code": "33249",
+        "nom": "Lormont",
+        "dep": "33",
+        "population": 25041,
+        "majoration": null
+      },
+      {
+        "code": "93057",
+        "nom": "Les Pavillons-sous-Bois",
+        "dep": "93",
+        "population": 24970,
+        "majoration": null
+      },
+      {
+        "code": "92032",
+        "nom": "Fontenay-aux-Roses",
+        "dep": "92",
+        "population": 24769,
+        "majoration": 40.0
+      },
+      {
+        "code": "33162",
+        "nom": "Eysines",
+        "dep": "33",
+        "population": 24756,
+        "majoration": 50.0
+      },
+      {
+        "code": "94054",
+        "nom": "Orly",
+        "dep": "94",
+        "population": 24681,
+        "majoration": null
+      },
+      {
+        "code": "97128",
+        "nom": "Sainte-Anne",
+        "dep": "971",
+        "population": 24640,
+        "majoration": null
+      },
+      {
+        "code": "33069",
+        "nom": "Le Bouscat",
+        "dep": "33",
+        "population": 24581,
+        "majoration": 35.0
+      },
+      {
+        "code": "97118",
+        "nom": "Petit-Bourg",
+        "dep": "971",
+        "population": 24530,
+        "majoration": null
+      },
+      {
+        "code": "91421",
+        "nom": "Montgeron",
+        "dep": "91",
+        "population": 24160,
+        "majoration": 60.0
+      },
+      {
+        "code": "34108",
+        "nom": "Frontignan",
+        "dep": "34",
+        "population": 24043,
+        "majoration": 60.0
+      },
+      {
+        "code": "83144",
+        "nom": "La Valette-du-Var",
+        "dep": "83",
+        "population": 23901,
+        "majoration": 60.0
+      },
+      {
+        "code": "44047",
+        "nom": "Couëron",
+        "dep": "44",
+        "population": 23808,
+        "majoration": 40.0
+      },
+      {
+        "code": "94043",
+        "nom": "Le Kremlin-Bicêtre",
+        "dep": "94",
+        "population": 23773,
+        "majoration": 30.0
+      },
+      {
+        "code": "77390",
+        "nom": "Roissy-en-Brie",
+        "dep": "77",
+        "population": 23659,
+        "majoration": null
+      },
+      {
+        "code": "45232",
+        "nom": "Olivet",
+        "dep": "45",
+        "population": 23492,
+        "majoration": null
+      },
+      {
+        "code": "93045",
+        "nom": "Les Lilas",
+        "dep": "93",
+        "population": 23385,
+        "majoration": null
+      },
+      {
+        "code": "77152",
+        "nom": "Dammarie-les-Lys",
+        "dep": "77",
+        "population": 23371,
+        "majoration": null
+      },
+      {
+        "code": "78358",
+        "nom": "Maisons-Laffitte",
+        "dep": "78",
+        "population": 23297,
+        "majoration": 20.0
+      },
+      {
+        "code": "59360",
+        "nom": "Loos",
+        "dep": "59",
+        "population": 23222,
+        "majoration": null
+      },
+      {
+        "code": "97117",
+        "nom": "Le Moule",
+        "dep": "971",
+        "population": 23220,
+        "majoration": null
+      },
+      {
+        "code": "91272",
+        "nom": "Gif-sur-Yvette",
+        "dep": "91",
+        "population": 23134,
+        "majoration": null
+      },
+      {
+        "code": "69244",
+        "nom": "Tassin-la-Demi-Lune",
+        "dep": "69",
+        "population": 23122,
+        "majoration": null
+      },
+      {
+        "code": "95197",
+        "nom": "Deuil-la-Barre",
+        "dep": "95",
+        "population": 23092,
+        "majoration": null
+      },
+      {
+        "code": "77468",
+        "nom": "Torcy",
+        "dep": "77",
+        "population": 23078,
+        "majoration": 50.0
+      },
+      {
+        "code": "92072",
+        "nom": "Sèvres",
+        "dep": "92",
+        "population": 23071,
+        "majoration": 50.0
+      },
+      {
+        "code": "33199",
+        "nom": "Gujan-Mestras",
+        "dep": "33",
+        "population": 23060,
+        "majoration": null
+      },
+      {
+        "code": "77122",
+        "nom": "Combs-la-Ville",
+        "dep": "77",
+        "population": 22874,
+        "majoration": null
+      },
+      {
+        "code": "45284",
+        "nom": "Saint-Jean-de-Braye",
+        "dep": "45",
+        "population": 22711,
+        "majoration": null
+      },
+      {
+        "code": "14327",
+        "nom": "Hérouville-Saint-Clair",
+        "dep": "14",
+        "population": 22700,
+        "majoration": null
+      },
+      {
+        "code": "38169",
+        "nom": "Fontaine",
+        "dep": "38",
+        "population": 22684,
+        "majoration": null
+      },
+      {
+        "code": "13071",
+        "nom": "Les Pennes-Mirabeau",
+        "dep": "13",
+        "population": 22671,
+        "majoration": null
+      },
+      {
+        "code": "78640",
+        "nom": "Vélizy-Villacoublay",
+        "dep": "78",
+        "population": 22644,
+        "majoration": null
+      },
+      {
+        "code": "95424",
+        "nom": "Montigny-lès-Cormeilles",
+        "dep": "95",
+        "population": 22507,
+        "majoration": null
+      },
+      {
+        "code": "59368",
+        "nom": "La Madeleine",
+        "dep": "59",
+        "population": 22359,
+        "majoration": null
+      },
+      {
+        "code": "69202",
+        "nom": "Sainte-Foy-lès-Lyon",
+        "dep": "69",
+        "population": 22256,
+        "majoration": null
+      },
+      {
+        "code": "60463",
+        "nom": "Nogent-sur-Oise",
+        "dep": "60",
+        "population": 22193,
+        "majoration": null
+      },
+      {
+        "code": "78362",
+        "nom": "Mantes-la-Ville",
+        "dep": "78",
+        "population": 22044,
+        "majoration": null
+      },
+      {
+        "code": "93049",
+        "nom": "Neuilly-Plaisance",
+        "dep": "93",
+        "population": 22042,
+        "majoration": 40.0
+      },
+      {
+        "code": "94003",
+        "nom": "Arcueil",
+        "dep": "94",
+        "population": 21976,
+        "majoration": 60.0
+      },
+      {
+        "code": "95428",
+        "nom": "Montmorency",
+        "dep": "95",
+        "population": 21913,
+        "majoration": null
+      },
+      {
+        "code": "45147",
+        "nom": "Fleury-les-Aubrais",
+        "dep": "45",
+        "population": 21875,
+        "majoration": null
+      },
+      {
+        "code": "13041",
+        "nom": "Gardanne",
+        "dep": "13",
+        "population": 21860,
+        "majoration": null
+      },
+      {
+        "code": "78005",
+        "nom": "Achères",
+        "dep": "78",
+        "population": 21805,
+        "majoration": null
+      },
+      {
+        "code": "69204",
+        "nom": "Saint-Genis-Laval",
+        "dep": "69",
+        "population": 21778,
+        "majoration": 20.0
+      },
+      {
+        "code": "91570",
+        "nom": "Saint-Michel-sur-Orge",
+        "dep": "91",
+        "population": 21672,
+        "majoration": null
+      },
+      {
+        "code": "77243",
+        "nom": "Lagny-sur-Marne",
+        "dep": "77",
+        "population": 21628,
+        "majoration": 30.0
+      },
+      {
+        "code": "13002",
+        "nom": "Allauch",
+        "dep": "13",
+        "population": 21616,
+        "majoration": 20.0
+      },
+      {
+        "code": "97222",
+        "nom": "Le Robert",
+        "dep": "972",
+        "population": 21598,
+        "majoration": null
+      },
+      {
+        "code": "59410",
+        "nom": "Mons-en-Barœul",
+        "dep": "59",
+        "population": 21503,
+        "majoration": null
+      },
+      {
+        "code": "92014",
+        "nom": "Bourg-la-Reine",
+        "dep": "92",
+        "population": 21443,
+        "majoration": 60.0
+      },
+      {
+        "code": "06079",
+        "nom": "Mandelieu-la-Napoule",
+        "dep": "06",
+        "population": 21443,
+        "majoration": 50.0
+      },
+      {
+        "code": "95555",
+        "nom": "Saint-Gratien",
+        "dep": "95",
+        "population": 21386,
+        "majoration": 20.0
+      },
+      {
+        "code": "94067",
+        "nom": "Saint-Mandé",
+        "dep": "94",
+        "population": 21379,
+        "majoration": 60.0
+      },
+      {
+        "code": "91434",
+        "nom": "Morsang-sur-Orge",
+        "dep": "91",
+        "population": 21309,
+        "majoration": null
+      },
+      {
+        "code": "94059",
+        "nom": "Le Plessis-Trévise",
+        "dep": "94",
+        "population": 21219,
+        "majoration": null
+      },
+      {
+        "code": "77350",
+        "nom": "Ozoir-la-Ferrière",
+        "dep": "77",
+        "population": 21181,
+        "majoration": 60.0
+      },
+      {
+        "code": "59163",
+        "nom": "Croix",
+        "dep": "59",
+        "population": 21181,
+        "majoration": 40.0
+      },
+      {
+        "code": "44026",
+        "nom": "Carquefou",
+        "dep": "44",
+        "population": 21124,
+        "majoration": null
+      },
+      {
+        "code": "92071",
+        "nom": "Sceaux",
+        "dep": "92",
+        "population": 21070,
+        "majoration": 60.0
+      },
+      {
+        "code": "44035",
+        "nom": "La Chapelle-sur-Erdre",
+        "dep": "44",
+        "population": 21056,
+        "majoration": 60.0
+      },
+      {
+        "code": "69091",
+        "nom": "Givors",
+        "dep": "69",
+        "population": 21048,
+        "majoration": null
+      },
+      {
+        "code": "78545",
+        "nom": "Saint-Cyr-l'École",
+        "dep": "78",
+        "population": 21019,
+        "majoration": 20.0
+      },
+      {
+        "code": "94077",
+        "nom": "Villeneuve-le-Roi",
+        "dep": "94",
+        "population": 20940,
+        "majoration": null
+      },
+      {
+        "code": "94042",
+        "nom": "Joinville-le-Pont",
+        "dep": "94",
+        "population": 20929,
+        "majoration": 60.0
+      },
+      {
+        "code": "59646",
+        "nom": "Wasquehal",
+        "dep": "59",
+        "population": 20908,
+        "majoration": null
+      },
+      {
+        "code": "44020",
+        "nom": "Bouguenais",
+        "dep": "44",
+        "population": 20893,
+        "majoration": null
+      },
+      {
+        "code": "78126",
+        "nom": "La Celle-Saint-Cloud",
+        "dep": "78",
+        "population": 20861,
+        "majoration": null
+      },
+      {
+        "code": "31424",
+        "nom": "Plaisance-du-Touch",
+        "dep": "31",
+        "population": 20826,
+        "majoration": null
+      },
+      {
+        "code": "59279",
+        "nom": "Halluin",
+        "dep": "59",
+        "population": 20825,
+        "majoration": null
+      },
+      {
+        "code": "67267",
+        "nom": "Lingolsheim",
+        "dep": "67",
+        "population": 20818,
+        "majoration": null
+      },
+      {
+        "code": "84054",
+        "nom": "L'Isle-sur-la-Sorgue",
+        "dep": "84",
+        "population": 20815,
+        "majoration": 40.0
+      },
+      {
+        "code": "33075",
+        "nom": "Bruges",
+        "dep": "33",
+        "population": 20602,
+        "majoration": 60.0
+      },
+      {
+        "code": "91345",
+        "nom": "Longjumeau",
+        "dep": "91",
+        "population": 20596,
+        "majoration": null
+      },
+      {
+        "code": "31157",
+        "nom": "Cugnaux",
+        "dep": "31",
+        "population": 20513,
+        "majoration": null
+      },
+      {
+        "code": "77294",
+        "nom": "Mitry-Mory",
+        "dep": "77",
+        "population": 20474,
+        "majoration": null
+      },
+      {
+        "code": "92022",
+        "nom": "Chaville",
+        "dep": "92",
+        "population": 20465,
+        "majoration": 50.0
+      },
+      {
+        "code": "06157",
+        "nom": "Vence",
+        "dep": "06",
+        "population": 20277,
+        "majoration": 60.0
+      },
+      {
+        "code": "78383",
+        "nom": "Maurepas",
+        "dep": "78",
+        "population": 20151,
+        "majoration": null
+      },
+      {
+        "code": "35047",
+        "nom": "Bruz",
+        "dep": "35",
+        "population": 20118,
+        "majoration": 60.0
+      },
+      {
+        "code": "91161",
+        "nom": "Chilly-Mazarin",
+        "dep": "91",
+        "population": 20091,
+        "majoration": 60.0
+      },
+      {
+        "code": "78123",
+        "nom": "Carrières-sous-Poissy",
+        "dep": "78",
+        "population": 20070,
+        "majoration": null
+      },
+      {
+        "code": "94021",
+        "nom": "Chevilly-Larue",
+        "dep": "94",
+        "population": 19899,
+        "majoration": 60.0
+      },
+      {
+        "code": "06085",
+        "nom": "Mougins",
+        "dep": "06",
+        "population": 19874,
+        "majoration": 20.0
+      },
+      {
+        "code": "83047",
+        "nom": "La Crau",
+        "dep": "83",
+        "population": 19774,
+        "majoration": 60.0
+      },
+      {
+        "code": "77285",
+        "nom": "Le Mée-sur-Seine",
+        "dep": "77",
+        "population": 19676,
+        "majoration": null
+      },
+      {
+        "code": "69199",
+        "nom": "Saint-Fons",
+        "dep": "69",
+        "population": 19613,
+        "majoration": null
+      },
+      {
+        "code": "59507",
+        "nom": "Ronchin",
+        "dep": "59",
+        "population": 19586,
+        "majoration": null
+      },
+      {
+        "code": "97229",
+        "nom": "Schœlcher",
+        "dep": "972",
+        "population": 19557,
+        "majoration": null
+      },
+      {
+        "code": "84129",
+        "nom": "Sorgues",
+        "dep": "84",
+        "population": 19247,
+        "majoration": null
+      },
+      {
+        "code": "38229",
+        "nom": "Meylan",
+        "dep": "38",
+        "population": 19124,
+        "majoration": null
+      },
+      {
+        "code": "91326",
+        "nom": "Juvisy-sur-Orge",
+        "dep": "91",
+        "population": 19088,
+        "majoration": null
+      },
+      {
+        "code": "94037",
+        "nom": "Gentilly",
+        "dep": "94",
+        "population": 19001,
+        "majoration": 60.0
+      },
+      {
+        "code": "95218",
+        "nom": "Éragny",
+        "dep": "95",
+        "population": 18860,
+        "majoration": null
+      },
+      {
+        "code": "59299",
+        "nom": "Hem",
+        "dep": "59",
+        "population": 18724,
+        "majoration": null
+      },
+      {
+        "code": "97115",
+        "nom": "Lamentin",
+        "dep": "971",
+        "population": 18691,
+        "majoration": null
+      },
+      {
+        "code": "77296",
+        "nom": "Moissy-Cramayel",
+        "dep": "77",
+        "population": 18631,
+        "majoration": null
+      },
+      {
+        "code": "35051",
+        "nom": "Cesson-Sévigné",
+        "dep": "35",
+        "population": 18589,
+        "majoration": null
+      },
+      {
+        "code": "64260",
+        "nom": "Hendaye",
+        "dep": "64",
+        "population": 18524,
+        "majoration": 60.0
+      },
+      {
+        "code": "67043",
+        "nom": "Bischheim",
+        "dep": "67",
+        "population": 18522,
+        "majoration": null
+      },
+      {
+        "code": "13026",
+        "nom": "Châteauneuf-les-Martigues",
+        "dep": "13",
+        "population": 18468,
+        "majoration": null
+      },
+      {
+        "code": "59220",
+        "nom": "Faches-Thumesnil",
+        "dep": "59",
+        "population": 18427,
+        "majoration": null
+      },
+      {
+        "code": "94011",
+        "nom": "Bonneuil-sur-Marne",
+        "dep": "94",
+        "population": 18410,
+        "majoration": 60.0
+      },
+      {
+        "code": "94015",
+        "nom": "Bry-sur-Marne",
+        "dep": "94",
+        "population": 18407,
+        "majoration": null
+      },
+      {
+        "code": "94019",
+        "nom": "Chennevières-sur-Marne",
+        "dep": "94",
+        "population": 18399,
+        "majoration": null
+      },
+      {
+        "code": "69081",
+        "nom": "Écully",
+        "dep": "69",
+        "population": 18318,
+        "majoration": null
+      },
+      {
+        "code": "95598",
+        "nom": "Soisy-sous-Montmorency",
+        "dep": "95",
+        "population": 18209,
+        "majoration": 18.7
+      },
+      {
+        "code": "83123",
+        "nom": "Sanary-sur-Mer",
+        "dep": "83",
+        "population": 18190,
+        "majoration": 60.0
+      },
+      {
+        "code": "84092",
+        "nom": "Le Pontet",
+        "dep": "84",
+        "population": 18154,
+        "majoration": null
+      },
+      {
+        "code": "38382",
+        "nom": "Saint-Égrève",
+        "dep": "38",
+        "population": 18132,
+        "majoration": 30.0
+      },
+      {
+        "code": "92033",
+        "nom": "Garches",
+        "dep": "92",
+        "population": 18077,
+        "majoration": 35.0
+      },
+      {
+        "code": "97207",
+        "nom": "Ducos",
+        "dep": "972",
+        "population": 18076,
+        "majoration": null
+      },
+      {
+        "code": "33167",
+        "nom": "Floirac",
+        "dep": "33",
+        "population": 18068,
+        "majoration": null
+      },
+      {
+        "code": "34129",
+        "nom": "Lattes",
+        "dep": "34",
+        "population": 17789,
+        "majoration": 50.0
+      },
+      {
+        "code": "74081",
+        "nom": "Cluses",
+        "dep": "74",
+        "population": 17713,
+        "majoration": 30.0
+      },
+      {
+        "code": "31044",
+        "nom": "Balma",
+        "dep": "31",
+        "population": 17698,
+        "majoration": null
+      },
+      {
+        "code": "78335",
+        "nom": "Limay",
+        "dep": "78",
+        "population": 17677,
+        "majoration": null
+      },
+      {
+        "code": "95476",
+        "nom": "Osny",
+        "dep": "95",
+        "population": 17635,
+        "majoration": null
+      },
+      {
+        "code": "95323",
+        "nom": "Jouy-le-Moutier",
+        "dep": "95",
+        "population": 17563,
+        "majoration": null
+      },
+      {
+        "code": "33003",
+        "nom": "Ambarès-et-Lagrave",
+        "dep": "33",
+        "population": 17454,
+        "majoration": null
+      },
+      {
+        "code": "33056",
+        "nom": "Blanquefort",
+        "dep": "33",
+        "population": 17419,
+        "majoration": null
+      },
+      {
+        "code": "94004",
+        "nom": "Boissy-Saint-Léger",
+        "dep": "94",
+        "population": 17383,
+        "majoration": null
+      },
+      {
+        "code": "78686",
+        "nom": "Viroflay",
+        "dep": "78",
+        "population": 17277,
+        "majoration": null
+      },
+      {
+        "code": "44069",
+        "nom": "Guérande",
+        "dep": "44",
+        "population": 17259,
+        "majoration": 60.0
+      },
+      {
+        "code": "44055",
+        "nom": "La Baule-Escoublac",
+        "dep": "44",
+        "population": 17164,
+        "majoration": null
+      },
+      {
+        "code": "78165",
+        "nom": "Les Clayes-sous-Bois",
+        "dep": "78",
+        "population": 17147,
+        "majoration": null
+      },
+      {
+        "code": "45302",
+        "nom": "Saran",
+        "dep": "45",
+        "population": 17088,
+        "majoration": 60.0
+      },
+      {
+        "code": "78372",
+        "nom": "Marly-le-Roi",
+        "dep": "78",
+        "population": 17059,
+        "majoration": null
+      },
+      {
+        "code": "33122",
+        "nom": "Cestas",
+        "dep": "33",
+        "population": 17043,
+        "majoration": null
+      },
+      {
+        "code": "91471",
+        "nom": "Orsay",
+        "dep": "91",
+        "population": 17019,
+        "majoration": 60.0
+      },
+      {
+        "code": "06161",
+        "nom": "Villeneuve-Loubet",
+        "dep": "06",
+        "population": 16952,
+        "majoration": 60.0
+      },
+      {
+        "code": "13027",
+        "nom": "Châteaurenard",
+        "dep": "13",
+        "population": 16908,
+        "majoration": 60.0
+      },
+      {
+        "code": "45285",
+        "nom": "Saint-Jean-de-la-Ruelle",
+        "dep": "45",
+        "population": 16842,
+        "majoration": null
+      },
+      {
+        "code": "93061",
+        "nom": "Le Pré-Saint-Gervais",
+        "dep": "93",
+        "population": 16782,
+        "majoration": 20.0
+      },
+      {
+        "code": "97224",
+        "nom": "Saint-Joseph",
+        "dep": "972",
+        "population": 16663,
+        "majoration": null
+      },
+      {
+        "code": "44172",
+        "nom": "Sainte-Luce-sur-Loire",
+        "dep": "44",
+        "population": 16512,
+        "majoration": null
+      },
+      {
+        "code": "78642",
+        "nom": "Verneuil-sur-Seine",
+        "dep": "78",
+        "population": 16396,
+        "majoration": null
+      },
+      {
+        "code": "78073",
+        "nom": "Bois-d'Arcy",
+        "dep": "78",
+        "population": 16380,
+        "majoration": null
+      },
+      {
+        "code": "91386",
+        "nom": "Mennecy",
+        "dep": "91",
+        "population": 16320,
+        "majoration": null
+      },
+      {
+        "code": "13077",
+        "nom": "Port-de-Bouc",
+        "dep": "13",
+        "population": 16281,
+        "majoration": null
+      },
+      {
+        "code": "95637",
+        "nom": "Vauréal",
+        "dep": "95",
+        "population": 16268,
+        "majoration": null
+      },
+      {
+        "code": "95199",
+        "nom": "Domont",
+        "dep": "95",
+        "population": 16221,
+        "majoration": 60.0
+      },
+      {
+        "code": "95563",
+        "nom": "Saint-Leu-la-Forêt",
+        "dep": "95",
+        "population": 16182,
+        "majoration": null
+      },
+      {
+        "code": "78650",
+        "nom": "Le Vésinet",
+        "dep": "78",
+        "population": 16159,
+        "majoration": 60.0
+      },
+      {
+        "code": "78481",
+        "nom": "Le Pecq",
+        "dep": "78",
+        "population": 16132,
+        "majoration": null
+      },
+      {
+        "code": "74243",
+        "nom": "Saint-Julien-en-Genevois",
+        "dep": "74",
+        "population": 16119,
+        "majoration": 60.0
+      },
+      {
+        "code": "77337",
+        "nom": "Noisiel",
+        "dep": "77",
+        "population": 16022,
+        "majoration": null
+      },
+      {
+        "code": "97116",
+        "nom": "Morne-à-l'Eau",
+        "dep": "971",
+        "population": 16006,
+        "majoration": null
+      },
+      {
+        "code": "97210",
+        "nom": "Le François",
+        "dep": "972",
+        "population": 15999,
+        "majoration": 35.0
+      },
+      {
+        "code": "59648",
+        "nom": "Wattignies",
+        "dep": "59",
+        "population": 15951,
+        "majoration": null
+      },
+      {
+        "code": "13039",
+        "nom": "Fos-sur-Mer",
+        "dep": "13",
+        "population": 15891,
+        "majoration": null
+      },
+      {
+        "code": "69089",
+        "nom": "Francheville",
+        "dep": "69",
+        "population": 15873,
+        "majoration": null
+      },
+      {
+        "code": "13015",
+        "nom": "Bouc-Bel-Air",
+        "dep": "13",
+        "population": 15644,
+        "majoration": null
+      },
+      {
+        "code": "31113",
+        "nom": "Castanet-Tolosan",
+        "dep": "31",
+        "population": 15500,
+        "majoration": null
+      },
+      {
+        "code": "31446",
+        "nom": "Ramonville-Saint-Agne",
+        "dep": "31",
+        "population": 15436,
+        "majoration": 60.0
+      },
+      {
+        "code": "95539",
+        "nom": "Saint-Brice-sous-Forêt",
+        "dep": "95",
+        "population": 15286,
+        "majoration": 60.0
+      },
+      {
+        "code": "78124",
+        "nom": "Carrières-sur-Seine",
+        "dep": "78",
+        "population": 15235,
+        "majoration": null
+      },
+      {
+        "code": "77407",
+        "nom": "Saint-Fargeau-Ponthierry",
+        "dep": "77",
+        "population": 15223,
+        "majoration": null
+      },
+      {
+        "code": "93013",
+        "nom": "Le Bourget",
+        "dep": "93",
+        "population": 15092,
+        "majoration": null
+      },
+      {
+        "code": "64483",
+        "nom": "Saint-Jean-de-Luz",
+        "dep": "64",
+        "population": 15075,
+        "majoration": 60.0
+      },
+      {
+        "code": "59286",
+        "nom": "Haubourdin",
+        "dep": "59",
+        "population": 15025,
+        "majoration": null
+      },
+      {
+        "code": "91645",
+        "nom": "Verrières-le-Buisson",
+        "dep": "91",
+        "population": 15014,
+        "majoration": null
+      },
+      {
+        "code": "44154",
+        "nom": "Saint-Brevin-les-Pins",
+        "dep": "44",
+        "population": 15008,
+        "majoration": null
+      },
+      {
+        "code": "95019",
+        "nom": "Arnouville",
+        "dep": "95",
+        "population": 14981,
+        "majoration": null
+      },
+      {
+        "code": "93062",
+        "nom": "Le Raincy",
+        "dep": "93",
+        "population": 14951,
+        "majoration": null
+      },
+      {
+        "code": "97120",
+        "nom": "Pointe-à-Pitre",
+        "dep": "971",
+        "population": 14940,
+        "majoration": null
+      },
+      {
+        "code": "77307",
+        "nom": "Montévrain",
+        "dep": "77",
+        "population": 14927,
+        "majoration": null
+      },
+      {
+        "code": "78418",
+        "nom": "Montesson",
+        "dep": "78",
+        "population": 14825,
+        "majoration": null
+      },
+      {
+        "code": "01354",
+        "nom": "Saint-Genis-Pouilly",
+        "dep": "01",
+        "population": 14808,
+        "majoration": 60.0
+      },
+      {
+        "code": "77258",
+        "nom": "Lognes",
+        "dep": "77",
+        "population": 14732,
+        "majoration": null
+      },
+      {
+        "code": "95427",
+        "nom": "Montmagny",
+        "dep": "95",
+        "population": 14696,
+        "majoration": null
+      },
+      {
+        "code": "83090",
+        "nom": "Ollioules",
+        "dep": "83",
+        "population": 14567,
+        "majoration": 20.0
+      },
+      {
+        "code": "94074",
+        "nom": "Valenton",
+        "dep": "94",
+        "population": 14493,
+        "majoration": null
+      },
+      {
+        "code": "94069",
+        "nom": "Saint-Maurice",
+        "dep": "94",
+        "population": 14483,
+        "majoration": 25.0
+      },
+      {
+        "code": "31506",
+        "nom": "Saint-Orens-de-Gameville",
+        "dep": "31",
+        "population": 14467,
+        "majoration": null
+      },
+      {
+        "code": "77251",
+        "nom": "Lieusaint",
+        "dep": "77",
+        "population": 14181,
+        "majoration": null
+      },
+      {
+        "code": "59367",
+        "nom": "Lys-lez-Lannoy",
+        "dep": "59",
+        "population": 14119,
+        "majoration": null
+      },
+      {
+        "code": "60414",
+        "nom": "Montataire",
+        "dep": "60",
+        "population": 14080,
+        "majoration": 30.0
+      },
+      {
+        "code": "13014",
+        "nom": "Berre-l'Étang",
+        "dep": "13",
+        "population": 14011,
+        "majoration": null
+      },
+      {
+        "code": "59508",
+        "nom": "Roncq",
+        "dep": "59",
+        "population": 13984,
+        "majoration": null
+      },
+      {
+        "code": "77479",
+        "nom": "Vaires-sur-Marne",
+        "dep": "77",
+        "population": 13895,
+        "majoration": null
+      },
+      {
+        "code": "34123",
+        "nom": "Juvignac",
+        "dep": "34",
+        "population": 13893,
+        "majoration": 60.0
+      },
+      {
+        "code": "06033",
+        "nom": "Carros",
+        "dep": "06",
+        "population": 13867,
+        "majoration": 20.0
+      },
+      {
+        "code": "91432",
+        "nom": "Morangis",
+        "dep": "91",
+        "population": 13857,
+        "majoration": null
+      },
+      {
+        "code": "69283",
+        "nom": "Mions",
+        "dep": "69",
+        "population": 13843,
+        "majoration": null
+      },
+      {
+        "code": "91235",
+        "nom": "Fleury-Mérogis",
+        "dep": "91",
+        "population": 13837,
+        "majoration": null
+      },
+      {
+        "code": "78015",
+        "nom": "Andrésy",
+        "dep": "78",
+        "population": 13827,
+        "majoration": null
+      },
+      {
+        "code": "78242",
+        "nom": "Fontenay-le-Fleury",
+        "dep": "78",
+        "population": 13805,
+        "majoration": null
+      },
+      {
+        "code": "74042",
+        "nom": "Bonneville",
+        "dep": "74",
+        "population": 13736,
+        "majoration": 60.0
+      },
+      {
+        "code": "35281",
+        "nom": "Saint-Jacques-de-la-Lande",
+        "dep": "35",
+        "population": 13703,
+        "majoration": 60.0
+      },
+      {
+        "code": "69277",
+        "nom": "Genas",
+        "dep": "69",
+        "population": 13698,
+        "majoration": null
+      },
+      {
+        "code": "67365",
+        "nom": "Ostwald",
+        "dep": "67",
+        "population": 13640,
+        "majoration": null
+      },
+      {
+        "code": "34270",
+        "nom": "Saint-Jean-de-Védas",
+        "dep": "34",
+        "population": 13460,
+        "majoration": 20.0
+      },
+      {
+        "code": "59421",
+        "nom": "Mouvaux",
+        "dep": "59",
+        "population": 13420,
+        "majoration": null
+      },
+      {
+        "code": "84080",
+        "nom": "Monteux",
+        "dep": "84",
+        "population": 13399,
+        "majoration": null
+      },
+      {
+        "code": "97125",
+        "nom": "Saint-François",
+        "dep": "971",
+        "population": 13393,
+        "majoration": null
+      },
+      {
+        "code": "31187",
+        "nom": "Fonsorbes",
+        "dep": "31",
+        "population": 13380,
+        "majoration": 60.0
+      },
+      {
+        "code": "30351",
+        "nom": "Villeneuve-lès-Avignon",
+        "dep": "30",
+        "population": 13299,
+        "majoration": null
+      },
+      {
+        "code": "40312",
+        "nom": "Tarnos",
+        "dep": "40",
+        "population": 13229,
+        "majoration": 40.0
+      },
+      {
+        "code": "13007",
+        "nom": "Auriol",
+        "dep": "13",
+        "population": 13155,
+        "majoration": null
+      },
+      {
+        "code": "59560",
+        "nom": "Seclin",
+        "dep": "59",
+        "population": 13108,
+        "majoration": null
+      },
+      {
+        "code": "35024",
+        "nom": "Betton",
+        "dep": "35",
+        "population": 13068,
+        "majoration": 60.0
+      },
+      {
+        "code": "59527",
+        "nom": "Saint-André-lez-Lille",
+        "dep": "59",
+        "population": 13042,
+        "majoration": null
+      },
+      {
+        "code": "83049",
+        "nom": "Cuers",
+        "dep": "83",
+        "population": 12977,
+        "majoration": null
+      },
+      {
+        "code": "33366",
+        "nom": "Saint-André-de-Cubzac",
+        "dep": "33",
+        "population": 12956,
+        "majoration": 60.0
+      },
+      {
+        "code": "44132",
+        "nom": "Pornichet",
+        "dep": "44",
+        "population": 12837,
+        "majoration": 40.0
+      },
+      {
+        "code": "73179",
+        "nom": "La Motte-Servolex",
+        "dep": "73",
+        "population": 12835,
+        "majoration": 40.0
+      },
+      {
+        "code": "06152",
+        "nom": "Valbonne",
+        "dep": "06",
+        "population": 12802,
+        "majoration": 60.0
+      },
+      {
+        "code": "59152",
+        "nom": "Comines",
+        "dep": "59",
+        "population": 12717,
+        "majoration": 60.0
+      },
+      {
+        "code": "31561",
+        "nom": "L'Union",
+        "dep": "31",
+        "population": 12588,
+        "majoration": null
+      },
+      {
+        "code": "06104",
+        "nom": "Roquebrune-Cap-Martin",
+        "dep": "06",
+        "population": 12574,
+        "majoration": 60.0
+      },
+      {
+        "code": "06012",
+        "nom": "Beausoleil",
+        "dep": "06",
+        "population": 12558,
+        "majoration": 60.0
+      },
+      {
+        "code": "78624",
+        "nom": "Triel-sur-Seine",
+        "dep": "78",
+        "population": 12552,
+        "majoration": null
+      },
+      {
+        "code": "93079",
+        "nom": "Villetaneuse",
+        "dep": "93",
+        "population": 12505,
+        "majoration": null
+      },
+      {
+        "code": "69027",
+        "nom": "Brignais",
+        "dep": "69",
+        "population": 12498,
+        "majoration": null
+      },
+      {
+        "code": "95313",
+        "nom": "L'Isle-Adam",
+        "dep": "95",
+        "population": 12478,
+        "majoration": 60.0
+      },
+      {
+        "code": "13081",
+        "nom": "Rognac",
+        "dep": "13",
+        "population": 12458,
+        "majoration": null
+      },
+      {
+        "code": "69069",
+        "nom": "Craponne",
+        "dep": "69",
+        "population": 12376,
+        "majoration": null
+      },
+      {
+        "code": "83130",
+        "nom": "Solliès-Pont",
+        "dep": "83",
+        "population": 12353,
+        "majoration": 20.0
+      },
+      {
+        "code": "94060",
+        "nom": "La Queue-en-Brie",
+        "dep": "94",
+        "population": 12194,
+        "majoration": 25.0
+      },
+      {
+        "code": "91573",
+        "nom": "Saint-Pierre-du-Perray",
+        "dep": "91",
+        "population": 12174,
+        "majoration": null
+      },
+      {
+        "code": "35210",
+        "nom": "Pacé",
+        "dep": "35",
+        "population": 12155,
+        "majoration": null
+      },
+      {
+        "code": "66171",
+        "nom": "Saint-Cyprien",
+        "dep": "66",
+        "population": 12136,
+        "majoration": 50.0
+      },
+      {
+        "code": "84141",
+        "nom": "Vedène",
+        "dep": "84",
+        "population": 12121,
+        "majoration": null
+      },
+      {
+        "code": "13106",
+        "nom": "Septèmes-les-Vallons",
+        "dep": "13",
+        "population": 12098,
+        "majoration": null
+      },
+      {
+        "code": "14341",
+        "nom": "Ifs",
+        "dep": "14",
+        "population": 12097,
+        "majoration": null
+      },
+      {
+        "code": "97221",
+        "nom": "Rivière-Salée",
+        "dep": "972",
+        "population": 12033,
+        "majoration": null
+      },
+      {
+        "code": "83112",
+        "nom": "Saint-Cyr-sur-Mer",
+        "dep": "83",
+        "population": 11902,
+        "majoration": null
+      },
+      {
+        "code": "97220",
+        "nom": "Rivière-Pilote",
+        "dep": "972",
+        "population": 11897,
+        "majoration": null
+      },
+      {
+        "code": "38485",
+        "nom": "Seyssinet-Pariset",
+        "dep": "38",
+        "population": 11887,
+        "majoration": null
+      },
+      {
+        "code": "91215",
+        "nom": "Épinay-sous-Sénart",
+        "dep": "91",
+        "population": 11851,
+        "majoration": null
+      },
+      {
+        "code": "59386",
+        "nom": "Marquette-lez-Lille",
+        "dep": "59",
+        "population": 11787,
+        "majoration": 50.0
+      },
+      {
+        "code": "38474",
+        "nom": "Sassenage",
+        "dep": "38",
+        "population": 11775,
+        "majoration": null
+      },
+      {
+        "code": "93030",
+        "nom": "Dugny",
+        "dep": "93",
+        "population": 11750,
+        "majoration": null
+      },
+      {
+        "code": "94075",
+        "nom": "Villecresnes",
+        "dep": "94",
+        "population": 11746,
+        "majoration": 60.0
+      },
+      {
+        "code": "78674",
+        "nom": "Villepreux",
+        "dep": "78",
+        "population": 11740,
+        "majoration": null
+      },
+      {
+        "code": "95210",
+        "nom": "Enghien-les-Bains",
+        "dep": "95",
+        "population": 11714,
+        "majoration": 50.0
+      },
+      {
+        "code": "33200",
+        "nom": "Le Haillan",
+        "dep": "33",
+        "population": 11682,
+        "majoration": 50.0
+      },
+      {
+        "code": "01160",
+        "nom": "Ferney-Voltaire",
+        "dep": "01",
+        "population": 11666,
+        "majoration": 60.0
+      },
+      {
+        "code": "91552",
+        "nom": "Saint-Germain-lès-Arpajon",
+        "dep": "91",
+        "population": 11657,
+        "majoration": null
+      },
+      {
+        "code": "74224",
+        "nom": "La Roche-sur-Foron",
+        "dep": "74",
+        "population": 11631,
+        "majoration": 60.0
+      },
+      {
+        "code": "91021",
+        "nom": "Arpajon",
+        "dep": "91",
+        "population": 11609,
+        "majoration": null
+      },
+      {
+        "code": "13075",
+        "nom": "Plan-de-Cuques",
+        "dep": "13",
+        "population": 11598,
+        "majoration": null
+      },
+      {
+        "code": "77487",
+        "nom": "Vaux-le-Pénil",
+        "dep": "77",
+        "population": 11539,
+        "majoration": null
+      },
+      {
+        "code": "67204",
+        "nom": "Hœnheim",
+        "dep": "67",
+        "population": 11496,
+        "majoration": 25.0
+      },
+      {
+        "code": "31488",
+        "nom": "Saint-Jean",
+        "dep": "31",
+        "population": 11406,
+        "majoration": 60.0
+      },
+      {
+        "code": "69271",
+        "nom": "Chassieu",
+        "dep": "69",
+        "population": 11363,
+        "majoration": null
+      },
+      {
+        "code": "69273",
+        "nom": "Corbas",
+        "dep": "69",
+        "population": 11281,
+        "majoration": null
+      },
+      {
+        "code": "77067",
+        "nom": "Cesson",
+        "dep": "77",
+        "population": 11238,
+        "majoration": null
+      },
+      {
+        "code": "33009",
+        "nom": "Arcachon",
+        "dep": "33",
+        "population": 11206,
+        "majoration": 60.0
+      },
+      {
+        "code": "74133",
+        "nom": "Gaillard",
+        "dep": "74",
+        "population": 11161,
+        "majoration": 60.0
+      },
+      {
+        "code": "31116",
+        "nom": "Castelginest",
+        "dep": "31",
+        "population": 11155,
+        "majoration": 60.0
+      },
+      {
+        "code": "44204",
+        "nom": "Thouaré-sur-Loire",
+        "dep": "44",
+        "population": 11123,
+        "majoration": null
+      },
+      {
+        "code": "13110",
+        "nom": "Trets",
+        "dep": "13",
+        "population": 11117,
+        "majoration": null
+      },
+      {
+        "code": "33519",
+        "nom": "Le Taillan-Médoc",
+        "dep": "33",
+        "population": 11116,
+        "majoration": null
+      },
+      {
+        "code": "78688",
+        "nom": "Voisins-le-Bretonneux",
+        "dep": "78",
+        "population": 11114,
+        "majoration": null
+      },
+      {
+        "code": "59636",
+        "nom": "Wambrechies",
+        "dep": "59",
+        "population": 11102,
+        "majoration": null
+      },
+      {
+        "code": "92077",
+        "nom": "Ville-d'Avray",
+        "dep": "92",
+        "population": 11093,
+        "majoration": null
+      },
+      {
+        "code": "66008",
+        "nom": "Argelès-sur-Mer",
+        "dep": "66",
+        "population": 11078,
+        "majoration": 60.0
+      },
+      {
+        "code": "06084",
+        "nom": "Mouans-Sartoux",
+        "dep": "06",
+        "population": 11040,
+        "majoration": 60.0
+      },
+      {
+        "code": "13069",
+        "nom": "Pélissanne",
+        "dep": "13",
+        "population": 11040,
+        "majoration": 60.0
+      },
+      {
+        "code": "91086",
+        "nom": "Bondoufle",
+        "dep": "91",
+        "population": 10937,
+        "majoration": null
+      },
+      {
+        "code": "38317",
+        "nom": "Le Pont-de-Claix",
+        "dep": "38",
+        "population": 10921,
+        "majoration": 60.0
+      },
+      {
+        "code": "33238",
+        "nom": "Léognan",
+        "dep": "33",
+        "population": 10901,
+        "majoration": null
+      },
+      {
+        "code": "91312",
+        "nom": "Igny",
+        "dep": "91",
+        "population": 10886,
+        "majoration": 20.0
+      },
+      {
+        "code": "78138",
+        "nom": "Chanteloup-les-Vignes",
+        "dep": "78",
+        "population": 10859,
+        "majoration": null
+      },
+      {
+        "code": "31588",
+        "nom": "Villeneuve-Tolosane",
+        "dep": "31",
+        "population": 10825,
+        "majoration": null
+      },
+      {
+        "code": "34255",
+        "nom": "Saint-Gély-du-Fesc",
+        "dep": "34",
+        "population": 10805,
+        "majoration": 60.0
+      },
+      {
+        "code": "83098",
+        "nom": "Le Pradet",
+        "dep": "83",
+        "population": 10766,
+        "majoration": null
+      },
+      {
+        "code": "64545",
+        "nom": "Urrugne",
+        "dep": "64",
+        "population": 10756,
+        "majoration": 60.0
+      },
+      {
+        "code": "78190",
+        "nom": "Croissy-sur-Seine",
+        "dep": "78",
+        "population": 10751,
+        "majoration": null
+      },
+      {
+        "code": "91216",
+        "nom": "Épinay-sur-Orge",
+        "dep": "91",
+        "population": 10719,
+        "majoration": null
+      },
+      {
+        "code": "45075",
+        "nom": "La Chapelle-Saint-Mesmin",
+        "dep": "45",
+        "population": 10697,
+        "majoration": null
+      },
+      {
+        "code": "84088",
+        "nom": "Pernes-les-Fontaines",
+        "dep": "84",
+        "population": 10673,
+        "majoration": 60.0
+      },
+      {
+        "code": "94055",
+        "nom": "Ormesson-sur-Marne",
+        "dep": "94",
+        "population": 10669,
+        "majoration": null
+      },
+      {
+        "code": "74298",
+        "nom": "Vétraz-Monthoux",
+        "dep": "74",
+        "population": 10618,
+        "majoration": 60.0
+      },
+      {
+        "code": "01249",
+        "nom": "Miribel",
+        "dep": "01",
+        "population": 10606,
+        "majoration": null
+      },
+      {
+        "code": "06149",
+        "nom": "La Trinité",
+        "dep": "06",
+        "population": 10554,
+        "majoration": 60.0
+      },
+      {
+        "code": "91661",
+        "nom": "Villebon-sur-Yvette",
+        "dep": "91",
+        "population": 10544,
+        "majoration": null
+      },
+      {
+        "code": "34337",
+        "nom": "Villeneuve-lès-Maguelone",
+        "dep": "34",
+        "population": 10537,
+        "majoration": 60.0
+      },
+      {
+        "code": "35055",
+        "nom": "Chantepie",
+        "dep": "35",
+        "population": 10528,
+        "majoration": 60.0
+      },
+      {
+        "code": "97223",
+        "nom": "Saint-Esprit",
+        "dep": "972",
+        "population": 10522,
+        "majoration": null
+      },
+      {
+        "code": "06018",
+        "nom": "Biot",
+        "dep": "06",
+        "population": 10518,
+        "majoration": 20.0
+      },
+      {
+        "code": "14437",
+        "nom": "Mondeville",
+        "dep": "14",
+        "population": 10513,
+        "majoration": 60.0
+      },
+      {
+        "code": "33312",
+        "nom": "Parempuyre",
+        "dep": "33",
+        "population": 10499,
+        "majoration": null
+      },
+      {
+        "code": "77464",
+        "nom": "Thorigny-sur-Marne",
+        "dep": "77",
+        "population": 10498,
+        "majoration": null
+      },
+      {
+        "code": "13019",
+        "nom": "Cabriès",
+        "dep": "13",
+        "population": 10475,
+        "majoration": 60.0
+      },
+      {
+        "code": "13040",
+        "nom": "Fuveau",
+        "dep": "13",
+        "population": 10452,
+        "majoration": 60.0
+      },
+      {
+        "code": "35278",
+        "nom": "Saint-Grégoire",
+        "dep": "35",
+        "population": 10370,
+        "majoration": 60.0
+      },
+      {
+        "code": "83016",
+        "nom": "Le Beausset",
+        "dep": "83",
+        "population": 10278,
+        "majoration": 60.0
+      },
+      {
+        "code": "31547",
+        "nom": "Seysses",
+        "dep": "31",
+        "population": 10275,
+        "majoration": null
+      },
+      {
+        "code": "95488",
+        "nom": "Pierrelaye",
+        "dep": "95",
+        "population": 10265,
+        "majoration": null
+      },
+      {
+        "code": "59426",
+        "nom": "Neuville-en-Ferrain",
+        "dep": "59",
+        "population": 10207,
+        "majoration": null
+      },
+      {
+        "code": "38158",
+        "nom": "Eybens",
+        "dep": "38",
+        "population": 10200,
+        "majoration": null
+      },
+      {
+        "code": "33433",
+        "nom": "Saint-Loubès",
+        "dep": "33",
+        "population": 10169,
+        "majoration": 60.0
+      },
+      {
+        "code": "38565",
+        "nom": "Voreppe",
+        "dep": "38",
+        "population": 10143,
+        "majoration": null
+      },
+      {
+        "code": "78643",
+        "nom": "Vernouillet",
+        "dep": "78",
+        "population": 10136,
+        "majoration": null
+      },
+      {
+        "code": "13043",
+        "nom": "Gignac-la-Nerthe",
+        "dep": "13",
+        "population": 10126,
+        "majoration": null
+      },
+      {
+        "code": "77449",
+        "nom": "Serris",
+        "dep": "77",
+        "population": 10123,
+        "majoration": 60.0
+      },
+      {
+        "code": "83086",
+        "nom": "Le Muy",
+        "dep": "83",
+        "population": 10107,
+        "majoration": 40.0
+      },
+      {
+        "code": "95394",
+        "nom": "Méry-sur-Oise",
+        "dep": "95",
+        "population": 10085,
+        "majoration": null
+      },
+      {
+        "code": "45169",
+        "nom": "Ingré",
+        "dep": "45",
+        "population": 10079,
+        "majoration": null
+      },
+      {
+        "code": "69096",
+        "nom": "Grigny",
+        "dep": "69",
+        "population": 10011,
+        "majoration": null
+      }
+    ]
+  },
+  "touristique": {
+    "nbCommunes": 2259,
+    "population": 3055029,
+    "partPopulationPct": 4,
+    "nbMajoration": 1081,
+    "partMajorationPct": 48,
+    "tauxMajorationMoyen": 39,
+    "nbMajorationMax": 355,
+    "plusPeuplees": [
+      {
+        "code": "11262",
+        "nom": "Narbonne",
+        "dep": "11",
+        "population": 57765,
+        "majoration": null
+      },
+      {
+        "code": "85194",
+        "nom": "Les Sables-d'Olonne",
+        "dep": "85",
+        "population": 49991,
+        "majoration": 60.0
+      },
+      {
+        "code": "35288",
+        "nom": "Saint-Malo",
+        "dep": "35",
+        "population": 48513,
+        "majoration": 45.0
+      },
+      {
+        "code": "34003",
+        "nom": "Agde",
+        "dep": "34",
+        "population": 30024,
+        "majoration": 15.0
+      },
+      {
+        "code": "40088",
+        "nom": "Dax",
+        "dep": "40",
+        "population": 22545,
+        "majoration": null
+      },
+      {
+        "code": "29039",
+        "nom": "Concarneau",
+        "dep": "29",
+        "population": 21438,
+        "majoration": 60.0
+      },
+      {
+        "code": "17306",
+        "nom": "Royan",
+        "dep": "17",
+        "population": 19852,
+        "majoration": 60.0
+      },
+      {
+        "code": "56162",
+        "nom": "Ploemeur",
+        "dep": "56",
+        "population": 19499,
+        "majoration": 60.0
+      },
+      {
+        "code": "44131",
+        "nom": "Pornic",
+        "dep": "44",
+        "population": 18868,
+        "majoration": null
+      },
+      {
+        "code": "74256",
+        "nom": "Sallanches",
+        "dep": "74",
+        "population": 17515,
+        "majoration": 30.0
+      },
+      {
+        "code": "34154",
+        "nom": "Mauguio",
+        "dep": "34",
+        "population": 16601,
+        "majoration": null
+      },
+      {
+        "code": "40046",
+        "nom": "Biscarrosse",
+        "dep": "40",
+        "population": 15798,
+        "majoration": 60.0
+      },
+      {
+        "code": "83107",
+        "nom": "Roquebrune-sur-Argens",
+        "dep": "83",
+        "population": 15229,
+        "majoration": 60.0
+      },
+      {
+        "code": "40279",
+        "nom": "Saint-Paul-lès-Dax",
+        "dep": "40",
+        "population": 14607,
+        "majoration": 60.0
+      },
+      {
+        "code": "83115",
+        "nom": "Sainte-Maxime",
+        "dep": "83",
+        "population": 14545,
+        "majoration": null
+      }
+    ],
+    "parDepartement": [
+      {
+        "dep": "2B",
+        "nom": "Haute-Corse",
+        "nbCommunes": 222
+      },
+      {
+        "dep": "73",
+        "nom": "Savoie",
+        "nbCommunes": 127
+      },
+      {
+        "dep": "14",
+        "nom": "Calvados",
+        "nbCommunes": 125
+      },
+      {
+        "dep": "2A",
+        "nom": "Corse-du-Sud",
+        "nbCommunes": 119
+      },
+      {
+        "dep": "74",
+        "nom": "Haute-Savoie",
+        "nbCommunes": 109
+      },
+      {
+        "dep": "30",
+        "nom": "Gard",
+        "nbCommunes": 92
+      },
+      {
+        "dep": "06",
+        "nom": "Alpes-Maritimes",
+        "nbCommunes": 91
+      },
+      {
+        "dep": "83",
+        "nom": "Var",
+        "nbCommunes": 90
+      },
+      {
+        "dep": "05",
+        "nom": "Hautes-Alpes",
+        "nbCommunes": 83
+      },
+      {
+        "dep": "04",
+        "nom": "Alpes-de-Haute-Provence",
+        "nbCommunes": 81
+      },
+      {
+        "dep": "84",
+        "nom": "Vaucluse",
+        "nbCommunes": 80
+      },
+      {
+        "dep": "26",
+        "nom": "Drôme",
+        "nbCommunes": 76
+      },
+      {
+        "dep": "38",
+        "nom": "Isère",
+        "nbCommunes": 60
+      },
+      {
+        "dep": "34",
+        "nom": "Hérault",
+        "nbCommunes": 48
+      },
+      {
+        "dep": "27",
+        "nom": "Eure",
+        "nbCommunes": 46
+      },
+      {
+        "dep": "56",
+        "nom": "Morbihan",
+        "nbCommunes": 46
+      },
+      {
+        "dep": "17",
+        "nom": "Charente-Maritime",
+        "nbCommunes": 45
+      },
+      {
+        "dep": "29",
+        "nom": "Finistère",
+        "nbCommunes": 45
+      },
+      {
+        "dep": "77",
+        "nom": "Seine-et-Marne",
+        "nbCommunes": 43
+      },
+      {
+        "dep": "40",
+        "nom": "Landes",
+        "nbCommunes": 41
+      },
+      {
+        "dep": "76",
+        "nom": "Seine-Maritime",
+        "nbCommunes": 39
+      },
+      {
+        "dep": "25",
+        "nom": "Doubs",
+        "nbCommunes": 39
+      },
+      {
+        "dep": "66",
+        "nom": "Pyrénées-Orientales",
+        "nbCommunes": 37
+      },
+      {
+        "dep": "85",
+        "nom": "Vendée",
+        "nbCommunes": 35
+      },
+      {
+        "dep": "22",
+        "nom": "Côtes-d'Armor",
+        "nbCommunes": 34
+      },
+      {
+        "dep": "78",
+        "nom": "Yvelines",
+        "nbCommunes": 33
+      },
+      {
+        "dep": "62",
+        "nom": "Pas-de-Calais",
+        "nbCommunes": 31
+      },
+      {
+        "dep": "60",
+        "nom": "Oise",
+        "nbCommunes": 29
+      },
+      {
+        "dep": "65",
+        "nom": "Hautes-Pyrénées",
+        "nbCommunes": 27
+      },
+      {
+        "dep": "50",
+        "nom": "Manche",
+        "nbCommunes": 26
+      },
+      {
+        "dep": "80",
+        "nom": "Somme",
+        "nbCommunes": 21
+      },
+      {
+        "dep": "33",
+        "nom": "Gironde",
+        "nbCommunes": 19
+      },
+      {
+        "dep": "28",
+        "nom": "Eure-et-Loir",
+        "nbCommunes": 18
+      },
+      {
+        "dep": "39",
+        "nom": "Jura",
+        "nbCommunes": 17
+      },
+      {
+        "dep": "91",
+        "nom": "Essonne",
+        "nbCommunes": 16
+      },
+      {
+        "dep": "13",
+        "nom": "Bouches-du-Rhône",
+        "nbCommunes": 16
+      },
+      {
+        "dep": "01",
+        "nom": "Ain",
+        "nbCommunes": 16
+      },
+      {
+        "dep": "07",
+        "nom": "Ardèche",
+        "nbCommunes": 16
+      },
+      {
+        "dep": "68",
+        "nom": "Haut-Rhin",
+        "nbCommunes": 15
+      },
+      {
+        "dep": "35",
+        "nom": "Ille-et-Vilaine",
+        "nbCommunes": 15
+      },
+      {
+        "dep": "64",
+        "nom": "Pyrénées-Atlantiques",
+        "nbCommunes": 11
+      },
+      {
+        "dep": "95",
+        "nom": "Val-d'Oise",
+        "nbCommunes": 11
+      },
+      {
+        "dep": "67",
+        "nom": "Bas-Rhin",
+        "nbCommunes": 11
+      },
+      {
+        "dep": "11",
+        "nom": "Aude",
+        "nbCommunes": 9
+      },
+      {
+        "dep": "44",
+        "nom": "Loire-Atlantique",
+        "nbCommunes": 8
+      },
+      {
+        "dep": "971",
+        "nom": "Guadeloupe",
+        "nbCommunes": 8
+      },
+      {
+        "dep": "972",
+        "nom": "Martinique",
+        "nbCommunes": 6
+      },
+      {
+        "dep": "69",
+        "nom": "Rhône",
+        "nbCommunes": 5
+      },
+      {
+        "dep": "02",
+        "nom": "Aisne",
+        "nbCommunes": 4
+      },
+      {
+        "dep": "88",
+        "nom": "Vosges",
+        "nbCommunes": 3
+      },
+      {
+        "dep": "45",
+        "nom": "Loiret",
+        "nbCommunes": 3
+      },
+      {
+        "dep": "21",
+        "nom": "Côte-d'Or",
+        "nbCommunes": 2
+      },
+      {
+        "dep": "59",
+        "nom": "Nord",
+        "nbCommunes": 2
+      },
+      {
+        "dep": "57",
+        "nom": "Moselle",
+        "nbCommunes": 2
+      },
+      {
+        "dep": "49",
+        "nom": "Maine-et-Loire",
+        "nbCommunes": 1
+      },
+      {
+        "dep": "31",
+        "nom": "Haute-Garonne",
+        "nbCommunes": 1
+      },
+      {
+        "dep": "61",
+        "nom": "Orne",
+        "nbCommunes": 1
+      },
+      {
+        "dep": "63",
+        "nom": "Puy-de-Dôme",
+        "nbCommunes": 1
+      },
+      {
+        "dep": "973",
+        "nom": "Guyane",
+        "nbCommunes": 1
+      },
+      {
+        "dep": "09",
+        "nom": "Ariège",
+        "nbCommunes": 1
+      }
+    ],
+    "nbDepartements": 60,
+    "tableau": [
+      {
+        "code": "11262",
+        "nom": "Narbonne",
+        "dep": "11",
+        "population": 57765,
+        "majoration": null
+      },
+      {
+        "code": "85194",
+        "nom": "Les Sables-d'Olonne",
+        "dep": "85",
+        "population": 49991,
+        "majoration": 60.0
+      },
+      {
+        "code": "35288",
+        "nom": "Saint-Malo",
+        "dep": "35",
+        "population": 48513,
+        "majoration": 45.0
+      },
+      {
+        "code": "34003",
+        "nom": "Agde",
+        "dep": "34",
+        "population": 30024,
+        "majoration": 15.0
+      },
+      {
+        "code": "40088",
+        "nom": "Dax",
+        "dep": "40",
+        "population": 22545,
+        "majoration": null
+      },
+      {
+        "code": "29039",
+        "nom": "Concarneau",
+        "dep": "29",
+        "population": 21438,
+        "majoration": 60.0
+      },
+      {
+        "code": "17306",
+        "nom": "Royan",
+        "dep": "17",
+        "population": 19852,
+        "majoration": 60.0
+      },
+      {
+        "code": "56162",
+        "nom": "Ploemeur",
+        "dep": "56",
+        "population": 19499,
+        "majoration": 60.0
+      },
+      {
+        "code": "44131",
+        "nom": "Pornic",
+        "dep": "44",
+        "population": 18868,
+        "majoration": null
+      },
+      {
+        "code": "74256",
+        "nom": "Sallanches",
+        "dep": "74",
+        "population": 17515,
+        "majoration": 30.0
+      },
+      {
+        "code": "34154",
+        "nom": "Mauguio",
+        "dep": "34",
+        "population": 16601,
+        "majoration": null
+      },
+      {
+        "code": "40046",
+        "nom": "Biscarrosse",
+        "dep": "40",
+        "population": 15798,
+        "majoration": 60.0
+      },
+      {
+        "code": "83107",
+        "nom": "Roquebrune-sur-Argens",
+        "dep": "83",
+        "population": 15229,
+        "majoration": 60.0
+      },
+      {
+        "code": "40279",
+        "nom": "Saint-Paul-lès-Dax",
+        "dep": "40",
+        "population": 14607,
+        "majoration": 60.0
+      },
+      {
+        "code": "83115",
+        "nom": "Sainte-Maxime",
+        "dep": "83",
+        "population": 14545,
+        "majoration": null
+      },
+      {
+        "code": "50218",
+        "nom": "Granville",
+        "dep": "50",
+        "population": 13459,
+        "majoration": 60.0
+      },
+      {
+        "code": "62108",
+        "nom": "Berck",
+        "dep": "62",
+        "population": 13285,
+        "majoration": null
+      },
+      {
+        "code": "66037",
+        "nom": "Canet-en-Roussillon",
+        "dep": "66",
+        "population": 13254,
+        "majoration": 50.0
+      },
+      {
+        "code": "85226",
+        "nom": "Saint-Hilaire-de-Riez",
+        "dep": "85",
+        "population": 13186,
+        "majoration": 30.0
+      },
+      {
+        "code": "33005",
+        "nom": "Andernos-les-Bains",
+        "dep": "33",
+        "population": 12911,
+        "majoration": 35.0
+      },
+      {
+        "code": "34157",
+        "nom": "Mèze",
+        "dep": "34",
+        "population": 12880,
+        "majoration": 60.0
+      },
+      {
+        "code": "83148",
+        "nom": "Vidauban",
+        "dep": "83",
+        "population": 12869,
+        "majoration": 20.0
+      },
+      {
+        "code": "56078",
+        "nom": "Guidel",
+        "dep": "56",
+        "population": 12543,
+        "majoration": null
+      },
+      {
+        "code": "83042",
+        "nom": "Cogolin",
+        "dep": "83",
+        "population": 12223,
+        "majoration": null
+      },
+      {
+        "code": "2A247",
+        "nom": "Porto-Vecchio",
+        "dep": "2A",
+        "population": 11709,
+        "majoration": 40.0
+      },
+      {
+        "code": "74208",
+        "nom": "Passy",
+        "dep": "74",
+        "population": 11262,
+        "majoration": 35.0
+      },
+      {
+        "code": "83071",
+        "nom": "La Londe-les-Maures",
+        "dep": "83",
+        "population": 11137,
+        "majoration": 40.0
+      },
+      {
+        "code": "05023",
+        "nom": "Briançon",
+        "dep": "05",
+        "population": 11059,
+        "majoration": 60.0
+      },
+      {
+        "code": "35093",
+        "nom": "Dinard",
+        "dep": "35",
+        "population": 10923,
+        "majoration": 45.0
+      },
+      {
+        "code": "29058",
+        "nom": "Fouesnant",
+        "dep": "29",
+        "population": 10710,
+        "majoration": null
+      },
+      {
+        "code": "01143",
+        "nom": "Divonne-les-Bains",
+        "dep": "01",
+        "population": 10520,
+        "majoration": 60.0
+      },
+      {
+        "code": "2B042",
+        "nom": "Borgo",
+        "dep": "2B",
+        "population": 10298,
+        "majoration": null
+      },
+      {
+        "code": "83072",
+        "nom": "Lorgues",
+        "dep": "83",
+        "population": 10096,
+        "majoration": 60.0
+      }
+    ]
+  },
+  "nbZonees": 3689,
+  "tauxMajorationMax": 60,
+  "reglementation": {
+    "seuilAgglomeration": 50000,
+    "preavisMois": 1,
+    "preavisNormalMois": 3,
+    "tlvTauxPremiereAnnee": 17,
+    "tlvTauxSuivantes": 34,
+    "tlvVacanceAnnees": 1,
+    "tvlhAnnee": 2027,
+    "tvlhLoiFinances": 2026,
+    "zonageTouristiqueLoiFinances": 2023,
+    "relocationVacanceMois": 18,
+    "relocationJusquau": "2027-07-31",
+    "relocationDecret": "2026-644",
+    "sources": {
+      "preavis": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1168",
+      "relocation": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1314",
+      "tlv": "https://www.service-public.gouv.fr/particuliers/vosdroits/F17293",
+      "majoration": "https://www.service-public.gouv.fr/particuliers/vosdroits/F42"
+    }
+  }
+}

@@ -29,6 +29,13 @@ Un article n'est publié que s'il figure dans `index.ts` (registre : index, site
    (et du titre, de la description, du chapeau) doit exister dans `data.json`.
 5. Ajouter l'article au registre, `pnpm typecheck`, build sans base.
 
+## Typographie
+
+Espace insécable (U+00A0) dans les milliers (« 2 873 »), avant « % » et après « n° » : sans
+elle, les nombres se coupent en fin de ligne sur mobile. Les règles de droit citées par un
+guide (préavis, taux) sont écrites par son script dans `data.json`, sous `reglementation`,
+avec l'adresse de leur source.
+
 ## Mettre à jour
 
 Au millésime suivant : relancer le script, relire le texte (les constats peuvent changer),

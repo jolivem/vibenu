@@ -31,6 +31,12 @@ def valeurs(node, acc):
         return acc
     if isinstance(node, (int, float)):
         acc.add(abs(float(node)))
+    elif isinstance(node, str):
+        # Dates ISO (« 2025-12-22 ») et numéros de texte (« 2026-644 ») : la prose les cite en
+        # morceaux (« 22 décembre 2025 »). Les adresses web sont ignorées.
+        if not node.startswith("http"):
+            for entier in re.findall(r"\d+", node):
+                acc.add(float(int(entier)))
     elif isinstance(node, dict):
         for v in node.values():
             valeurs(v, acc)
