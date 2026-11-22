@@ -1,0 +1,910 @@
+{
+  "generatedAt": "2026-11-22",
+  "jourT1": 15,
+  "jourT2": 22,
+  "annee": 2026,
+  "seuilPopulation": 100000,
+  "nbVilles": 42,
+  "national": {
+    "communes": 34836,
+    "communesT2": 1526,
+    "participationT1": 57.1
+  },
+  "faits": {
+    "nbDecideesT1": 4,
+    "nbDecideesT2": 38,
+    "participationMin": "95018",
+    "participationMax": "69123",
+    "nbSousNationale": 33,
+    "plusSerre": "69123",
+    "nbListesMax": 13
+  },
+  "nuancesGagnantes": [
+    {
+      "nuance": "Union de la gauche",
+      "villes": 15
+    },
+    {
+      "nuance": "Divers droite",
+      "villes": 11
+    },
+    {
+      "nuance": "Divers gauche",
+      "villes": 4
+    },
+    {
+      "nuance": "Union du centre",
+      "villes": 3
+    },
+    {
+      "nuance": "Socialiste",
+      "villes": 2
+    },
+    {
+      "nuance": "Divers centre",
+      "villes": 2
+    },
+    {
+      "nuance": "Union extrême droite",
+      "villes": 1
+    },
+    {
+      "nuance": "Union de la droite",
+      "villes": 1
+    },
+    {
+      "nuance": "La France insoumise",
+      "villes": 1
+    },
+    {
+      "nuance": "Rassemblement national",
+      "villes": 1
+    },
+    {
+      "nuance": "Les Républicains",
+      "villes": 1
+    }
+  ],
+  "villes": [
+    {
+      "code": "75056",
+      "nom": "Paris",
+      "dep": "75",
+      "population": 2129257,
+      "tourDecisif": 2,
+      "participationT1": 58.9,
+      "participationT2": 61.6,
+      "nbListesT1": 9,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Emmanuel GRÉGOIRE",
+        "liste": "EG",
+        "pct": 50.52,
+        "sieges": 103
+      },
+      "ecartPoints": 9.0
+    },
+    {
+      "code": "13055",
+      "nom": "Marseille",
+      "dep": "13",
+      "population": 883466,
+      "tourDecisif": 2,
+      "participationT1": 52.2,
+      "participationT2": 55.4,
+      "nbListesT1": 8,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Benoît PAYAN",
+        "liste": "POUR MARSEILLE, LA GAUCHE RASSEMBLES",
+        "pct": 54.34,
+        "sieges": 73
+      },
+      "ecartPoints": 14.0
+    },
+    {
+      "code": "69123",
+      "nom": "Lyon",
+      "dep": "69",
+      "population": 526912,
+      "tourDecisif": 2,
+      "participationT1": 64.5,
+      "participationT2": 66.1,
+      "nbListesT1": 9,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LDVG",
+        "nuanceLibelle": "Divers gauche",
+        "tete": "Grégory DOUCET",
+        "liste": "POUR VIVRE LYON, L'UNION DE LA GAUCHE ET DES ECOLOGISTES AVEC GREGORY DOUCET",
+        "pct": 50.67,
+        "sieges": 46
+      },
+      "ecartPoints": 1.3
+    },
+    {
+      "code": "31555",
+      "nom": "Toulouse",
+      "dep": "31",
+      "population": 516735,
+      "tourDecisif": 2,
+      "participationT1": 56.4,
+      "participationT2": 62.5,
+      "nbListesT1": 10,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Jean-Luc MOUDENC",
+        "liste": "Avec Jean-Luc MOUDENC, Protégeons l'Avenir de Toulouse",
+        "pct": 53.87,
+        "sieges": 53
+      },
+      "ecartPoints": 7.7
+    },
+    {
+      "code": "06088",
+      "nom": "Nice",
+      "dep": "06",
+      "population": 356603,
+      "tourDecisif": 2,
+      "participationT1": 53.6,
+      "participationT2": 55.9,
+      "nbListesT1": 7,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUXD",
+        "nuanceLibelle": "Union extrême droite",
+        "tete": "Eric CIOTTI",
+        "liste": "LE MEILLEUR EST A VENIR AVEC ERIC CIOTTI",
+        "pct": 48.54,
+        "sieges": 52
+      },
+      "ecartPoints": 11.3
+    },
+    {
+      "code": "44109",
+      "nom": "Nantes",
+      "dep": "44",
+      "population": 329809,
+      "tourDecisif": 2,
+      "participationT1": 60.3,
+      "participationT2": 63.0,
+      "nbListesT1": 8,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LDVG",
+        "nuanceLibelle": "Divers gauche",
+        "tete": "Johanna ROLLAND",
+        "liste": "La gauche unie pour Nantes",
+        "pct": 52.18,
+        "sieges": 53
+      },
+      "ecartPoints": 4.4
+    },
+    {
+      "code": "34172",
+      "nom": "Montpellier",
+      "dep": "34",
+      "population": 310611,
+      "tourDecisif": 2,
+      "participationT1": 50.4,
+      "participationT2": 45.8,
+      "nbListesT1": 13,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Michaël DELAFOSSE",
+        "liste": "DEMAIN MONTPELLIER",
+        "pct": 50.13,
+        "sieges": 53
+      },
+      "ecartPoints": 25.1
+    },
+    {
+      "code": "67482",
+      "nom": "Strasbourg",
+      "dep": "67",
+      "population": 294564,
+      "tourDecisif": 2,
+      "participationT1": 58.1,
+      "participationT2": 60.1,
+      "nbListesT1": 12,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LDVG",
+        "nuanceLibelle": "Divers gauche",
+        "tete": "Catherine TRAUTMANN",
+        "liste": "Pour Strasbourg",
+        "pct": 37.0,
+        "sieges": 45
+      },
+      "ecartPoints": 5.3
+    },
+    {
+      "code": "33063",
+      "nom": "Bordeaux",
+      "dep": "33",
+      "population": 268822,
+      "tourDecisif": 2,
+      "participationT1": 58.1,
+      "participationT2": 57.0,
+      "nbListesT1": 11,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LUC",
+        "nuanceLibelle": "Union du centre",
+        "tete": "Thomas CAZENAVE",
+        "liste": "Faire Gagner Bordeaux",
+        "pct": 50.95,
+        "sieges": 49
+      },
+      "ecartPoints": 1.9
+    },
+    {
+      "code": "59350",
+      "nom": "Lille",
+      "dep": "59",
+      "population": 240523,
+      "tourDecisif": 2,
+      "participationT1": 52.0,
+      "participationT2": 52.3,
+      "nbListesT1": 9,
+      "nbListesDecisif": 4,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Arnaud DESLANDES",
+        "liste": "TOUT POUR LILLE DEMAIN",
+        "pct": 49.33,
+        "sieges": 47
+      },
+      "ecartPoints": 15.6
+    },
+    {
+      "code": "35238",
+      "nom": "Rennes",
+      "dep": "35",
+      "population": 231985,
+      "tourDecisif": 2,
+      "participationT1": 58.3,
+      "participationT2": 57.6,
+      "nbListesT1": 11,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Nathalie APPÉRÉ",
+        "liste": "RENNES SOLIDAIRE",
+        "pct": 43.78,
+        "sieges": 44
+      },
+      "ecartPoints": 7.4
+    },
+    {
+      "code": "83137",
+      "nom": "Toulon",
+      "dep": "83",
+      "population": 182535,
+      "tourDecisif": 2,
+      "participationT1": 55.2,
+      "participationT2": 57.0,
+      "nbListesT1": 6,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Josée MASSI",
+        "liste": "TOULON MON PARTI",
+        "pct": 52.35,
+        "sieges": 45
+      },
+      "ecartPoints": 4.7
+    },
+    {
+      "code": "51454",
+      "nom": "Reims",
+      "dep": "51",
+      "population": 181422,
+      "tourDecisif": 2,
+      "participationT1": 45.6,
+      "participationT2": 45.1,
+      "nbListesT1": 7,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Arnaud ROBINET",
+        "liste": "VIVONS REIMS",
+        "pct": 51.86,
+        "sieges": 46
+      },
+      "ecartPoints": 25.9
+    },
+    {
+      "code": "42218",
+      "nom": "Saint-Étienne",
+      "dep": "42",
+      "population": 174222,
+      "tourDecisif": 2,
+      "participationT1": 49.5,
+      "participationT2": 50.6,
+      "nbListesT1": 8,
+      "nbListesDecisif": 4,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Régis JUANICO",
+        "liste": "Rassembler Saint-Etienne",
+        "pct": 44.13,
+        "sieges": 43
+      },
+      "ecartPoints": 17.5
+    },
+    {
+      "code": "76351",
+      "nom": "Le Havre",
+      "dep": "76",
+      "population": 168329,
+      "tourDecisif": 2,
+      "participationT1": 52.4,
+      "participationT2": 53.7,
+      "nbListesT1": 7,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUC",
+        "nuanceLibelle": "Union du centre",
+        "tete": "Edouard PHILIPPE",
+        "liste": "Le Havre !",
+        "pct": 47.71,
+        "sieges": 44
+      },
+      "ecartPoints": 6.5
+    },
+    {
+      "code": "69266",
+      "nom": "Villeurbanne",
+      "dep": "69",
+      "population": 163260,
+      "tourDecisif": 2,
+      "participationT1": 51.2,
+      "participationT2": 49.3,
+      "nbListesT1": 6,
+      "nbListesDecisif": 5,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Cédric VAN STYVENDAEL",
+        "liste": "ENGAGE.E.S POUR VILLEURBANNE- LA GAUCHE SOCIALE, ECOLOGISTE ET CITOYENNE RASSEMBLEE",
+        "pct": 42.59,
+        "sieges": 43
+      },
+      "ecartPoints": 25.6
+    },
+    {
+      "code": "21231",
+      "nom": "Dijon",
+      "dep": "21",
+      "population": 163169,
+      "tourDecisif": 2,
+      "participationT1": 52.7,
+      "participationT2": 50.5,
+      "nbListesT1": 8,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LSOC",
+        "nuanceLibelle": "Socialiste",
+        "tete": "Nathalie KOENDERS",
+        "liste": "Dijon. écologique sociale attractive",
+        "pct": 58.41,
+        "sieges": 47
+      },
+      "ecartPoints": 27.7
+    },
+    {
+      "code": "49007",
+      "nom": "Angers",
+      "dep": "49",
+      "population": 160830,
+      "tourDecisif": 2,
+      "participationT1": 53.5,
+      "participationT2": 49.9,
+      "nbListesT1": 7,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LDVC",
+        "nuanceLibelle": "Divers centre",
+        "tete": "Christophe BÉCHU",
+        "liste": "Angers Pour Vous",
+        "pct": 59.03,
+        "sieges": 47
+      },
+      "ecartPoints": 18.1
+    },
+    {
+      "code": "38185",
+      "nom": "Grenoble",
+      "dep": "38",
+      "population": 158601,
+      "tourDecisif": 2,
+      "participationT1": 60.7,
+      "participationT2": 61.4,
+      "nbListesT1": 10,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Laurence RUFFIN",
+        "liste": "OUI GRENOBLE",
+        "pct": 56.59,
+        "sieges": 46
+      },
+      "ecartPoints": 13.2
+    },
+    {
+      "code": "97411",
+      "nom": "Saint-Denis",
+      "dep": "974",
+      "population": 157674,
+      "tourDecisif": 1,
+      "participationT1": 45.2,
+      "participationT2": null,
+      "nbListesT1": 9,
+      "nbListesDecisif": 9,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": null,
+        "liste": "SAINT-DENIS POUR TOUS",
+        "pct": 62.21,
+        "sieges": 52
+      },
+      "ecartPoints": 51.7
+    },
+    {
+      "code": "30189",
+      "nom": "Nîmes",
+      "dep": "30",
+      "population": 152612,
+      "tourDecisif": 2,
+      "participationT1": 51.0,
+      "participationT2": 57.9,
+      "nbListesT1": 5,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Vincent BOUGET",
+        "liste": "Nîmes en commun",
+        "pct": 40.97,
+        "sieges": 42
+      },
+      "ecartPoints": 3.4
+    },
+    {
+      "code": "13001",
+      "nom": "Aix-en-Provence",
+      "dep": "13",
+      "population": 151033,
+      "tourDecisif": 2,
+      "participationT1": 49.8,
+      "participationT2": 46.2,
+      "nbListesT1": 6,
+      "nbListesDecisif": 4,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Sophie JOISSAINS",
+        "liste": "PASSIONNEMENT",
+        "pct": 47.35,
+        "sieges": 41
+      },
+      "ecartPoints": 16.3
+    },
+    {
+      "code": "63113",
+      "nom": "Clermont-Ferrand",
+      "dep": "63",
+      "population": 150251,
+      "tourDecisif": 2,
+      "participationT1": 52.6,
+      "participationT2": 56.7,
+      "nbListesT1": 6,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUD",
+        "nuanceLibelle": "Union de la droite",
+        "tete": "Julien BONY",
+        "liste": "LE SURSAUT CLERMONTOIS",
+        "pct": 50.91,
+        "sieges": 42
+      },
+      "ecartPoints": 5.5
+    },
+    {
+      "code": "93066",
+      "nom": "Saint-Denis",
+      "dep": "93",
+      "population": 149781,
+      "tourDecisif": 1,
+      "participationT1": 42.8,
+      "participationT2": null,
+      "nbListesT1": 7,
+      "nbListesDecisif": 7,
+      "gagnante": {
+        "nuance": "LFI",
+        "nuanceLibelle": "La France insoumise",
+        "tete": null,
+        "liste": "Ensemble, retrouvons l'Espoir",
+        "pct": 50.77,
+        "sieges": 47
+      },
+      "ecartPoints": 18.1
+    },
+    {
+      "code": "72181",
+      "nom": "Le Mans",
+      "dep": "72",
+      "population": 147846,
+      "tourDecisif": 2,
+      "participationT1": 51.4,
+      "participationT2": 48.2,
+      "nbListesT1": 7,
+      "nbListesDecisif": 4,
+      "gagnante": {
+        "nuance": "LSOC",
+        "nuanceLibelle": "Socialiste",
+        "tete": "Stéphane LE FOLL",
+        "liste": "LMNR",
+        "pct": 50.06,
+        "sieges": 42
+      },
+      "ecartPoints": 28.5
+    },
+    {
+      "code": "29019",
+      "nom": "Brest",
+      "dep": "29",
+      "population": 143530,
+      "tourDecisif": 2,
+      "participationT1": 54.5,
+      "participationT2": 59.0,
+      "nbListesT1": 10,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Stéphane ROUDAUT",
+        "liste": "Une nouvelle histoire pour Brest",
+        "pct": 57.38,
+        "sieges": 44
+      },
+      "ecartPoints": 19.1
+    },
+    {
+      "code": "37261",
+      "nom": "Tours",
+      "dep": "37",
+      "population": 141133,
+      "tourDecisif": 2,
+      "participationT1": 52.5,
+      "participationT2": 52.6,
+      "nbListesT1": 8,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LDVG",
+        "nuanceLibelle": "Divers gauche",
+        "tete": "Emmanuel DENIS",
+        "liste": "Tours inspire",
+        "pct": 47.2,
+        "sieges": 41
+      },
+      "ecartPoints": 3.3
+    },
+    {
+      "code": "80021",
+      "nom": "Amiens",
+      "dep": "80",
+      "population": 137473,
+      "tourDecisif": 2,
+      "participationT1": 49.4,
+      "participationT2": 50.2,
+      "nbListesT1": 9,
+      "nbListesDecisif": 4,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Frédéric FAUVET",
+        "liste": "Pour Amiens en mieux, la Gauche unie, écologiste et citoyenne",
+        "pct": 37.71,
+        "sieges": 38
+      },
+      "ecartPoints": 2.0
+    },
+    {
+      "code": "74010",
+      "nom": "Annecy",
+      "dep": "74",
+      "population": 134131,
+      "tourDecisif": 2,
+      "participationT1": 56.6,
+      "participationT2": 54.5,
+      "nbListesT1": 6,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUC",
+        "nuanceLibelle": "Union du centre",
+        "tete": "Antoine ARMAND",
+        "liste": "Acteurs d'Annecy avec Antoine ARMAND",
+        "pct": 49.36,
+        "sieges": 52
+      },
+      "ecartPoints": 14.2
+    },
+    {
+      "code": "87085",
+      "nom": "Limoges",
+      "dep": "87",
+      "population": 131659,
+      "tourDecisif": 2,
+      "participationT1": 58.8,
+      "participationT2": 62.1,
+      "nbListesT1": 8,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Guillaume GUERIN",
+        "liste": "LIMOGES EN PARTAGE",
+        "pct": 51.25,
+        "sieges": 42
+      },
+      "ecartPoints": 10.4
+    },
+    {
+      "code": "57463",
+      "nom": "Metz",
+      "dep": "57",
+      "population": 123532,
+      "tourDecisif": 2,
+      "participationT1": 46.0,
+      "participationT2": 43.8,
+      "nbListesT1": 9,
+      "nbListesDecisif": 4,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "François GROSDIDIER",
+        "liste": "J'aime Metz",
+        "pct": 50.56,
+        "sieges": 42
+      },
+      "ecartPoints": 32.9
+    },
+    {
+      "code": "25056",
+      "nom": "Besançon",
+      "dep": "25",
+      "population": 123272,
+      "tourDecisif": 2,
+      "participationT1": 57.1,
+      "participationT2": 61.5,
+      "nbListesT1": 6,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Ludovic FAGAUT",
+        "liste": "ENSEMBLE BESANCON AVANCE",
+        "pct": 53.29,
+        "sieges": 42
+      },
+      "ecartPoints": 6.6
+    },
+    {
+      "code": "66136",
+      "nom": "Perpignan",
+      "dep": "66",
+      "population": 122506,
+      "tourDecisif": 1,
+      "participationT1": 47.7,
+      "participationT2": null,
+      "nbListesT1": 6,
+      "nbListesDecisif": 6,
+      "gagnante": {
+        "nuance": "LRN",
+        "nuanceLibelle": "Rassemblement national",
+        "tete": null,
+        "liste": "CONTINUONS ENSEMBLE AVEC LOUIS ALIOT",
+        "pct": 50.61,
+        "sieges": 43
+      },
+      "ecartPoints": 34.7
+    },
+    {
+      "code": "92012",
+      "nom": "Boulogne-Billancourt",
+      "dep": "92",
+      "population": 121391,
+      "tourDecisif": 2,
+      "participationT1": 53.9,
+      "participationT2": 50.7,
+      "nbListesT1": 6,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LLR",
+        "nuanceLibelle": "Les Républicains",
+        "tete": "Pierre-Christophe BAGUET",
+        "liste": "Vivre à Boulogne-Billancourt",
+        "pct": 52.13,
+        "sieges": 42
+      },
+      "ecartPoints": 18.4
+    },
+    {
+      "code": "45234",
+      "nom": "Orléans",
+      "dep": "45",
+      "population": 118816,
+      "tourDecisif": 2,
+      "participationT1": 49.3,
+      "participationT2": 46.5,
+      "nbListesT1": 9,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Serge GROUARD",
+        "liste": "ICI C'EST ORLEANS",
+        "pct": 57.81,
+        "sieges": 44
+      },
+      "ecartPoints": 15.6
+    },
+    {
+      "code": "76540",
+      "nom": "Rouen",
+      "dep": "76",
+      "population": 117853,
+      "tourDecisif": 2,
+      "participationT1": 50.7,
+      "participationT2": 48.0,
+      "nbListesT1": 7,
+      "nbListesDecisif": 4,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Nicolas MAYER-ROSSIGNOL",
+        "liste": "Fiers de Rouen",
+        "pct": 48.14,
+        "sieges": 41
+      },
+      "ecartPoints": 21.7
+    },
+    {
+      "code": "93048",
+      "nom": "Montreuil",
+      "dep": "93",
+      "population": 111333,
+      "tourDecisif": 1,
+      "participationT1": 48.2,
+      "participationT2": null,
+      "nbListesT1": 7,
+      "nbListesDecisif": 7,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": null,
+        "liste": "VIVE MONTREUIL !",
+        "pct": 57.72,
+        "sieges": 45
+      },
+      "ecartPoints": 35.2
+    },
+    {
+      "code": "14118",
+      "nom": "Caen",
+      "dep": "14",
+      "population": 110520,
+      "tourDecisif": 2,
+      "participationT1": 55.3,
+      "participationT2": 51.7,
+      "nbListesT1": 9,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Aristide OLIVIER",
+        "liste": "CAEN PASSIONNEMENT AVEC ARISTIDE OLIVIER",
+        "pct": 59.38,
+        "sieges": 44
+      },
+      "ecartPoints": 33.9
+    },
+    {
+      "code": "95018",
+      "nom": "Argenteuil",
+      "dep": "95",
+      "population": 107563,
+      "tourDecisif": 2,
+      "participationT1": 42.5,
+      "participationT2": 47.1,
+      "nbListesT1": 7,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LDVD",
+        "nuanceLibelle": "Divers droite",
+        "tete": "Georges MOTHRON",
+        "liste": "ARGENTEUIL TOUJOURS PLUS GRAND",
+        "pct": 55.22,
+        "sieges": 43
+      },
+      "ecartPoints": 10.4
+    },
+    {
+      "code": "97415",
+      "nom": "Saint-Paul",
+      "dep": "974",
+      "population": 107501,
+      "tourDecisif": 2,
+      "participationT1": 50.5,
+      "participationT2": 57.8,
+      "nbListesT1": 5,
+      "nbListesDecisif": 2,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Emmanuel SÉRAPHIN",
+        "liste": "LISTE CONDUITE PAR EMMANUEL SÉRAPHIN",
+        "pct": 55.74,
+        "sieges": 43
+      },
+      "ecartPoints": 11.5
+    },
+    {
+      "code": "68224",
+      "nom": "Mulhouse",
+      "dep": "68",
+      "population": 106095,
+      "tourDecisif": 2,
+      "participationT1": 42.8,
+      "participationT2": 46.9,
+      "nbListesT1": 11,
+      "nbListesDecisif": 5,
+      "gagnante": {
+        "nuance": "LDVC",
+        "nuanceLibelle": "Divers centre",
+        "tete": "Frédéric MARQUET",
+        "liste": "LCPVPMM2026",
+        "pct": 24.07,
+        "sieges": 35
+      },
+      "ecartPoints": 2.7
+    },
+    {
+      "code": "54395",
+      "nom": "Nancy",
+      "dep": "54",
+      "population": 105792,
+      "tourDecisif": 2,
+      "participationT1": 52.1,
+      "participationT2": 52.3,
+      "nbListesT1": 6,
+      "nbListesDecisif": 3,
+      "gagnante": {
+        "nuance": "LUG",
+        "nuanceLibelle": "Union de la gauche",
+        "tete": "Mathieu KLEIN",
+        "liste": "NANCY GRANDIT",
+        "pct": 49.68,
+        "sieges": 42
+      },
+      "ecartPoints": 9.9
+    }
+  ]
+}

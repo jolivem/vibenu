@@ -7,6 +7,7 @@ import { meta as loyers } from "./loyer-m2-50-plus-grandes-villes/meta";
 import { meta as securite } from "./securite-arrondissements-paris-lyon-marseille/meta";
 import { meta as risques } from "./risques-naturels-adresse-catastrophe-naturelle/meta";
 import { meta as college } from "./college-de-secteur-paris/meta";
+import { meta as municipales } from "./municipales-2026-grandes-villes/meta";
 
 /**
  * Le registre des articles publiés, du plus récent au plus ancien : source unique de
@@ -19,6 +20,10 @@ interface ArticleEntry {
 }
 
 export const ARTICLES: ArticleEntry[] = [
+  {
+    meta: municipales,
+    load: () => import("./municipales-2026-grandes-villes/index.mdx"),
+  },
   {
     meta: college,
     load: () => import("./college-de-secteur-paris/index.mdx"),
