@@ -37,6 +37,7 @@ import { VerticalBars, type VerticalBarReference, type VerticalBarRow } from "./
 import { CommuneFaqSection } from "./CommuneFaqSection";
 import { SourceLine } from "./SourceLine";
 import { meta as articlePrix } from "@/content/articles/prix-m2-arrondissements-paris-lyon-marseille/meta";
+import { meta as articleSecurite } from "@/content/articles/securite-arrondissements-paris-lyon-marseille/meta";
 import { sujetsHub } from "./CommuneRelatedLinks";
 
 const fmt = createFormat("fr");
@@ -219,6 +220,13 @@ function ThemeBlock({
         <p className="comparison-article">
           <Link href={`/articles/${articlePrix.slug}`}>
             Paris, Lyon, Marseille : l&apos;évolution des prix par arrondissement depuis 2021
+          </Link>
+        </p>
+      )}
+      {theme === "securite" && FEATURES.hasArticles && (
+        <p className="comparison-article">
+          <Link href={`/articles/${articleSecurite.slug}`}>
+            Les 45 arrondissements de Paris, Lyon et Marseille comparés, et leur évolution depuis 2019
           </Link>
         </p>
       )}

@@ -1,0 +1,1186 @@
+{
+  "generatedAt": "2026-11-22",
+  "annee": 2025,
+  "anneeDepart": 2019,
+  "seuilTranche": 200000,
+  "base": 1000,
+  "anneesConfinement": [
+    2020,
+    2021
+  ],
+  "nbArrondissements": 45,
+  "references": {
+    "FRANCE": {
+      "violences": {
+        "tauxDepart": 2.8,
+        "taux": 3.2,
+        "evolutionPct": 14
+      },
+      "vols": {
+        "tauxDepart": 10.8,
+        "taux": 9.1,
+        "evolutionPct": -16
+      },
+      "cambriolages": {
+        "tauxDepart": 6.5,
+        "taux": 5.6,
+        "evolutionPct": -14
+      }
+    },
+    "T5": {
+      "violences": {
+        "tauxDepart": 4.9,
+        "taux": 5.1,
+        "evolutionPct": 4
+      },
+      "vols": {
+        "tauxDepart": 45.6,
+        "taux": 31.7,
+        "evolutionPct": -30
+      },
+      "cambriolages": {
+        "tauxDepart": 9.7,
+        "taux": 6.3,
+        "evolutionPct": -35
+      }
+    }
+  },
+  "faits": {
+    "cambriolages": {
+      "plusHaut": "13201",
+      "plusBas": "75111",
+      "rapport": 5.0,
+      "nbAuDessusFrance": 33,
+      "nbEnBaisse": 43,
+      "nbAvecEvolution": 45
+    },
+    "vols": {
+      "plusHaut": "75101",
+      "plusBas": "13209",
+      "rapport": 43.3,
+      "nbAuDessusFrance": 41,
+      "nbEnBaisse": 30,
+      "nbAvecEvolution": 45
+    },
+    "violences": {
+      "plusHaut": "75101",
+      "plusBas": "13212",
+      "rapport": 19.4,
+      "nbAuDessusFrance": 38,
+      "nbEnBaisse": 15,
+      "nbAvecEvolution": 45
+    }
+  },
+  "villes": [
+    {
+      "id": "paris",
+      "nom": "Paris",
+      "code": "75056",
+      "cambriolages": {
+        "tauxDepart": 9.1,
+        "taux": 5.1,
+        "faits": 7072,
+        "evolutionPct": -44
+      },
+      "violences": {
+        "tauxDepart": 4.7,
+        "taux": 5.3,
+        "faits": 11095,
+        "evolutionPct": 13
+      },
+      "vols": {
+        "tauxDepart": 75.0,
+        "taux": 45.1,
+        "faits": 94924,
+        "evolutionPct": -40
+      },
+      "arrondissements": [
+        {
+          "code": "75101",
+          "ville": "paris",
+          "numero": 1,
+          "violences": {
+            "taux": 31.0,
+            "faits": 469,
+            "tauxDepart": 22.0,
+            "evolutionPct": 41
+          },
+          "vols": {
+            "taux": 311.6,
+            "faits": 4710,
+            "tauxDepart": 675.8,
+            "evolutionPct": -54
+          },
+          "cambriolages": {
+            "taux": 5.2,
+            "faits": 72,
+            "tauxDepart": 16.5,
+            "evolutionPct": -68
+          }
+        },
+        {
+          "code": "75102",
+          "ville": "paris",
+          "numero": 2,
+          "violences": {
+            "taux": 8.1,
+            "faits": 161,
+            "tauxDepart": 8.5,
+            "evolutionPct": -5
+          },
+          "vols": {
+            "taux": 118.0,
+            "faits": 2341,
+            "tauxDepart": 214.1,
+            "evolutionPct": -45
+          },
+          "cambriolages": {
+            "taux": 7.2,
+            "faits": 125,
+            "tauxDepart": 21.8,
+            "evolutionPct": -67
+          }
+        },
+        {
+          "code": "75103",
+          "ville": "paris",
+          "numero": 3,
+          "violences": {
+            "taux": 6.0,
+            "faits": 193,
+            "tauxDepart": 4.6,
+            "evolutionPct": 30
+          },
+          "vols": {
+            "taux": 61.0,
+            "faits": 1962,
+            "tauxDepart": 109.1,
+            "evolutionPct": -44
+          },
+          "cambriolages": {
+            "taux": 7.0,
+            "faits": 184,
+            "tauxDepart": 16.9,
+            "evolutionPct": -59
+          }
+        },
+        {
+          "code": "75104",
+          "ville": "paris",
+          "numero": 4,
+          "violences": {
+            "taux": 6.7,
+            "faits": 182,
+            "tauxDepart": 8.7,
+            "evolutionPct": -23
+          },
+          "vols": {
+            "taux": 93.0,
+            "faits": 2542,
+            "tauxDepart": 190.7,
+            "evolutionPct": -51
+          },
+          "cambriolages": {
+            "taux": 5.8,
+            "faits": 133,
+            "tauxDepart": 14.1,
+            "evolutionPct": -59
+          }
+        },
+        {
+          "code": "75105",
+          "ville": "paris",
+          "numero": 5,
+          "violences": {
+            "taux": 4.2,
+            "faits": 233,
+            "tauxDepart": 4.9,
+            "evolutionPct": -14
+          },
+          "vols": {
+            "taux": 48.5,
+            "faits": 2679,
+            "tauxDepart": 93.0,
+            "evolutionPct": -48
+          },
+          "cambriolages": {
+            "taux": 6.6,
+            "faits": 262,
+            "tauxDepart": 11.2,
+            "evolutionPct": -41
+          }
+        },
+        {
+          "code": "75106",
+          "ville": "paris",
+          "numero": 6,
+          "violences": {
+            "taux": 4.5,
+            "faits": 181,
+            "tauxDepart": 4.1,
+            "evolutionPct": 10
+          },
+          "vols": {
+            "taux": 66.9,
+            "faits": 2702,
+            "tauxDepart": 121.8,
+            "evolutionPct": -45
+          },
+          "cambriolages": {
+            "taux": 7.1,
+            "faits": 226,
+            "tauxDepart": 13.0,
+            "evolutionPct": -45
+          }
+        },
+        {
+          "code": "75107",
+          "ville": "paris",
+          "numero": 7,
+          "violences": {
+            "taux": 4.3,
+            "faits": 205,
+            "tauxDepart": 3.4,
+            "evolutionPct": 26
+          },
+          "vols": {
+            "taux": 46.4,
+            "faits": 2226,
+            "tauxDepart": 89.8,
+            "evolutionPct": -48
+          },
+          "cambriolages": {
+            "taux": 6.6,
+            "faits": 260,
+            "tauxDepart": 9.8,
+            "evolutionPct": -33
+          }
+        },
+        {
+          "code": "75108",
+          "ville": "paris",
+          "numero": 8,
+          "violences": {
+            "taux": 14.4,
+            "faits": 510,
+            "tauxDepart": 12.6,
+            "evolutionPct": 14
+          },
+          "vols": {
+            "taux": 144.3,
+            "faits": 5095,
+            "tauxDepart": 277.6,
+            "evolutionPct": -48
+          },
+          "cambriolages": {
+            "taux": 8.8,
+            "faits": 242,
+            "tauxDepart": 12.4,
+            "evolutionPct": -29
+          }
+        },
+        {
+          "code": "75109",
+          "ville": "paris",
+          "numero": 9,
+          "violences": {
+            "taux": 5.5,
+            "faits": 314,
+            "tauxDepart": 6.7,
+            "evolutionPct": -18
+          },
+          "vols": {
+            "taux": 88.7,
+            "faits": 5078,
+            "tauxDepart": 184.9,
+            "evolutionPct": -52
+          },
+          "cambriolages": {
+            "taux": 3.4,
+            "faits": 139,
+            "tauxDepart": 10.5,
+            "evolutionPct": -68
+          }
+        },
+        {
+          "code": "75110",
+          "ville": "paris",
+          "numero": 10,
+          "violences": {
+            "taux": 13.6,
+            "faits": 1142,
+            "tauxDepart": 7.2,
+            "evolutionPct": 89
+          },
+          "vols": {
+            "taux": 91.7,
+            "faits": 7692,
+            "tauxDepart": 138.6,
+            "evolutionPct": -34
+          },
+          "cambriolages": {
+            "taux": 3.6,
+            "faits": 217,
+            "tauxDepart": 11.8,
+            "evolutionPct": -69
+          }
+        },
+        {
+          "code": "75111",
+          "ville": "paris",
+          "numero": 11,
+          "violences": {
+            "taux": 4.3,
+            "faits": 593,
+            "tauxDepart": 4.7,
+            "evolutionPct": -9
+          },
+          "vols": {
+            "taux": 39.6,
+            "faits": 5476,
+            "tauxDepart": 70.9,
+            "evolutionPct": -44
+          },
+          "cambriolages": {
+            "taux": 3.0,
+            "faits": 306,
+            "tauxDepart": 7.9,
+            "evolutionPct": -62
+          }
+        },
+        {
+          "code": "75112",
+          "ville": "paris",
+          "numero": 12,
+          "violences": {
+            "taux": 6.6,
+            "faits": 909,
+            "tauxDepart": 5.9,
+            "evolutionPct": 12
+          },
+          "vols": {
+            "taux": 50.1,
+            "faits": 6916,
+            "tauxDepart": 76.7,
+            "evolutionPct": -35
+          },
+          "cambriolages": {
+            "taux": 3.5,
+            "faits": 311,
+            "tauxDepart": 9.8,
+            "evolutionPct": -64
+          }
+        },
+        {
+          "code": "75113",
+          "ville": "paris",
+          "numero": 13,
+          "violences": {
+            "taux": 4.3,
+            "faits": 771,
+            "tauxDepart": 4.1,
+            "evolutionPct": 5
+          },
+          "vols": {
+            "taux": 33.6,
+            "faits": 6090,
+            "tauxDepart": 54.0,
+            "evolutionPct": -38
+          },
+          "cambriolages": {
+            "taux": 3.3,
+            "faits": 354,
+            "tauxDepart": 6.2,
+            "evolutionPct": -47
+          }
+        },
+        {
+          "code": "75114",
+          "ville": "paris",
+          "numero": 14,
+          "violences": {
+            "taux": 3.8,
+            "faits": 521,
+            "tauxDepart": 3.8,
+            "evolutionPct": 0
+          },
+          "vols": {
+            "taux": 33.4,
+            "faits": 4562,
+            "tauxDepart": 50.4,
+            "evolutionPct": -34
+          },
+          "cambriolages": {
+            "taux": 4.3,
+            "faits": 373,
+            "tauxDepart": 5.0,
+            "evolutionPct": -14
+          }
+        },
+        {
+          "code": "75115",
+          "ville": "paris",
+          "numero": 15,
+          "violences": {
+            "taux": 3.8,
+            "faits": 865,
+            "tauxDepart": 2.4,
+            "evolutionPct": 58
+          },
+          "vols": {
+            "taux": 25.0,
+            "faits": 5741,
+            "tauxDepart": 37.0,
+            "evolutionPct": -32
+          },
+          "cambriolages": {
+            "taux": 6.3,
+            "faits": 956,
+            "tauxDepart": 7.5,
+            "evolutionPct": -16
+          }
+        },
+        {
+          "code": "75116",
+          "ville": "paris",
+          "numero": 16,
+          "violences": {
+            "taux": 2.7,
+            "faits": 434,
+            "tauxDepart": 3.4,
+            "evolutionPct": -21
+          },
+          "vols": {
+            "taux": 28.8,
+            "faits": 4586,
+            "tauxDepart": 40.2,
+            "evolutionPct": -28
+          },
+          "cambriolages": {
+            "taux": 6.0,
+            "faits": 621,
+            "tauxDepart": 9.0,
+            "evolutionPct": -33
+          }
+        },
+        {
+          "code": "75117",
+          "ville": "paris",
+          "numero": 17,
+          "violences": {
+            "taux": 3.2,
+            "faits": 509,
+            "tauxDepart": 3.2,
+            "evolutionPct": 0
+          },
+          "vols": {
+            "taux": 28.3,
+            "faits": 4507,
+            "tauxDepart": 39.7,
+            "evolutionPct": -29
+          },
+          "cambriolages": {
+            "taux": 5.1,
+            "faits": 552,
+            "tauxDepart": 9.3,
+            "evolutionPct": -45
+          }
+        },
+        {
+          "code": "75118",
+          "ville": "paris",
+          "numero": 18,
+          "violences": {
+            "taux": 5.6,
+            "faits": 1022,
+            "tauxDepart": 5.5,
+            "evolutionPct": 2
+          },
+          "vols": {
+            "taux": 51.0,
+            "faits": 9342,
+            "tauxDepart": 86.5,
+            "evolutionPct": -41
+          },
+          "cambriolages": {
+            "taux": 5.9,
+            "faits": 731,
+            "tauxDepart": 11.0,
+            "evolutionPct": -46
+          }
+        },
+        {
+          "code": "75119",
+          "ville": "paris",
+          "numero": 19,
+          "violences": {
+            "taux": 6.1,
+            "faits": 1092,
+            "tauxDepart": 4.9,
+            "evolutionPct": 24
+          },
+          "vols": {
+            "taux": 38.8,
+            "faits": 6940,
+            "tauxDepart": 49.9,
+            "evolutionPct": -22
+          },
+          "cambriolages": {
+            "taux": 5.4,
+            "faits": 546,
+            "tauxDepart": 6.9,
+            "evolutionPct": -22
+          }
+        },
+        {
+          "code": "75120",
+          "ville": "paris",
+          "numero": 20,
+          "violences": {
+            "taux": 4.3,
+            "faits": 789,
+            "tauxDepart": 3.9,
+            "evolutionPct": 10
+          },
+          "vols": {
+            "taux": 20.2,
+            "faits": 3737,
+            "tauxDepart": 24.8,
+            "evolutionPct": -19
+          },
+          "cambriolages": {
+            "taux": 4.3,
+            "faits": 462,
+            "tauxDepart": 6.4,
+            "evolutionPct": -33
+          }
+        }
+      ]
+    },
+    {
+      "id": "lyon",
+      "nom": "Lyon",
+      "code": "69123",
+      "cambriolages": {
+        "tauxDepart": 10.0,
+        "taux": 6.9,
+        "faits": 2191,
+        "evolutionPct": -31
+      },
+      "violences": {
+        "tauxDepart": 5.0,
+        "taux": 5.3,
+        "faits": 2754,
+        "evolutionPct": 6
+      },
+      "vols": {
+        "tauxDepart": 42.4,
+        "taux": 39.3,
+        "faits": 20410,
+        "evolutionPct": -7
+      },
+      "arrondissements": [
+        {
+          "code": "69381",
+          "ville": "lyon",
+          "numero": 1,
+          "violences": {
+            "tauxDepart": 10.2,
+            "taux": 8.6,
+            "faits": 248,
+            "evolutionPct": -16
+          },
+          "vols": {
+            "tauxDepart": 78.5,
+            "taux": 59.6,
+            "faits": 1711,
+            "evolutionPct": -24
+          },
+          "cambriolages": {
+            "tauxDepart": 9.1,
+            "taux": 8.5,
+            "faits": 162,
+            "evolutionPct": -7
+          }
+        },
+        {
+          "code": "69382",
+          "ville": "lyon",
+          "numero": 2,
+          "violences": {
+            "tauxDepart": 12.5,
+            "taux": 12.5,
+            "faits": 374,
+            "evolutionPct": 0
+          },
+          "vols": {
+            "tauxDepart": 116.6,
+            "taux": 124.5,
+            "faits": 3732,
+            "evolutionPct": 7
+          },
+          "cambriolages": {
+            "tauxDepart": 12.9,
+            "taux": 8.1,
+            "faits": 180,
+            "evolutionPct": -37
+          }
+        },
+        {
+          "code": "69383",
+          "ville": "lyon",
+          "numero": 3,
+          "violences": {
+            "tauxDepart": 5.0,
+            "taux": 6.3,
+            "faits": 632,
+            "evolutionPct": 26
+          },
+          "vols": {
+            "tauxDepart": 55.9,
+            "taux": 53.2,
+            "faits": 5354,
+            "evolutionPct": -5
+          },
+          "cambriolages": {
+            "tauxDepart": 9.6,
+            "taux": 6.7,
+            "faits": 420,
+            "evolutionPct": -30
+          }
+        },
+        {
+          "code": "69384",
+          "ville": "lyon",
+          "numero": 4,
+          "violences": {
+            "tauxDepart": 2.9,
+            "taux": 2.6,
+            "faits": 89,
+            "evolutionPct": -10
+          },
+          "vols": {
+            "tauxDepart": 18.3,
+            "taux": 17.2,
+            "faits": 597,
+            "evolutionPct": -6
+          },
+          "cambriolages": {
+            "tauxDepart": 8.9,
+            "taux": 6.4,
+            "faits": 135,
+            "evolutionPct": -28
+          }
+        },
+        {
+          "code": "69385",
+          "ville": "lyon",
+          "numero": 5,
+          "violences": {
+            "tauxDepart": 2.5,
+            "taux": 3.3,
+            "faits": 156,
+            "evolutionPct": 32
+          },
+          "vols": {
+            "tauxDepart": 19.0,
+            "taux": 23.0,
+            "faits": 1098,
+            "evolutionPct": 21
+          },
+          "cambriolages": {
+            "tauxDepart": 13.2,
+            "taux": 8.4,
+            "faits": 221,
+            "evolutionPct": -36
+          }
+        },
+        {
+          "code": "69386",
+          "ville": "lyon",
+          "numero": 6,
+          "violences": {
+            "tauxDepart": 2.6,
+            "taux": 3.8,
+            "faits": 189,
+            "evolutionPct": 46
+          },
+          "vols": {
+            "tauxDepart": 25.7,
+            "taux": 32.6,
+            "faits": 1611,
+            "evolutionPct": 27
+          },
+          "cambriolages": {
+            "tauxDepart": 12.6,
+            "taux": 7.5,
+            "faits": 240,
+            "evolutionPct": -40
+          }
+        },
+        {
+          "code": "69387",
+          "ville": "lyon",
+          "numero": 7,
+          "violences": {
+            "tauxDepart": 6.0,
+            "taux": 5.5,
+            "faits": 485,
+            "evolutionPct": -8
+          },
+          "vols": {
+            "tauxDepart": 54.3,
+            "taux": 39.2,
+            "faits": 3465,
+            "evolutionPct": -28
+          },
+          "cambriolages": {
+            "tauxDepart": 9.2,
+            "taux": 6.3,
+            "faits": 347,
+            "evolutionPct": -32
+          }
+        },
+        {
+          "code": "69388",
+          "ville": "lyon",
+          "numero": 8,
+          "violences": {
+            "tauxDepart": 3.9,
+            "taux": 4.1,
+            "faits": 356,
+            "evolutionPct": 5
+          },
+          "vols": {
+            "tauxDepart": 21.5,
+            "taux": 22.8,
+            "faits": 1957,
+            "evolutionPct": 6
+          },
+          "cambriolages": {
+            "tauxDepart": 7.5,
+            "taux": 6.3,
+            "faits": 313,
+            "evolutionPct": -16
+          }
+        },
+        {
+          "code": "69389",
+          "ville": "lyon",
+          "numero": 9,
+          "violences": {
+            "tauxDepart": 4.6,
+            "taux": 4.2,
+            "faits": 225,
+            "evolutionPct": -9
+          },
+          "vols": {
+            "tauxDepart": 22.3,
+            "taux": 16.5,
+            "faits": 885,
+            "evolutionPct": -26
+          },
+          "cambriolages": {
+            "tauxDepart": 10.1,
+            "taux": 5.6,
+            "faits": 173,
+            "evolutionPct": -45
+          }
+        }
+      ]
+    },
+    {
+      "id": "marseille",
+      "nom": "Marseille",
+      "code": "13055",
+      "cambriolages": {
+        "tauxDepart": 12.2,
+        "taux": 9.3,
+        "faits": 4346,
+        "evolutionPct": -24
+      },
+      "violences": {
+        "tauxDepart": 4.7,
+        "taux": 5.0,
+        "faits": 4454,
+        "evolutionPct": 6
+      },
+      "vols": {
+        "tauxDepart": 18.8,
+        "taux": 19.3,
+        "faits": 17122,
+        "evolutionPct": 3
+      },
+      "arrondissements": [
+        {
+          "code": "13201",
+          "ville": "marseille",
+          "numero": 1,
+          "violences": {
+            "tauxDepart": 15.4,
+            "taux": 15.9,
+            "faits": 597,
+            "evolutionPct": 3
+          },
+          "vols": {
+            "tauxDepart": 92.3,
+            "taux": 95.9,
+            "faits": 3607,
+            "evolutionPct": 4
+          },
+          "cambriolages": {
+            "tauxDepart": 15.7,
+            "taux": 15.1,
+            "faits": 366,
+            "evolutionPct": -4
+          }
+        },
+        {
+          "code": "13202",
+          "ville": "marseille",
+          "numero": 2,
+          "violences": {
+            "tauxDepart": 8.2,
+            "taux": 10.0,
+            "faits": 244,
+            "evolutionPct": 22
+          },
+          "vols": {
+            "tauxDepart": 56.9,
+            "taux": 50.5,
+            "faits": 1230,
+            "evolutionPct": -11
+          },
+          "cambriolages": {
+            "tauxDepart": 13.6,
+            "taux": 9.9,
+            "faits": 162,
+            "evolutionPct": -27
+          }
+        },
+        {
+          "code": "13203",
+          "ville": "marseille",
+          "numero": 3,
+          "violences": {
+            "tauxDepart": 6.7,
+            "taux": 6.7,
+            "faits": 388,
+            "evolutionPct": 0
+          },
+          "vols": {
+            "tauxDepart": 16.0,
+            "taux": 16.1,
+            "faits": 936,
+            "evolutionPct": 1
+          },
+          "cambriolages": {
+            "tauxDepart": 9.4,
+            "taux": 8.4,
+            "faits": 234,
+            "evolutionPct": -11
+          }
+        },
+        {
+          "code": "13204",
+          "ville": "marseille",
+          "numero": 4,
+          "violences": {
+            "tauxDepart": 3.2,
+            "taux": 4.0,
+            "faits": 197,
+            "evolutionPct": 25
+          },
+          "vols": {
+            "tauxDepart": 12.8,
+            "taux": 17.7,
+            "faits": 874,
+            "evolutionPct": 38
+          },
+          "cambriolages": {
+            "tauxDepart": 9.1,
+            "taux": 14.2,
+            "faits": 426,
+            "evolutionPct": 56
+          }
+        },
+        {
+          "code": "13205",
+          "ville": "marseille",
+          "numero": 5,
+          "violences": {
+            "tauxDepart": 4.1,
+            "taux": 3.9,
+            "faits": 177,
+            "evolutionPct": -5
+          },
+          "vols": {
+            "tauxDepart": 15.8,
+            "taux": 20.7,
+            "faits": 944,
+            "evolutionPct": 31
+          },
+          "cambriolages": {
+            "tauxDepart": 9.0,
+            "taux": 11.8,
+            "faits": 368,
+            "evolutionPct": 31
+          }
+        },
+        {
+          "code": "13206",
+          "ville": "marseille",
+          "numero": 6,
+          "violences": {
+            "tauxDepart": 4.6,
+            "taux": 6.2,
+            "faits": 238,
+            "evolutionPct": 35
+          },
+          "vols": {
+            "tauxDepart": 40.1,
+            "taux": 50.1,
+            "faits": 1927,
+            "evolutionPct": 25
+          },
+          "cambriolages": {
+            "tauxDepart": 15.9,
+            "taux": 9.5,
+            "faits": 263,
+            "evolutionPct": -40
+          }
+        },
+        {
+          "code": "13207",
+          "ville": "marseille",
+          "numero": 7,
+          "violences": {
+            "tauxDepart": 3.3,
+            "taux": 4.1,
+            "faits": 143,
+            "evolutionPct": 24
+          },
+          "vols": {
+            "tauxDepart": 32.9,
+            "taux": 29.9,
+            "faits": 1050,
+            "evolutionPct": -9
+          },
+          "cambriolages": {
+            "tauxDepart": 18.5,
+            "taux": 14.1,
+            "faits": 321,
+            "evolutionPct": -24
+          }
+        },
+        {
+          "code": "13208",
+          "ville": "marseille",
+          "numero": 8,
+          "violences": {
+            "tauxDepart": 3.5,
+            "taux": 4.6,
+            "faits": 392,
+            "evolutionPct": 31
+          },
+          "vols": {
+            "tauxDepart": 22.1,
+            "taux": 20.4,
+            "faits": 1731,
+            "evolutionPct": -8
+          },
+          "cambriolages": {
+            "tauxDepart": 13.0,
+            "taux": 7.3,
+            "faits": 353,
+            "evolutionPct": -44
+          }
+        },
+        {
+          "code": "13209",
+          "ville": "marseille",
+          "numero": 9,
+          "violences": {
+            "tauxDepart": 3.6,
+            "taux": 3.2,
+            "faits": 247,
+            "evolutionPct": -11
+          },
+          "vols": {
+            "tauxDepart": 6.5,
+            "taux": 7.2,
+            "faits": 557,
+            "evolutionPct": 11
+          },
+          "cambriolages": {
+            "tauxDepart": 8.8,
+            "taux": 6.0,
+            "faits": 232,
+            "evolutionPct": -32
+          }
+        },
+        {
+          "code": "13210",
+          "ville": "marseille",
+          "numero": 10,
+          "violences": {
+            "tauxDepart": 3.5,
+            "taux": 2.9,
+            "faits": 172,
+            "evolutionPct": -17
+          },
+          "vols": {
+            "tauxDepart": 7.4,
+            "taux": 7.4,
+            "faits": 447,
+            "evolutionPct": 0
+          },
+          "cambriolages": {
+            "tauxDepart": 7.2,
+            "taux": 4.4,
+            "faits": 138,
+            "evolutionPct": -39
+          }
+        },
+        {
+          "code": "13211",
+          "ville": "marseille",
+          "numero": 11,
+          "violences": {
+            "tauxDepart": 3.0,
+            "taux": 3.2,
+            "faits": 193,
+            "evolutionPct": 7
+          },
+          "vols": {
+            "tauxDepart": 8.9,
+            "taux": 9.2,
+            "faits": 552,
+            "evolutionPct": 3
+          },
+          "cambriolages": {
+            "tauxDepart": 14.9,
+            "taux": 9.8,
+            "faits": 256,
+            "evolutionPct": -34
+          }
+        },
+        {
+          "code": "13212",
+          "ville": "marseille",
+          "numero": 12,
+          "violences": {
+            "tauxDepart": 2.0,
+            "taux": 1.6,
+            "faits": 105,
+            "evolutionPct": -20
+          },
+          "vols": {
+            "tauxDepart": 6.1,
+            "taux": 8.3,
+            "faits": 533,
+            "evolutionPct": 36
+          },
+          "cambriolages": {
+            "tauxDepart": 19.2,
+            "taux": 7.7,
+            "faits": 242,
+            "evolutionPct": -60
+          }
+        },
+        {
+          "code": "13213",
+          "ville": "marseille",
+          "numero": 13,
+          "violences": {
+            "tauxDepart": 4.1,
+            "taux": 3.8,
+            "faits": 364,
+            "evolutionPct": -7
+          },
+          "vols": {
+            "tauxDepart": 5.9,
+            "taux": 7.7,
+            "faits": 737,
+            "evolutionPct": 31
+          },
+          "cambriolages": {
+            "tauxDepart": 10.4,
+            "taux": 9.7,
+            "faits": 415,
+            "evolutionPct": -7
+          }
+        },
+        {
+          "code": "13214",
+          "ville": "marseille",
+          "numero": 14,
+          "violences": {
+            "tauxDepart": 5.0,
+            "taux": 6.4,
+            "faits": 386,
+            "evolutionPct": 28
+          },
+          "vols": {
+            "tauxDepart": 9.1,
+            "taux": 10.2,
+            "faits": 620,
+            "evolutionPct": 12
+          },
+          "cambriolages": {
+            "tauxDepart": 12.0,
+            "taux": 8.4,
+            "faits": 226,
+            "evolutionPct": -30
+          }
+        },
+        {
+          "code": "13215",
+          "ville": "marseille",
+          "numero": 15,
+          "violences": {
+            "tauxDepart": 5.8,
+            "taux": 6.5,
+            "faits": 513,
+            "evolutionPct": 12
+          },
+          "vols": {
+            "tauxDepart": 16.0,
+            "taux": 14.7,
+            "faits": 1164,
+            "evolutionPct": -8
+          },
+          "cambriolages": {
+            "tauxDepart": 9.9,
+            "taux": 8.2,
+            "faits": 272,
+            "evolutionPct": -17
+          }
+        },
+        {
+          "code": "13216",
+          "ville": "marseille",
+          "numero": 16,
+          "violences": {
+            "tauxDepart": 5.9,
+            "taux": 6.2,
+            "faits": 98,
+            "evolutionPct": 5
+          },
+          "vols": {
+            "tauxDepart": 15.1,
+            "taux": 13.4,
+            "faits": 213,
+            "evolutionPct": -11
+          },
+          "cambriolages": {
+            "tauxDepart": 13.5,
+            "taux": 9.2,
+            "faits": 72,
+            "evolutionPct": -32
+          }
+        }
+      ]
+    }
+  ]
+}
