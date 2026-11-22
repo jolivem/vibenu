@@ -5,6 +5,7 @@ import { meta as ensoleillement } from "./villes-les-plus-ensoleillees-de-france
 import { meta as zoneTendue } from "./zone-tendue-liste-des-communes/meta";
 import { meta as loyers } from "./loyer-m2-50-plus-grandes-villes/meta";
 import { meta as securite } from "./securite-arrondissements-paris-lyon-marseille/meta";
+import { meta as risques } from "./risques-naturels-adresse-catastrophe-naturelle/meta";
 
 /**
  * Le registre des articles publiés, du plus récent au plus ancien : source unique de
@@ -17,6 +18,10 @@ interface ArticleEntry {
 }
 
 export const ARTICLES: ArticleEntry[] = [
+  {
+    meta: risques,
+    load: () => import("./risques-naturels-adresse-catastrophe-naturelle/index.mdx"),
+  },
   {
     meta: securite,
     load: () => import("./securite-arrondissements-paris-lyon-marseille/index.mdx"),

@@ -38,13 +38,21 @@ export function VerticalBars({
   rows,
   references = [],
   label,
+  ordre = "valeur",
 }: {
   rows: VerticalBarRow[];
   references?: VerticalBarReference[];
   label: string;
+  /** « valeur » : de la plus haute à la plus basse ; « donne » : l'ordre reçu (une série d'années). */
+  ordre?: "valeur" | "donne";
 }) {
-  const triees = [...rows].sort((a, b) => b.valeur - a.valeur);
+  const triees = ordre === "donne" ? rows : [...rows].sort((a, b) => b.valeur - a.valeur);
   const max = Math.max(...triees.map((r) => r.valeur), ...references.map((r) => r.valeur), 0);
+  // Colonnes étiquetées : la plus haute et la plus basse, repérées par leur valeur — en tête et
+  // en queue quand les colonnes sont triées, n'importe où dans une série chronologique.
+  const valeurs = triees.map((r) => r.valeur);
+  const iMax = valeurs.indexOf(Math.max(...valeurs));
+  const iMin = valeurs.lastIndexOf(Math.min(...valeurs));
   if (max <= 0) return null;
   const hauteur = (v: number) => `${(v / max) * HAUTEUR_MAX}%`;
 
@@ -55,8 +63,8 @@ export function VerticalBars({
           <div className="vbars-plot" aria-hidden="true">
             {triees.map((r, i) => (
               <div key={r.id} className="vbars-col" title={`${r.nom} : ${r.texte}`}>
-                {i === 0 && <span className="vbars-value is-max">{r.nombre}</span>}
-                {i > 0 && i === triees.length - 1 && (
+                {i === iMax && <span className="vbars-value is-max">{r.nombre}</span>}
+                {i !== iMax && i === iMin && (
                   <span className="vbars-value is-min">{r.nombre}</span>
                 )}
                 <span className="vbars-bar" style={{ height: hauteur(r.valeur) }} />

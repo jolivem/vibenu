@@ -1,0 +1,254 @@
+{
+  "generatedAt": "2026-11-22",
+  "fichier": "2026-11-02",
+  "premierJo": "1982-09-30",
+  "dernierJo": "2026-01-23",
+  "reconnaissances": 247140,
+  "nbCommunesFrance": 34874,
+  "nbCommunesTouchees": 34596,
+  "partCommunesToucheesPct": 99,
+  "perils": [
+    {
+      "code": "ICB",
+      "libelle": "Inondations et coulées de boue",
+      "reconnaissances": 139419
+    },
+    {
+      "code": "SEC",
+      "libelle": "Sécheresse (retrait-gonflement des argiles)",
+      "reconnaissances": 43417
+    },
+    {
+      "code": "MVT",
+      "libelle": "Mouvements de terrain",
+      "reconnaissances": 31711
+    },
+    {
+      "code": "TMP",
+      "libelle": "Tempête",
+      "reconnaissances": 16025
+    },
+    {
+      "code": "CMV",
+      "libelle": "Chocs mécaniques des vagues",
+      "reconnaissances": 6720
+    },
+    {
+      "code": "GLT",
+      "libelle": "Glissement de terrain",
+      "reconnaissances": 3182
+    },
+    {
+      "code": "PDN",
+      "libelle": "Poids de la neige",
+      "reconnaissances": 2758
+    },
+    {
+      "code": "IRN",
+      "libelle": "Inondations par remontée de nappe",
+      "reconnaissances": 1368
+    }
+  ],
+  "partInondationsPct": 56,
+  "secheresse": {
+    "anneeDebut": 2010,
+    "parAnnee": [
+      {
+        "annee": 2010,
+        "reconnaissances": 103
+      },
+      {
+        "annee": 2011,
+        "reconnaissances": 2281
+      },
+      {
+        "annee": 2012,
+        "reconnaissances": 651
+      },
+      {
+        "annee": 2013,
+        "reconnaissances": 23
+      },
+      {
+        "annee": 2014,
+        "reconnaissances": 44
+      },
+      {
+        "annee": 2015,
+        "reconnaissances": 206
+      },
+      {
+        "annee": 2016,
+        "reconnaissances": 989
+      },
+      {
+        "annee": 2017,
+        "reconnaissances": 2117
+      },
+      {
+        "annee": 2018,
+        "reconnaissances": 4071
+      },
+      {
+        "annee": 2019,
+        "reconnaissances": 3056
+      },
+      {
+        "annee": 2020,
+        "reconnaissances": 2611
+      },
+      {
+        "annee": 2021,
+        "reconnaissances": 265
+      },
+      {
+        "annee": 2022,
+        "reconnaissances": 7279
+      },
+      {
+        "annee": 2023,
+        "reconnaissances": 1133
+      }
+    ],
+    "anneeRecord": 2022,
+    "record": 7279,
+    "moyenneAvant2017": 614,
+    "anneeRupture": 2017
+  },
+  "communes": [
+    {
+      "code": "06088",
+      "nom": "Nice",
+      "dep": "06",
+      "depNom": "Alpes-Maritimes",
+      "reconnaissances": 83,
+      "inondations": 37
+    },
+    {
+      "code": "06027",
+      "nom": "Cagnes-sur-Mer",
+      "dep": "06",
+      "depNom": "Alpes-Maritimes",
+      "reconnaissances": 65,
+      "inondations": 27
+    },
+    {
+      "code": "49261",
+      "nom": "Gennes-Val-de-Loire",
+      "dep": "49",
+      "depNom": "Maine-et-Loire",
+      "reconnaissances": 55,
+      "inondations": 25
+    },
+    {
+      "code": "06004",
+      "nom": "Antibes",
+      "dep": "06",
+      "depNom": "Alpes-Maritimes",
+      "reconnaissances": 52,
+      "inondations": 31
+    },
+    {
+      "code": "06029",
+      "nom": "Cannes",
+      "dep": "06",
+      "depNom": "Alpes-Maritimes",
+      "reconnaissances": 52,
+      "inondations": 23
+    },
+    {
+      "code": "13055",
+      "nom": "Marseille",
+      "dep": "13",
+      "depNom": "Bouches-du-Rhône",
+      "reconnaissances": 51,
+      "inondations": 29
+    },
+    {
+      "code": "33063",
+      "nom": "Bordeaux",
+      "dep": "33",
+      "depNom": "Gironde",
+      "reconnaissances": 50,
+      "inondations": 23
+    },
+    {
+      "code": "31555",
+      "nom": "Toulouse",
+      "dep": "31",
+      "depNom": "Haute-Garonne",
+      "reconnaissances": 49,
+      "inondations": 19
+    },
+    {
+      "code": "49125",
+      "nom": "Doué-en-Anjou",
+      "dep": "49",
+      "depNom": "Maine-et-Loire",
+      "reconnaissances": 45,
+      "inondations": 16
+    },
+    {
+      "code": "24026",
+      "nom": "Bassillac et Auberoche",
+      "dep": "24",
+      "depNom": "Dordogne",
+      "reconnaissances": 44,
+      "inondations": 17
+    },
+    {
+      "code": "06161",
+      "nom": "Villeneuve-Loubet",
+      "dep": "06",
+      "depNom": "Alpes-Maritimes",
+      "reconnaissances": 43,
+      "inondations": 20
+    },
+    {
+      "code": "33281",
+      "nom": "Mérignac",
+      "dep": "33",
+      "depNom": "Gironde",
+      "reconnaissances": 43,
+      "inondations": 20
+    },
+    {
+      "code": "06059",
+      "nom": "Èze",
+      "dep": "06",
+      "depNom": "Alpes-Maritimes",
+      "reconnaissances": 42,
+      "inondations": 14
+    },
+    {
+      "code": "06069",
+      "nom": "Grasse",
+      "dep": "06",
+      "depNom": "Alpes-Maritimes",
+      "reconnaissances": 42,
+      "inondations": 22
+    },
+    {
+      "code": "06048",
+      "nom": "Contes",
+      "dep": "06",
+      "depNom": "Alpes-Maritimes",
+      "reconnaissances": 41,
+      "inondations": 17
+    }
+  ],
+  "reglementation": {
+    "etatRisquesValiditeMois": 6,
+    "declarationJours": 30,
+    "franchise": 380,
+    "franchiseSecheresse": 1520,
+    "sismiciteNiveauMin": 2,
+    "sismiciteNiveauMax": 5,
+    "radonNiveau": 3,
+    "sources": {
+      "etatRisques": "https://www.service-public.gouv.fr/particuliers/vosdroits/F12239",
+      "assurance": "https://www.service-public.gouv.fr/particuliers/vosdroits/F3076",
+      "errial": "https://errial.georisques.gouv.fr/"
+    }
+  }
+}

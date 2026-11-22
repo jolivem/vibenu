@@ -5214,3 +5214,7 @@ html {
   color: var(--muted);
   margin: 6px 0 0;
 }
+
+.article-figure {
+  margin: 24px 0 32px;
+}
