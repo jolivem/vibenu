@@ -31,7 +31,7 @@ Un article n'est publié que s'il figure dans `index.ts` (registre : index, site
 
 ## Typographie
 
-Espace insécable (U+00A0) dans les milliers (« 2 873 »), avant « % » et après « n° » : sans
+Espace insécable (U+00A0) dans les milliers (« 2 873 »), avant « % » et « € », et après « n° » : sans
 elle, les nombres se coupent en fin de ligne sur mobile. Les règles de droit citées par un
 guide (préavis, taux) sont écrites par son script dans `data.json`, sous `reglementation`,
 avec l'adresse de leur source.

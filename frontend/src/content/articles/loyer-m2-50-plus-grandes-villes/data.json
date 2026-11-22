@@ -1,0 +1,1682 @@
+{
+  "generatedAt": "2026-11-22",
+  "annee": 2025,
+  "trimestre": 3,
+  "nbVilles": 50,
+  "minAnnonces": 30,
+  "minR2": 0.5,
+  "surfaceExemple": 40,
+  "faits": {
+    "plusCher": "75056",
+    "moinsCher": "42218",
+    "rapport": 3.2,
+    "secondPlusCher": "92012",
+    "rapportParisSecond": 1.1,
+    "mediane": 14.4,
+    "nbAuDessus15": 21,
+    "nbSous11": 2,
+    "primePetitsMediane": 27,
+    "ecartExemple": 904
+  },
+  "seuils": {
+    "haut": 15,
+    "bas": 11
+  },
+  "villesPLM": [
+    "75056",
+    "69123",
+    "13055"
+  ],
+  "villes": [
+    {
+      "code": "75056",
+      "nom": "Paris",
+      "dep": "75",
+      "population": 2129257,
+      "app": {
+        "loyer": 32.1,
+        "annonces": 269792,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 34.0,
+        "annonces": 191727,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 31.7,
+        "annonces": 78129,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 24.7,
+        "annonces": 662,
+        "niveau": "mixte",
+        "fiable": true
+      },
+      "rang": 1,
+      "exempleMensuel": 1360,
+      "primePetitsPct": 7
+    },
+    {
+      "code": "92012",
+      "nom": "Boulogne-Billancourt",
+      "dep": "92",
+      "population": 121391,
+      "app": {
+        "loyer": 29.7,
+        "annonces": 20474,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 32.0,
+        "annonces": 14021,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 28.5,
+        "annonces": 6473,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 27.5,
+        "annonces": 106,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 2,
+      "exempleMensuel": 1280,
+      "primePetitsPct": 12
+    },
+    {
+      "code": "92004",
+      "nom": "Asnières-sur-Seine",
+      "dep": "92",
+      "population": 92100,
+      "app": {
+        "loyer": 24.6,
+        "annonces": 13803,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 27.5,
+        "annonces": 9087,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 22.9,
+        "annonces": 4727,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 24.6,
+        "annonces": 131,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 3,
+      "exempleMensuel": 1100,
+      "primePetitsPct": 20
+    },
+    {
+      "code": "92050",
+      "nom": "Nanterre",
+      "dep": "92",
+      "population": 98745,
+      "app": {
+        "loyer": 23.8,
+        "annonces": 6657,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 26.3,
+        "annonces": 4032,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 23.1,
+        "annonces": 2607,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 22.6,
+        "annonces": 219,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 4,
+      "exempleMensuel": 1052,
+      "primePetitsPct": 14
+    },
+    {
+      "code": "93048",
+      "nom": "Montreuil",
+      "dep": "93",
+      "population": 111333,
+      "app": {
+        "loyer": 22.9,
+        "annonces": 8009,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 25.5,
+        "annonces": 5618,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 21.2,
+        "annonces": 2436,
+        "niveau": "commune",
+        "fiable": false
+      },
+      "maison": {
+        "loyer": 23.0,
+        "annonces": 232,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 5,
+      "exempleMensuel": 1020,
+      "primePetitsPct": 20
+    },
+    {
+      "code": "93066",
+      "nom": "Saint-Denis",
+      "dep": "93",
+      "population": 149781,
+      "app": {
+        "loyer": 21.0,
+        "annonces": 7647,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 24.1,
+        "annonces": 4776,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 18.9,
+        "annonces": 2902,
+        "niveau": "commune",
+        "fiable": false
+      },
+      "maison": {
+        "loyer": 18.0,
+        "annonces": 256,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 6,
+      "exempleMensuel": 964,
+      "primePetitsPct": 28
+    },
+    {
+      "code": "94028",
+      "nom": "Créteil",
+      "dep": "94",
+      "population": 93288,
+      "app": {
+        "loyer": 21.0,
+        "annonces": 7111,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 24.9,
+        "annonces": 4403,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 19.1,
+        "annonces": 2661,
+        "niveau": "commune",
+        "fiable": false
+      },
+      "maison": {
+        "loyer": 18.5,
+        "annonces": 118,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 7,
+      "exempleMensuel": 996,
+      "primePetitsPct": 30
+    },
+    {
+      "code": "94081",
+      "nom": "Vitry-sur-Seine",
+      "dep": "94",
+      "population": 95761,
+      "app": {
+        "loyer": 20.8,
+        "annonces": 6589,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 23.9,
+        "annonces": 3947,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 18.8,
+        "annonces": 2637,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 20.6,
+        "annonces": 224,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 8,
+      "exempleMensuel": 956,
+      "primePetitsPct": 27
+    },
+    {
+      "code": "06088",
+      "nom": "Nice",
+      "dep": "06",
+      "population": 356603,
+      "app": {
+        "loyer": 20.4,
+        "annonces": 71615,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 22.7,
+        "annonces": 50285,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 19.7,
+        "annonces": 21293,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 21.6,
+        "annonces": 730,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 9,
+      "exempleMensuel": 908,
+      "primePetitsPct": 15
+    },
+    {
+      "code": "74010",
+      "nom": "Annecy",
+      "dep": "74",
+      "population": 134131,
+      "app": {
+        "loyer": 20.4,
+        "annonces": 16239,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 20.9,
+        "annonces": 9216,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 18.0,
+        "annonces": 7017,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 18.7,
+        "annonces": 336,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 10,
+      "exempleMensuel": 836,
+      "primePetitsPct": 16
+    },
+    {
+      "code": "95018",
+      "nom": "Argenteuil",
+      "dep": "95",
+      "population": 107563,
+      "app": {
+        "loyer": 19.4,
+        "annonces": 7596,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 22.2,
+        "annonces": 4707,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 17.8,
+        "annonces": 2915,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 18.2,
+        "annonces": 588,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 11,
+      "exempleMensuel": 888,
+      "primePetitsPct": 25
+    },
+    {
+      "code": "13001",
+      "nom": "Aix-en-Provence",
+      "dep": "13",
+      "population": 151033,
+      "app": {
+        "loyer": 19.1,
+        "annonces": 52857,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 21.9,
+        "annonces": 34570,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 17.5,
+        "annonces": 18362,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 19.7,
+        "annonces": 2673,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 12,
+      "exempleMensuel": 876,
+      "primePetitsPct": 25
+    },
+    {
+      "code": "97415",
+      "nom": "Saint-Paul",
+      "dep": "974",
+      "population": 107501,
+      "app": {
+        "loyer": 18.9,
+        "annonces": 4503,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 21.9,
+        "annonces": 2151,
+        "niveau": "commune",
+        "fiable": false
+      },
+      "app3": {
+        "loyer": 16.7,
+        "annonces": 2356,
+        "niveau": "commune",
+        "fiable": false
+      },
+      "maison": {
+        "loyer": 15.6,
+        "annonces": 3322,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 13,
+      "exempleMensuel": 876,
+      "primePetitsPct": 31
+    },
+    {
+      "code": "69123",
+      "nom": "Lyon",
+      "dep": "69",
+      "population": 526912,
+      "app": {
+        "loyer": 16.6,
+        "annonces": 144607,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 19.1,
+        "annonces": 89255,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 15.3,
+        "annonces": 55087,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 16.5,
+        "annonces": 728,
+        "niveau": "mixte",
+        "fiable": true
+      },
+      "rang": 14,
+      "exempleMensuel": 764,
+      "primePetitsPct": 25
+    },
+    {
+      "code": "13055",
+      "nom": "Marseille",
+      "dep": "13",
+      "population": 883466,
+      "app": {
+        "loyer": 16.3,
+        "annonces": 148089,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 18.6,
+        "annonces": 86224,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 15.0,
+        "annonces": 61931,
+        "niveau": "commune",
+        "fiable": false
+      },
+      "maison": {
+        "loyer": 17.4,
+        "annonces": 3784,
+        "niveau": "mixte",
+        "fiable": true
+      },
+      "rang": 15,
+      "exempleMensuel": 744,
+      "primePetitsPct": 24
+    },
+    {
+      "code": "33063",
+      "nom": "Bordeaux",
+      "dep": "33",
+      "population": 268822,
+      "app": {
+        "loyer": 16.0,
+        "annonces": 84641,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 18.5,
+        "annonces": 56919,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 14.6,
+        "annonces": 28156,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 15.5,
+        "annonces": 4258,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 16,
+      "exempleMensuel": 740,
+      "primePetitsPct": 27
+    },
+    {
+      "code": "59350",
+      "nom": "Lille",
+      "dep": "59",
+      "population": 240523,
+      "app": {
+        "loyer": 15.8,
+        "annonces": 77376,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 18.1,
+        "annonces": 54792,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 14.6,
+        "annonces": 22549,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.7,
+        "annonces": 3579,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 17,
+      "exempleMensuel": 724,
+      "primePetitsPct": 24
+    },
+    {
+      "code": "67482",
+      "nom": "Strasbourg",
+      "dep": "67",
+      "population": 294564,
+      "app": {
+        "loyer": 15.6,
+        "annonces": 59541,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 18.2,
+        "annonces": 36684,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 14.2,
+        "annonces": 22850,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 15.7,
+        "annonces": 504,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 18,
+      "exempleMensuel": 728,
+      "primePetitsPct": 28
+    },
+    {
+      "code": "69266",
+      "nom": "Villeurbanne",
+      "dep": "69",
+      "population": 163260,
+      "app": {
+        "loyer": 15.6,
+        "annonces": 37416,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 18.1,
+        "annonces": 22659,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 14.4,
+        "annonces": 14602,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 15.7,
+        "annonces": 323,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 19,
+      "exempleMensuel": 724,
+      "primePetitsPct": 26
+    },
+    {
+      "code": "34172",
+      "nom": "Montpellier",
+      "dep": "34",
+      "population": 310611,
+      "app": {
+        "loyer": 15.5,
+        "annonces": 118801,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 17.9,
+        "annonces": 83217,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 13.8,
+        "annonces": 35460,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 14.3,
+        "annonces": 2866,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 20,
+      "exempleMensuel": 716,
+      "primePetitsPct": 30
+    },
+    {
+      "code": "97411",
+      "nom": "Saint-Denis",
+      "dep": "974",
+      "population": 157674,
+      "app": {
+        "loyer": 15.1,
+        "annonces": 14748,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 17.1,
+        "annonces": 8878,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 14.1,
+        "annonces": 5924,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 14.9,
+        "annonces": 2880,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 21,
+      "exempleMensuel": 684,
+      "primePetitsPct": 21
+    },
+    {
+      "code": "35238",
+      "nom": "Rennes",
+      "dep": "35",
+      "population": 231985,
+      "app": {
+        "loyer": 14.9,
+        "annonces": 48789,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 17.2,
+        "annonces": 33194,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 13.9,
+        "annonces": 15457,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 15.3,
+        "annonces": 1453,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 22,
+      "exempleMensuel": 688,
+      "primePetitsPct": 24
+    },
+    {
+      "code": "49007",
+      "nom": "Angers",
+      "dep": "49",
+      "population": 160830,
+      "app": {
+        "loyer": 14.6,
+        "annonces": 29741,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 16.6,
+        "annonces": 20037,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 13.0,
+        "annonces": 9519,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 13.3,
+        "annonces": 1930,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 23,
+      "exempleMensuel": 664,
+      "primePetitsPct": 28
+    },
+    {
+      "code": "30189",
+      "nom": "Nîmes",
+      "dep": "30",
+      "population": 152612,
+      "app": {
+        "loyer": 14.6,
+        "annonces": 30684,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 14.3,
+        "annonces": 18760,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 12.0,
+        "annonces": 11900,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.1,
+        "annonces": 2382,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 24,
+      "exempleMensuel": 572,
+      "primePetitsPct": 19
+    },
+    {
+      "code": "44109",
+      "nom": "Nantes",
+      "dep": "44",
+      "population": 329809,
+      "app": {
+        "loyer": 14.5,
+        "annonces": 65568,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 16.6,
+        "annonces": 45333,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 13.6,
+        "annonces": 20201,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 14.3,
+        "annonces": 2602,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 25,
+      "exempleMensuel": 664,
+      "primePetitsPct": 22
+    },
+    {
+      "code": "83137",
+      "nom": "Toulon",
+      "dep": "83",
+      "population": 182535,
+      "app": {
+        "loyer": 14.4,
+        "annonces": 32136,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 16.6,
+        "annonces": 17198,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 13.2,
+        "annonces": 14942,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 16.5,
+        "annonces": 1326,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 26,
+      "exempleMensuel": 664,
+      "primePetitsPct": 26
+    },
+    {
+      "code": "45234",
+      "nom": "Orléans",
+      "dep": "45",
+      "population": 118816,
+      "app": {
+        "loyer": 14.2,
+        "annonces": 27399,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 14.8,
+        "annonces": 18498,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.6,
+        "annonces": 8883,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 11.5,
+        "annonces": 1892,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 27,
+      "exempleMensuel": 592,
+      "primePetitsPct": 28
+    },
+    {
+      "code": "31555",
+      "nom": "Toulouse",
+      "dep": "31",
+      "population": 516735,
+      "app": {
+        "loyer": 14.0,
+        "annonces": 225512,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 16.3,
+        "annonces": 143055,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 12.8,
+        "annonces": 82595,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.9,
+        "annonces": 7288,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 28,
+      "exempleMensuel": 652,
+      "primePetitsPct": 27
+    },
+    {
+      "code": "14118",
+      "nom": "Caen",
+      "dep": "14",
+      "population": 110520,
+      "app": {
+        "loyer": 13.8,
+        "annonces": 34193,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 16.0,
+        "annonces": 24506,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 12.2,
+        "annonces": 9684,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.7,
+        "annonces": 1408,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 29,
+      "exempleMensuel": 640,
+      "primePetitsPct": 31
+    },
+    {
+      "code": "37261",
+      "nom": "Tours",
+      "dep": "37",
+      "population": 141133,
+      "app": {
+        "loyer": 13.5,
+        "annonces": 37946,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 15.5,
+        "annonces": 26361,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 12.0,
+        "annonces": 11814,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.8,
+        "annonces": 2026,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 30,
+      "exempleMensuel": 620,
+      "primePetitsPct": 29
+    },
+    {
+      "code": "38185",
+      "nom": "Grenoble",
+      "dep": "38",
+      "population": 158601,
+      "app": {
+        "loyer": 13.4,
+        "annonces": 55295,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 15.7,
+        "annonces": 34359,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 12.2,
+        "annonces": 20713,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.6,
+        "annonces": 305,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 31,
+      "exempleMensuel": 628,
+      "primePetitsPct": 29
+    },
+    {
+      "code": "80021",
+      "nom": "Amiens",
+      "dep": "80",
+      "population": 137473,
+      "app": {
+        "loyer": 13.4,
+        "annonces": 41032,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 14.3,
+        "annonces": 31530,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.9,
+        "annonces": 9319,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.5,
+        "annonces": 5470,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 32,
+      "exempleMensuel": 572,
+      "primePetitsPct": 20
+    },
+    {
+      "code": "57463",
+      "nom": "Metz",
+      "dep": "57",
+      "population": 123532,
+      "app": {
+        "loyer": 13.4,
+        "annonces": 25684,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 15.6,
+        "annonces": 15593,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.1,
+        "annonces": 10092,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.9,
+        "annonces": 552,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 33,
+      "exempleMensuel": 624,
+      "primePetitsPct": 41
+    },
+    {
+      "code": "21231",
+      "nom": "Dijon",
+      "dep": "21",
+      "population": 163169,
+      "app": {
+        "loyer": 13.3,
+        "annonces": 51194,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 15.3,
+        "annonces": 35182,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 12.1,
+        "annonces": 15961,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 13.1,
+        "annonces": 1228,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 34,
+      "exempleMensuel": 612,
+      "primePetitsPct": 26
+    },
+    {
+      "code": "76540",
+      "nom": "Rouen",
+      "dep": "76",
+      "population": 117853,
+      "app": {
+        "loyer": 13.3,
+        "annonces": 53222,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 15.4,
+        "annonces": 35515,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.7,
+        "annonces": 17737,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.3,
+        "annonces": 2100,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 35,
+      "exempleMensuel": 616,
+      "primePetitsPct": 32
+    },
+    {
+      "code": "59512",
+      "nom": "Roubaix",
+      "dep": "59",
+      "population": 99926,
+      "app": {
+        "loyer": 13.3,
+        "annonces": 9323,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 15.7,
+        "annonces": 5903,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.8,
+        "annonces": 3400,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 9.5,
+        "annonces": 1804,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 36,
+      "exempleMensuel": 628,
+      "primePetitsPct": 33
+    },
+    {
+      "code": "59599",
+      "nom": "Tourcoing",
+      "dep": "59",
+      "population": 99758,
+      "app": {
+        "loyer": 13.2,
+        "annonces": 10688,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 15.4,
+        "annonces": 6347,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.6,
+        "annonces": 4267,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 10.1,
+        "annonces": 2101,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 37,
+      "exempleMensuel": 616,
+      "primePetitsPct": 33
+    },
+    {
+      "code": "51454",
+      "nom": "Reims",
+      "dep": "51",
+      "population": 181422,
+      "app": {
+        "loyer": 13.1,
+        "annonces": 46502,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 15.0,
+        "annonces": 30952,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 13.7,
+        "annonces": 15507,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 11.8,
+        "annonces": 1690,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 38,
+      "exempleMensuel": 600,
+      "primePetitsPct": 9
+    },
+    {
+      "code": "25056",
+      "nom": "Besançon",
+      "dep": "25",
+      "population": 123272,
+      "app": {
+        "loyer": 12.9,
+        "annonces": 33421,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 14.8,
+        "annonces": 20496,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 12.9,
+        "annonces": 12906,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 11.0,
+        "annonces": 856,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 39,
+      "exempleMensuel": 592,
+      "primePetitsPct": 15
+    },
+    {
+      "code": "63113",
+      "nom": "Clermont-Ferrand",
+      "dep": "63",
+      "population": 150251,
+      "app": {
+        "loyer": 12.5,
+        "annonces": 48197,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 14.5,
+        "annonces": 29912,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.3,
+        "annonces": 18209,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 11.5,
+        "annonces": 1534,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 40,
+      "exempleMensuel": 580,
+      "primePetitsPct": 28
+    },
+    {
+      "code": "76351",
+      "nom": "Le Havre",
+      "dep": "76",
+      "population": 168329,
+      "app": {
+        "loyer": 12.4,
+        "annonces": 28607,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 13.9,
+        "annonces": 18052,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.7,
+        "annonces": 10568,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 11.8,
+        "annonces": 1579,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 41,
+      "exempleMensuel": 556,
+      "primePetitsPct": 19
+    },
+    {
+      "code": "84007",
+      "nom": "Avignon",
+      "dep": "84",
+      "population": 93176,
+      "app": {
+        "loyer": 12.3,
+        "annonces": 18575,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 14.7,
+        "annonces": 10507,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 10.5,
+        "annonces": 8104,
+        "niveau": "commune",
+        "fiable": false
+      },
+      "maison": {
+        "loyer": 11.5,
+        "annonces": 1512,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 42,
+      "exempleMensuel": 588,
+      "primePetitsPct": 40
+    },
+    {
+      "code": "29019",
+      "nom": "Brest",
+      "dep": "29",
+      "population": 143530,
+      "app": {
+        "loyer": 12.2,
+        "annonces": 30870,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 15.3,
+        "annonces": 18316,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 10.7,
+        "annonces": 12479,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 10.8,
+        "annonces": 2012,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 43,
+      "exempleMensuel": 612,
+      "primePetitsPct": 43
+    },
+    {
+      "code": "66136",
+      "nom": "Perpignan",
+      "dep": "66",
+      "population": 122506,
+      "app": {
+        "loyer": 12.2,
+        "annonces": 27793,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 13.7,
+        "annonces": 13439,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 10.2,
+        "annonces": 14314,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 11.8,
+        "annonces": 1930,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 44,
+      "exempleMensuel": 548,
+      "primePetitsPct": 34
+    },
+    {
+      "code": "54395",
+      "nom": "Nancy",
+      "dep": "54",
+      "population": 105792,
+      "app": {
+        "loyer": 12.2,
+        "annonces": 57403,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 14.1,
+        "annonces": 37101,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.0,
+        "annonces": 20308,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 12.1,
+        "annonces": 854,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 45,
+      "exempleMensuel": 564,
+      "primePetitsPct": 28
+    },
+    {
+      "code": "86194",
+      "nom": "Poitiers",
+      "dep": "86",
+      "population": 91708,
+      "app": {
+        "loyer": 12.2,
+        "annonces": 29862,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 14.0,
+        "annonces": 21578,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 11.0,
+        "annonces": 8296,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 9.9,
+        "annonces": 2928,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 46,
+      "exempleMensuel": 560,
+      "primePetitsPct": 27
+    },
+    {
+      "code": "72181",
+      "nom": "Le Mans",
+      "dep": "72",
+      "population": 147846,
+      "app": {
+        "loyer": 11.8,
+        "annonces": 25658,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 13.6,
+        "annonces": 16673,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 10.5,
+        "annonces": 8933,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 9.8,
+        "annonces": 5633,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 47,
+      "exempleMensuel": 544,
+      "primePetitsPct": 30
+    },
+    {
+      "code": "68224",
+      "nom": "Mulhouse",
+      "dep": "68",
+      "population": 106095,
+      "app": {
+        "loyer": 11.8,
+        "annonces": 25776,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 13.9,
+        "annonces": 12191,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 10.7,
+        "annonces": 13598,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 11.6,
+        "annonces": 482,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 48,
+      "exempleMensuel": 556,
+      "primePetitsPct": 30
+    },
+    {
+      "code": "87085",
+      "nom": "Limoges",
+      "dep": "87",
+      "population": 131659,
+      "app": {
+        "loyer": 10.4,
+        "annonces": 39985,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 13.4,
+        "annonces": 26251,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 10.0,
+        "annonces": 13663,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 10.0,
+        "annonces": 3036,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 49,
+      "exempleMensuel": 536,
+      "primePetitsPct": 34
+    },
+    {
+      "code": "42218",
+      "nom": "Saint-Étienne",
+      "dep": "42",
+      "population": 174222,
+      "app": {
+        "loyer": 9.9,
+        "annonces": 53838,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app12": {
+        "loyer": 11.4,
+        "annonces": 27849,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "app3": {
+        "loyer": 9.1,
+        "annonces": 25927,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "maison": {
+        "loyer": 9.1,
+        "annonces": 670,
+        "niveau": "commune",
+        "fiable": true
+      },
+      "rang": 50,
+      "exempleMensuel": 456,
+      "primePetitsPct": 25
+    }
+  ]
+}

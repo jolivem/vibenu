@@ -5208,3 +5208,9 @@ html {
 .article-table tbody th {
   font-weight: 500;
 }
+
+.article-note {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 6px 0 0;
+}

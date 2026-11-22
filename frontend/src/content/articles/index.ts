@@ -3,6 +3,7 @@ import type { ArticleMeta } from "./types";
 import { meta as prixArrondissements } from "./prix-m2-arrondissements-paris-lyon-marseille/meta";
 import { meta as ensoleillement } from "./villes-les-plus-ensoleillees-de-france/meta";
 import { meta as zoneTendue } from "./zone-tendue-liste-des-communes/meta";
+import { meta as loyers } from "./loyer-m2-50-plus-grandes-villes/meta";
 
 /**
  * Le registre des articles publiés, du plus récent au plus ancien : source unique de
@@ -15,6 +16,10 @@ interface ArticleEntry {
 }
 
 export const ARTICLES: ArticleEntry[] = [
+  {
+    meta: loyers,
+    load: () => import("./loyer-m2-50-plus-grandes-villes/index.mdx"),
+  },
   {
     meta: zoneTendue,
     load: () => import("./zone-tendue-liste-des-communes/index.mdx"),
