@@ -5076,3 +5076,99 @@ html {
     line-height: 1.25;
   }
 }
+
+/* Barres horizontales des articles (`BarresHorizontales`) : libellé, barre, valeur. */
+.hbars {
+  margin: 24px 0 32px;
+}
+
+.hbars-titre {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.hbars-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.hbars-ligne {
+  display: grid;
+  grid-template-columns: minmax(120px, 34%) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.92rem;
+}
+
+.hbars-libelle {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.hbars-precision {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.hbars-piste {
+  position: relative;
+  height: 14px;
+}
+
+.hbars-barre {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+  opacity: 0.55;
+  border-radius: 3px;
+}
+
+.hbars-ligne.is-souligne .hbars-barre {
+  opacity: 1;
+}
+
+.hbars-ligne.is-souligne .hbars-libelle {
+  font-weight: 700;
+}
+
+.hbars-repere {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  border-left: 2px dashed var(--text);
+}
+
+.hbars-valeur {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 5.5em;
+  text-align: right;
+}
+
+.hbars-legende {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.hbars-legende::before {
+  content: "- - ";
+  letter-spacing: -1px;
+  margin-right: 4px;
+}
+
+/* Tableau complet replié sous un classement d'article. */
+.article-details {
+  margin: 8px 0 32px;
+}
+
+.article-details summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+}

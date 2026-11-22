@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { ArticleMeta } from "./types";
 import { meta as prixArrondissements } from "./prix-m2-arrondissements-paris-lyon-marseille/meta";
+import { meta as ensoleillement } from "./villes-les-plus-ensoleillees-de-france/meta";
 
 /**
  * Le registre des articles publiés, du plus récent au plus ancien : source unique de
@@ -13,6 +14,10 @@ interface ArticleEntry {
 }
 
 export const ARTICLES: ArticleEntry[] = [
+  {
+    meta: ensoleillement,
+    load: () => import("./villes-les-plus-ensoleillees-de-france/index.mdx"),
+  },
   {
     meta: prixArrondissements,
     load: () => import("./prix-m2-arrondissements-paris-lyon-marseille/index.mdx"),
