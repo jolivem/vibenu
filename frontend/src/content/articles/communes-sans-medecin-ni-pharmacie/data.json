@@ -1,0 +1,3309 @@
+{
+  "generatedAt": "2026-11-22",
+  "millesimeBpe": 2025,
+  "mayotteExclue": true,
+  "anneePopulation": 2025,
+  "seuil": 2000,
+  "nbCommunes": 34857,
+  "nbCommunesSeuil": 5575,
+  "nbMedecins": 61216,
+  "nbPharmacies": 20204,
+  "medecinsPour10000": 8.9,
+  "base10000": 10000,
+  "nbToutesSansMedecin": 26015,
+  "partToutesSansMedecinPct": 75,
+  "populationToutesSansMedecin": 12014865,
+  "populationToutesSansMedecinMillions": 12,
+  "sansMedecin": {
+    "nb": 395,
+    "population": 1119134,
+    "partPct": 7.1
+  },
+  "sansPharmacie": {
+    "nb": 327,
+    "population": 776399,
+    "partPct": 5.9
+  },
+  "sansLesDeux": {
+    "nb": 149,
+    "population": 349936
+  },
+  "plusPeupleesSansMedecin": [
+    {
+      "code": "74133",
+      "nom": "Gaillard",
+      "dep": "74",
+      "population": 11161,
+      "pharmacies": 3
+    },
+    {
+      "code": "97357",
+      "nom": "Grand-Santi",
+      "dep": "973",
+      "population": 9397,
+      "pharmacies": 1
+    },
+    {
+      "code": "76497",
+      "nom": "Petit-Couronne",
+      "dep": "76",
+      "population": 8915,
+      "pharmacies": 2
+    },
+    {
+      "code": "97353",
+      "nom": "Maripasoula",
+      "dep": "973",
+      "population": 8564,
+      "pharmacies": 1
+    },
+    {
+      "code": "77079",
+      "nom": "Champagne-sur-Seine",
+      "dep": "77",
+      "population": 6643,
+      "pharmacies": 1
+    },
+    {
+      "code": "78644",
+      "nom": "La Verrière",
+      "dep": "78",
+      "population": 6219,
+      "pharmacies": 2
+    },
+    {
+      "code": "74043",
+      "nom": "Bons-en-Chablais",
+      "dep": "74",
+      "population": 6217,
+      "pharmacies": 1
+    },
+    {
+      "code": "38316",
+      "nom": "Pont-de-Chéruy",
+      "dep": "38",
+      "population": 6153,
+      "pharmacies": 2
+    },
+    {
+      "code": "84004",
+      "nom": "Aubignan",
+      "dep": "84",
+      "population": 6060,
+      "pharmacies": 0
+    },
+    {
+      "code": "59452",
+      "nom": "Ostricourt",
+      "dep": "59",
+      "population": 6041,
+      "pharmacies": 1
+    },
+    {
+      "code": "59509",
+      "nom": "Roost-Warendin",
+      "dep": "59",
+      "population": 6016,
+      "pharmacies": 2
+    },
+    {
+      "code": "11266",
+      "nom": "Port-la-Nouvelle",
+      "dep": "11",
+      "population": 5952,
+      "pharmacies": 3
+    },
+    {
+      "code": "14726",
+      "nom": "Valdallière",
+      "dep": "14",
+      "population": 5798,
+      "pharmacies": 1
+    },
+    {
+      "code": "47100",
+      "nom": "Foulayronnes",
+      "dep": "47",
+      "population": 5725,
+      "pharmacies": 1
+    },
+    {
+      "code": "81021",
+      "nom": "Aussillon",
+      "dep": "81",
+      "population": 5718,
+      "pharmacies": 2
+    },
+    {
+      "code": "74309",
+      "nom": "Viry",
+      "dep": "74",
+      "population": 5706,
+      "pharmacies": 1
+    },
+    {
+      "code": "44082",
+      "nom": "Ligné",
+      "dep": "44",
+      "population": 5701,
+      "pharmacies": 1
+    },
+    {
+      "code": "97362",
+      "nom": "Papaichton",
+      "dep": "973",
+      "population": 5546,
+      "pharmacies": 0
+    },
+    {
+      "code": "74026",
+      "nom": "La Balme-de-Sillingy",
+      "dep": "74",
+      "population": 5369,
+      "pharmacies": 1
+    },
+    {
+      "code": "27022",
+      "nom": "Le Val d'Hazey",
+      "dep": "27",
+      "population": 5265,
+      "pharmacies": 2
+    }
+  ],
+  "nbSansMedecinAvecPharmacie": 246,
+  "parDepartement": [
+    {
+      "dep": "44",
+      "nom": "Loire-Atlantique",
+      "nb": 20
+    },
+    {
+      "dep": "77",
+      "nom": "Seine-et-Marne",
+      "nb": 19
+    },
+    {
+      "dep": "38",
+      "nom": "Isère",
+      "nb": 17
+    },
+    {
+      "dep": "35",
+      "nom": "Ille-et-Vilaine",
+      "nb": 15
+    },
+    {
+      "dep": "85",
+      "nom": "Vendée",
+      "nb": 15
+    },
+    {
+      "dep": "74",
+      "nom": "Haute-Savoie",
+      "nb": 13
+    },
+    {
+      "dep": "30",
+      "nom": "Gard",
+      "nb": 12
+    },
+    {
+      "dep": "01",
+      "nom": "Ain",
+      "nb": 11
+    },
+    {
+      "dep": "57",
+      "nom": "Moselle",
+      "nb": 11
+    },
+    {
+      "dep": "62",
+      "nom": "Pas-de-Calais",
+      "nb": 11
+    },
+    {
+      "dep": "95",
+      "nom": "Val-d'Oise",
+      "nb": 10
+    },
+    {
+      "dep": "22",
+      "nom": "Côtes-d'Armor",
+      "nb": 9
+    },
+    {
+      "dep": "59",
+      "nom": "Nord",
+      "nb": 9
+    },
+    {
+      "dep": "72",
+      "nom": "Sarthe",
+      "nb": 9
+    },
+    {
+      "dep": "60",
+      "nom": "Oise",
+      "nb": 8
+    },
+    {
+      "dep": "68",
+      "nom": "Haut-Rhin",
+      "nb": 8
+    },
+    {
+      "dep": "07",
+      "nom": "Ardèche",
+      "nb": 8
+    },
+    {
+      "dep": "45",
+      "nom": "Loiret",
+      "nb": 8
+    },
+    {
+      "dep": "33",
+      "nom": "Gironde",
+      "nb": 7
+    },
+    {
+      "dep": "27",
+      "nom": "Eure",
+      "nb": 7
+    },
+    {
+      "dep": "47",
+      "nom": "Lot-et-Garonne",
+      "nb": 7
+    },
+    {
+      "dep": "973",
+      "nom": "Guyane",
+      "nb": 7
+    },
+    {
+      "dep": "71",
+      "nom": "Saône-et-Loire",
+      "nb": 6
+    },
+    {
+      "dep": "81",
+      "nom": "Tarn",
+      "nb": 6
+    },
+    {
+      "dep": "28",
+      "nom": "Eure-et-Loir",
+      "nb": 6
+    },
+    {
+      "dep": "49",
+      "nom": "Maine-et-Loire",
+      "nb": 6
+    },
+    {
+      "dep": "73",
+      "nom": "Savoie",
+      "nb": 6
+    },
+    {
+      "dep": "83",
+      "nom": "Var",
+      "nb": 6
+    },
+    {
+      "dep": "61",
+      "nom": "Orne",
+      "nb": 5
+    },
+    {
+      "dep": "29",
+      "nom": "Finistère",
+      "nb": 5
+    },
+    {
+      "dep": "14",
+      "nom": "Calvados",
+      "nb": 5
+    },
+    {
+      "dep": "78",
+      "nom": "Yvelines",
+      "nb": 5
+    },
+    {
+      "dep": "79",
+      "nom": "Deux-Sèvres",
+      "nb": 5
+    },
+    {
+      "dep": "25",
+      "nom": "Doubs",
+      "nb": 5
+    },
+    {
+      "dep": "11",
+      "nom": "Aude",
+      "nb": 4
+    },
+    {
+      "dep": "66",
+      "nom": "Pyrénées-Orientales",
+      "nb": 4
+    },
+    {
+      "dep": "41",
+      "nom": "Loir-et-Cher",
+      "nb": 4
+    },
+    {
+      "dep": "50",
+      "nom": "Manche",
+      "nb": 4
+    },
+    {
+      "dep": "56",
+      "nom": "Morbihan",
+      "nb": 4
+    },
+    {
+      "dep": "16",
+      "nom": "Charente",
+      "nb": 4
+    },
+    {
+      "dep": "91",
+      "nom": "Essonne",
+      "nb": 4
+    },
+    {
+      "dep": "17",
+      "nom": "Charente-Maritime",
+      "nb": 4
+    },
+    {
+      "dep": "54",
+      "nom": "Meurthe-et-Moselle",
+      "nb": 4
+    },
+    {
+      "dep": "76",
+      "nom": "Seine-Maritime",
+      "nb": 3
+    },
+    {
+      "dep": "37",
+      "nom": "Indre-et-Loire",
+      "nb": 3
+    },
+    {
+      "dep": "80",
+      "nom": "Somme",
+      "nb": 3
+    },
+    {
+      "dep": "34",
+      "nom": "Hérault",
+      "nb": 3
+    },
+    {
+      "dep": "24",
+      "nom": "Dordogne",
+      "nb": 3
+    },
+    {
+      "dep": "31",
+      "nom": "Haute-Garonne",
+      "nb": 3
+    },
+    {
+      "dep": "12",
+      "nom": "Aveyron",
+      "nb": 3
+    },
+    {
+      "dep": "2A",
+      "nom": "Corse-du-Sud",
+      "nb": 3
+    },
+    {
+      "dep": "42",
+      "nom": "Loire",
+      "nb": 2
+    },
+    {
+      "dep": "67",
+      "nom": "Bas-Rhin",
+      "nb": 2
+    },
+    {
+      "dep": "82",
+      "nom": "Tarn-et-Garonne",
+      "nb": 2
+    },
+    {
+      "dep": "69",
+      "nom": "Rhône",
+      "nb": 2
+    },
+    {
+      "dep": "03",
+      "nom": "Allier",
+      "nb": 2
+    },
+    {
+      "dep": "39",
+      "nom": "Jura",
+      "nb": 2
+    },
+    {
+      "dep": "58",
+      "nom": "Nièvre",
+      "nb": 1
+    },
+    {
+      "dep": "10",
+      "nom": "Aube",
+      "nb": 1
+    },
+    {
+      "dep": "19",
+      "nom": "Corrèze",
+      "nb": 1
+    },
+    {
+      "dep": "70",
+      "nom": "Haute-Saône",
+      "nb": 1
+    },
+    {
+      "dep": "87",
+      "nom": "Haute-Vienne",
+      "nb": 1
+    },
+    {
+      "dep": "52",
+      "nom": "Haute-Marne",
+      "nb": 1
+    },
+    {
+      "dep": "53",
+      "nom": "Mayenne",
+      "nb": 1
+    },
+    {
+      "dep": "02",
+      "nom": "Aisne",
+      "nb": 1
+    },
+    {
+      "dep": "84",
+      "nom": "Vaucluse",
+      "nb": 1
+    },
+    {
+      "dep": "89",
+      "nom": "Yonne",
+      "nb": 1
+    },
+    {
+      "dep": "26",
+      "nom": "Drôme",
+      "nb": 1
+    },
+    {
+      "dep": "2B",
+      "nom": "Haute-Corse",
+      "nb": 1
+    },
+    {
+      "dep": "86",
+      "nom": "Vienne",
+      "nb": 1
+    },
+    {
+      "dep": "13",
+      "nom": "Bouches-du-Rhône",
+      "nb": 1
+    },
+    {
+      "dep": "18",
+      "nom": "Cher",
+      "nb": 1
+    },
+    {
+      "dep": "65",
+      "nom": "Hautes-Pyrénées",
+      "nb": 1
+    }
+  ],
+  "nbDepartementsConcernes": 73,
+  "tableau": [
+    {
+      "code": "74133",
+      "nom": "Gaillard",
+      "dep": "74",
+      "population": 11161,
+      "pharmacies": 3
+    },
+    {
+      "code": "97357",
+      "nom": "Grand-Santi",
+      "dep": "973",
+      "population": 9397,
+      "pharmacies": 1
+    },
+    {
+      "code": "76497",
+      "nom": "Petit-Couronne",
+      "dep": "76",
+      "population": 8915,
+      "pharmacies": 2
+    },
+    {
+      "code": "97353",
+      "nom": "Maripasoula",
+      "dep": "973",
+      "population": 8564,
+      "pharmacies": 1
+    },
+    {
+      "code": "77079",
+      "nom": "Champagne-sur-Seine",
+      "dep": "77",
+      "population": 6643,
+      "pharmacies": 1
+    },
+    {
+      "code": "78644",
+      "nom": "La Verrière",
+      "dep": "78",
+      "population": 6219,
+      "pharmacies": 2
+    },
+    {
+      "code": "74043",
+      "nom": "Bons-en-Chablais",
+      "dep": "74",
+      "population": 6217,
+      "pharmacies": 1
+    },
+    {
+      "code": "38316",
+      "nom": "Pont-de-Chéruy",
+      "dep": "38",
+      "population": 6153,
+      "pharmacies": 2
+    },
+    {
+      "code": "84004",
+      "nom": "Aubignan",
+      "dep": "84",
+      "population": 6060,
+      "pharmacies": 0
+    },
+    {
+      "code": "59452",
+      "nom": "Ostricourt",
+      "dep": "59",
+      "population": 6041,
+      "pharmacies": 1
+    },
+    {
+      "code": "59509",
+      "nom": "Roost-Warendin",
+      "dep": "59",
+      "population": 6016,
+      "pharmacies": 2
+    },
+    {
+      "code": "11266",
+      "nom": "Port-la-Nouvelle",
+      "dep": "11",
+      "population": 5952,
+      "pharmacies": 3
+    },
+    {
+      "code": "14726",
+      "nom": "Valdallière",
+      "dep": "14",
+      "population": 5798,
+      "pharmacies": 1
+    },
+    {
+      "code": "47100",
+      "nom": "Foulayronnes",
+      "dep": "47",
+      "population": 5725,
+      "pharmacies": 1
+    },
+    {
+      "code": "81021",
+      "nom": "Aussillon",
+      "dep": "81",
+      "population": 5718,
+      "pharmacies": 2
+    },
+    {
+      "code": "74309",
+      "nom": "Viry",
+      "dep": "74",
+      "population": 5706,
+      "pharmacies": 1
+    },
+    {
+      "code": "44082",
+      "nom": "Ligné",
+      "dep": "44",
+      "population": 5701,
+      "pharmacies": 1
+    },
+    {
+      "code": "97362",
+      "nom": "Papaichton",
+      "dep": "973",
+      "population": 5546,
+      "pharmacies": 0
+    },
+    {
+      "code": "74026",
+      "nom": "La Balme-de-Sillingy",
+      "dep": "74",
+      "population": 5369,
+      "pharmacies": 1
+    },
+    {
+      "code": "27022",
+      "nom": "Le Val d'Hazey",
+      "dep": "27",
+      "population": 5265,
+      "pharmacies": 2
+    },
+    {
+      "code": "89464",
+      "nom": "Villeneuve-sur-Yonne",
+      "dep": "89",
+      "population": 5208,
+      "pharmacies": 2
+    },
+    {
+      "code": "77513",
+      "nom": "Villenoy",
+      "dep": "77",
+      "population": 5100,
+      "pharmacies": 1
+    },
+    {
+      "code": "95134",
+      "nom": "Champagne-sur-Oise",
+      "dep": "95",
+      "population": 5081,
+      "pharmacies": 1
+    },
+    {
+      "code": "85113",
+      "nom": "L'Île-d'Yeu",
+      "dep": "85",
+      "population": 5025,
+      "pharmacies": 1
+    },
+    {
+      "code": "95116",
+      "nom": "Bruyères-sur-Oise",
+      "dep": "95",
+      "population": 4945,
+      "pharmacies": 1
+    },
+    {
+      "code": "30284",
+      "nom": "Saint-Martin-de-Valgalgues",
+      "dep": "30",
+      "population": 4772,
+      "pharmacies": 2
+    },
+    {
+      "code": "53119",
+      "nom": "L'Huisserie",
+      "dep": "53",
+      "population": 4660,
+      "pharmacies": 1
+    },
+    {
+      "code": "95257",
+      "nom": "La Frette-sur-Seine",
+      "dep": "95",
+      "population": 4640,
+      "pharmacies": 2
+    },
+    {
+      "code": "80368",
+      "nom": "Friville-Escarbotin",
+      "dep": "80",
+      "population": 4497,
+      "pharmacies": 2
+    },
+    {
+      "code": "82124",
+      "nom": "Montbeton",
+      "dep": "82",
+      "population": 4422,
+      "pharmacies": 1
+    },
+    {
+      "code": "16287",
+      "nom": "Roullet-Saint-Estèphe",
+      "dep": "16",
+      "population": 4398,
+      "pharmacies": 1
+    },
+    {
+      "code": "66108",
+      "nom": "Millas",
+      "dep": "66",
+      "population": 4396,
+      "pharmacies": 2
+    },
+    {
+      "code": "83143",
+      "nom": "Le Val",
+      "dep": "83",
+      "population": 4350,
+      "pharmacies": 1
+    },
+    {
+      "code": "71499",
+      "nom": "Sanvignes-les-Mines",
+      "dep": "71",
+      "population": 4328,
+      "pharmacies": 1
+    },
+    {
+      "code": "59207",
+      "nom": "Escautpont",
+      "dep": "59",
+      "population": 4198,
+      "pharmacies": 1
+    },
+    {
+      "code": "01025",
+      "nom": "Bâgé-Dommartin",
+      "dep": "01",
+      "population": 4158,
+      "pharmacies": 1
+    },
+    {
+      "code": "44149",
+      "nom": "Saffré",
+      "dep": "44",
+      "population": 4133,
+      "pharmacies": 1
+    },
+    {
+      "code": "16281",
+      "nom": "La Rochefoucauld-en-Angoumois",
+      "dep": "16",
+      "population": 4126,
+      "pharmacies": 1
+    },
+    {
+      "code": "65235",
+      "nom": "Juillan",
+      "dep": "65",
+      "population": 4116,
+      "pharmacies": 1
+    },
+    {
+      "code": "68321",
+      "nom": "Staffelfelden",
+      "dep": "68",
+      "population": 4107,
+      "pharmacies": 1
+    },
+    {
+      "code": "28279",
+      "nom": "Nogent-le-Roi",
+      "dep": "28",
+      "population": 4093,
+      "pharmacies": 1
+    },
+    {
+      "code": "95504",
+      "nom": "Presles",
+      "dep": "95",
+      "population": 4043,
+      "pharmacies": 1
+    },
+    {
+      "code": "39526",
+      "nom": "Tavaux",
+      "dep": "39",
+      "population": 4030,
+      "pharmacies": 1
+    },
+    {
+      "code": "44115",
+      "nom": "Oudon",
+      "dep": "44",
+      "population": 3995,
+      "pharmacies": 1
+    },
+    {
+      "code": "44122",
+      "nom": "Petit-Mars",
+      "dep": "44",
+      "population": 3936,
+      "pharmacies": 1
+    },
+    {
+      "code": "85197",
+      "nom": "Montréverd",
+      "dep": "85",
+      "population": 3896,
+      "pharmacies": 0
+    },
+    {
+      "code": "45145",
+      "nom": "Ferrières-en-Gâtinais",
+      "dep": "45",
+      "population": 3869,
+      "pharmacies": 2
+    },
+    {
+      "code": "72054",
+      "nom": "Champagné",
+      "dep": "72",
+      "population": 3743,
+      "pharmacies": 1
+    },
+    {
+      "code": "37163",
+      "nom": "Nazelles-Négron",
+      "dep": "37",
+      "population": 3741,
+      "pharmacies": 2
+    },
+    {
+      "code": "61474",
+      "nom": "Gouffern en Auge",
+      "dep": "61",
+      "population": 3724,
+      "pharmacies": 1
+    },
+    {
+      "code": "2A006",
+      "nom": "Alata",
+      "dep": "2A",
+      "population": 3718,
+      "pharmacies": 1
+    },
+    {
+      "code": "30305",
+      "nom": "Salindres",
+      "dep": "30",
+      "population": 3703,
+      "pharmacies": 1
+    },
+    {
+      "code": "66069",
+      "nom": "Espira-de-l'Agly",
+      "dep": "66",
+      "population": 3643,
+      "pharmacies": 1
+    },
+    {
+      "code": "25048",
+      "nom": "Bavans",
+      "dep": "25",
+      "population": 3634,
+      "pharmacies": 1
+    },
+    {
+      "code": "74128",
+      "nom": "Fillinges",
+      "dep": "74",
+      "population": 3626,
+      "pharmacies": 1
+    },
+    {
+      "code": "25304",
+      "nom": "Hérimoncourt",
+      "dep": "25",
+      "population": 3582,
+      "pharmacies": 2
+    },
+    {
+      "code": "49292",
+      "nom": "Val-du-Layon",
+      "dep": "49",
+      "population": 3556,
+      "pharmacies": 1
+    },
+    {
+      "code": "62489",
+      "nom": "Lapugnoy",
+      "dep": "62",
+      "population": 3537,
+      "pharmacies": 1
+    },
+    {
+      "code": "77107",
+      "nom": "Chaumes-en-Brie",
+      "dep": "77",
+      "population": 3488,
+      "pharmacies": 1
+    },
+    {
+      "code": "22325",
+      "nom": "Saint-Quay-Portrieux",
+      "dep": "22",
+      "population": 3479,
+      "pharmacies": 1
+    },
+    {
+      "code": "97313",
+      "nom": "Montsinéry-Tonnegrande",
+      "dep": "973",
+      "population": 3476,
+      "pharmacies": 0
+    },
+    {
+      "code": "97310",
+      "nom": "Roura",
+      "dep": "973",
+      "population": 3436,
+      "pharmacies": 2
+    },
+    {
+      "code": "35162",
+      "nom": "Louvigné-du-Désert",
+      "dep": "35",
+      "population": 3431,
+      "pharmacies": 2
+    },
+    {
+      "code": "41173",
+      "nom": "Beauce la Romaine",
+      "dep": "41",
+      "population": 3410,
+      "pharmacies": 1
+    },
+    {
+      "code": "30227",
+      "nom": "Saint-Ambroix",
+      "dep": "30",
+      "population": 3391,
+      "pharmacies": 1
+    },
+    {
+      "code": "57144",
+      "nom": "Cocheren",
+      "dep": "57",
+      "population": 3390,
+      "pharmacies": 1
+    },
+    {
+      "code": "50546",
+      "nom": "Bourgvallées",
+      "dep": "50",
+      "population": 3390,
+      "pharmacies": 1
+    },
+    {
+      "code": "62902",
+      "nom": "Wizernes",
+      "dep": "62",
+      "population": 3381,
+      "pharmacies": 1
+    },
+    {
+      "code": "77121",
+      "nom": "Collégien",
+      "dep": "77",
+      "population": 3375,
+      "pharmacies": 1
+    },
+    {
+      "code": "27554",
+      "nom": "La Chapelle-Longueville",
+      "dep": "27",
+      "population": 3372,
+      "pharmacies": 0
+    },
+    {
+      "code": "57123",
+      "nom": "Carling",
+      "dep": "57",
+      "population": 3361,
+      "pharmacies": 1
+    },
+    {
+      "code": "29023",
+      "nom": "Carantec",
+      "dep": "29",
+      "population": 3360,
+      "pharmacies": 1
+    },
+    {
+      "code": "77042",
+      "nom": "Boissy-le-Châtel",
+      "dep": "77",
+      "population": 3359,
+      "pharmacies": 1
+    },
+    {
+      "code": "82096",
+      "nom": "La Ville-Dieu-du-Temple",
+      "dep": "82",
+      "population": 3352,
+      "pharmacies": 1
+    },
+    {
+      "code": "78683",
+      "nom": "Villiers-Saint-Frédéric",
+      "dep": "78",
+      "population": 3350,
+      "pharmacies": 1
+    },
+    {
+      "code": "16199",
+      "nom": "Magnac-sur-Touvre",
+      "dep": "16",
+      "population": 3316,
+      "pharmacies": 2
+    },
+    {
+      "code": "45127",
+      "nom": "Dordives",
+      "dep": "45",
+      "population": 3298,
+      "pharmacies": 1
+    },
+    {
+      "code": "60107",
+      "nom": "Breuil-le-Vert",
+      "dep": "60",
+      "population": 3295,
+      "pharmacies": 1
+    },
+    {
+      "code": "74211",
+      "nom": "Pers-Jussy",
+      "dep": "74",
+      "population": 3295,
+      "pharmacies": 1
+    },
+    {
+      "code": "50256",
+      "nom": "Isigny-le-Buat",
+      "dep": "50",
+      "population": 3284,
+      "pharmacies": 1
+    },
+    {
+      "code": "47233",
+      "nom": "Sainte-Bazeille",
+      "dep": "47",
+      "population": 3280,
+      "pharmacies": 1
+    },
+    {
+      "code": "38148",
+      "nom": "Dolomieu",
+      "dep": "38",
+      "population": 3275,
+      "pharmacies": 1
+    },
+    {
+      "code": "66133",
+      "nom": "Palau-del-Vidre",
+      "dep": "66",
+      "population": 3270,
+      "pharmacies": 1
+    },
+    {
+      "code": "69117",
+      "nom": "Lissieu",
+      "dep": "69",
+      "population": 3267,
+      "pharmacies": 1
+    },
+    {
+      "code": "57368",
+      "nom": "Knutange",
+      "dep": "57",
+      "population": 3251,
+      "pharmacies": 2
+    },
+    {
+      "code": "49343",
+      "nom": "La Tessoualle",
+      "dep": "49",
+      "population": 3247,
+      "pharmacies": 1
+    },
+    {
+      "code": "60589",
+      "nom": "Saint-Maximin",
+      "dep": "60",
+      "population": 3243,
+      "pharmacies": 2
+    },
+    {
+      "code": "72146",
+      "nom": "Guécélard",
+      "dep": "72",
+      "population": 3240,
+      "pharmacies": 1
+    },
+    {
+      "code": "66176",
+      "nom": "Saint-Hippolyte",
+      "dep": "66",
+      "population": 3222,
+      "pharmacies": 1
+    },
+    {
+      "code": "59068",
+      "nom": "Berlaimont",
+      "dep": "59",
+      "population": 3207,
+      "pharmacies": 1
+    },
+    {
+      "code": "78431",
+      "nom": "Morainvilliers",
+      "dep": "78",
+      "population": 3170,
+      "pharmacies": 1
+    },
+    {
+      "code": "25240",
+      "nom": "Les Fins",
+      "dep": "25",
+      "population": 3161,
+      "pharmacies": 1
+    },
+    {
+      "code": "29188",
+      "nom": "Plougasnou",
+      "dep": "29",
+      "population": 3144,
+      "pharmacies": 1
+    },
+    {
+      "code": "44054",
+      "nom": "Erbray",
+      "dep": "44",
+      "population": 3122,
+      "pharmacies": 1
+    },
+    {
+      "code": "85160",
+      "nom": "Nesmy",
+      "dep": "85",
+      "population": 3117,
+      "pharmacies": 1
+    },
+    {
+      "code": "17064",
+      "nom": "Breuillet",
+      "dep": "17",
+      "population": 3115,
+      "pharmacies": 1
+    },
+    {
+      "code": "17228",
+      "nom": "Médis",
+      "dep": "17",
+      "population": 3113,
+      "pharmacies": 1
+    },
+    {
+      "code": "31186",
+      "nom": "Fonbeauzard",
+      "dep": "31",
+      "population": 3109,
+      "pharmacies": 1
+    },
+    {
+      "code": "83085",
+      "nom": "La Motte",
+      "dep": "83",
+      "population": 3106,
+      "pharmacies": 1
+    },
+    {
+      "code": "81033",
+      "nom": "Blaye-les-Mines",
+      "dep": "81",
+      "population": 3104,
+      "pharmacies": 1
+    },
+    {
+      "code": "74070",
+      "nom": "Chens-sur-Léman",
+      "dep": "74",
+      "population": 3045,
+      "pharmacies": 1
+    },
+    {
+      "code": "95641",
+      "nom": "Vémars",
+      "dep": "95",
+      "population": 3005,
+      "pharmacies": 1
+    },
+    {
+      "code": "86019",
+      "nom": "Beaumont Saint-Cyr",
+      "dep": "86",
+      "population": 2986,
+      "pharmacies": 1
+    },
+    {
+      "code": "35282",
+      "nom": "Rives-du-Couesnon",
+      "dep": "35",
+      "population": 2973,
+      "pharmacies": 0
+    },
+    {
+      "code": "73043",
+      "nom": "La Biolle",
+      "dep": "73",
+      "population": 2972,
+      "pharmacies": 1
+    },
+    {
+      "code": "01027",
+      "nom": "Balan",
+      "dep": "01",
+      "population": 2957,
+      "pharmacies": 0
+    },
+    {
+      "code": "22364",
+      "nom": "Trélivan",
+      "dep": "22",
+      "population": 2956,
+      "pharmacies": 1
+    },
+    {
+      "code": "44108",
+      "nom": "Mouzillon",
+      "dep": "44",
+      "population": 2953,
+      "pharmacies": 1
+    },
+    {
+      "code": "38519",
+      "nom": "Valencin",
+      "dep": "38",
+      "population": 2949,
+      "pharmacies": 1
+    },
+    {
+      "code": "77259",
+      "nom": "Longperrier",
+      "dep": "77",
+      "population": 2920,
+      "pharmacies": 1
+    },
+    {
+      "code": "91468",
+      "nom": "Ormoy",
+      "dep": "91",
+      "population": 2917,
+      "pharmacies": 0
+    },
+    {
+      "code": "91135",
+      "nom": "Champcueil",
+      "dep": "91",
+      "population": 2912,
+      "pharmacies": 1
+    },
+    {
+      "code": "49269",
+      "nom": "Saint-Christophe-du-Bois",
+      "dep": "49",
+      "population": 2906,
+      "pharmacies": 1
+    },
+    {
+      "code": "59156",
+      "nom": "Courchelettes",
+      "dep": "59",
+      "population": 2900,
+      "pharmacies": 1
+    },
+    {
+      "code": "44010",
+      "nom": "Batz-sur-Mer",
+      "dep": "44",
+      "population": 2894,
+      "pharmacies": 1
+    },
+    {
+      "code": "72090",
+      "nom": "Connerré",
+      "dep": "72",
+      "population": 2881,
+      "pharmacies": 1
+    },
+    {
+      "code": "57428",
+      "nom": "Macheren",
+      "dep": "57",
+      "population": 2874,
+      "pharmacies": 0
+    },
+    {
+      "code": "77217",
+      "nom": "Grisy-Suisnes",
+      "dep": "77",
+      "population": 2873,
+      "pharmacies": 0
+    },
+    {
+      "code": "25614",
+      "nom": "Vieux-Charmont",
+      "dep": "25",
+      "population": 2867,
+      "pharmacies": 1
+    },
+    {
+      "code": "54138",
+      "nom": "Cosnes-et-Romain",
+      "dep": "54",
+      "population": 2861,
+      "pharmacies": 1
+    },
+    {
+      "code": "71540",
+      "nom": "Torcy",
+      "dep": "71",
+      "population": 2843,
+      "pharmacies": 1
+    },
+    {
+      "code": "35090",
+      "nom": "Crevin",
+      "dep": "35",
+      "population": 2843,
+      "pharmacies": 1
+    },
+    {
+      "code": "28298",
+      "nom": "Pierres",
+      "dep": "28",
+      "population": 2839,
+      "pharmacies": 1
+    },
+    {
+      "code": "97312",
+      "nom": "Sinnamary",
+      "dep": "973",
+      "population": 2838,
+      "pharmacies": 1
+    },
+    {
+      "code": "33233",
+      "nom": "Laruscade",
+      "dep": "33",
+      "population": 2829,
+      "pharmacies": 1
+    },
+    {
+      "code": "72080",
+      "nom": "Cherré-Au",
+      "dep": "72",
+      "population": 2810,
+      "pharmacies": 0
+    },
+    {
+      "code": "37022",
+      "nom": "Beaumont-en-Véron",
+      "dep": "37",
+      "population": 2806,
+      "pharmacies": 1
+    },
+    {
+      "code": "34081",
+      "nom": "Colombiers",
+      "dep": "34",
+      "population": 2804,
+      "pharmacies": 1
+    },
+    {
+      "code": "33123",
+      "nom": "Cézac",
+      "dep": "33",
+      "population": 2774,
+      "pharmacies": 1
+    },
+    {
+      "code": "77061",
+      "nom": "Cannes-Écluse",
+      "dep": "77",
+      "population": 2770,
+      "pharmacies": 1
+    },
+    {
+      "code": "28191",
+      "nom": "Hanches",
+      "dep": "28",
+      "population": 2768,
+      "pharmacies": 1
+    },
+    {
+      "code": "38072",
+      "nom": "Chanas",
+      "dep": "38",
+      "population": 2752,
+      "pharmacies": 1
+    },
+    {
+      "code": "67216",
+      "nom": "Huttenheim",
+      "dep": "67",
+      "population": 2731,
+      "pharmacies": 1
+    },
+    {
+      "code": "34063",
+      "nom": "Caux",
+      "dep": "34",
+      "population": 2730,
+      "pharmacies": 1
+    },
+    {
+      "code": "95058",
+      "nom": "Bernes-sur-Oise",
+      "dep": "95",
+      "population": 2729,
+      "pharmacies": 0
+    },
+    {
+      "code": "01399",
+      "nom": "Ségny",
+      "dep": "01",
+      "population": 2728,
+      "pharmacies": 1
+    },
+    {
+      "code": "11441",
+      "nom": "Vinassan",
+      "dep": "11",
+      "population": 2717,
+      "pharmacies": 1
+    },
+    {
+      "code": "47185",
+      "nom": "Montayral",
+      "dep": "47",
+      "population": 2714,
+      "pharmacies": 1
+    },
+    {
+      "code": "60134",
+      "nom": "Cauffry",
+      "dep": "60",
+      "population": 2699,
+      "pharmacies": 1
+    },
+    {
+      "code": "57521",
+      "nom": "Œting",
+      "dep": "57",
+      "population": 2689,
+      "pharmacies": 0
+    },
+    {
+      "code": "56212",
+      "nom": "Saint-Dolay",
+      "dep": "56",
+      "population": 2686,
+      "pharmacies": 1
+    },
+    {
+      "code": "38292",
+      "nom": "Villages du Lac de Paladru",
+      "dep": "38",
+      "population": 2678,
+      "pharmacies": 0
+    },
+    {
+      "code": "62217",
+      "nom": "Cauchy-à-la-Tour",
+      "dep": "62",
+      "population": 2670,
+      "pharmacies": 1
+    },
+    {
+      "code": "30042",
+      "nom": "Boisset-et-Gaujac",
+      "dep": "30",
+      "population": 2667,
+      "pharmacies": 1
+    },
+    {
+      "code": "83021",
+      "nom": "Bras",
+      "dep": "83",
+      "population": 2666,
+      "pharmacies": 1
+    },
+    {
+      "code": "74118",
+      "nom": "Étrembières",
+      "dep": "74",
+      "population": 2654,
+      "pharmacies": 1
+    },
+    {
+      "code": "44205",
+      "nom": "Les Touches",
+      "dep": "44",
+      "population": 2654,
+      "pharmacies": 1
+    },
+    {
+      "code": "77494",
+      "nom": "Vernou-la-Celle-sur-Seine",
+      "dep": "77",
+      "population": 2648,
+      "pharmacies": 0
+    },
+    {
+      "code": "22067",
+      "nom": "Grâces",
+      "dep": "22",
+      "population": 2647,
+      "pharmacies": 1
+    },
+    {
+      "code": "56126",
+      "nom": "Marzan",
+      "dep": "56",
+      "population": 2646,
+      "pharmacies": 0
+    },
+    {
+      "code": "41276",
+      "nom": "Villebarou",
+      "dep": "41",
+      "population": 2642,
+      "pharmacies": 1
+    },
+    {
+      "code": "77096",
+      "nom": "Chartrettes",
+      "dep": "77",
+      "population": 2632,
+      "pharmacies": 1
+    },
+    {
+      "code": "85214",
+      "nom": "Sainte-Foy",
+      "dep": "85",
+      "population": 2629,
+      "pharmacies": 0
+    },
+    {
+      "code": "62849",
+      "nom": "Verton",
+      "dep": "62",
+      "population": 2615,
+      "pharmacies": 1
+    },
+    {
+      "code": "34227",
+      "nom": "Restinclières",
+      "dep": "34",
+      "population": 2611,
+      "pharmacies": 0
+    },
+    {
+      "code": "33492",
+      "nom": "Saint-Yzan-de-Soudiac",
+      "dep": "33",
+      "population": 2608,
+      "pharmacies": 1
+    },
+    {
+      "code": "77226",
+      "nom": "Héricy",
+      "dep": "77",
+      "population": 2607,
+      "pharmacies": 1
+    },
+    {
+      "code": "85064",
+      "nom": "Chauché",
+      "dep": "85",
+      "population": 2597,
+      "pharmacies": 1
+    },
+    {
+      "code": "30059",
+      "nom": "Le Cailar",
+      "dep": "30",
+      "population": 2586,
+      "pharmacies": 1
+    },
+    {
+      "code": "49138",
+      "nom": "Les Bois d'Anjou",
+      "dep": "49",
+      "population": 2585,
+      "pharmacies": 0
+    },
+    {
+      "code": "50444",
+      "nom": "Saint-Amand-Villages",
+      "dep": "50",
+      "population": 2584,
+      "pharmacies": 0
+    },
+    {
+      "code": "01157",
+      "nom": "Fareins",
+      "dep": "01",
+      "population": 2583,
+      "pharmacies": 1
+    },
+    {
+      "code": "85246",
+      "nom": "Saint-Martin-des-Noyers",
+      "dep": "85",
+      "population": 2580,
+      "pharmacies": 1
+    },
+    {
+      "code": "83132",
+      "nom": "Solliès-Ville",
+      "dep": "83",
+      "population": 2578,
+      "pharmacies": 1
+    },
+    {
+      "code": "60524",
+      "nom": "Rantigny",
+      "dep": "60",
+      "population": 2572,
+      "pharmacies": 1
+    },
+    {
+      "code": "35306",
+      "nom": "Saint-Père-Marc-en-Poulet",
+      "dep": "35",
+      "population": 2563,
+      "pharmacies": 0
+    },
+    {
+      "code": "24335",
+      "nom": "Port-Sainte-Foy-et-Ponchapt",
+      "dep": "24",
+      "population": 2557,
+      "pharmacies": 1
+    },
+    {
+      "code": "31484",
+      "nom": "Saint-Geniès-Bellevue",
+      "dep": "31",
+      "population": 2552,
+      "pharmacies": 1
+    },
+    {
+      "code": "81124",
+      "nom": "Lacaune",
+      "dep": "81",
+      "population": 2546,
+      "pharmacies": 1
+    },
+    {
+      "code": "61117",
+      "nom": "Condé-sur-Sarthe",
+      "dep": "61",
+      "population": 2539,
+      "pharmacies": 1
+    },
+    {
+      "code": "19136",
+      "nom": "Meymac",
+      "dep": "19",
+      "population": 2525,
+      "pharmacies": 1
+    },
+    {
+      "code": "44083",
+      "nom": "La Limouzinière",
+      "dep": "44",
+      "population": 2522,
+      "pharmacies": 0
+    },
+    {
+      "code": "73059",
+      "nom": "Brison-Saint-Innocent",
+      "dep": "73",
+      "population": 2518,
+      "pharmacies": 0
+    },
+    {
+      "code": "44007",
+      "nom": "Avessac",
+      "dep": "44",
+      "population": 2515,
+      "pharmacies": 1
+    },
+    {
+      "code": "77344",
+      "nom": "Oissery",
+      "dep": "77",
+      "population": 2512,
+      "pharmacies": 0
+    },
+    {
+      "code": "72217",
+      "nom": "Neuville-sur-Sarthe",
+      "dep": "72",
+      "population": 2511,
+      "pharmacies": 1
+    },
+    {
+      "code": "14570",
+      "nom": "Valorbiquet",
+      "dep": "14",
+      "population": 2502,
+      "pharmacies": 0
+    },
+    {
+      "code": "57678",
+      "nom": "Tressange",
+      "dep": "57",
+      "population": 2497,
+      "pharmacies": 0
+    },
+    {
+      "code": "59344",
+      "nom": "Leval",
+      "dep": "59",
+      "population": 2495,
+      "pharmacies": 1
+    },
+    {
+      "code": "61143",
+      "nom": "Damigny",
+      "dep": "61",
+      "population": 2484,
+      "pharmacies": 0
+    },
+    {
+      "code": "80632",
+      "nom": "Pont-de-Metz",
+      "dep": "80",
+      "population": 2475,
+      "pharmacies": 0
+    },
+    {
+      "code": "07240",
+      "nom": "Saint-Georges-les-Bains",
+      "dep": "07",
+      "population": 2467,
+      "pharmacies": 0
+    },
+    {
+      "code": "57669",
+      "nom": "Théding",
+      "dep": "57",
+      "population": 2465,
+      "pharmacies": 1
+    },
+    {
+      "code": "85208",
+      "nom": "Saint-Denis-la-Chevasse",
+      "dep": "85",
+      "population": 2465,
+      "pharmacies": 1
+    },
+    {
+      "code": "01089",
+      "nom": "Château-Gaillard",
+      "dep": "01",
+      "population": 2458,
+      "pharmacies": 0
+    },
+    {
+      "code": "44165",
+      "nom": "Saint-Hilaire-de-Clisson",
+      "dep": "44",
+      "population": 2452,
+      "pharmacies": 0
+    },
+    {
+      "code": "79103",
+      "nom": "Courlay",
+      "dep": "79",
+      "population": 2451,
+      "pharmacies": 1
+    },
+    {
+      "code": "07070",
+      "nom": "Cornas",
+      "dep": "07",
+      "population": 2449,
+      "pharmacies": 0
+    },
+    {
+      "code": "29297",
+      "nom": "Tréméven",
+      "dep": "29",
+      "population": 2441,
+      "pharmacies": 1
+    },
+    {
+      "code": "47091",
+      "nom": "Estillac",
+      "dep": "47",
+      "population": 2437,
+      "pharmacies": 0
+    },
+    {
+      "code": "47051",
+      "nom": "Castelculier",
+      "dep": "47",
+      "population": 2435,
+      "pharmacies": 1
+    },
+    {
+      "code": "58214",
+      "nom": "Pougues-les-Eaux",
+      "dep": "58",
+      "population": 2434,
+      "pharmacies": 1
+    },
+    {
+      "code": "68286",
+      "nom": "Rosenau",
+      "dep": "68",
+      "population": 2433,
+      "pharmacies": 0
+    },
+    {
+      "code": "41142",
+      "nom": "Valencisse",
+      "dep": "41",
+      "population": 2425,
+      "pharmacies": 0
+    },
+    {
+      "code": "30307",
+      "nom": "Les Salles-du-Gardon",
+      "dep": "30",
+      "population": 2423,
+      "pharmacies": 1
+    },
+    {
+      "code": "44164",
+      "nom": "Saint-Hilaire-de-Chaléons",
+      "dep": "44",
+      "population": 2423,
+      "pharmacies": 0
+    },
+    {
+      "code": "07264",
+      "nom": "Saint-Marcel-d'Ardèche",
+      "dep": "07",
+      "population": 2422,
+      "pharmacies": 1
+    },
+    {
+      "code": "33177",
+      "nom": "Gaillan-en-Médoc",
+      "dep": "33",
+      "population": 2418,
+      "pharmacies": 0
+    },
+    {
+      "code": "62841",
+      "nom": "Vendin-lès-Béthune",
+      "dep": "62",
+      "population": 2415,
+      "pharmacies": 1
+    },
+    {
+      "code": "76464",
+      "nom": "La Neuville-Chant-d'Oisel",
+      "dep": "76",
+      "population": 2414,
+      "pharmacies": 0
+    },
+    {
+      "code": "45119",
+      "nom": "Dadonville",
+      "dep": "45",
+      "population": 2413,
+      "pharmacies": 0
+    },
+    {
+      "code": "38124",
+      "nom": "Corbelin",
+      "dep": "38",
+      "population": 2410,
+      "pharmacies": 1
+    },
+    {
+      "code": "17466",
+      "nom": "Vérines",
+      "dep": "17",
+      "population": 2410,
+      "pharmacies": 0
+    },
+    {
+      "code": "71056",
+      "nom": "Branges",
+      "dep": "71",
+      "population": 2409,
+      "pharmacies": 1
+    },
+    {
+      "code": "57602",
+      "nom": "Rurange-lès-Thionville",
+      "dep": "57",
+      "population": 2401,
+      "pharmacies": 0
+    },
+    {
+      "code": "01135",
+      "nom": "Crozet",
+      "dep": "01",
+      "population": 2399,
+      "pharmacies": 0
+    },
+    {
+      "code": "38110",
+      "nom": "Chuzelles",
+      "dep": "38",
+      "population": 2393,
+      "pharmacies": 0
+    },
+    {
+      "code": "47049",
+      "nom": "Casseneuil",
+      "dep": "47",
+      "population": 2386,
+      "pharmacies": 1
+    },
+    {
+      "code": "12100",
+      "nom": "Firmi",
+      "dep": "12",
+      "population": 2385,
+      "pharmacies": 1
+    },
+    {
+      "code": "79196",
+      "nom": "Plaine-et-Vallées",
+      "dep": "79",
+      "population": 2383,
+      "pharmacies": 0
+    },
+    {
+      "code": "12254",
+      "nom": "Salles-la-Source",
+      "dep": "12",
+      "population": 2383,
+      "pharmacies": 0
+    },
+    {
+      "code": "24139",
+      "nom": "Coursac",
+      "dep": "24",
+      "population": 2379,
+      "pharmacies": 1
+    },
+    {
+      "code": "74024",
+      "nom": "Ayse",
+      "dep": "74",
+      "population": 2372,
+      "pharmacies": 0
+    },
+    {
+      "code": "77377",
+      "nom": "Presles-en-Brie",
+      "dep": "77",
+      "population": 2370,
+      "pharmacies": 0
+    },
+    {
+      "code": "33146",
+      "nom": "Cussac-Fort-Médoc",
+      "dep": "33",
+      "population": 2366,
+      "pharmacies": 0
+    },
+    {
+      "code": "22079",
+      "nom": "Hénon",
+      "dep": "22",
+      "population": 2356,
+      "pharmacies": 1
+    },
+    {
+      "code": "91243",
+      "nom": "Fontenay-lès-Briis",
+      "dep": "91",
+      "population": 2355,
+      "pharmacies": 0
+    },
+    {
+      "code": "01103",
+      "nom": "Chevry",
+      "dep": "01",
+      "population": 2353,
+      "pharmacies": 0
+    },
+    {
+      "code": "73326",
+      "nom": "Vimines",
+      "dep": "73",
+      "population": 2351,
+      "pharmacies": 0
+    },
+    {
+      "code": "38349",
+      "nom": "Sablons",
+      "dep": "38",
+      "population": 2349,
+      "pharmacies": 0
+    },
+    {
+      "code": "85025",
+      "nom": "La Boissière-de-Montaigu",
+      "dep": "85",
+      "population": 2344,
+      "pharmacies": 1
+    },
+    {
+      "code": "27438",
+      "nom": "Nonancourt",
+      "dep": "27",
+      "population": 2343,
+      "pharmacies": 1
+    },
+    {
+      "code": "72308",
+      "nom": "Saint-Paterne - Le Chevain",
+      "dep": "72",
+      "population": 2339,
+      "pharmacies": 0
+    },
+    {
+      "code": "03304",
+      "nom": "Vendat",
+      "dep": "03",
+      "population": 2336,
+      "pharmacies": 1
+    },
+    {
+      "code": "74163",
+      "nom": "Margencel",
+      "dep": "74",
+      "population": 2335,
+      "pharmacies": 0
+    },
+    {
+      "code": "67465",
+      "nom": "Sessenheim",
+      "dep": "67",
+      "population": 2334,
+      "pharmacies": 1
+    },
+    {
+      "code": "27425",
+      "nom": "Nassandres sur Risle",
+      "dep": "27",
+      "population": 2328,
+      "pharmacies": 0
+    },
+    {
+      "code": "79100",
+      "nom": "Coulon",
+      "dep": "79",
+      "population": 2327,
+      "pharmacies": 1
+    },
+    {
+      "code": "35356",
+      "nom": "Vignoc",
+      "dep": "35",
+      "population": 2326,
+      "pharmacies": 0
+    },
+    {
+      "code": "38058",
+      "nom": "Brézins",
+      "dep": "38",
+      "population": 2321,
+      "pharmacies": 0
+    },
+    {
+      "code": "69208",
+      "nom": "Saint-Germain-Nuelles",
+      "dep": "69",
+      "population": 2315,
+      "pharmacies": 0
+    },
+    {
+      "code": "35294",
+      "nom": "Sainte-Marie",
+      "dep": "35",
+      "population": 2315,
+      "pharmacies": 1
+    },
+    {
+      "code": "44057",
+      "nom": "Fégréac",
+      "dep": "44",
+      "population": 2313,
+      "pharmacies": 1
+    },
+    {
+      "code": "41097",
+      "nom": "Gièvres",
+      "dep": "41",
+      "population": 2313,
+      "pharmacies": 1
+    },
+    {
+      "code": "07041",
+      "nom": "Boulieu-lès-Annonay",
+      "dep": "07",
+      "population": 2312,
+      "pharmacies": 1
+    },
+    {
+      "code": "07191",
+      "nom": "Rochemaure",
+      "dep": "07",
+      "population": 2307,
+      "pharmacies": 1
+    },
+    {
+      "code": "35065",
+      "nom": "La Chapelle-Thouarault",
+      "dep": "35",
+      "population": 2306,
+      "pharmacies": 1
+    },
+    {
+      "code": "60325",
+      "nom": "Jaux",
+      "dep": "60",
+      "population": 2303,
+      "pharmacies": 1
+    },
+    {
+      "code": "62626",
+      "nom": "Noyelles-lès-Vermelles",
+      "dep": "62",
+      "population": 2298,
+      "pharmacies": 0
+    },
+    {
+      "code": "25403",
+      "nom": "Montlebon",
+      "dep": "25",
+      "population": 2297,
+      "pharmacies": 0
+    },
+    {
+      "code": "01250",
+      "nom": "Misérieux",
+      "dep": "01",
+      "population": 2286,
+      "pharmacies": 1
+    },
+    {
+      "code": "01153",
+      "nom": "Échenevex",
+      "dep": "01",
+      "population": 2285,
+      "pharmacies": 0
+    },
+    {
+      "code": "12043",
+      "nom": "Calmont",
+      "dep": "12",
+      "population": 2284,
+      "pharmacies": 0
+    },
+    {
+      "code": "26330",
+      "nom": "Saint-Sorlin-en-Valloire",
+      "dep": "26",
+      "population": 2279,
+      "pharmacies": 1
+    },
+    {
+      "code": "29156",
+      "nom": "Pencran",
+      "dep": "29",
+      "population": 2278,
+      "pharmacies": 0
+    },
+    {
+      "code": "30302",
+      "nom": "Saint-Victor-la-Coste",
+      "dep": "30",
+      "population": 2272,
+      "pharmacies": 1
+    },
+    {
+      "code": "85216",
+      "nom": "Sainte-Gemme-la-Plaine",
+      "dep": "85",
+      "population": 2272,
+      "pharmacies": 0
+    },
+    {
+      "code": "68007",
+      "nom": "Andolsheim",
+      "dep": "68",
+      "population": 2271,
+      "pharmacies": 0
+    },
+    {
+      "code": "22237",
+      "nom": "Pluduno",
+      "dep": "22",
+      "population": 2271,
+      "pharmacies": 1
+    },
+    {
+      "code": "72047",
+      "nom": "Brette-les-Pins",
+      "dep": "72",
+      "population": 2269,
+      "pharmacies": 0
+    },
+    {
+      "code": "22207",
+      "nom": "Plouaret",
+      "dep": "22",
+      "population": 2269,
+      "pharmacies": 1
+    },
+    {
+      "code": "95120",
+      "nom": "Butry-sur-Oise",
+      "dep": "95",
+      "population": 2269,
+      "pharmacies": 0
+    },
+    {
+      "code": "38436",
+      "nom": "Saint-Paul-de-Varces",
+      "dep": "38",
+      "population": 2260,
+      "pharmacies": 0
+    },
+    {
+      "code": "38543",
+      "nom": "Vézeronce-Curtin",
+      "dep": "38",
+      "population": 2258,
+      "pharmacies": 1
+    },
+    {
+      "code": "74103",
+      "nom": "Domancy",
+      "dep": "74",
+      "population": 2257,
+      "pharmacies": 0
+    },
+    {
+      "code": "07117",
+      "nom": "Lablachère",
+      "dep": "07",
+      "population": 2251,
+      "pharmacies": 0
+    },
+    {
+      "code": "74201",
+      "nom": "Neydens",
+      "dep": "74",
+      "population": 2250,
+      "pharmacies": 0
+    },
+    {
+      "code": "31429",
+      "nom": "Pompertuzat",
+      "dep": "31",
+      "population": 2249,
+      "pharmacies": 0
+    },
+    {
+      "code": "28236",
+      "nom": "Arcisses",
+      "dep": "28",
+      "population": 2248,
+      "pharmacies": 0
+    },
+    {
+      "code": "56102",
+      "nom": "Forges de Lanouée",
+      "dep": "56",
+      "population": 2247,
+      "pharmacies": 0
+    },
+    {
+      "code": "38339",
+      "nom": "Roche",
+      "dep": "38",
+      "population": 2246,
+      "pharmacies": 0
+    },
+    {
+      "code": "01347",
+      "nom": "Saint-Didier-de-Formans",
+      "dep": "01",
+      "population": 2244,
+      "pharmacies": 0
+    },
+    {
+      "code": "14610",
+      "nom": "Saint-Manvieu-Norrey",
+      "dep": "14",
+      "population": 2241,
+      "pharmacies": 0
+    },
+    {
+      "code": "91156",
+      "nom": "Cheptainville",
+      "dep": "91",
+      "population": 2241,
+      "pharmacies": 0
+    },
+    {
+      "code": "83108",
+      "nom": "La Roquebrussanne",
+      "dep": "83",
+      "population": 2239,
+      "pharmacies": 1
+    },
+    {
+      "code": "45193",
+      "nom": "Marcilly-en-Villette",
+      "dep": "45",
+      "population": 2235,
+      "pharmacies": 1
+    },
+    {
+      "code": "95241",
+      "nom": "Fontenay-en-Parisis",
+      "dep": "95",
+      "population": 2234,
+      "pharmacies": 0
+    },
+    {
+      "code": "35039",
+      "nom": "Brécé",
+      "dep": "35",
+      "population": 2233,
+      "pharmacies": 0
+    },
+    {
+      "code": "68141",
+      "nom": "Hochstatt",
+      "dep": "68",
+      "population": 2229,
+      "pharmacies": 0
+    },
+    {
+      "code": "39491",
+      "nom": "Coteaux du Lizon",
+      "dep": "39",
+      "population": 2229,
+      "pharmacies": 1
+    },
+    {
+      "code": "37010",
+      "nom": "Auzouer-en-Touraine",
+      "dep": "37",
+      "population": 2228,
+      "pharmacies": 0
+    },
+    {
+      "code": "35015",
+      "nom": "Balazé",
+      "dep": "35",
+      "population": 2228,
+      "pharmacies": 0
+    },
+    {
+      "code": "68292",
+      "nom": "Saint-Amarin",
+      "dep": "68",
+      "population": 2221,
+      "pharmacies": 1
+    },
+    {
+      "code": "42176",
+      "nom": "Pouilly-les-Nonains",
+      "dep": "42",
+      "population": 2218,
+      "pharmacies": 0
+    },
+    {
+      "code": "85289",
+      "nom": "Terval",
+      "dep": "85",
+      "population": 2216,
+      "pharmacies": 0
+    },
+    {
+      "code": "27517",
+      "nom": "Saint-Aubin-sur-Gaillon",
+      "dep": "27",
+      "population": 2214,
+      "pharmacies": 0
+    },
+    {
+      "code": "77069",
+      "nom": "Chailly-en-Bière",
+      "dep": "77",
+      "population": 2208,
+      "pharmacies": 1
+    },
+    {
+      "code": "30186",
+      "nom": "Nages-et-Solorgues",
+      "dep": "30",
+      "population": 2207,
+      "pharmacies": 0
+    },
+    {
+      "code": "71497",
+      "nom": "Sancé",
+      "dep": "71",
+      "population": 2205,
+      "pharmacies": 1
+    },
+    {
+      "code": "35319",
+      "nom": "Saint-Thurial",
+      "dep": "35",
+      "population": 2204,
+      "pharmacies": 0
+    },
+    {
+      "code": "22155",
+      "nom": "La Motte",
+      "dep": "22",
+      "population": 2203,
+      "pharmacies": 1
+    },
+    {
+      "code": "29032",
+      "nom": "Clohars-Fouesnant",
+      "dep": "29",
+      "population": 2203,
+      "pharmacies": 0
+    },
+    {
+      "code": "27180",
+      "nom": "Courcelles-sur-Seine",
+      "dep": "27",
+      "population": 2197,
+      "pharmacies": 1
+    },
+    {
+      "code": "38480",
+      "nom": "Septème",
+      "dep": "38",
+      "population": 2195,
+      "pharmacies": 1
+    },
+    {
+      "code": "87202",
+      "nom": "Veyrac",
+      "dep": "87",
+      "population": 2195,
+      "pharmacies": 0
+    },
+    {
+      "code": "44146",
+      "nom": "Rougé",
+      "dep": "44",
+      "population": 2191,
+      "pharmacies": 1
+    },
+    {
+      "code": "57582",
+      "nom": "Richemont",
+      "dep": "57",
+      "population": 2186,
+      "pharmacies": 1
+    },
+    {
+      "code": "14349",
+      "nom": "Laize-Clinchamps",
+      "dep": "14",
+      "population": 2182,
+      "pharmacies": 0
+    },
+    {
+      "code": "56246",
+      "nom": "Le Sourn",
+      "dep": "56",
+      "population": 2176,
+      "pharmacies": 1
+    },
+    {
+      "code": "97356",
+      "nom": "Camopi",
+      "dep": "973",
+      "population": 2176,
+      "pharmacies": 0
+    },
+    {
+      "code": "22232",
+      "nom": "Plourhan",
+      "dep": "22",
+      "population": 2171,
+      "pharmacies": 0
+    },
+    {
+      "code": "17376",
+      "nom": "Saint-Ouen-d'Aunis",
+      "dep": "17",
+      "population": 2165,
+      "pharmacies": 0
+    },
+    {
+      "code": "44173",
+      "nom": "Saint-Lumine-de-Clisson",
+      "dep": "44",
+      "population": 2163,
+      "pharmacies": 0
+    },
+    {
+      "code": "22246",
+      "nom": "Pommeret",
+      "dep": "22",
+      "population": 2160,
+      "pharmacies": 0
+    },
+    {
+      "code": "62034",
+      "nom": "Annequin",
+      "dep": "62",
+      "population": 2159,
+      "pharmacies": 1
+    },
+    {
+      "code": "59497",
+      "nom": "Renescure",
+      "dep": "59",
+      "population": 2159,
+      "pharmacies": 1
+    },
+    {
+      "code": "60102",
+      "nom": "Brenouille",
+      "dep": "60",
+      "population": 2158,
+      "pharmacies": 1
+    },
+    {
+      "code": "74116",
+      "nom": "Etaux",
+      "dep": "74",
+      "population": 2158,
+      "pharmacies": 0
+    },
+    {
+      "code": "16146",
+      "nom": "Garat",
+      "dep": "16",
+      "population": 2155,
+      "pharmacies": 1
+    },
+    {
+      "code": "73288",
+      "nom": "Sonnaz",
+      "dep": "73",
+      "population": 2154,
+      "pharmacies": 0
+    },
+    {
+      "code": "85095",
+      "nom": "Froidfond",
+      "dep": "85",
+      "population": 2151,
+      "pharmacies": 0
+    },
+    {
+      "code": "28064",
+      "nom": "Bû",
+      "dep": "28",
+      "population": 2145,
+      "pharmacies": 1
+    },
+    {
+      "code": "59488",
+      "nom": "Raillencourt-Sainte-Olle",
+      "dep": "59",
+      "population": 2143,
+      "pharmacies": 1
+    },
+    {
+      "code": "44171",
+      "nom": "Saint-Léger-les-Vignes",
+      "dep": "44",
+      "population": 2142,
+      "pharmacies": 0
+    },
+    {
+      "code": "72006",
+      "nom": "Arçonnay",
+      "dep": "72",
+      "population": 2141,
+      "pharmacies": 1
+    },
+    {
+      "code": "59016",
+      "nom": "Armbouts-Cappel",
+      "dep": "59",
+      "population": 2141,
+      "pharmacies": 1
+    },
+    {
+      "code": "11360",
+      "nom": "Saint-Nazaire-d'Aude",
+      "dep": "11",
+      "population": 2140,
+      "pharmacies": 0
+    },
+    {
+      "code": "30152",
+      "nom": "Les Mages",
+      "dep": "30",
+      "population": 2140,
+      "pharmacies": 1
+    },
+    {
+      "code": "47179",
+      "nom": "Monsempron-Libos",
+      "dep": "47",
+      "population": 2139,
+      "pharmacies": 1
+    },
+    {
+      "code": "61211",
+      "nom": "Juvigny Val d'Andaine",
+      "dep": "61",
+      "population": 2137,
+      "pharmacies": 0
+    },
+    {
+      "code": "38479",
+      "nom": "Porte-des-Bonnevaux",
+      "dep": "38",
+      "population": 2137,
+      "pharmacies": 0
+    },
+    {
+      "code": "35273",
+      "nom": "Saint-Germain-en-Coglès",
+      "dep": "35",
+      "population": 2133,
+      "pharmacies": 0
+    },
+    {
+      "code": "38484",
+      "nom": "Serpaize",
+      "dep": "38",
+      "population": 2133,
+      "pharmacies": 0
+    },
+    {
+      "code": "02555",
+      "nom": "Nogent-l'Artaud",
+      "dep": "02",
+      "population": 2132,
+      "pharmacies": 1
+    },
+    {
+      "code": "03262",
+      "nom": "Saint-Victor",
+      "dep": "03",
+      "population": 2128,
+      "pharmacies": 1
+    },
+    {
+      "code": "80360",
+      "nom": "Fressenneville",
+      "dep": "80",
+      "population": 2126,
+      "pharmacies": 1
+    },
+    {
+      "code": "77517",
+      "nom": "Villevaudé",
+      "dep": "77",
+      "population": 2126,
+      "pharmacies": 0
+    },
+    {
+      "code": "11258",
+      "nom": "Moussan",
+      "dep": "11",
+      "population": 2126,
+      "pharmacies": 0
+    },
+    {
+      "code": "44214",
+      "nom": "Vay",
+      "dep": "44",
+      "population": 2125,
+      "pharmacies": 0
+    },
+    {
+      "code": "95450",
+      "nom": "Neuville-sur-Oise",
+      "dep": "95",
+      "population": 2115,
+      "pharmacies": 0
+    },
+    {
+      "code": "77521",
+      "nom": "Villiers-sur-Morin",
+      "dep": "77",
+      "population": 2113,
+      "pharmacies": 0
+    },
+    {
+      "code": "50151",
+      "nom": "Créances",
+      "dep": "50",
+      "population": 2112,
+      "pharmacies": 1
+    },
+    {
+      "code": "79076",
+      "nom": "La Chapelle-Saint-Laurent",
+      "dep": "79",
+      "population": 2108,
+      "pharmacies": 1
+    },
+    {
+      "code": "57733",
+      "nom": "Volstroff",
+      "dep": "57",
+      "population": 2104,
+      "pharmacies": 0
+    },
+    {
+      "code": "2B168",
+      "nom": "Monticello",
+      "dep": "2B",
+      "population": 2103,
+      "pharmacies": 0
+    },
+    {
+      "code": "79213",
+      "nom": "Pompaire",
+      "dep": "79",
+      "population": 2102,
+      "pharmacies": 1
+    },
+    {
+      "code": "24442",
+      "nom": "Saint-Léon-sur-l'Isle",
+      "dep": "24",
+      "population": 2100,
+      "pharmacies": 1
+    },
+    {
+      "code": "30214",
+      "nom": "Ribaute-les-Tavernes",
+      "dep": "30",
+      "population": 2098,
+      "pharmacies": 0
+    },
+    {
+      "code": "35097",
+      "nom": "Domalain",
+      "dep": "35",
+      "population": 2096,
+      "pharmacies": 0
+    },
+    {
+      "code": "78337",
+      "nom": "Limetz-Villez",
+      "dep": "78",
+      "population": 2094,
+      "pharmacies": 0
+    },
+    {
+      "code": "81244",
+      "nom": "Saint-Benoît-de-Carmaux",
+      "dep": "81",
+      "population": 2088,
+      "pharmacies": 0
+    },
+    {
+      "code": "10352",
+      "nom": "Sainte-Maure",
+      "dep": "10",
+      "population": 2087,
+      "pharmacies": 0
+    },
+    {
+      "code": "45333",
+      "nom": "Vennecy",
+      "dep": "45",
+      "population": 2086,
+      "pharmacies": 0
+    },
+    {
+      "code": "62043",
+      "nom": "Les Attaques",
+      "dep": "62",
+      "population": 2085,
+      "pharmacies": 1
+    },
+    {
+      "code": "57545",
+      "nom": "Plappeville",
+      "dep": "57",
+      "population": 2082,
+      "pharmacies": 0
+    },
+    {
+      "code": "27082",
+      "nom": "La Bonneville-sur-Iton",
+      "dep": "27",
+      "population": 2078,
+      "pharmacies": 1
+    },
+    {
+      "code": "35264",
+      "nom": "Saint-Didier",
+      "dep": "35",
+      "population": 2077,
+      "pharmacies": 0
+    },
+    {
+      "code": "60647",
+      "nom": "Trosly-Breuil",
+      "dep": "60",
+      "population": 2074,
+      "pharmacies": 1
+    },
+    {
+      "code": "07325",
+      "nom": "Ucel",
+      "dep": "07",
+      "population": 2072,
+      "pharmacies": 0
+    },
+    {
+      "code": "2A103",
+      "nom": "Cuttoli-Corticchiato",
+      "dep": "2A",
+      "population": 2072,
+      "pharmacies": 0
+    },
+    {
+      "code": "44119",
+      "nom": "Paulx",
+      "dep": "44",
+      "population": 2071,
+      "pharmacies": 1
+    },
+    {
+      "code": "62705",
+      "nom": "Rety",
+      "dep": "62",
+      "population": 2067,
+      "pharmacies": 1
+    },
+    {
+      "code": "18011",
+      "nom": "Argent-sur-Sauldre",
+      "dep": "18",
+      "population": 2067,
+      "pharmacies": 1
+    },
+    {
+      "code": "76608",
+      "nom": "Sainte-Marguerite-sur-Duclair",
+      "dep": "76",
+      "population": 2064,
+      "pharmacies": 1
+    },
+    {
+      "code": "68266",
+      "nom": "Réguisheim",
+      "dep": "68",
+      "population": 2064,
+      "pharmacies": 1
+    },
+    {
+      "code": "38027",
+      "nom": "Barraux",
+      "dep": "38",
+      "population": 2063,
+      "pharmacies": 0
+    },
+    {
+      "code": "2A228",
+      "nom": "Pietrosella",
+      "dep": "2A",
+      "population": 2062,
+      "pharmacies": 1
+    },
+    {
+      "code": "33001",
+      "nom": "Abzac",
+      "dep": "33",
+      "population": 2061,
+      "pharmacies": 1
+    },
+    {
+      "code": "85050",
+      "nom": "Le Champ-Saint-Père",
+      "dep": "85",
+      "population": 2059,
+      "pharmacies": 1
+    },
+    {
+      "code": "85006",
+      "nom": "Apremont",
+      "dep": "85",
+      "population": 2058,
+      "pharmacies": 1
+    },
+    {
+      "code": "01163",
+      "nom": "Foissiat",
+      "dep": "01",
+      "population": 2057,
+      "pharmacies": 0
+    },
+    {
+      "code": "30312",
+      "nom": "Sauveterre",
+      "dep": "30",
+      "population": 2057,
+      "pharmacies": 1
+    },
+    {
+      "code": "77455",
+      "nom": "Soignolles-en-Brie",
+      "dep": "77",
+      "population": 2056,
+      "pharmacies": 0
+    },
+    {
+      "code": "45024",
+      "nom": "Baule",
+      "dep": "45",
+      "population": 2054,
+      "pharmacies": 1
+    },
+    {
+      "code": "77384",
+      "nom": "Réau",
+      "dep": "77",
+      "population": 2052,
+      "pharmacies": 0
+    },
+    {
+      "code": "72310",
+      "nom": "Saint-Pavace",
+      "dep": "72",
+      "population": 2051,
+      "pharmacies": 0
+    },
+    {
+      "code": "45154",
+      "nom": "Gidy",
+      "dep": "45",
+      "population": 2048,
+      "pharmacies": 0
+    },
+    {
+      "code": "35107",
+      "nom": "Ercé-près-Liffré",
+      "dep": "35",
+      "population": 2048,
+      "pharmacies": 0
+    },
+    {
+      "code": "35122",
+      "nom": "La Gouesnière",
+      "dep": "35",
+      "population": 2047,
+      "pharmacies": 0
+    },
+    {
+      "code": "85236",
+      "nom": "Saint-Julien-des-Landes",
+      "dep": "85",
+      "population": 2046,
+      "pharmacies": 1
+    },
+    {
+      "code": "71372",
+      "nom": "Romanèche-Thorins",
+      "dep": "71",
+      "population": 2046,
+      "pharmacies": 1
+    },
+    {
+      "code": "73100",
+      "nom": "Domessin",
+      "dep": "73",
+      "population": 2045,
+      "pharmacies": 0
+    },
+    {
+      "code": "81325",
+      "nom": "Viviers-lès-Montagnes",
+      "dep": "81",
+      "population": 2042,
+      "pharmacies": 1
+    },
+    {
+      "code": "52182",
+      "nom": "Éclaron-Braucourt-Sainte-Livière",
+      "dep": "52",
+      "population": 2042,
+      "pharmacies": 1
+    },
+    {
+      "code": "60491",
+      "nom": "Pierrefonds",
+      "dep": "60",
+      "population": 2040,
+      "pharmacies": 1
+    },
+    {
+      "code": "49368",
+      "nom": "Vernantes",
+      "dep": "49",
+      "population": 2040,
+      "pharmacies": 1
+    },
+    {
+      "code": "68205",
+      "nom": "Meyenheim",
+      "dep": "68",
+      "population": 2039,
+      "pharmacies": 0
+    },
+    {
+      "code": "81116",
+      "nom": "Labastide-Saint-Georges",
+      "dep": "81",
+      "population": 2039,
+      "pharmacies": 0
+    },
+    {
+      "code": "14287",
+      "nom": "Frénouville",
+      "dep": "14",
+      "population": 2038,
+      "pharmacies": 0
+    },
+    {
+      "code": "28201",
+      "nom": "Jouy",
+      "dep": "28",
+      "population": 2036,
+      "pharmacies": 1
+    },
+    {
+      "code": "44107",
+      "nom": "Mouzeil",
+      "dep": "44",
+      "population": 2036,
+      "pharmacies": 0
+    },
+    {
+      "code": "62847",
+      "nom": "Verquigneul",
+      "dep": "62",
+      "population": 2035,
+      "pharmacies": 0
+    },
+    {
+      "code": "95142",
+      "nom": "Chars",
+      "dep": "95",
+      "population": 2034,
+      "pharmacies": 1
+    },
+    {
+      "code": "54521",
+      "nom": "Thil",
+      "dep": "54",
+      "population": 2026,
+      "pharmacies": 1
+    },
+    {
+      "code": "54167",
+      "nom": "Dommartin-lès-Toul",
+      "dep": "54",
+      "population": 2025,
+      "pharmacies": 1
+    },
+    {
+      "code": "68059",
+      "nom": "Burnhaupt-le-Bas",
+      "dep": "68",
+      "population": 2024,
+      "pharmacies": 0
+    },
+    {
+      "code": "77352",
+      "nom": "Ozouer-le-Voulgis",
+      "dep": "77",
+      "population": 2024,
+      "pharmacies": 0
+    },
+    {
+      "code": "83026",
+      "nom": "Cabasse",
+      "dep": "83",
+      "population": 2022,
+      "pharmacies": 0
+    },
+    {
+      "code": "61116",
+      "nom": "Sablons sur Huisne",
+      "dep": "61",
+      "population": 2020,
+      "pharmacies": 0
+    },
+    {
+      "code": "70258",
+      "nom": "Froideconche",
+      "dep": "70",
+      "population": 2017,
+      "pharmacies": 1
+    },
+    {
+      "code": "30257",
+      "nom": "Saint-Gervasy",
+      "dep": "30",
+      "population": 2016,
+      "pharmacies": 1
+    },
+    {
+      "code": "78030",
+      "nom": "Auffargis",
+      "dep": "78",
+      "population": 2016,
+      "pharmacies": 1
+    },
+    {
+      "code": "49110",
+      "nom": "Corzé",
+      "dep": "49",
+      "population": 2015,
+      "pharmacies": 0
+    },
+    {
+      "code": "38238",
+      "nom": "Moidieu-Détourbe",
+      "dep": "38",
+      "population": 2015,
+      "pharmacies": 0
+    },
+    {
+      "code": "44199",
+      "nom": "Soudan",
+      "dep": "44",
+      "population": 2014,
+      "pharmacies": 1
+    },
+    {
+      "code": "07279",
+      "nom": "Saint-Montan",
+      "dep": "07",
+      "population": 2014,
+      "pharmacies": 1
+    },
+    {
+      "code": "13013",
+      "nom": "Belcodène",
+      "dep": "13",
+      "population": 2014,
+      "pharmacies": 0
+    },
+    {
+      "code": "54366",
+      "nom": "Messein",
+      "dep": "54",
+      "population": 2013,
+      "pharmacies": 0
+    },
+    {
+      "code": "62543",
+      "nom": "Mametz",
+      "dep": "62",
+      "population": 2012,
+      "pharmacies": 1
+    },
+    {
+      "code": "73249",
+      "nom": "Saint-Jeoire-Prieuré",
+      "dep": "73",
+      "population": 2012,
+      "pharmacies": 0
+    },
+    {
+      "code": "45335",
+      "nom": "Vienne-en-Val",
+      "dep": "45",
+      "population": 2012,
+      "pharmacies": 0
+    },
+    {
+      "code": "42242",
+      "nom": "Saint-Joseph",
+      "dep": "42",
+      "population": 2009,
+      "pharmacies": 0
+    },
+    {
+      "code": "71528",
+      "nom": "Sornay",
+      "dep": "71",
+      "population": 2004,
+      "pharmacies": 0
+    },
+    {
+      "code": "85098",
+      "nom": "La Genétouze",
+      "dep": "85",
+      "population": 2002,
+      "pharmacies": 0
+    },
+    {
+      "code": "33415",
+      "nom": "Saint-Gervais",
+      "dep": "33",
+      "population": 2001,
+      "pharmacies": 1
+    }
+  ]
+}

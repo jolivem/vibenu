@@ -8,6 +8,7 @@ import { meta as securite } from "./securite-arrondissements-paris-lyon-marseill
 import { meta as risques } from "./risques-naturels-adresse-catastrophe-naturelle/meta";
 import { meta as college } from "./college-de-secteur-paris/meta";
 import { meta as municipales } from "./municipales-2026-grandes-villes/meta";
+import { meta as deserts } from "./communes-sans-medecin-ni-pharmacie/meta";
 
 /**
  * Le registre des articles publiés, du plus récent au plus ancien : source unique de
@@ -20,6 +21,10 @@ interface ArticleEntry {
 }
 
 export const ARTICLES: ArticleEntry[] = [
+  {
+    meta: deserts,
+    load: () => import("./communes-sans-medecin-ni-pharmacie/index.mdx"),
+  },
   {
     meta: municipales,
     load: () => import("./municipales-2026-grandes-villes/index.mdx"),
