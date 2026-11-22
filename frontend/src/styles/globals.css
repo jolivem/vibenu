@@ -5265,3 +5265,17 @@ html {
     grid-template-columns: 1fr;
   }
 }
+
+/* Encadré d'actualité dans un article (texte en discussion, mise à jour attendue). */
+.article-encadre {
+  margin: 20px 0 28px;
+  padding: 14px 18px;
+  border-left: 4px solid var(--accent);
+  background: var(--accent-light);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.95rem;
+}
+
+.article-encadre p {
+  margin: 0;
+}

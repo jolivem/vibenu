@@ -1,0 +1,97 @@
+{
+  "generatedAt": "2026-11-22",
+  "miseAJourAdeme": "2026-11-18",
+  "depuis": "2021-07-01",
+  "total": 15584365,
+  "totalMillionsPlancher": 15,
+  "classes": [
+    {
+      "classe": "A",
+      "diagnostics": 242561,
+      "partPct": 1.6
+    },
+    {
+      "classe": "B",
+      "diagnostics": 791982,
+      "partPct": 5.1
+    },
+    {
+      "classe": "C",
+      "diagnostics": 5725584,
+      "partPct": 36.7
+    },
+    {
+      "classe": "D",
+      "diagnostics": 4833900,
+      "partPct": 31.0
+    },
+    {
+      "classe": "E",
+      "diagnostics": 2468059,
+      "partPct": 15.8
+    },
+    {
+      "classe": "F",
+      "diagnostics": 969846,
+      "partPct": 6.2
+    },
+    {
+      "classe": "G",
+      "diagnostics": 552433,
+      "partPct": 3.5
+    }
+  ],
+  "faits": {
+    "nbFG": 1522279,
+    "partFGPct": 9.8,
+    "partEFGPct": 25.6,
+    "partABPct": 6.6,
+    "classeLaPlusFrequente": "C"
+  },
+  "reglementation": {
+    "interdictionG": 2025,
+    "interdictionF": 2028,
+    "interdictionE": 2034,
+    "outreMerFG": 2028,
+    "gelLoyersDepuis": "2022-08",
+    "validiteAns": 10,
+    "dpeAnciensInvalidesDepuis": "2025-01-01",
+    "dpeAnciensPeriode": [
+      2018,
+      2021
+    ],
+    "amendeAnnonceParticulier": 3000,
+    "amendeAnnonceSociete": 15000,
+    "auditClasses": [
+      "E",
+      "F",
+      "G"
+    ],
+    "coefficientElectricite": {
+      "avant": 2.3,
+      "depuis2026": 1.9,
+      "en2027": 1.7,
+      "annee": 2026,
+      "anneeSuivante": 2027
+    },
+    "numeroAdemeChiffres": 13,
+    "projetLoi": {
+      "titre": "projet de loi visant la relance et la décentralisation du logement",
+      "adoptionSenat": "2026-07-08",
+      "seanceAssemblee": "2026-11-16",
+      "amendementSelonPresse": "2026-11-17",
+      "etatAu": "2026-11-22",
+      "sources": {
+        "assemblee": "https://www.assemblee-nationale.fr/dyn/17/dossiers/PJL_relance_decentralisation_logement_2",
+        "senat": "https://www.senat.fr/dossier-legislatif/pjl25-801.html"
+      }
+    },
+    "sources": {
+      "dpe": "https://www.service-public.gouv.fr/particuliers/vosdroits/F16096",
+      "location": "https://www.service-public.gouv.fr/particuliers/vosdroits/F2042",
+      "gelLoyers": "https://www.ecologie.gouv.fr/politiques-publiques/location-gel-loyers-passoires-energetiques",
+      "ministere": "https://www.ecologie.gouv.fr/politiques-publiques/diagnostic-performance-energetique-dpe",
+      "observatoire": "https://observatoire-dpe-audit.ademe.fr/"
+    }
+  }
+}

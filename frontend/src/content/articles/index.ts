@@ -11,6 +11,7 @@ import { meta as municipales } from "./municipales-2026-grandes-villes/meta";
 import { meta as deserts } from "./communes-sans-medecin-ni-pharmacie/meta";
 import { meta as photos } from "./voir-sa-rue-il-y-a-70-ans-photos-aeriennes/meta";
 import { meta as taxeFonciere } from "./taxe-fonciere-50-plus-grandes-villes/meta";
+import { meta as dpe } from "./connaitre-dpe-adresse/meta";
 
 /**
  * Le registre des articles publiés, du plus récent au plus ancien : source unique de
@@ -23,6 +24,10 @@ interface ArticleEntry {
 }
 
 export const ARTICLES: ArticleEntry[] = [
+  {
+    meta: dpe,
+    load: () => import("./connaitre-dpe-adresse/index.mdx"),
+  },
   {
     meta: taxeFonciere,
     load: () => import("./taxe-fonciere-50-plus-grandes-villes/index.mdx"),

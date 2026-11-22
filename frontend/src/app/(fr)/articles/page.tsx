@@ -9,7 +9,7 @@ import { FEATURES } from "@/lib/site-features";
 const fmt = createFormat("fr");
 
 export const metadata: Metadata = {
-  title: "Articles : prix, risques, logement, chiffres des données publiques",
+  title: "Articles : prix, risques, logement, chiffres des données publiques",
   description:
     "Palmarès chiffrés et guides pratiques tirés des données publiques : prix de vente réels, taxe foncière, zone tendue, risques naturels, équipements des communes.",
   alternates: { canonical: "/articles" },
@@ -21,12 +21,12 @@ export default function ArticlesIndexPage() {
   return (
     <main className="landing">
       <ArticlesNav />
-      <section className="commune-hero">
+      <section className="commune-hero article-hero">
         <span className="landing-eyebrow">Articles</span>
         <h1 className="commune-title">Ce que disent les données publiques</h1>
         <p className="commune-lead">
           Des palmarès et des guides écrits à partir des mêmes données que l&apos;analyse
-          d&apos;adresse : ventes réelles, fiscalité locale, risques, équipements. Chaque chiffre
+          d&apos;adresse : ventes réelles, fiscalité locale, risques, équipements. Chaque chiffre
           est daté et sourcé.
         </p>
       </section>
