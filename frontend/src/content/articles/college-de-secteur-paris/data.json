@@ -1,0 +1,231 @@
+{
+  "generatedAt": "2026-11-22",
+  "rentree": "2025-2026",
+  "session": 2025,
+  "nbCollegesSectorises": 114,
+  "nbColleges": 179,
+  "nbPublics": 114,
+  "nbPrives": 65,
+  "references": {
+    "ipsNational": 106.2,
+    "ipsNationalPublic": 100.8,
+    "ipsNationalPrive": 125.5,
+    "ipsParisPublic": 116.9,
+    "ipsParisPrive": 150.1
+  },
+  "faits": {
+    "ipsPublicMin": 74.4,
+    "ipsPublicMax": 155.9,
+    "arrIpsHaut": 5,
+    "arrIpsBas": 19,
+    "reussitePubliqueMoyenne": 87,
+    "reussitePriveeMoyenne": 99,
+    "nbPublicsVaPositive": 31,
+    "nbPublicsVaNegative": 75,
+    "nbPublicsAvecVa": 113,
+    "correlationIpsReussite": 0.76,
+    "correlationIpsVa": 0.1
+  },
+  "arrondissements": [
+    {
+      "arr": 1,
+      "code": "75101",
+      "nbPublics": 1,
+      "nbPrives": 0,
+      "ipsMedian": 127.4,
+      "ipsMin": 127.4,
+      "ipsMax": 127.4,
+      "reussiteMoyenne": 95
+    },
+    {
+      "arr": 2,
+      "code": "75102",
+      "nbPublics": 1,
+      "nbPrives": 0,
+      "ipsMedian": 130.8,
+      "ipsMin": 130.8,
+      "ipsMax": 130.8,
+      "reussiteMoyenne": 96
+    },
+    {
+      "arr": 3,
+      "code": "75103",
+      "nbPublics": 3,
+      "nbPrives": 0,
+      "ipsMedian": 135.8,
+      "ipsMin": 121.3,
+      "ipsMax": 138.3,
+      "reussiteMoyenne": 93
+    },
+    {
+      "arr": 4,
+      "code": "75104",
+      "nbPublics": 2,
+      "nbPrives": 3,
+      "ipsMedian": 128.1,
+      "ipsMin": 125.0,
+      "ipsMax": 131.1,
+      "reussiteMoyenne": 92
+    },
+    {
+      "arr": 5,
+      "code": "75105",
+      "nbPublics": 5,
+      "nbPrives": 2,
+      "ipsMedian": 144.3,
+      "ipsMin": 134.5,
+      "ipsMax": 155.9,
+      "reussiteMoyenne": 98
+    },
+    {
+      "arr": 6,
+      "code": "75106",
+      "nbPublics": 2,
+      "nbPrives": 6,
+      "ipsMedian": 135.6,
+      "ipsMin": 129.4,
+      "ipsMax": 141.8,
+      "reussiteMoyenne": 96
+    },
+    {
+      "arr": 7,
+      "code": "75107",
+      "nbPublics": 2,
+      "nbPrives": 5,
+      "ipsMedian": 133.2,
+      "ipsMin": 122.3,
+      "ipsMax": 144.2,
+      "reussiteMoyenne": 96
+    },
+    {
+      "arr": 8,
+      "code": "75108",
+      "nbPublics": 3,
+      "nbPrives": 1,
+      "ipsMedian": 141.3,
+      "ipsMin": 138.0,
+      "ipsMax": 142.0,
+      "reussiteMoyenne": 95
+    },
+    {
+      "arr": 9,
+      "code": "75109",
+      "nbPublics": 4,
+      "nbPrives": 0,
+      "ipsMedian": 133.7,
+      "ipsMin": 125.5,
+      "ipsMax": 141.8,
+      "reussiteMoyenne": 95
+    },
+    {
+      "arr": 10,
+      "code": "75110",
+      "nbPublics": 5,
+      "nbPrives": 2,
+      "ipsMedian": 111.5,
+      "ipsMin": 100.6,
+      "ipsMax": 124.4,
+      "reussiteMoyenne": 83
+    },
+    {
+      "arr": 11,
+      "code": "75111",
+      "nbPublics": 6,
+      "nbPrives": 4,
+      "ipsMedian": 119.6,
+      "ipsMin": 113.7,
+      "ipsMax": 131.8,
+      "reussiteMoyenne": 86
+    },
+    {
+      "arr": 12,
+      "code": "75112",
+      "nbPublics": 7,
+      "nbPrives": 4,
+      "ipsMedian": 113.0,
+      "ipsMin": 97.2,
+      "ipsMax": 123.7,
+      "reussiteMoyenne": 85
+    },
+    {
+      "arr": 13,
+      "code": "75113",
+      "nbPublics": 11,
+      "nbPrives": 5,
+      "ipsMedian": 109.6,
+      "ipsMin": 90.0,
+      "ipsMax": 127.5,
+      "reussiteMoyenne": 84
+    },
+    {
+      "arr": 14,
+      "code": "75114",
+      "nbPublics": 6,
+      "nbPrives": 3,
+      "ipsMedian": 106.7,
+      "ipsMin": 98.2,
+      "ipsMax": 126.2,
+      "reussiteMoyenne": 88
+    },
+    {
+      "arr": 15,
+      "code": "75115",
+      "nbPublics": 8,
+      "nbPrives": 5,
+      "ipsMedian": 115.2,
+      "ipsMin": 92.1,
+      "ipsMax": 129.9,
+      "reussiteMoyenne": 89
+    },
+    {
+      "arr": 16,
+      "code": "75116",
+      "nbPublics": 5,
+      "nbPrives": 8,
+      "ipsMedian": 130.7,
+      "ipsMin": 98.3,
+      "ipsMax": 142.1,
+      "reussiteMoyenne": 89
+    },
+    {
+      "arr": 17,
+      "code": "75117",
+      "nbPublics": 7,
+      "nbPrives": 4,
+      "ipsMedian": 118.9,
+      "ipsMin": 93.6,
+      "ipsMax": 138.4,
+      "reussiteMoyenne": 87
+    },
+    {
+      "arr": 18,
+      "code": "75118",
+      "nbPublics": 11,
+      "nbPrives": 3,
+      "ipsMedian": 101.9,
+      "ipsMin": 74.4,
+      "ipsMax": 131.9,
+      "reussiteMoyenne": 80
+    },
+    {
+      "arr": 19,
+      "code": "75119",
+      "nbPublics": 13,
+      "nbPrives": 5,
+      "ipsMedian": 100.0,
+      "ipsMin": 84.6,
+      "ipsMax": 126.5,
+      "reussiteMoyenne": 83
+    },
+    {
+      "arr": 20,
+      "code": "75120",
+      "nbPublics": 12,
+      "nbPrives": 5,
+      "ipsMedian": 106.8,
+      "ipsMin": 86.4,
+      "ipsMax": 120.5,
+      "reussiteMoyenne": 81
+    }
+  ]
+}

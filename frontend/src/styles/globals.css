@@ -5218,3 +5218,10 @@ html {
 .article-figure {
   margin: 24px 0 32px;
 }
+
+@media (max-width: 600px) {
+  /* Une seule colonne de chiffres clés : à deux, les valeurs doubles (« 116,9 / 150,1 ») se coupaient. */
+  .article-chiffres {
+    grid-template-columns: 1fr;
+  }
+}
