@@ -5225,3 +5225,43 @@ html {
     grid-template-columns: 1fr;
   }
 }
+
+/* Paire de photographies avant / après d'un article. */
+.article-avant-apres {
+  margin: 24px 0 32px;
+}
+
+.article-avant-apres-paire {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.article-avant-apres-paire figure {
+  margin: 0;
+}
+
+.article-avant-apres-paire img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+.article-avant-apres-paire figcaption {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.article-avant-apres-legende {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+  .article-avant-apres-paire {
+    grid-template-columns: 1fr;
+  }
+}

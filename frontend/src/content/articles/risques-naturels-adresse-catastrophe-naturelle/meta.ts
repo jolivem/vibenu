@@ -4,7 +4,7 @@ import { REDACTION } from "../authors";
 export const meta: ArticleMeta = {
   slug: "risques-naturels-adresse-catastrophe-naturelle",
   kind: "guide",
-  title: "Inondation, argiles, catastrophes naturelles : vérifier les risques d'une adresse",
+  title: "Inondation, argiles, catastrophes naturelles : vérifier les risques d'une adresse",
   description:
     "Comment vérifier les risques d'un logement avant d'acheter ou de louer. 99 % des communes déjà reconnues en catastrophe naturelle depuis 1982.",
   lead:
@@ -19,8 +19,8 @@ export const meta: ArticleMeta = {
     { nom: "ERRIAL, état des risques en ligne, Géorisques", url: "https://errial.georisques.gouv.fr/" },
   ],
   related: [
-    { href: "/commune/paris", libelle: "Paris : risques naturels de la ville" },
-    { href: "/commune/marseille", libelle: "Marseille : risques naturels de la ville" },
-    { href: "/commune/lyon", libelle: "Lyon : risques naturels de la ville" },
+    { href: "/commune/paris", libelle: "Paris : risques naturels de la ville" },
+    { href: "/commune/marseille", libelle: "Marseille : risques naturels de la ville" },
+    { href: "/commune/lyon", libelle: "Lyon : risques naturels de la ville" },
   ],
 };

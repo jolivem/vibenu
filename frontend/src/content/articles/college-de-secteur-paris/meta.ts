@@ -4,7 +4,7 @@ import { REDACTION } from "../authors";
 export const meta: ArticleMeta = {
   slug: "college-de-secteur-paris",
   kind: "guide",
-  title: "Collège de secteur à Paris : le trouver, et lire ses résultats",
+  title: "Collège de secteur à Paris : le trouver, et lire ses résultats",
   description:
     "Comment trouver le collège de secteur d'une adresse à Paris, et lire son IPS et ses résultats au brevet 2025 sans se tromper.",
   lead:
@@ -19,6 +19,6 @@ export const meta: ArticleMeta = {
   ],
   related: [
     { href: "/commune/paris/arrondissements", libelle: "Les 20 arrondissements de Paris comparés" },
-    { href: "/commune/paris", libelle: "Paris : climat, risques et élections" },
+    { href: "/commune/paris", libelle: "Paris : climat, risques et élections" },
   ],
 };

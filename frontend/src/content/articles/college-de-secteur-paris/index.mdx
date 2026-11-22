@@ -1,30 +1,30 @@
 import { ChiffresColleges, IpsArrondissements, TableauArrondissements } from "./figures";
 
-À Paris, chaque adresse est rattachée à un collège public : son collège de secteur. Paris compte 114 collèges
+À Paris, chaque adresse est rattachée à un collège public : son collège de secteur. Paris compte 114 collèges
 publics et 65 collèges privés. Pour choisir, ou simplement savoir à quoi s'attendre, les données publiques
 disent qui fréquente chaque collège et comment ses élèves réussissent au brevet. Encore faut-il les lire
-correctement : le taux de réussite brut dit surtout d'où viennent les élèves.
+correctement : le taux de réussite brut dit surtout d'où viennent les élèves.
 
 <ChiffresColleges />
 
 ## Trouver son collège de secteur
 
 La carte scolaire publiée par la Ville de Paris rattache chaque adresse à l'un des 114 collèges publics. Sur
-ClaireAdresse, saisissez l'adresse : la section Enseignement affiche sur la carte la zone du secteur et le collège
+ClaireAdresse, saisissez l'adresse : la section Enseignement affiche sur la carte la zone du secteur et le collège
 qui lui correspond, marqué « Collège de secteur » dans la liste, avec ses résultats et ceux des collèges voisins.
 
-Les collèges privés sous contrat n'ont pas de secteur : on s'y inscrit directement auprès de l'établissement. Pour
+Les collèges privés sous contrat n'ont pas de secteur : on s'y inscrit directement auprès de l'établissement. Pour
 un collège public autre que celui du secteur, une demande de dérogation est possible auprès des services de
 l'académie, sans garantie de réponse favorable.
 
-## Qui fréquente les collèges : l'indice de position sociale
+## Qui fréquente les collèges : l'indice de position sociale
 
 L'indice de position sociale (IPS) résume le milieu social des élèves d'après la profession de leurs parents.
-Il vaut 106,2 en moyenne en France ; plus il est élevé, plus le public est favorisé. Il décrit le recrutement d'un
+Il vaut 106,2 en moyenne en France ; plus il est élevé, plus le public est favorisé. Il décrit le recrutement d'un
 collège, pas la qualité de son enseignement.
 
-À Paris, l'écart est d'abord entre public et privé : 116,9 pour les collèges publics, 150,1 pour les collèges
-privés, quand la France est à 100,8 et 125,5. Mais les collèges publics parisiens diffèrent aussi beaucoup entre eux :
+À Paris, l'écart est d'abord entre public et privé : 116,9 pour les collèges publics, 150,1 pour les collèges
+privés, quand la France est à 100,8 et 125,5. Mais les collèges publics parisiens diffèrent aussi beaucoup entre eux :
 leur IPS va de 74,4 à 155,9. Par arrondissement, l'IPS médian des collèges publics va de 100,0 dans le 19e à 144,3
 dans le 5e. Le nord-est de Paris, du 18e au 20e, et le sud, dans les 13e et 14e, accueillent les publics les
 moins favorisés.
@@ -34,21 +34,21 @@ moins favorisés.
 ## Le taux de réussite au brevet, à lire avec prudence
 
 À la session 2025, les collèges publics parisiens ont fait réussir en moyenne 87 % de leurs candidats au brevet,
-les collèges privés 99 %. Cet écart ne mesure pas la qualité des collèges : entre collèges publics parisiens, le
+les collèges privés 99 %. Cet écart ne mesure pas la qualité des collèges : entre collèges publics parisiens, le
 taux de réussite suit de très près le milieu social des élèves (corrélation de 0,76 avec l'IPS).
 
 La valeur ajoutée corrige cet effet. Le ministère compare la réussite de chaque collège à celle qu'on attendait de
 ses élèves, compte tenu de leur âge, de leur milieu social et de leur niveau à l'entrée en 6e. Elle n'est presque plus
-liée au milieu social (corrélation de 0,1) : c'est elle qui mesure l'apport du collège. Sur les 113 collèges publics
+liée au milieu social (corrélation de 0,1) : c'est elle qui mesure l'apport du collège. Sur les 113 collèges publics
 parisiens dont elle est publiée, 31 font réussir leurs élèves mieux que prévu, 75 moins bien.
 
-Pour un collège donné, regardez donc la valeur ajoutée avant le taux brut : la fiche Collèges de ClaireAdresse donne
+Pour un collège donné, regardez donc la valeur ajoutée avant le taux brut : la fiche Collèges de ClaireAdresse donne
 les deux, avec l'IPS.
 
 <TableauArrondissements />
 
 ## D'où viennent ces chiffres
 
-Collèges : annuaire de l'Éducation nationale. IPS : rentrée 2025-2026, et résultats au brevet de la session 2025,
-publiés par la direction des études du ministère (DEPP). Carte scolaire : secteurs des collèges publiés par la Ville
+Collèges : annuaire de l'Éducation nationale. IPS : rentrée 2025-2026, et résultats au brevet de la session 2025,
+publiés par la direction des études du ministère (DEPP). Carte scolaire : secteurs des collèges publiés par la Ville
 de Paris. Les chiffres par arrondissement portent sur les collèges publics, seuls concernés par la sectorisation.

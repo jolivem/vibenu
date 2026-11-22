@@ -1,0 +1,74 @@
+{
+  "generatedAt": "2026-11-22",
+  "epoques": [
+    {
+      "id": "cassini",
+      "nom": "Carte de Cassini",
+      "debut": 1750,
+      "fin": null,
+      "environ": true
+    },
+    {
+      "id": "etat-major",
+      "nom": "Carte de l'état-major",
+      "debut": 1820,
+      "fin": 1866,
+      "environ": false
+    },
+    {
+      "id": "scan50-1950",
+      "nom": "Carte de 1950",
+      "debut": 1950,
+      "fin": null,
+      "environ": true
+    },
+    {
+      "id": "ortho-1950-1965",
+      "nom": "Photographies aériennes",
+      "debut": 1950,
+      "fin": 1965,
+      "environ": false
+    },
+    {
+      "id": "ortho-1965-1980",
+      "nom": "Photographies aériennes",
+      "debut": 1965,
+      "fin": 1980,
+      "environ": false
+    },
+    {
+      "id": "ortho-2000-2005",
+      "nom": "Photographies aériennes",
+      "debut": 2000,
+      "fin": 2005,
+      "environ": false
+    }
+  ],
+  "nbEpoques": 6,
+  "ilYaAns": 70,
+  "lieux": [
+    {
+      "id": "la-defense",
+      "nom": "La Défense",
+      "precision": "Puteaux et Courbevoie (Hauts-de-Seine)",
+      "images": {
+        "1950": "/articles/voir-sa-rue-il-y-a-70-ans-photos-aeriennes/la-defense-1950.jpg",
+        "aujourdhui": "/articles/voir-sa-rue-il-y-a-70-ans-photos-aeriennes/la-defense-aujourdhui.jpg"
+      }
+    },
+    {
+      "id": "cergy",
+      "nom": "Cergy",
+      "precision": "ville nouvelle (Val-d'Oise)",
+      "images": {
+        "1950": "/articles/voir-sa-rue-il-y-a-70-ans-photos-aeriennes/cergy-1950.jpg",
+        "aujourdhui": "/articles/voir-sa-rue-il-y-a-70-ans-photos-aeriennes/cergy-aujourdhui.jpg"
+      }
+    }
+  ],
+  "capture": {
+    "zoom": 15,
+    "largeur": 768,
+    "hauteur": 512
+  }
+}

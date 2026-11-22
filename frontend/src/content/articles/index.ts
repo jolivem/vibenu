@@ -9,6 +9,7 @@ import { meta as risques } from "./risques-naturels-adresse-catastrophe-naturell
 import { meta as college } from "./college-de-secteur-paris/meta";
 import { meta as municipales } from "./municipales-2026-grandes-villes/meta";
 import { meta as deserts } from "./communes-sans-medecin-ni-pharmacie/meta";
+import { meta as photos } from "./voir-sa-rue-il-y-a-70-ans-photos-aeriennes/meta";
 
 /**
  * Le registre des articles publiés, du plus récent au plus ancien : source unique de
@@ -21,6 +22,10 @@ interface ArticleEntry {
 }
 
 export const ARTICLES: ArticleEntry[] = [
+  {
+    meta: photos,
+    load: () => import("./voir-sa-rue-il-y-a-70-ans-photos-aeriennes/index.mdx"),
+  },
   {
     meta: deserts,
     load: () => import("./communes-sans-medecin-ni-pharmacie/index.mdx"),

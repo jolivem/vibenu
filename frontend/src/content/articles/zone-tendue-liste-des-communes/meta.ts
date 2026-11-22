@@ -4,9 +4,9 @@ import { REDACTION } from "../authors";
 export const meta: ArticleMeta = {
   slug: "zone-tendue-liste-des-communes",
   kind: "guide",
-  title: "Zone tendue : la liste des communes et ce que ça change",
+  title: "Zone tendue : la liste des communes et ce que ça change",
   description:
-    "1 430 communes en zone tendue, 2 259 en zone touristique : préavis d'un mois, loyer plafonné, taxe sur les logements vacants, résidences secondaires.",
+    "1 430 communes en zone tendue, 2 259 en zone touristique : préavis d'un mois, loyer plafonné, taxe sur les logements vacants, résidences secondaires.",
   lead:
     "Ce qu'est une zone tendue, ce qui change pour un locataire et pour un propriétaire selon le zonage de la commune, et où se trouvent les communes concernées.",
   published: "2026-11-22",
@@ -27,11 +27,11 @@ export const meta: ArticleMeta = {
       nom: "Taxe d'habitation des résidences secondaires, service-public.gouv.fr",
       url: "https://www.service-public.gouv.fr/particuliers/vosdroits/F42",
     },
-    { nom: "Taux de majoration votés par les communes : fichiers de fiscalité locale de la DGFiP, 2025" },
+    { nom: "Taux de majoration votés par les communes : fichiers de fiscalité locale de la DGFiP, 2025" },
   ],
   related: [
-    { href: "/commune/paris/arrondissements", libelle: "Paris : loyers et prix par arrondissement" },
-    { href: "/commune/lyon/arrondissements", libelle: "Lyon : loyers et prix par arrondissement" },
-    { href: "/commune/marseille/arrondissements", libelle: "Marseille : loyers et prix par arrondissement" },
+    { href: "/commune/paris/arrondissements", libelle: "Paris : loyers et prix par arrondissement" },
+    { href: "/commune/lyon/arrondissements", libelle: "Lyon : loyers et prix par arrondissement" },
+    { href: "/commune/marseille/arrondissements", libelle: "Marseille : loyers et prix par arrondissement" },
   ],
 };
